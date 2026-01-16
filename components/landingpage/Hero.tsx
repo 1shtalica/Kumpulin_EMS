@@ -24,7 +24,7 @@ const categories = [
   },
   {
     name: "Olahraga",
-    icon: <Trophy size={18} />, // Lucide tidak punya bola, Trophy alternatif terbaik
+    icon: <Trophy size={18} />, 
     href: "/events?category=olahraga",
   },
   {

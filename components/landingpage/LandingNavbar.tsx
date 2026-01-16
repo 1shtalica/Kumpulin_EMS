@@ -47,7 +47,7 @@ export default function LandingNavbar() {
 
         {/* === BAGIAN KANAN: DAFTAR TOMBOL === */}
         <div className="flex items-center gap-4">
-          <Button variant="light" size="sm" asChild>
+          <Button variant="light" size="sm" className="rounded-xl" asChild>
             <Link href="/login">Masuk</Link>
           </Button>
 
@@ -55,7 +55,7 @@ export default function LandingNavbar() {
             variant="brand"
             size="sm"
             asChild
-            className="hidden md:inline-flex"
+            className="hidden rounded-xl  md:inline-flex"
           >
             <Link href="/register">Daftar</Link>
           </Button>

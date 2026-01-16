@@ -18,13 +18,13 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:
           "hover:bg-kumpulinPurple hover:text-accent-foreground dark:hover:bg-kumpulinPurple",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-kumpulinPurple underline-offset-4 hover:underline",
 
         // ⭐custom button variant
         brand:
           "bg-kumpulinPurple text-white hover:bg-kumpulinLightPurple shadow-md hover:shadow-lg",
         light:
-          "bg-white text-kumpulinPurple hover:bg-slate-100 hover:text-kumpulinLightPurple border-none shadow-md hover:shadow-lg",
+          "bg-white text-kumpulinPurple hover:bg-slate-200 hover:text-kumpulinLightPurple border-none shadow-md hover:shadow-lg",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
