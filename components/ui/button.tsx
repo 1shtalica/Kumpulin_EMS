@@ -17,7 +17,7 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost:
-          "hover:bg-kumpulinPurple hover:text-accent-foreground dark:hover:bg-kumpulinPurple",
+          "hover:bg-kumpulinPurple hover:text-white dark:hover:bg-kumpulinPurple",
         link: "text-kumpulinPurple underline-offset-4 hover:underline",
 
         // ⭐custom button variant
