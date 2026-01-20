@@ -165,13 +165,6 @@ export default function UpcomingEvents() {
             />
           ))}
         </div>
-
-        {/* Tombol Mobile (Opsional jika header sudah ada link) */}
-        <div className="mt-8 flex justify-center md:hidden">
-          <Button variant="outline" className="w-full" asChild>
-            <Link href="/events?sort=upcoming">Lihat Semua Event</Link>
-          </Button>
-        </div>
       </div>
     </section>
   );

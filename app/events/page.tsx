@@ -171,7 +171,6 @@ export default async function ExplorePage(props: {
   return (
     <div className="min-h-screen bg-slate-50">
       <LandingNavbar />
-
       <main className="container mx-auto px-4 pb-20">
         <SearchBar />
 

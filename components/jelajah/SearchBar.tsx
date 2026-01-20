@@ -61,7 +61,7 @@ export default function SearchBar() {
             <Input
               type="text"
               placeholder="Cari konser, workshop, atau seminar..."
-              className="w-full pl-12 h-12 rounded-full border-slate-200 shadow-sm focus-visible:ring-kumpulinPurple text-base"
+              className="w-full pl-12 h-12 bg-white rounded-full border-slate-200 shadow-sm focus-visible:ring-kumpulinPurple text-base"
               // Default value dari URL
               defaultValue={searchParams.get("q")?.toString()}
               // Event Listener Hybrid
