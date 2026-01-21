@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
-import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Home } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -58,7 +58,7 @@ export default function LoginForm() {
     console.log("🔥 FORM SUBMITTED!");
     console.log(
       "Format Data JSON yang akan dikirim ke BE:",
-      JSON.stringify(data, null, 2)
+      JSON.stringify(data, null, 2),
     );
 
     // TODO: Nanti disini panggil service, misal:
@@ -77,13 +77,15 @@ export default function LoginForm() {
   return (
     <div>
       {/* Kembali ke landingpage */}
-      <Link
-        href="/"
-        className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium mb-4"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        <p>Kembali ke beranda</p>
-      </Link>
+      <Button variant="link" asChild>
+        <Link
+          href="/"
+          className="inline-flex items-center text-sm text-kumpulinLightPurple hover:text-kumpulinPurple font-medium mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          <p>Kembali ke beranda</p>
+        </Link>
+      </Button>
 
       {/* ⭐ BAGIAN HEADER */}
       <Card className="w-full">
@@ -98,7 +100,7 @@ export default function LoginForm() {
           <CardTitle className="font-bold text-3xl ">
             Selamat Datang Kembali
           </CardTitle>
-          <CardDescription className="text-sm text-slate-400">
+          <CardDescription className="text-sm text-slate-500">
             Masuk ke akun kumpul.in kamu
           </CardDescription>
         </CardHeader>
@@ -115,6 +117,7 @@ export default function LoginForm() {
                 type="email"
                 placeholder="nama@email.com"
                 disabled={isLoading}
+                required
                 // Hook Form Register:
                 {...register("email")}
               />
@@ -126,15 +129,7 @@ export default function LoginForm() {
 
             {/* Input Password */}
             <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  Lupa password?
-                </Link>
-              </div>
+              <Label htmlFor="password">Password</Label>
 
               <div className="relative">
                 <Input
@@ -142,7 +137,13 @@ export default function LoginForm() {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   disabled={isLoading}
+                  required
                   {...register("password")}
+                  className={
+                    errors.password
+                      ? "border-red-500 focus:outline-none focus-visible:ring-red-500"
+                      : ""
+                  }
                 />
                 {/* Tombol Mata Toggle */}
                 <button
@@ -157,17 +158,26 @@ export default function LoginForm() {
                   )}
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-sm text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
+              <div className="flex justify-between items-start mt-1">
+                {/* Area Pesan Error (Kiri) */}
+                <div className="text-xs text-red-500 font-medium">
+                  {errors.password && <span>{errors.password.message}</span>}
+                </div>
+
+                {/* Area Forgot Password (Kanan) */}
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-kumpulinPurple hover:underline font-medium ml-auto whitespace-nowrap"
+                >
+                  Lupa password?
+                </Link>
+              </div>
             </div>
 
             {/* Tombol Submit */}
             <Button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-linear-to-r from-kumpulinLightPurple to-kumpulinPurple hover:opacity-90 rounded-lg font-bold"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -187,7 +197,7 @@ export default function LoginForm() {
             <div className="absolute inset-0 flex items-center">
               <Separator />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
+            <div className="relative flex justify-center text-xs">
               <span className="bg-white px-2 text-muted-foreground">
                 Atau lanjutkan dengan
               </span>
@@ -195,7 +205,11 @@ export default function LoginForm() {
           </div>
 
           {/* ⭐ LOGIN WITH GOOGLE */}
-          <Button variant="outline" className="w-full" disabled={isLoading}>
+          <Button
+            variant="outline"
+            className="w-full font-bold rounded-lg"
+            disabled={isLoading}
+          >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -219,13 +233,21 @@ export default function LoginForm() {
 
           {/* ⭐ LOGIN WITH RTPINTAR */}
           {/* DISINI  */}
+          <Button
+            variant="rtpintar"
+            className="w-full rounded-lg"
+            disabled={isLoading}
+          >
+            <Home className="mr-2 h-4 w-4" />
+            Lanjutkan dengan RT Pintar
+          </Button>
 
           {/* ⭐ KE HALAMAN REGISTER */}
           <div className="text-center text-sm text-slate-600 mt-2">
             Belum punya akun?{" "}
             <Link
               href="/register"
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-kumpulinPurple font-semibold hover:underline"
             >
               Daftar sekarang
             </Link>
