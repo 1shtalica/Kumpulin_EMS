@@ -20,12 +20,118 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
-// ⭐ Buat skema register
+// ⭐ 2 skema register
+// Skema Attendee
+const baseSchema = z
+  .object({
+    // role: z.enum(["attendee", "organizer"]),
+    fullName: z.string().min(2),
+    email: z
+      .email({ message: "Format email tidak valid" })
+      .min(1, { message: "Email Wajib diisi" }),
+    phoneNumber: z
+      .string()
+      .min(12, { message: "Nomor HP minimal 12 digit" })
+      .regex(/^\d+$/, { message: "Nomor HP hanya boleh angka" }),
+    password: z.string().min(8, { message: "Password minimal 8 karakter" }),
+    confirmPassword: z.string(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        path: ["confirmPassword"],
+        message: "Password tidak cocok",
+        code: z.ZodIssueCode.custom,
+      });
+    }
+  });
+
+const attendeeSchema = baseSchema;
+
+// Skema Organizer
+const organizerSchema = baseSchema
+  .and(
+    z.object({
+      organizerName: z
+        .string()
+        .min(1, { message: "Nama Organizer wajib diisi" }),
+      organizerType: z.enum([
+        "Individu",
+        "Komunitas",
+        "Perusahaan",
+        "Rt_Pintar",
+      ]),
+      rtNumber: z.string().optional(),
+      rwNumber: z.string().optional(),
+      kelurahan: z.string().optional(),
+    }),
+  )
+  .superRefine((data, ctx) => {
+    // Validasi manual: Kalau tipe RT Pintar, wajib isi RT/RW
+    if (data.organizerType === "Rt_Pintar") {
+      if (!data.rtNumber)
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "RT Wajib diisi",
+          path: ["rtNumber"],
+        });
+      if (!data.rwNumber)
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "RW Wajib diisi",
+          path: ["rwNumber"],
+        });
+      if (!data.kelurahan)
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "RW Wajib diisi",
+          path: ["kelurahan"],
+        });
+    }
+  });
+
+type AttendeeFormValues = z.infer<typeof attendeeSchema>;
+type OrganizerFormValues = z.infer<typeof organizerSchema>;
 
 export default function RegisterForm() {
-  //  ⭐ Buat daftar state
+  //  ⭐ Daftar state
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [role, setRole] = useState<"attendee" | "organizer">("attendee");
+
+  // Kondisional skema yang dipakai
+  const form = useForm({
+    resolver: zodResolver(
+      role === "attendee" ? attendeeSchema : organizerSchema,
+    ),
+    defaultValues: {
+      // role: "attendee",
+      fullName: "",
+      email: "",
+      phoneNumber: "",
+      password: "",
+      confirmPassword: "",
+      organizerName: "",
+      organizerType: "Individu",
+      rtNumber: "",
+      rwNumber: "",
+      kelurahan: "",
+    },
+  });
+
+  const onSubmit = async (data: AttendeeFormValues | OrganizerFormValues) => {
+    if (role === "attendee") {
+      // Panggil API Register User Biasa
+      // POST /api/auth/register-attendee
+      // Payload: { fullName, email, password, role: 'user' }
+      console.log("Data Attendee:", data);
+    } else {
+      // Panggil API Register EO (Transaction: Create User + Create Org)
+      // POST /api/auth/register-organizer
+      // Payload: { fullName, email, password, role: 'organizer', orgName, orgType, ... }
+      console.log("Data EO:", data);
+    }
+  };
 
   return (
     <div>
@@ -52,6 +158,24 @@ export default function RegisterForm() {
           <CardDescription className="text-sm text-slate-400">
             Buat akun kumpul.in kamu
           </CardDescription>
+          <div className="flex gap-4 mb-4">
+            <div
+              className={
+                role === "attendee" ? "border-blue-500" : "border-gray-200"
+              }
+              onClick={() => setRole("attendee")}
+            >
+              Peserta Event
+            </div>
+            <div
+              className={
+                role === "organizer" ? "border-blue-500" : "border-gray-200"
+              }
+              onClick={() => setRole("organizer")}
+            >
+              Event Organizer
+            </div>
+          </div>
         </CardHeader>
 
         {/* Isi halaman login */}

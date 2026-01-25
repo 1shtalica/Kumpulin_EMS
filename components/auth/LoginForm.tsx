@@ -117,7 +117,11 @@ export default function LoginForm() {
                 type="email"
                 placeholder="nama@email.com"
                 disabled={isLoading}
-                required
+                className={
+                  errors.email
+                    ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                    : "rounded-lg"
+                }
                 // Hook Form Register:
                 {...register("email")}
               />
@@ -137,12 +141,11 @@ export default function LoginForm() {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   disabled={isLoading}
-                  required
                   {...register("password")}
                   className={
                     errors.password
-                      ? "border-red-500 focus:outline-none focus-visible:ring-red-500"
-                      : ""
+                      ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                      : "rounded-lg"
                   }
                 />
                 {/* Tombol Mata Toggle */}
@@ -206,6 +209,7 @@ export default function LoginForm() {
 
           {/* ⭐ LOGIN WITH GOOGLE */}
           <Button
+            type="button"
             variant="outline"
             className="w-full font-bold rounded-lg"
             disabled={isLoading}
@@ -234,6 +238,7 @@ export default function LoginForm() {
           {/* ⭐ LOGIN WITH RTPINTAR */}
           {/* DISINI  */}
           <Button
+            type="button"
             variant="rtpintar"
             className="w-full rounded-lg"
             disabled={isLoading}
