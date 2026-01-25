@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
@@ -21,20 +21,30 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
 // ⭐ 2 skema register
-// Skema Attendee
-const baseSchema = z
+const baseFields = {
+  fullName: z.string().min(2),
+  email: z
+    .email({ message: "Format email tidak valid" })
+    .min(1, { message: "Email Wajib diisi" }),
+  phoneNumber: z
+    .string()
+    .min(12, { message: "Nomor HP minimal 12 digit" })
+    .regex(/^(\+62|62|0)[0-9]{9,12}$/, {
+      message: "Format nomor HP tidak valid (contoh: 081234567890)",
+    }),
+  password: z
+    .string()
+    .min(8, { message: "Password minimal 8 karakter" })
+    .regex(/[A-Z]/, { message: "Password harus mengandung huruf besar" })
+    .regex(/[a-z]/, { message: "Password harus mengandung huruf kecil" })
+    .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
+  confirmPassword: z.string(),
+};
+
+const attendeeSchema = z
   .object({
-    // role: z.enum(["attendee", "organizer"]),
-    fullName: z.string().min(2),
-    email: z
-      .email({ message: "Format email tidak valid" })
-      .min(1, { message: "Email Wajib diisi" }),
-    phoneNumber: z
-      .string()
-      .min(12, { message: "Nomor HP minimal 12 digit" })
-      .regex(/^\d+$/, { message: "Nomor HP hanya boleh angka" }),
-    password: z.string().min(8, { message: "Password minimal 8 karakter" }),
-    confirmPassword: z.string(),
+    role: z.literal("attendee"),
+    ...baseFields,
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
@@ -46,90 +56,108 @@ const baseSchema = z
     }
   });
 
-const attendeeSchema = baseSchema;
-
-// Skema Organizer
-const organizerSchema = baseSchema
-  .and(
-    z.object({
-      organizerName: z
-        .string()
-        .min(1, { message: "Nama Organizer wajib diisi" }),
-      organizerType: z.enum([
-        "Individu",
-        "Komunitas",
-        "Perusahaan",
-        "Rt_Pintar",
-      ]),
-      rtNumber: z.string().optional(),
-      rwNumber: z.string().optional(),
-      kelurahan: z.string().optional(),
-    }),
-  )
+const organizerSchema = z
+  .object({
+    role: z.literal("organizer"),
+    ...baseFields,
+    organizerName: z.string().min(1, { message: "Nama Organizer wajib diisi" }),
+    organizerType: z.enum(["Individu", "Komunitas", "Perusahaan", "Rt_Pintar"]),
+    rtNumber: z.string().optional(),
+    rwNumber: z.string().optional(),
+    kelurahan: z.string().optional(),
+  })
   .superRefine((data, ctx) => {
-    // Validasi manual: Kalau tipe RT Pintar, wajib isi RT/RW
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        path: ["confirmPassword"],
+        message: "Password tidak cocok",
+        code: z.ZodIssueCode.custom,
+      });
+    }
     if (data.organizerType === "Rt_Pintar") {
       if (!data.rtNumber)
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "RT Wajib diisi",
           path: ["rtNumber"],
+          message: "RT Wajib diisi",
+          code: z.ZodIssueCode.custom,
         });
       if (!data.rwNumber)
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "RW Wajib diisi",
           path: ["rwNumber"],
+          message: "RW Wajib diisi",
+          code: z.ZodIssueCode.custom,
         });
       if (!data.kelurahan)
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "RW Wajib diisi",
           path: ["kelurahan"],
+          message: "Kelurahan Wajib diisi",
+          code: z.ZodIssueCode.custom,
         });
     }
   });
 
-type AttendeeFormValues = z.infer<typeof attendeeSchema>;
-type OrganizerFormValues = z.infer<typeof organizerSchema>;
+// Dipisahkan oleh discriminator role
+const registerSchema = z.discriminatedUnion("role", [
+  attendeeSchema,
+  organizerSchema,
+]);
 
 export default function RegisterForm() {
   //  ⭐ Daftar state
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [role, setRole] = useState<"attendee" | "organizer">("attendee");
+
+  const getDefaultValues = (role: "attendee" | "organizer") => ({
+    role,
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
+    ...(role === "organizer" && {
+      organizerName: "",
+      organizerType: "Individu" as const,
+      rtNumber: "",
+      rwNumber: "",
+      kelurahan: "",
+    }),
+  });
+
+  type RegisterFormValues = z.infer<typeof registerSchema>;
 
   // Kondisional skema yang dipakai
-  const form = useForm({
-    resolver: zodResolver(
-      role === "attendee" ? attendeeSchema : organizerSchema,
-    ),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
-      // role: "attendee",
+      role: "attendee",
       fullName: "",
       email: "",
       phoneNumber: "",
       password: "",
       confirmPassword: "",
-      organizerName: "",
-      organizerType: "Individu",
-      rtNumber: "",
-      rwNumber: "",
-      kelurahan: "",
     },
   });
 
-  const onSubmit = async (data: AttendeeFormValues | OrganizerFormValues) => {
-    if (role === "attendee") {
-      // Panggil API Register User Biasa
-      // POST /api/auth/register-attendee
-      // Payload: { fullName, email, password, role: 'user' }
-      console.log("Data Attendee:", data);
-    } else {
-      // Panggil API Register EO (Transaction: Create User + Create Org)
-      // POST /api/auth/register-organizer
-      // Payload: { fullName, email, password, role: 'organizer', orgName, orgType, ... }
-      console.log("Data EO:", data);
+  const role = form.watch("role");
+
+  const onSubmit = async (data: RegisterFormValues) => {
+    try {
+      setIsLoading(true);
+
+      if (role === "attendee") {
+        // const response = await registerAttendee(data);
+        console.log("Data Attendee:", data);
+      } else {
+        // const response = await registerOrganizer(data);
+        console.log("Data Organizer:", data);
+      }
+
+      // Handle success (redirect, toast, etc)
+    } catch (error) {
+      // Handle error
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -163,17 +191,18 @@ export default function RegisterForm() {
               className={
                 role === "attendee" ? "border-blue-500" : "border-gray-200"
               }
-              onClick={() => setRole("attendee")}
+              onClick={() => form.setValue("role", "attendee")}
             >
-              Peserta Event
+              Daftar Menjadi Attendee
             </div>
+
             <div
               className={
                 role === "organizer" ? "border-blue-500" : "border-gray-200"
               }
-              onClick={() => setRole("organizer")}
+              onClick={() => form.setValue("role", "organizer")}
             >
-              Event Organizer
+              Daftar Menjadi Organizer
             </div>
           </div>
         </CardHeader>
