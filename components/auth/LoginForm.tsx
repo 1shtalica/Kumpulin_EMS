@@ -97,17 +97,14 @@ export default function LoginForm() {
             </span>
           </h1>
 
-          <CardTitle className="font-bold text-3xl ">
-            Selamat Datang Kembali
-          </CardTitle>
+          <CardTitle className="font-bold text-3xl ">Login</CardTitle>
           <CardDescription className="text-sm text-slate-500">
             Masuk ke akun kumpul.in kamu
           </CardDescription>
         </CardHeader>
 
-        {/* Isi halaman login */}
+        {/* Isi card */}
         <CardContent>
-          {/* Form Mulai Disini */}
           <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
             {/* Input Email */}
             <div className="grid gap-2">
