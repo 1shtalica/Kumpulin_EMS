@@ -5,14 +5,25 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/lib/auth-store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LogOut } from "lucide-react";
 
 export default function LandingNavbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+  const { user, logout } = useAuthStore();
 
   useEffect(() => {
     const handleScroll = () => {
-      // Logic scroll hanya untuk shadow saja sekarang
       if (window.scrollY > 10) {
         setIsScrolled(true);
       } else {
@@ -36,6 +47,7 @@ export default function LandingNavbar() {
     );
   };
 
+  console.log(user)
   return (
     <nav
       className={cn(
@@ -81,20 +93,61 @@ export default function LandingNavbar() {
         </div>
 
         {/* === BAGIAN KANAN: AUTH === */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" className="rounded-xl" asChild>
-            <Link href="/login">Masuk</Link>
-          </Button>
+        {user ? (
+          <div className="flex items-center gap-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="relative h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-kumpulinPurple/20 transition-all hover:scale-105 active:scale-95">
+                  <Avatar className="h-10 w-10 border-2 border-slate-100 shadow-sm">
+                    <AvatarImage src={user.avatar || ""} alt={user.username} className="object-cover" />
+                    <AvatarFallback className="bg-linear-to-br from-purple-100 to-indigo-100 text-kumpulinPurple font-bold">
+                      {user.username?.substring(0, 2).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-64 rounded-2xl border-slate-200/60 bg-white/90 backdrop-blur-xl shadow-xl shadow-kumpulinPurple/10 p-2"
+                align="end"
+                forceMount
+              >
+                <DropdownMenuLabel className="font-normal p-2">
+                  <div className="flex flex-col space-y-1.5">
+                    <p className="text-sm font-semibold text-slate-900 leading-none truncate">
+                      {user.username}
+                    </p>
+                    <p className="text-xs leading-none text-slate-500 truncate font-medium">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-slate-100 my-1" />
+                <DropdownMenuItem
+                  onClick={() => logout()}
+                  className="rounded-xl p-2.5 text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer font-medium transition-colors"
+                >
+                  <LogOut className="mr-2.5 h-4 w-4" />
+                  <span>Keluar</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : (
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" className="rounded-xl" asChild>
+              <Link href="/login">Masuk</Link>
+            </Button>
 
-          <Button
-            variant="brand"
-            size="sm"
-            asChild
-            className="hidden rounded-xl md:inline-flex shadow-lg shadow-kumpulinPurple/20"
-          >
-            <Link href="/register">Daftar</Link>
-          </Button>
-        </div>
+            <Button
+              variant="brand"
+              size="sm"
+              asChild
+              className="hidden rounded-xl md:inline-flex shadow-lg shadow-kumpulinPurple/20"
+            >
+              <Link href="/register">Daftar</Link>
+            </Button>
+          </div>
+        )}
       </div>
     </nav>
   );

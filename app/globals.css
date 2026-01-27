@@ -35,7 +35,7 @@
   --sidebar-accent-foreground: #171717;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #a1a1a1;
-  --font-sans: Inter, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: "Open Sans", ui-sans-serif, sans-serif, system-ui;
   --font-serif: Lora, ui-serif, serif;
   --font-mono: JetBrains Mono, ui-monospace, monospace;
   --radius: 0.225rem;

@@ -10,12 +10,13 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <LandingNavbar />
-
       <main>
         <Hero />
-        <EventsSuggestion />
-        <PopularCategory />
-        <UpcomingEvents />
+        <div className="px-[10rem]">
+          <EventsSuggestion />
+          <PopularCategory />
+          <UpcomingEvents />
+        </div>
         <CallToAction />
       </main>
 

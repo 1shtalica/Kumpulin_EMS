@@ -1,4 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { useAuthStore } from "@/lib/auth-store";
 
 interface QueueItem {
     resolve: (value?: any) => void;
@@ -69,9 +70,10 @@ axiosClient.interceptors.response.use(
             } catch (refreshError) {
                 processQueue(refreshError, null);
 
-                if (typeof window !== "undefined") {
-                    window.location.href = "/login";
-                }
+                // Use Zustand store to clear state and redirect
+                // We use getState() to access actions outside React components
+                useAuthStore.getState().logout();
+
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;

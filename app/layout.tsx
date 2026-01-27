@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Open_Sans } from "next/font/google";
+import AuthInitializer from "@/components/auth/AuthInitializer";
+import { getServerUser } from "@/services/server-auth";
 import "./globals.css";
 
-const inter = Inter({
+const openSans = Open_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
@@ -12,14 +14,17 @@ export const metadata: Metadata = {
   description: "Kumpulin event management system",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getServerUser();
+
   return (
     <html lang="id">
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${openSans.variable} antialiased`}>
+        <AuthInitializer user={user} />
         {children}
       </body>
     </html>

@@ -20,13 +20,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { AuthService } from "@/services/AuthService";
+import { useAuthStore } from "@/lib/auth-store";
 import { AxiosError } from "axios";
 
-// NOTES
-// GANTI REGISTER KE LOGIN  DI SETUP RHF
-
-// ⭐ BUAT SKEMA ZOD SISI FORM
 const loginSchema = z.object({
   email: z
     .email({ message: "Format email tidak valid" })
@@ -37,32 +33,31 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
-  //   ⭐ buat daftar state
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ⭐ SETUP RHF
   const {
     register,
     handleSubmit,
     setError,
     formState: { errors },
   } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema), // Sambungkan ke Zod
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  // ⭐ FUNGSI HANDLE SUBMIT
+  // Use the hook
+  const login = useAuthStore((state) => state.login);
+
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
 
     try {
-      await AuthService.login(data);
-      // Redirect ke dashboard setelah login sukses
-      router.push("/dashboard");
+      await login(data);
+      // router.push("/dashboard");
     } catch (error: any) {
       console.error("Login Error:", error);
       const axiosError = error as AxiosError<{ message: string }>;
