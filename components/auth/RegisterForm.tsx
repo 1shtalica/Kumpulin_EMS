@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "../ui/checkbox";
+import { AuthService } from "@/services/auth-service";
 
 // ⭐ 2 skema register
 const baseFields = {
@@ -115,7 +116,6 @@ const registerSchema = z.discriminatedUnion("role", [
 ]);
 
 export default function RegisterForm() {
-  //  ⭐ Daftar state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -157,14 +157,22 @@ export default function RegisterForm() {
       setIsLoading(true);
 
       if (role === "attendee") {
-        // const response = await registerAttendee(data);
-        console.log("Data Attendee:", data);
+        const response = await AuthService.registerUser({
+          email: data.email,
+          password: data.password,
+          username: data.fullName,
+          first_name: data.fullName,
+          last_name: "",
+          phone_number: data.phoneNumber,
+        });
+        console.log("Data Attendee:", response);
       } else {
         // const response = await registerOrganizer(data);
         console.log("Data Organizer:", data);
       }
 
       // Handle success (redirect, toast, etc)
+      window.location.href = "/";
     } catch (error) {
       // Handle error
       console.error(error);
@@ -343,10 +351,10 @@ export default function RegisterForm() {
                       setValue(
                         "organizerType",
                         value as
-                          | "Individu"
-                          | "Komunitas"
-                          | "Perusahaan"
-                          | "Rt_Pintar",
+                        | "Individu"
+                        | "Komunitas"
+                        | "Perusahaan"
+                        | "Rt_Pintar",
                         {
                           shouldValidate: true,
                         },

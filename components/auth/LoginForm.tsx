@@ -20,8 +20,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useAuthStore } from "@/lib/auth-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { AxiosError } from "axios";
+import { useGoogleLogin } from "@react-oauth/google";
+import { AuthService } from "@/services/auth-service";
+
 
 const loginSchema = z.object({
   email: z
@@ -49,7 +52,6 @@ export default function LoginForm() {
     },
   });
 
-  // Use the hook
   const login = useAuthStore((state) => state.login);
 
   const onSubmit = async (data: LoginFormValues) => {
@@ -57,11 +59,10 @@ export default function LoginForm() {
 
     try {
       await login(data);
-      // router.push("/dashboard");
+      router.push("/");
     } catch (error: any) {
       console.error("Login Error:", error);
       const axiosError = error as AxiosError<{ message: string }>;
-
       const errorMessage =
         axiosError.response?.data?.message ||
         "Gagal masuk. Periksa kembali email dan password Anda.";
@@ -75,7 +76,21 @@ export default function LoginForm() {
     }
   };
 
-  // ⭐ FORM LOGIN
+  const onGoogleSubmit = useGoogleLogin({
+    onSuccess: async (response) => {
+      await AuthService.googleAuth({ Code: response.code });
+      router.push("/");
+    },
+    onError: (error) => {
+      console.error("Google Login Error:", error);
+      setError("root", {
+        type: "manual",
+        message: "Gagal masuk. Periksa kembali email dan password Anda.",
+      });
+    },
+    flow: "auth-code",
+  });
+
   return (
     <div>
       {/* Kembali ke landingpage */}
@@ -219,6 +234,7 @@ export default function LoginForm() {
             variant="outline"
             className="w-full font-bold rounded-lg"
             disabled={isLoading}
+            onClick={() => onGoogleSubmit()}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/lib/auth-store";
+import { useAuthStore } from "@/stores/auth-store";
 import {
   DropdownMenu,
   DropdownMenuContent,

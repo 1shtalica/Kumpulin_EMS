@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useAuthStore } from "@/lib/auth-store";
+import { useAuthStore } from "@/stores/auth-store";
 import { User } from "@/types/user";
 
 export default function AuthInitializer({ user }: { user: User | null }) {

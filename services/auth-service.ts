@@ -1,4 +1,5 @@
 import axiosClient from "@/lib/axios-client";
+import { RegisterPayload } from "@/types/auth";
 
 // Define Types for Auth
 export interface LoginPayload {
@@ -23,7 +24,7 @@ export const AuthService = {
             throw error;
         }
     },
-    async register(payload: any): Promise<AuthResponse> {
+    async registerUser(payload: RegisterPayload): Promise<AuthResponse> {
         try {
             const response = await axiosClient.post("/auth/register", payload);
             return response.data;
@@ -45,5 +46,13 @@ export const AuthService = {
     async me() {
         return axiosClient.get("/auth/me");
     },
+    async googleAuth(payload: { Code: string }) {
+        try {
+            const response = await axiosClient.post("/auth/google", payload);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
 };
 
