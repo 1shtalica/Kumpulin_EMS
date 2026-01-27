@@ -144,7 +144,7 @@ export default function UpcomingEvents() {
             - Tablet (sm - lg): 2 Kolom
             - Desktop (>= lg): 3 Kolom (Agar 6 item pas jadi 2 baris)
         */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {UPCOMING_EVENTS.map((event) => (
             <EventCard
               key={event.id}

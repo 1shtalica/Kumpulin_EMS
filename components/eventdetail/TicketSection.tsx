@@ -34,7 +34,7 @@ function QuotaBar({
             "h-full rounded-full transition-all duration-500",
             isSoldOut
               ? "bg-slate-400" // Warna abu jika habis
-              : "bg-gradient-to-r from-blue-600 to-yellow-400", // Warna gradasi jika ada
+              : "bg-linear-to-r from-blue-600 to-yellow-400", // Warna gradasi jika ada
           )}
           style={{ width: `${percentage}%` }}
         />
@@ -108,7 +108,7 @@ export default function TicketSection() {
   };
 
   return (
-    <section className="w-full flex flex-col items-center justify-between">
+    <section className="w-full flex flex-col items-center justify-between relative z-20">
       <div className="w-full h-fit p-6 bg-white shadow-sm border border-slate-100 rounded-2xl sticky top-24">
         <div className="flex flex-col gap-6">
           <h3 className="font-bold text-lg text-slate-900">Pilih Tiket</h3>

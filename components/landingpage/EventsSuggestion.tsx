@@ -96,7 +96,7 @@ export default function UpcomingEvents() {
         </div>
 
         {/* GRID EVENT CARD */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {DUMMY_EVENTS.map((event) => (
             <EventCard
               key={event.id}

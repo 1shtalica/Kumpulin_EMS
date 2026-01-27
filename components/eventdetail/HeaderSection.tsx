@@ -1,18 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 
-export default function LandingNavbar() {
+export default function HeaderSection() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
-      // Logic scroll hanya untuk shadow saja sekarang
       if (window.scrollY > 10) {
         setIsScrolled(true);
       } else {
@@ -23,18 +23,6 @@ export default function LandingNavbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Helper untuk menentukan style Active vs Inactive (Versi Sederhana/Putih)
-  const getNavLinkClass = (path: string) => {
-    const isActive = pathname === path;
-
-    return cn(
-      "rounded-full transition-all duration-300",
-      isActive
-        ? "bg-purple-50 text-kumpulinPurple font-bold" // Active State
-        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900", // Inactive State
-    );
-  };
 
   return (
     <nav
@@ -48,7 +36,17 @@ export default function LandingNavbar() {
     >
       <div className="container mx-auto flex flex-row items-center justify-between">
         {/* === BAGIAN KIRI: LOGO === */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-4">
+          {/* Tombol Back - hanya muncul di event detail */}
+          {/* <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            className="rounded-full"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button> */}
+
           <Link href="/" className="flex items-center gap-2 text-2xl group">
             <span className="text-3xl transition-transform group-hover:rotate-12">
               🎉
@@ -59,30 +57,15 @@ export default function LandingNavbar() {
           </Link>
         </div>
 
-        {/* === BAGIAN TENGAH: MENU === */}
-        <div className="hidden md:flex items-center gap-2">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className={getNavLinkClass("/")}
-          >
-            <Link href="/">Beranda</Link>
-          </Button>
-
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className={getNavLinkClass("/events")}
-          >
-            <Link href="/events">Jelajah</Link>
-          </Button>
-        </div>
-
         {/* === BAGIAN KANAN: AUTH === */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" className="rounded-xl" asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            // Teks selalu gelap sekarang
+            className="rounded-xl text-black"
+            asChild
+          >
             <Link href="/login">Masuk</Link>
           </Button>
 

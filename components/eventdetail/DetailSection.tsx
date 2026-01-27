@@ -14,7 +14,7 @@ import Link from "next/link";
 
 export default function DetailSection() {
   return (
-    <section className="w-full flex flex-col items-center justify-between">
+    <section className="w-full flex flex-col items-center justify-between relative z-20">
       <div className="w-full h-fit p-4 bg-white shadow rounded-2xl">
         <div className="flex flex-col gap-4">
           {/* Baris Kategori */}
@@ -140,6 +140,30 @@ export default function DetailSection() {
           {/* Bagian Tentang Event  */}
           <div>
             <h4 className="font-bold mb-4">Tentang Event</h4>
+            <p>
+              Bergabunglah dengan kami dalam acara networking terbesar untuk
+              para founder, developer, dan investor di Jakarta! Dalam event ini,
+              Anda akan mendapatkan: • Keynote dari founder startup unicorn
+              Indonesia • Panel diskusi tentang fundraising dan scaling •
+              Workshop hands-on tentang product development • Networking session
+              dengan 200+ peserta • Makan malam dan minuman gratis Acara ini
+              cocok untuk: - Founder startup tahap awal hingga growth -
+              Developer yang ingin membangun produk sendiri - Investor yang
+              mencari peluang investasi - Profesional yang ingin switch ke
+              startup
+            </p>
+            <p>
+              Bergabunglah dengan kami dalam acara networking terbesar untuk
+              para founder, developer, dan investor di Jakarta! Dalam event ini,
+              Anda akan mendapatkan: • Keynote dari founder startup unicorn
+              Indonesia • Panel diskusi tentang fundraising dan scaling •
+              Workshop hands-on tentang product development • Networking session
+              dengan 200+ peserta • Makan malam dan minuman gratis Acara ini
+              cocok untuk: - Founder startup tahap awal hingga growth -
+              Developer yang ingin membangun produk sendiri - Investor yang
+              mencari peluang investasi - Profesional yang ingin switch ke
+              startup
+            </p>
             <p>
               Bergabunglah dengan kami dalam acara networking terbesar untuk
               para founder, developer, dan investor di Jakarta! Dalam event ini,

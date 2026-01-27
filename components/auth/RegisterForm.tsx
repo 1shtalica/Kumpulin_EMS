@@ -139,7 +139,12 @@ export default function RegisterForm() {
       password: "",
       confirmPassword: "",
       agreeToTerms: false,
-    },
+      organizerName: "",
+      organizerType: "Individu",
+      rtNumber: "",
+      rwNumber: "",
+      kelurahan: "",
+    } as Partial<RegisterFormValues>,
   });
 
   // Buat ngecek kondisional form dari rhf
@@ -147,6 +152,7 @@ export default function RegisterForm() {
   const organizerType = watch("organizerType");
 
   const onSubmit = async (data: RegisterFormValues) => {
+    console.log("🎯 Form Submitted!");
     try {
       setIsLoading(true);
 
@@ -232,7 +238,18 @@ export default function RegisterForm() {
             </RadioGroup>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+          <form
+            onSubmit={handleSubmit(
+              onSubmit,
+              // ⭐ Tambahkan error handler ini
+              (errors) => {
+                console.log("❌ VALIDASI GAGAL!");
+                console.log("Errors:", errors);
+                console.log("Form Values:", watch());
+              },
+            )}
+            className="grid gap-4"
+          >
             {/* 🌟 nama lengkap - email - no hp - password - confirm password */}
 
             {/* Input Fullname  */}
@@ -560,7 +577,7 @@ export default function RegisterForm() {
             <Button
               type="submit"
               disabled={isLoading || !watch("agreeToTerms")}
-              className="w-full bg-gradient-to-r from-kumpulinPurple to-kumpulinGreen hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-linear-to-r from-kumpulinPurple to-kumpulinGreen hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
