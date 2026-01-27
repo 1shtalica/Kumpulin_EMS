@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Eye, EyeOff, Loader2, Home } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { AuthService } from "@/services/AuthService";
+import { AxiosError } from "axios";
 
 // NOTES
 // GANTI REGISTER KE LOGIN  DI SETUP RHF
@@ -33,6 +36,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
+  const router = useRouter();
   //   ⭐ buat daftar state
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +45,7 @@ export default function LoginForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema), // Sambungkan ke Zod
@@ -54,23 +59,25 @@ export default function LoginForm() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
 
-    // --- AREA SIMULASI BACKEND ---
-    console.log("🔥 FORM SUBMITTED!");
-    console.log(
-      "Format Data JSON yang akan dikirim ke BE:",
-      JSON.stringify(data, null, 2),
-    );
+    try {
+      await AuthService.login(data);
+      // Redirect ke dashboard setelah login sukses
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error("Login Error:", error);
+      const axiosError = error as AxiosError<{ message: string }>;
 
-    // TODO: Nanti disini panggil service, misal:
-    // try {
-    //   await authService.login(data);
-    //   router.push('/dashboard');
-    // } catch (err) { ... }
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Gagal masuk. Periksa kembali email dan password Anda.";
 
-    // Simulasi loading 2 detik biar kelihatan keren
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoading(false);
-    // -----------------------------
+      setError("root", {
+        type: "manual",
+        message: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // ⭐ FORM LOGIN
@@ -173,6 +180,13 @@ export default function LoginForm() {
                 </Link>
               </div>
             </div>
+
+            {/* ⭐ Root Error Message */}
+            {errors.root && (
+              <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-600">
+                {errors.root.message}
+              </div>
+            )}
 
             {/* Tombol Submit */}
             <Button
