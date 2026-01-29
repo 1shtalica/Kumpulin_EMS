@@ -133,7 +133,7 @@ export default function LoginForm() {
                 disabled={isLoading}
                 className={
                   errors.email
-                    ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                    ? "border-red-500 rounded-lg"
                     : "rounded-lg"
                 }
                 // Hook Form Register:
@@ -158,7 +158,7 @@ export default function LoginForm() {
                   {...register("password")}
                   className={
                     errors.password
-                      ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                      ? "border-red-500 rounded-lg"
                       : "rounded-lg"
                   }
                 />
@@ -255,18 +255,6 @@ export default function LoginForm() {
               />
             </svg>
             Lanjutkan dengan Google
-          </Button>
-
-          {/* ⭐ LOGIN WITH RTPINTAR */}
-          {/* DISINI  */}
-          <Button
-            type="button"
-            variant="rtpintar"
-            className="w-full rounded-lg"
-            disabled={isLoading}
-          >
-            <Home className="mr-2 h-4 w-4" />
-            Lanjutkan dengan RT Pintar
           </Button>
 
           {/* ⭐ KE HALAMAN REGISTER */}
