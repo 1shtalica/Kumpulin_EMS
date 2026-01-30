@@ -248,7 +248,7 @@ export default function RegisterForm() {
                 {...register("fullName")}
                 className={
                   errors.fullName
-                    ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                    ? "border-red-500 rounded-lg"
                     : "rounded-lg"
                 }
               />
@@ -269,7 +269,7 @@ export default function RegisterForm() {
                 {...register("email")}
                 className={
                   errors.fullName
-                    ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                    ? "border-red-500 rounded-lg"
                     : "rounded-lg"
                 }
               />
@@ -288,7 +288,7 @@ export default function RegisterForm() {
                 {...register("phoneNumber")}
                 className={
                   errors.phoneNumber
-                    ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                    ? "border-red-500 rounded-lg"
                     : "rounded-lg"
                 }
               />
@@ -378,7 +378,7 @@ export default function RegisterForm() {
                   {...register("password")}
                   className={
                     errors.password
-                      ? "border-red-500 focus-visible:ring-red-500 rounded-lg pr-10"
+                      ? "border-red-500 rounded-lg pr-10"
                       : "rounded-lg pr-10"
                   }
                 />
@@ -408,7 +408,7 @@ export default function RegisterForm() {
                   {...register("confirmPassword")}
                   className={
                     errors.confirmPassword
-                      ? "border-red-500 focus-visible:ring-red-500 rounded-lg pr-10"
+                      ? "border-red-500 rounded-lg pr-10"
                       : "rounded-lg pr-10"
                   }
                 />
