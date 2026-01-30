@@ -156,7 +156,7 @@ export default function RegisterForm() {
     try {
       setIsLoading(true);
 
-      if (role === "attendee") {
+      if (data.role === "attendee") {
         const response = await AuthService.registerUser({
           email: data.email,
           password: data.password,
@@ -167,12 +167,22 @@ export default function RegisterForm() {
         });
         console.log("Data Attendee:", response);
       } else {
-        // const response = await registerOrganizer(data);
-        console.log("Data Organizer:", data);
+        const response = await AuthService.registerOrganizer({
+          email: data.email,
+          password: data.password,
+          username: data.fullName,
+          first_name: data.fullName,
+          last_name: "",
+          phone_number: data.phoneNumber,
+          name: data.organizerName,
+          slug: "",
+        });
+        console.log("Data Organizer:", response);
       }
 
+      console.log("Data:", data);
       // Handle success (redirect, toast, etc)
-      window.location.href = "/";
+      // window.location.href = "/";
     } catch (error) {
       // Handle error
       console.error(error);

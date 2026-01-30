@@ -1,5 +1,5 @@
 import axiosClient from "@/lib/axios-client";
-import { RegisterPayload } from "@/types/auth";
+import { RegisterOrganizerPayload, RegisterPayload } from "@/types/auth";
 
 // Define Types for Auth
 export interface LoginPayload {
@@ -27,6 +27,14 @@ export const AuthService = {
     async registerUser(payload: RegisterPayload): Promise<AuthResponse> {
         try {
             const response = await axiosClient.post("/auth/register", payload);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+    async registerOrganizer(payload: RegisterOrganizerPayload): Promise<AuthResponse> {
+        try {
+            const response = await axiosClient.post("/auth/register?role=organizer", payload);
             return response.data;
         } catch (error) {
             throw error;

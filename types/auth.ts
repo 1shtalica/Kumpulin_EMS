@@ -6,3 +6,8 @@ export type RegisterPayload = {
     last_name: string;
     phone_number: string;
 }
+
+export type RegisterOrganizerPayload = RegisterPayload & {
+    name: string;
+    slug: string;
+}
