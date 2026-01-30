@@ -1,0 +1,18 @@
+import { Metadata } from "next";
+import LoginForm from "@/components/auth/LoginForm";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
+export const metadata: Metadata = {
+    title: "Login Kumpulin",
+    description: "Masuk ke akun Kumpulin kamu"
+}
+
+export default function LoginPage() {
+    return (
+        <div>
+            <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+                <LoginForm />
+            </GoogleOAuthProvider>
+        </div>
+    );
+}
