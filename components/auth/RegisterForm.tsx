@@ -48,7 +48,9 @@ const baseFields = {
     .regex(/[A-Z]/, { message: "Password harus mengandung huruf besar" })
     .regex(/[a-z]/, { message: "Password harus mengandung huruf kecil" })
     .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
-  confirmPassword: z.string(),
+  confirmPassword: z
+    .string()
+    .min(1, { message: "Konfirmasi password wajib diisi" }),
   agreeToTerms: z.boolean().refine((val) => val === true, {
     message: "Anda harus menyetujui syarat dan ketentuan",
   }),
@@ -74,10 +76,7 @@ const organizerSchema = z
     role: z.literal("organizer"),
     ...baseFields,
     organizerName: z.string().min(1, { message: "Nama Organizer wajib diisi" }),
-    organizerType: z.enum(["Individu", "Komunitas", "Perusahaan", "Rt_Pintar"]),
-    rtNumber: z.string().optional(),
-    rwNumber: z.string().optional(),
-    kelurahan: z.string().optional(),
+    organizerType: z.enum(["Individu", "Komunitas"]),
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
@@ -87,26 +86,7 @@ const organizerSchema = z
         code: z.ZodIssueCode.custom,
       });
     }
-    if (data.organizerType === "Rt_Pintar") {
-      if (!data.rtNumber)
-        ctx.addIssue({
-          path: ["rtNumber"],
-          message: "RT Wajib diisi",
-          code: z.ZodIssueCode.custom,
-        });
-      if (!data.rwNumber)
-        ctx.addIssue({
-          path: ["rwNumber"],
-          message: "RW Wajib diisi",
-          code: z.ZodIssueCode.custom,
-        });
-      if (!data.kelurahan)
-        ctx.addIssue({
-          path: ["kelurahan"],
-          message: "Kelurahan Wajib diisi",
-          code: z.ZodIssueCode.custom,
-        });
-    }
+    
   });
 
 // Dipisahkan oleh discriminator role
@@ -141,9 +121,6 @@ export default function RegisterForm() {
       agreeToTerms: false,
       organizerName: "",
       organizerType: "Individu",
-      rtNumber: "",
-      rwNumber: "",
-      kelurahan: "",
     } as Partial<RegisterFormValues>,
   });
 
@@ -281,7 +258,7 @@ export default function RegisterForm() {
                 {...register("fullName")}
                 className={
                   errors.fullName
-                    ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                    ? "border-red-500 rounded-lg"
                     : "rounded-lg"
                 }
               />
@@ -302,7 +279,7 @@ export default function RegisterForm() {
                 {...register("email")}
                 className={
                   errors.fullName
-                    ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                    ? "border-red-500 rounded-lg"
                     : "rounded-lg"
                 }
               />
@@ -321,7 +298,7 @@ export default function RegisterForm() {
                 {...register("phoneNumber")}
                 className={
                   errors.phoneNumber
-                    ? "border-red-500 focus-visible:ring-red-500 rounded-lg"
+                    ? "border-red-500 rounded-lg"
                     : "rounded-lg"
                 }
               />
@@ -361,16 +338,16 @@ export default function RegisterForm() {
                       setValue(
                         "organizerType",
                         value as
-                        | "Individu"
-                        | "Komunitas"
-                        | "Perusahaan"
-                        | "Rt_Pintar",
+                          | "Individu"
+                          | "Komunitas",
+                          // | "Perusahaan"
+                          // | "Rt_Pintar",
                         {
                           shouldValidate: true,
                         },
                       )
                     }
-                    className="grid grid-cols-1 sm:grid-cols-2"
+                    className="grid grid-cols-1"
                   >
                     <FieldLabel htmlFor="Individu">
                       <Field orientation="horizontal">
@@ -394,83 +371,9 @@ export default function RegisterForm() {
                         <RadioGroupItem value="Komunitas" id="Komunitas" />
                       </Field>
                     </FieldLabel>
-                    <FieldLabel htmlFor="Perusahaan">
-                      <Field orientation="horizontal">
-                        <FieldContent>
-                          <FieldTitle>Perusahaan</FieldTitle>
-                          <FieldDescription>
-                            Perusahaan menjadi pengelola
-                          </FieldDescription>
-                        </FieldContent>
-                        <RadioGroupItem value="Perusahaan" id="Perusahaan" />
-                      </Field>
-                    </FieldLabel>
-                    <FieldLabel htmlFor="Rt_Pintar">
-                      <Field orientation="horizontal">
-                        <FieldContent>
-                          <FieldTitle>Rt Pintar</FieldTitle>
-                          <FieldDescription>
-                            Pengguna Rt Pintar menjadi pengelola
-                          </FieldDescription>
-                        </FieldContent>
-                        <RadioGroupItem value="Rt_Pintar" id="Rt_Pintar" />
-                      </Field>
-                    </FieldLabel>
                   </RadioGroup>
                 </div>
 
-                {role === "organizer" && organizerType === "Rt_Pintar" && (
-                  <div className="grid gap-4">
-                    {/* Input no rt  */}
-                    <div className="grid gap-4">
-                      <Label htmlFor="rtNumber">Nomor RT</Label>
-                      <Input
-                        id="rtNumber"
-                        type="text"
-                        placeholder="Contoh: 01"
-                        disabled={isLoading}
-                        {...register("rtNumber")}
-                      />
-                      {"rtNumber" in errors && errors.rtNumber && (
-                        <p className="text-sm text-red-500">
-                          {errors.rtNumber.message}
-                        </p>
-                      )}
-                    </div>
-                    {/* Input no rw  */}
-                    <div className="grid gap-4">
-                      <Label htmlFor="rwNumber">Nomor RW</Label>
-                      <Input
-                        id="rwNumber"
-                        type="text"
-                        placeholder="Contoh: 01"
-                        disabled={isLoading}
-                        {...register("rwNumber")}
-                      />
-                      {"rwNumber" in errors && errors.rwNumber && (
-                        <p className="text-sm text-red-500">
-                          {errors.rwNumber.message}
-                        </p>
-                      )}
-                    </div>
-                    {/* Input kelurahan  */}
-                    <div className="grid gap-4">
-                      <Label htmlFor="kelurahan">Nama Kelurahan</Label>
-                      <Input
-                        id="kelurahan"
-                        type="text"
-                        placeholder="Masukkan nama kelurahan Anda"
-                        disabled={isLoading}
-                        {...register("kelurahan")}
-                      />
-                      {"kelurahan" in errors && errors.kelurahan && (
-                        <p className="text-sm text-red-500">
-                          {errors.kelurahan.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
             {/* Input Password */}
@@ -485,7 +388,7 @@ export default function RegisterForm() {
                   {...register("password")}
                   className={
                     errors.password
-                      ? "border-red-500 focus-visible:ring-red-500 rounded-lg pr-10"
+                      ? "border-red-500 rounded-lg pr-10"
                       : "rounded-lg pr-10"
                   }
                 />
@@ -515,7 +418,7 @@ export default function RegisterForm() {
                   {...register("confirmPassword")}
                   className={
                     errors.confirmPassword
-                      ? "border-red-500 focus-visible:ring-red-500 rounded-lg pr-10"
+                      ? "border-red-500 rounded-lg pr-10"
                       : "rounded-lg pr-10"
                   }
                 />
@@ -565,7 +468,6 @@ export default function RegisterForm() {
                     href="/terms"
                     className="text-blue-600 hover:underline font-medium hover:text-blue-800 transition-colors"
                     target="_blank"
-                    // Cegah klik link memicu checkbox (opsional, tapi UX bagus)
                     onClick={(e) => e.stopPropagation()}
                   >
                     Syarat & Ketentuan
@@ -584,7 +486,7 @@ export default function RegisterForm() {
 
               {/* Pesan Error */}
               {errors.agreeToTerms && (
-                // ml-7 disesuaikan agar lurus dengan teks (melewati lebar checkbox + gap)
+
                 <p className="text-sm text-red-500 font-medium ml-7">
                   {errors.agreeToTerms.message}
                 </p>
@@ -647,17 +549,6 @@ export default function RegisterForm() {
               />
             </svg>
             Lanjutkan dengan Google
-          </Button>
-
-          {/* ⭐ REGISTER WITH RTPINTAR */}
-          <Button
-            type="button"
-            variant="rtpintar"
-            className="w-full rounded-lg"
-            disabled={isLoading}
-          >
-            <Home className="mr-2 h-4 w-4" />
-            Lanjutkan dengan RT Pintar
           </Button>
 
           {/* ⭐ KE HALAMAN LOGIN */}
