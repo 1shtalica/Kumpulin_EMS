@@ -1,138 +1,135 @@
-// "use client";
+"use client";
 
-import { Divide } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
+import Link from "next/link";
 
-// import { useEffect, useState } from "react";
-// import { useForm } from "react-hook-form";
-// import { z } from "zod";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import {
-//   Card,
-//   CardHeader,
-//   CardTitle,
-//   CardContent,
-//   CardFooter,
-// } from "@/components/ui/card";
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Format email tidak valid"),
+});
 
-// import { FaArrowLeft } from "react-icons/fa";
-// import { Label } from "@/components/ui/label";
-// import { Separator } from "@/components/ui/separator";
-// import { FcGoogle } from "react-icons/fc";
-// import { cn } from "@/lib/utils";
-// import Image from "next/image";
-// import { signIn, useSession, requestPasswordReset } from "@/lib/auth-client";
-// import { useRouter } from "next/navigation";
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
-// // 🔹 Skema validasi Zod
-// const forgotPasswordSchema = z.object({
-//   email: z.string().email("Invalid Email"),
-// });
-
-// type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
-
-// export default function ForgotPasswordForm() {
-//   const router = useRouter();
-//   const sesion = useSession();
-//   const [loading, setLoading] = useState(false);
-//   const [success, setSuccess] = useState<string>();
-//   const [error, setError] = useState<string>();
-
-//   const {
-//     register,
-//     handleSubmit,
-//     formState: { errors },
-//   } = useForm<ForgotPasswordFormValues>({
-//     resolver: zodResolver(forgotPasswordSchema),
-//   });
-
-//   const onSubmit = async (data: ForgotPasswordFormValues) => {
-//     try {
-//       const result = await requestPasswordReset({
-//         email: data.email,
-//         redirectTo: "/reset-password",
-//       });
-//       console.log(data);
-//       if (result.error) {
-//         setError(result.error?.message || "something went wrong");
-//         console.log(result.error.message);
-//       } else {
-//         setSuccess(
-//           "successfully sent password reset request and you'll be redirect to login",
-//         );
-//         setTimeout(() => {
-//           router.push("/login");
-//         }, 1500);
-//       }
-//     } catch (e) {
-//       setError("something went wrong");
-//     }
-//   };
-
-//   return (
-//     <div className="flex justify-center items-center min-h-screen bg-gray-50 px-5 md:mx-0">
-//       <Card className="w-full max-w-lg shadow-md">
-//         <CardHeader>
-//           <CardTitle className="text-center text-x md:text-xl font-semibold">
-//             <div>
-//               <div className="relative flex items-center justify-start">
-//                 <FaArrowLeft onClick={() => router.back()} className="" />
-
-//                 <div className="absolute left-1/2 -translate-x-1/2 text-center">
-//                   Forgot Your Password?
-//                 </div>
-//               </div>
-//               <p className="text-sm md:text-base mt-5 text-center text-gray-500">
-//                 Enter your e-mail address, and we'll give you reset password
-//                 instruction.
-//               </p>
-//             </div>
-//           </CardTitle>
-
-//           <div className="mx-auto">
-//             {error && <h1 className="text-red-500">{error}</h1>}
-//           </div>
-//         </CardHeader>
-
-//         <CardContent>
-//           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-//             {/* Email */}
-//             <div className="space-y-2">
-//               <Label htmlFor="email">Email</Label>
-//               <Input
-//                 id="email"
-//                 type="email"
-//                 placeholder="you@example.com"
-//                 {...register("email")}
-//                 className={cn(
-//                   errors.email && "border-red-500 focus-visible:ring-red-500",
-//                 )}
-//               />
-//               {errors.email && (
-//                 <p className="text-red-500 text-sm">{errors.email.message}</p>
-//               )}
-//             </div>
-//             <div className="">
-//               {success && (
-//                 <p className="text-sm md:text-base text-green-700 text-green-700">
-//                   {success}
-//                 </p>
-//               )}
-//             </div>
-//             <Button type="submit" className="w-full mt-2" disabled={loading}>
-//               {loading ? "sending in..." : "Reset password"}
-//             </Button>
-//           </form>
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// }
 export default function ForgotPasswordForm() {
-    return(
-<div className="text-black">
-    <h1>Forgot Password</h1>
-    <p>Enter your email address, and we'll give you reset password instruction.</p>
-</div>
-) }
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+  });
+
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
+    setIsLoading(true);
+    
+    // TODO: Nanti diganti dengan real API call
+    // await authService.forgotPassword(data.email)
+    
+    // Simulate API call
+    setTimeout(() => {
+      setSubmittedEmail(data.email);
+      setIsSubmitted(true);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const handleResend = async () => {
+    setIsLoading(true);
+    
+    // TODO: Same API call as onSubmit
+    
+    setTimeout(() => {
+      alert("Email terkirim ulang!");
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  return (
+    <div>
+      <Link href="/login" className="inline-flex items-center text-sm mb-4">
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Kembali ke Login
+      </Link>
+
+      <Card className="w-full">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Lupa Password?</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {!isSubmitted 
+              ? "Masukkan email Anda untuk reset password"
+              : "Kami telah mengirim link reset password"
+            }
+          </p>
+        </CardHeader>
+
+        <CardContent>
+          {!isSubmitted ? (
+            // ====== FORM EMAIL INPUT ======
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="nama@email.com"
+                  disabled={isLoading}
+                  {...register("email")}
+                  className={errors.email ? "border-red-500" : ""}
+                />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Mengirim..." : "Kirim Link Reset"}
+              </Button>
+            </form>
+          ) : (
+            // ====== SUCCESS STATE ======
+            <div className="space-y-4 text-center">
+              <div className="flex justify-center">
+                <CheckCircle className="h-16 w-16 text-green-500" />
+              </div>
+              
+              <div className="space-y-2">
+                <p className="text-sm">
+                  Link reset password telah dikirim ke:
+                </p>
+                <p className="font-medium">{submittedEmail}</p>
+                <p className="text-xs text-muted-foreground">
+                  Cek inbox atau folder spam Anda
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleResend}
+                disabled={isLoading}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                {isLoading ? "Mengirim..." : "Kirim Ulang"}
+              </Button>
+
+              <Link href="/login" className="block text-sm text-blue-600 hover:underline">
+                Kembali ke Login
+              </Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

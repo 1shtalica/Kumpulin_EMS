@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
-import { ArrowLeft, Eye, EyeOff, Home, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -40,7 +40,7 @@ const baseFields = {
     .string()
     .min(10, { message: "Nomor HP minimal 10 digit" })
     .regex(/^(\+62|62|0)[0-9]{9,12}$/, {
-      message: "Format nomor HP tidak valid (contoh: 08xx-xxxx-xxxx)",
+      message: "Format nomor HP tidak valid (contoh: 08xxxxxxxxxx)",
     }),
   password: z
     .string()
@@ -340,8 +340,6 @@ export default function RegisterForm() {
                         value as
                           | "Individu"
                           | "Komunitas",
-                          // | "Perusahaan"
-                          // | "Rt_Pintar",
                         {
                           shouldValidate: true,
                         },

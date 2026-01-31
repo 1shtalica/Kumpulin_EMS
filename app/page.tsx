@@ -12,14 +12,13 @@ export default function LandingPage() {
       <LandingNavbar />
       <main>
         <Hero />
-        <div className="px-40">
+        <div>
           <EventsSuggestion />
           <PopularCategory />
           <UpcomingEvents />
         </div>
         <CallToAction />
       </main>
-
       <LandingFooter />
     </div>
   );
