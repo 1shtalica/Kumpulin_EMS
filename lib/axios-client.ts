@@ -47,7 +47,18 @@ axiosClient.interceptors.response.use(
       _retry?: boolean;
     };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Public auth endpoints that should NOT trigger auto-logout on 401
+    const publicAuthEndpoints = [
+      '/auth/login',
+      '/auth/register',
+      '/auth/google',
+    ];
+
+    const isPublicAuthEndpoint = publicAuthEndpoints.some(endpoint => 
+      originalRequest.url?.includes(endpoint)
+    );
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isPublicAuthEndpoint) {
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });

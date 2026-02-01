@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Format email tidak valid"),
@@ -25,35 +27,51 @@ export default function ForgotPasswordForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
   });
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
-    setIsLoading(true);
+  setIsLoading(true);
+  const toastId = toast.loading("Mengirim email reset...");
+  try {
+    // TODO: await AuthService.forgotPassword(data.email);
     
-    // TODO: Nanti diganti dengan real API call
-    // await authService.forgotPassword(data.email)
+    toast.success("Email terkirim!", { id: toastId });
     
-    // Simulate API call
-    setTimeout(() => {
-      setSubmittedEmail(data.email);
-      setIsSubmitted(true);
-      setIsLoading(false);
-    }, 1000);
-  };
+    setSubmittedEmail(data.email);
+    setIsSubmitted(true);
+  } catch (error: any) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    const errorMessage =
+      axiosError.response?.data?.message ||
+      "Gagal mengirim email. Coba lagi.";
+    toast.error("Pengiriman gagal", { id: toastId });
+    
+    setError("root", {
+      type: "manual",
+      message: errorMessage,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleResend = async () => {
-    setIsLoading(true);
+  setIsLoading(true);
+  const toastId = toast.loading("Mengirim ulang email...");
+  try {
+    // TODO: await AuthService.forgotPassword(submittedEmail);
     
-    // TODO: Same API call as onSubmit
-    
-    setTimeout(() => {
-      alert("Email terkirim ulang!");
-      setIsLoading(false);
-    }, 1000);
-  };
+    toast.success("Email terkirim ulang!", { id: toastId });
+  } catch (error: any) {
+    toast.error("Gagal mengirim ulang", { id: toastId });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div>
@@ -75,7 +93,6 @@ export default function ForgotPasswordForm() {
 
         <CardContent>
           {!isSubmitted ? (
-            // ====== FORM EMAIL INPUT ======
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -97,7 +114,6 @@ export default function ForgotPasswordForm() {
               </Button>
             </form>
           ) : (
-            // ====== SUCCESS STATE ======
             <div className="space-y-4 text-center">
               <div className="flex justify-center">
                 <CheckCircle className="h-16 w-16 text-green-500" />

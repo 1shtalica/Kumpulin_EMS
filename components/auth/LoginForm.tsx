@@ -24,6 +24,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { AxiosError } from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import { AuthService } from "@/services/auth-service";
+import { toast } from "sonner"
 
 
 const loginSchema = z.object({
@@ -54,43 +55,73 @@ export default function LoginForm() {
 
   const login = useAuthStore((state) => state.login);
 
-  const onSubmit = async (data: LoginFormValues) => {
+const onSubmit = async (data: LoginFormValues) => {
+  setIsLoading(true);
+  
+  const toastId = toast.loading("Sedang Masuk...");
+
+  try {
+    await login(data);  
+    
+    toast.success("Login berhasil!", {
+      id: toastId,  
+    });
+    
+    router.push("/");
+  } catch (error: any) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    const errorMessage =
+      axiosError.response?.data?.message ||
+      "Periksa kembali email dan password Anda.";
+
+    toast.error("Login gagal", {
+      id: toastId,  
+    });
+    
+    setError("root", {
+      type: "manual",
+      message: errorMessage,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const onGoogleSubmit = useGoogleLogin({
+  onSuccess: async (response) => {
     setIsLoading(true);
-
+    const toastId = toast.loading("Memproses login Google...");
+    
     try {
-      await login(data);
+      await AuthService.googleAuth({ Code: response.code });
+      
+      toast.success("Login berhasil!", {
+        id: toastId,
+      });
+      
       router.push("/");
-    } catch (error: any) {
-      console.error("Login Error:", error);
-      const axiosError = error as AxiosError<{ message: string }>;
-      const errorMessage =
-        axiosError.response?.data?.message ||
-        "Gagal masuk. Periksa kembali email dan password Anda.";
-
+    } catch (error) {
+      toast.error("Login gagal", {
+        id: toastId,
+      });
+      
       setError("root", {
         type: "manual",
-        message: errorMessage,
+        message: "Gagal login dengan Google. Silakan coba lagi.",
       });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const onGoogleSubmit = useGoogleLogin({
-    onSuccess: async (response) => {
-      await AuthService.googleAuth({ Code: response.code });
-      router.push("/");
-    },
-    onError: (error) => {
-      console.error("Google Login Error:", error);
-      setError("root", {
-        type: "manual",
-        message: "Gagal masuk. Periksa kembali email dan password Anda.",
-      });
-    },
-    flow: "auth-code",
-  });
-
+  },
+  onError: () => {
+    toast.error("Login gagal");
+    setError("root", {
+      type: "manual",
+      message: "Gagal terhubung dengan Google.",
+    });
+  },
+  flow: "auth-code",
+});
   return (
     <div>
       {/* Kembali ke landingpage */}

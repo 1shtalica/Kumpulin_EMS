@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 const resetPasswordSchema = z
   .object({
@@ -40,6 +42,7 @@ export default function ResetPasswordForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
@@ -50,21 +53,40 @@ export default function ResetPasswordForm() {
   });
 
   const onSubmit = async (data: ResetPasswordFormValues) => {
-    if (!token) {
-      alert("Token tidak valid!");
-      return;
-    }
-
-    setIsLoading(true);
-
-    // TODO: Nanti diganti dengan real API call
-    // await authService.resetPassword({ token, newPassword: data.password })
-
+  if (!token) {
+    toast.error("Token tidak valid");
+    return;
+  }
+  setIsLoading(true);
+  const toastId = toast.loading("Mereset password...");
+  try {
+    // TODO: await AuthService.resetPassword({ token, newPassword: data.password });
+    
+    toast.success("Password berhasil direset!", { id: toastId });
+    
+    // Redirect ke login
     setTimeout(() => {
-      alert("Password berhasil direset!");
-    //   router.push("/login");
-    }, 1000);
-  };
+      router.push("/login");
+    }, 1500);
+  } catch (error: any) {
+    const axiosError = error as AxiosError<{ message: string }>;
+    let errorMessage = "Gagal reset password.";
+    
+    if (axiosError.response?.status === 400) {
+      errorMessage = "Token sudah kadaluarsa. Silakan request ulang.";
+    } else if (axiosError.response?.data?.message) {
+      errorMessage = axiosError.response.data.message;
+    }
+    toast.error("Reset gagal", { id: toastId });
+    
+    setError("root", {
+      type: "manual",
+      message: errorMessage,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Token validation
   if (!token) {

@@ -29,6 +29,9 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "../ui/checkbox";
 import { AuthService } from "@/services/auth-service";
+import { toast } from "sonner";
+import router from "next/router";
+import { AxiosError } from "axios";
 
 // ⭐ 2 skema register
 const baseFields = {
@@ -108,7 +111,8 @@ export default function RegisterForm() {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    setError,
+    formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -129,12 +133,13 @@ export default function RegisterForm() {
   const organizerType = watch("organizerType");
 
   const onSubmit = async (data: RegisterFormValues) => {
-    console.log("🎯 Form Submitted!");
+    setIsLoading(true);
+    const toastId = toast.loading("Sedang Mendaftar...");
     try {
-      setIsLoading(true);
+      
 
       if (data.role === "attendee") {
-        const response = await AuthService.registerUser({
+        await AuthService.registerUser({
           email: data.email,
           password: data.password,
           username: data.fullName,
@@ -142,9 +147,8 @@ export default function RegisterForm() {
           last_name: "",
           phone_number: data.phoneNumber,
         });
-        console.log("Data Attendee:", response);
       } else {
-        const response = await AuthService.registerOrganizer({
+        await AuthService.registerOrganizer({
           email: data.email,
           password: data.password,
           username: data.fullName,
@@ -154,15 +158,22 @@ export default function RegisterForm() {
           name: data.organizerName,
           slug: "",
         });
-        console.log("Data Organizer:", response);
       }
 
-      console.log("Data:", data);
-      // Handle success (redirect, toast, etc)
-      // window.location.href = "/";
+      toast.success("Registrasi berhasil!", { id: toastId });
+    
+    router.push("/login");
     } catch (error) {
-      // Handle error
-      console.error(error);
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Gagal mendaftar. Silakan coba lagi.";
+      toast.error("Registrasi gagal", { id: toastId });
+    
+      setError("root", {
+        type: "manual",
+        message: errorMessage,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -490,6 +501,13 @@ export default function RegisterForm() {
                 </p>
               )}
             </div>
+
+{/* ⭐ Root Error Message */}
+            {errors.root && (
+              <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-600">
+                {errors.root.message}
+              </div>
+            )}
 
             {/* Tombol Submit */}
             <Button
