@@ -37,8 +37,9 @@ import { AxiosError } from "axios";
 const baseFields = {
   fullName: z.string().min(1, { message: "Nama lengkap harus diisi" }),
   email: z
-    .email({ message: "Format email tidak valid" })
-    .min(1, { message: "Email Wajib diisi" }),
+    .string()
+    .min(1, { message: "Email Wajib diisi" })
+    .email({ message: "Format email tidak valid" }),
   phoneNumber: z
     .string()
     .min(10, { message: "Nomor HP minimal 10 digit" })
@@ -181,27 +182,18 @@ export default function RegisterForm() {
 
   return (
     <div>
-      {/* Kembali ke landingpage */}
-      <Link
-        href="/"
-        className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium mb-4"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        <p>Kembali ke beranda</p>
-      </Link>
-
       {/* ⭐ BAGIAN HEADER */}
       <Card className="w-full">
         <CardHeader className="space-y-1 text-center">
-          <h1 className="font-semibold text-3xl mb-4">
+          <h1 className="font-bold text-3xl mb-4">
             🎉
-            <span className="bg-linear-to-r from-kumpulinPurple to-kumpulinGreen  text-transparent bg-clip-text">
+            <span className="bg-linear-to-r from-primary to-secondary  text-transparent bg-clip-text">
               kumpul.in
             </span>
           </h1>
 
-          <CardTitle className="font-bold text-3xl ">Register</CardTitle>
-          <CardDescription className="text-sm text-slate-400">
+          <CardTitle className="font-semibold text-xl sm:text-2xl text-accent ">Mulai Perjalanan Anda Sekarang!</CardTitle>
+          <CardDescription className="text-sm text-muted">
             Buat akun kumpul.in kamu
           </CardDescription>
         </CardHeader>
@@ -259,62 +251,65 @@ export default function RegisterForm() {
             {/* 🌟 nama lengkap - email - no hp - password - confirm password */}
 
             {/* Input Fullname  */}
-            <div className="grid gap-4">
+            <div className="grid gap-2">
               <Label htmlFor="fullName">Nama Lengkap</Label>
               <Input
                 id="fullName"
                 type="text"
                 placeholder="Masukkan nama lengkap"
                 disabled={isLoading}
+                autoComplete="name"
                 {...register("fullName")}
                 className={
                   errors.fullName
-                    ? "border-red-500 rounded-lg"
+                    ? "border-danger rounded-lg"
                     : "rounded-lg"
                 }
               />
               {errors.fullName && (
-                <p className="text-sm text-red-500">
+                <p className="text-xs sm:text-sm text-danger font-medium">
                   {errors.fullName.message}
                 </p>
               )}
             </div>
             {/* Input Email  */}
-            <div className="grid gap-4">
+            <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
                 disabled={isLoading}
+                autoComplete="email"
                 {...register("email")}
                 className={
-                  errors.fullName
-                    ? "border-red-500 rounded-lg"
+                  errors.email
+                    ? "border-danger rounded-lg"
                     : "rounded-lg"
                 }
               />
               {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
+                <p className="text-xs sm:text-sm text-danger font-medium">{errors.email.message}</p>
               )}
             </div>
             {/* Input No HP  */}
-            <div className="grid gap-4">
+            <div className="grid gap-2">
               <Label htmlFor="phoneNumber">Nomor WhatsApp</Label>
               <Input
                 id="phoneNumber"
-                type="text"
+                type="tel"
                 placeholder="08xxxxxxxxxx"
                 disabled={isLoading}
+                autoComplete="tel"
                 {...register("phoneNumber")}
                 className={
                   errors.phoneNumber
-                    ? "border-red-500 rounded-lg"
+                    ? "border-danger rounded-lg"
                     : "rounded-lg"
                 }
               />
               {errors.phoneNumber && (
-                <p className="text-sm text-red-500">
+                <p className="text-xs sm:text-sm text-danger font-medium">
                   {errors.phoneNumber.message}
                 </p>
               )}
@@ -331,10 +326,16 @@ export default function RegisterForm() {
                     type="text"
                     placeholder="Masukkan nama organisasi anda"
                     disabled={isLoading}
+                    autoComplete="organization"
                     {...register("organizerName")}
+                    className={
+                      "organizerName" in errors && errors.organizerName
+                        ? "border-danger rounded-lg"
+                        : "rounded-lg"
+                    }
                   />
                   {"organizerName" in errors && errors.organizerName && (
-                    <p className="text-sm text-red-500">
+                    <p className="text-xs sm:text-sm text-danger font-medium">
                       {errors.organizerName.message}
                     </p>
                   )}
@@ -386,7 +387,7 @@ export default function RegisterForm() {
               </div>
             )}
             {/* Input Password */}
-            <div className="grid gap-4">
+            <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
@@ -394,29 +395,30 @@ export default function RegisterForm() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Buat password"
                   disabled={isLoading}
+                  autoComplete="new-password"
                   {...register("password")}
                   className={
                     errors.password
-                      ? "border-red-500 rounded-lg pr-10"
+                      ? "border-danger rounded-lg pr-10"
                       : "rounded-lg pr-10"
                   }
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-sm text-red-500">
+                <p className="text-xs sm:text-sm text-danger font-medium">
                   {errors.password.message}
                 </p>
               )}
             </div>
             {/* Input Confirm Password  */}
-            <div className="grid gap-4">
+            <div className="grid gap-2">
               <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
               <div className="relative">
                 <Input
@@ -424,17 +426,18 @@ export default function RegisterForm() {
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Ulangi password"
                   disabled={isLoading}
+                  autoComplete="new-password"
                   {...register("confirmPassword")}
                   className={
                     errors.confirmPassword
-                      ? "border-red-500 rounded-lg pr-10"
+                      ? "border-danger rounded-lg pr-10"
                       : "rounded-lg pr-10"
                   }
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
                 >
                   {showConfirmPassword ? (
                     <EyeOff size={20} />
@@ -444,7 +447,7 @@ export default function RegisterForm() {
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="text-sm text-red-500">
+                <p className="text-xs sm:text-sm text-danger font-medium">
                   {errors.confirmPassword.message}
                 </p>
               )}
@@ -475,7 +478,7 @@ export default function RegisterForm() {
                   Saya menyetujui{" "}
                   <Link
                     href="/terms"
-                    className="text-blue-600 hover:underline font-medium hover:text-blue-800 transition-colors"
+                    className="text-primary hover:underline font-medium transition-colors"
                     target="_blank"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -484,7 +487,7 @@ export default function RegisterForm() {
                   dan{" "}
                   <Link
                     href="/privacy"
-                    className="text-blue-600 hover:underline font-medium hover:text-blue-800 transition-colors"
+                    className="text-primary hover:underline font-medium transition-colors"
                     target="_blank"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -495,8 +498,7 @@ export default function RegisterForm() {
 
               {/* Pesan Error */}
               {errors.agreeToTerms && (
-
-                <p className="text-sm text-red-500 font-medium ml-7">
+                <p className="text-xs sm:text-sm text-danger font-medium ml-7">
                   {errors.agreeToTerms.message}
                 </p>
               )}
@@ -504,7 +506,7 @@ export default function RegisterForm() {
 
 {/* ⭐ Root Error Message */}
             {errors.root && (
-              <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-600">
+              <div className="p-3 rounded-lg bg-danger-light border border-danger text-xs sm:text-sm font-medium text-danger">
                 {errors.root.message}
               </div>
             )}
@@ -513,7 +515,7 @@ export default function RegisterForm() {
             <Button
               type="submit"
               disabled={isLoading || !watch("agreeToTerms")}
-              className="w-full bg-linear-to-r from-kumpulinPurple to-kumpulinGreen hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold"
             >
               {isLoading ? (
                 <>
@@ -543,7 +545,7 @@ export default function RegisterForm() {
           <Button
             type="button"
             variant="outline"
-            className="w-full font-bold rounded-lg"
+            className="w-full font-semibold hover:bg-primary/10 rounded-lg"
             disabled={isLoading}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
@@ -568,11 +570,11 @@ export default function RegisterForm() {
           </Button>
 
           {/* ⭐ KE HALAMAN LOGIN */}
-          <div className="text-center text-sm text-slate-600 mt-2">
+          <div className="text-center text-sm text-muted-foreground mt-2">
             Sudah punya akun?{" "}
             <Link
               href="/login"
-              className="text-blue-600 font-semibold hover:underline"
+              className="text-primary font-medium hover:underline"
             >
               Masuk sekarang
             </Link>

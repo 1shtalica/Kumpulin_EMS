@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -29,8 +29,9 @@ import { toast } from "sonner"
 
 const loginSchema = z.object({
   email: z
-    .email({ message: "Format email tidak valid" })
-    .min(1, { message: "Email wajib diisi" }),
+      .string()
+      .min(1, { message: "Email Wajib diisi" })
+      .email({ message: "Format email tidak valid" }),
   password: z.string().min(8, { message: "Password minimal 8 karakter" }),
 });
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -122,31 +123,21 @@ const onSubmit = async (data: LoginFormValues) => {
   },
   flow: "auth-code",
 });
+
   return (
     <div>
-      {/* Kembali ke landingpage */}
-      <Button variant="link" asChild>
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm text-kumpulinLightPurple hover:text-kumpulinPurple font-medium mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <p>Kembali ke beranda</p>
-        </Link>
-      </Button>
-
       {/* ⭐ BAGIAN HEADER */}
       <Card className="w-full">
         <CardHeader className="space-y-1 text-center">
-          <h1 className="font-semibold text-3xl mb-4">
+          <h1 className="font-bold text-3xl mb-4">
             🎉
-            <span className="bg-linear-to-r from-kumpulinPurple to-kumpulinGreen  text-transparent bg-clip-text">
+            <span className="bg-linear-to-r from-primary to-secondary  text-transparent bg-clip-text">
               kumpul.in
             </span>
           </h1>
 
-          <CardTitle className="font-bold text-3xl ">Login</CardTitle>
-          <CardDescription className="text-sm text-slate-500">
+          <CardTitle className="font-semibold text-xl sm:text-2xl text-accent ">Selamat Datang Kembali!</CardTitle>
+          <CardDescription className="text-sm text-muted">
             Masuk ke akun kumpul.in kamu
           </CardDescription>
         </CardHeader>
@@ -162,17 +153,16 @@ const onSubmit = async (data: LoginFormValues) => {
                 type="email"
                 placeholder="nama@email.com"
                 disabled={isLoading}
+                autoComplete="email"
                 className={
                   errors.email
-                    ? "border-red-500 rounded-lg"
+                    ? "border-danger rounded-lg"
                     : "rounded-lg"
                 }
-                // Hook Form Register:
                 {...register("email")}
               />
-              {/* Error Message Manual (Lebih simpel dari komponen FormField) */}
               {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
+                <p className="text-xs sm:text-sm text-danger font-medium">{errors.email.message}</p>
               )}
             </div>
 
@@ -186,10 +176,11 @@ const onSubmit = async (data: LoginFormValues) => {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   disabled={isLoading}
+                  autoComplete="current-password"
                   {...register("password")}
                   className={
                     errors.password
-                      ? "border-red-500 rounded-lg"
+                      ? "border-danger rounded-lg"
                       : "rounded-lg"
                   }
                 />
@@ -197,7 +188,7 @@ const onSubmit = async (data: LoginFormValues) => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -208,14 +199,14 @@ const onSubmit = async (data: LoginFormValues) => {
               </div>
               <div className="flex justify-between items-start mt-1">
                 {/* Area Pesan Error (Kiri) */}
-                <div className="text-xs text-red-500 font-medium">
+                <div className="text-xs sm:text-sm text-danger font-medium">
                   {errors.password && <span>{errors.password.message}</span>}
                 </div>
 
                 {/* Area Forgot Password (Kanan) */}
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-kumpulinPurple hover:underline font-medium ml-auto whitespace-nowrap"
+                  className="text-xs sm:text-sm text-primary hover:underline font-medium ml-auto whitespace-nowrap"
                 >
                   Lupa password?
                 </Link>
@@ -224,7 +215,7 @@ const onSubmit = async (data: LoginFormValues) => {
 
             {/* ⭐ Root Error Message */}
             {errors.root && (
-              <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-600">
+              <div className="p-3 rounded-lg bg-danger-light border border-danger text-xs sm:text-sm font-medium text-danger">
                 {errors.root.message}
               </div>
             )}
@@ -232,7 +223,7 @@ const onSubmit = async (data: LoginFormValues) => {
             {/* Tombol Submit */}
             <Button
               type="submit"
-              className="w-full bg-linear-to-r from-kumpulinLightPurple to-kumpulinPurple hover:opacity-90 rounded-lg font-bold"
+              className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-lg font-bold"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -263,7 +254,7 @@ const onSubmit = async (data: LoginFormValues) => {
           <Button
             type="button"
             variant="outline"
-            className="w-full font-bold rounded-lg"
+            className="w-full font-semibold hover:bg-primary/10 rounded-lg"
             disabled={isLoading}
             onClick={() => onGoogleSubmit()}
           >
@@ -289,11 +280,11 @@ const onSubmit = async (data: LoginFormValues) => {
           </Button>
 
           {/* ⭐ KE HALAMAN REGISTER */}
-          <div className="text-center text-sm text-slate-600 mt-2">
+          <div className="text-center text-sm text-muted mt-2">
             Belum punya akun?{" "}
             <Link
               href="/register"
-              className="text-kumpulinPurple font-semibold hover:underline"
+              className="text-primary font-medium hover:underline"
             >
               Daftar sekarang
             </Link>

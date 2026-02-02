@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams, useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import * as z from "zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +36,13 @@ export default function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
+  // Redirect to not-found if no token
+  useEffect(() => {
+    if (!token) {
+      notFound();
+    }
+  }, [token]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,10 +61,6 @@ export default function ResetPasswordForm() {
   });
 
   const onSubmit = async (data: ResetPasswordFormValues) => {
-  if (!token) {
-    toast.error("Token tidak valid");
-    return;
-  }
   setIsLoading(true);
   const toastId = toast.loading("Mereset password...");
   try {
@@ -120,19 +124,24 @@ export default function ResetPasswordForm() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Minimal 8 karakter"
                 disabled={isLoading}
+                autoComplete="new-password"
+                className={
+                  errors.password
+                    ? "border-danger rounded-lg pr-10"
+                    : "rounded-lg pr-10"
+                }
                 {...register("password")}
-                className={errors.password ? "border-red-500" : ""}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
+              <p className="text-xs sm:text-sm text-danger font-medium">{errors.password.message}</p>
             )}
           </div>
 
@@ -144,23 +153,34 @@ export default function ResetPasswordForm() {
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Ulangi password"
                 disabled={isLoading}
+                autoComplete="new-password"
+                className={
+                  errors.confirmPassword
+                    ? "border-danger rounded-lg pr-10"
+                    : "rounded-lg pr-10"
+                }
                 {...register("confirmPassword")}
-                className={errors.confirmPassword ? "border-red-500" : ""}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
+              <p className="text-xs sm:text-sm text-danger font-medium">{errors.confirmPassword.message}</p>
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          {errors.root && (
+            <div className="p-3 rounded-lg bg-danger-light border border-danger text-xs sm:text-sm font-medium text-danger">
+              {errors.root.message}
+            </div>
+          )}
+
+          <Button type="submit" className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-lg font-bold" disabled={isLoading}>
             {isLoading ? "Memproses..." : "Reset Password"}
           </Button>
         </form>

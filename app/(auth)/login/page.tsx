@@ -4,7 +4,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata: Metadata = {
     title: "Login Kumpulin",
-    description: "Masuk ke akun Kumpulin kamu"
+    description: "Masuk ke akun Kumpulin"
 }
 
 export default function LoginPage() {

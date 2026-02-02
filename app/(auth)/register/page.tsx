@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import RegisterForm from "@/components/auth/RegisterForm";
 
 export const metadata: Metadata = {
-    title: "Login Kumpulin",
-    description: "Masuk ke akun Kumpulin kamu"
+    title: "Register Kumpulin",
+    description: "Daftar akun Kumpulin"
 }
 
 export default function RegisterPage (){

@@ -181,14 +181,136 @@
 }
 
 @theme {
-  --color-kumpulinPurple: #3f37b6;
-  --color-kumpulinLightPurple: #4e45e3;
-  --color-kumpulinGreen: #0eb880;
-  --color-kumpulinLightGreen: #d0fae5;
+  /* Primary Colors */
+  --color-primary: oklch(47.06% 0.175 273.83); 
+  --color-primary-hover: oklch(41.43% 0.165 274.65);
+  --color-primary-light: oklch(95.63% 0.016 273.83);
+  
+  /* Secondary Colors */
+  --color-secondary: oklch(67.56% 0.165 156.4);
+  --color-secondary-hover: oklch(57.7% 0.151 157.4);
+  --color-secondary-light: oklch(93.94% 0.052 155.8);
+
+  /* Text Colors */
+  --color-accent: oklch(27.6% 0.024 256);
+  --color-muted: oklch(55.5% 0.03 256); 
+
+  /* Status Colors */
+  --color-success: oklch(54.2% 0.197 146.4);
+  --color-success-hover: oklch(48.7% 0.184 147.4);
+  --color-success-light: oklch(92.7% 0.078 146.4);
+
+  --color-warning: oklch(76.5% 0.189 85.2);
+  --color-warning-hover: oklch(68.8% 0.177 86.2);
+  --color-warning-light: oklch(95.3% 0.071 85.2);
+
+  --color-danger: oklch(63.5% 0.224 25.2);
+  --color-danger-hover: oklch(57.1% 0.211 26.2);
+  --color-danger-light: oklch(98.67% 0.085 25.2);
+
+  --color-info: oklch(62.7% 0.165 210);
+  --color-info-hover: oklch(56.4% 0.155 211);
+  --color-info-light: oklch(93.1% 0.063 210);
 }
 
 body {
   letter-spacing: var(--tracking-normal);
+}
+
+/* Kustomisasi Sonner  */
+
+/* Base toast styling */
+[data-sonner-toast] {
+  background-color: white !important;
+  border-radius: 12px !important;
+  border: 1.5px solid transparent !important;
+  box-shadow: 
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  padding: 16px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+/* Success Toast - Green gradient */
+[data-sonner-toast][data-type="success"] {
+  
+  color: var(--color-accent) !important;
+  border-color: var(--color-secondary) !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] svg {
+  color: var(--color-secondary) !important;
+}
+
+/* Error Toast - Red gradient */
+[data-sonner-toast][data-type="error"] {
+  background: linear-gradient(to right, oklch(98% 0.05 25.2), white) !important;
+  border-color: var(--color-danger) !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] svg {
+  color: var(--color-danger) !important;
+}
+
+/* Loading Toast - Purple gradient */
+[data-sonner-toast][data-type="loading"] {
+  background: linear-gradient(to right, var(--color-primary-light), white) !important;
+  border-color: var(--color-primary) !important;
+}
+
+[data-sonner-toast][data-type="loading"] [data-icon] svg {
+  color: var(--color-primary) !important;
+}
+
+/* Info Toast - Blue gradient */
+[data-sonner-toast][data-type="info"] {
+  background: linear-gradient(to right, var(--color-info-light), white) !important;
+  border-color: var(--color-info) !important;
+}
+
+[data-sonner-toast][data-type="info"] [data-icon] svg {
+  color: var(--color-info) !important;
+}
+
+/* Warning Toast - Yellow gradient */
+[data-sonner-toast][data-type="warning"] {
+  background: linear-gradient(to right, var(--color-warning-light), white) !important;
+  border-color: var(--color-warning) !important;
+}
+
+[data-sonner-toast][data-type="warning"] [data-icon] svg {
+  color: var(--color-warning) !important;
+}
+
+/* Icon spacing */
+[data-sonner-toast] [data-icon] {
+  margin-right: 12px !important;
+}
+
+/* Close button styling */
+[data-sonner-toast] [data-close-button] {
+  border-radius: 8px !important;
+  opacity: 0.6 !important;
+  transition: opacity 0.2s, background-color 0.2s !important;
+}
+
+[data-sonner-toast] [data-close-button]:hover {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  [data-sonner-toaster] {
+    left: 12px !important;
+    right: 12px !important;
+  }
+  
+  [data-sonner-toast] {
+    font-size: 13px !important;
+    padding: 14px !important;
+  }
 }
 
 @layer base {

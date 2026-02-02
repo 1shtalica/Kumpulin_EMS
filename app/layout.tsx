@@ -27,7 +27,7 @@ export default async function RootLayout({
       <body className={`${openSans.variable} antialiased`}>
         <AuthInitializer user={user} />
         {children}
-        <Toaster position="bottom-right" duration={5000} richColors />
+        <Toaster position="top-right" duration={5000} richColors />
       </body>
     </html>
   );

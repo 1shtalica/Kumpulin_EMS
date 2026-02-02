@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,20 +75,23 @@ export default function ForgotPasswordForm() {
 
   return (
     <div>
-      <Link href="/login" className="inline-flex items-center text-sm mb-4">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Kembali ke Login
-      </Link>
+      
 
-      <Card className="w-full">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Lupa Password?</CardTitle>
-          <p className="text-sm text-muted-foreground">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1 text-center">
+          <h1 className="font-bold text-3xl mb-4">
+            🎉
+            <span className="bg-linear-to-r from-primary to-secondary text-transparent bg-clip-text">
+              kumpul.in
+            </span>
+          </h1>
+          <CardTitle className="font-semibold text-xl sm:text-2xl text-accent">Lupa Password</CardTitle>
+          <CardDescription className="text-sm text-muted">
             {!isSubmitted 
               ? "Masukkan email Anda untuk reset password"
               : "Kami telah mengirim link reset password"
             }
-          </p>
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -101,22 +104,29 @@ export default function ForgotPasswordForm() {
                   type="email"
                   placeholder="nama@email.com"
                   disabled={isLoading}
+                  autoComplete="email"
+                  className={
+                    errors.email
+                      ? "border-danger rounded-lg"
+                      : "rounded-lg"
+                  }
                   {...register("email")}
-                  className={errors.email ? "border-red-500" : ""}
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                  <p className="text-xs sm:text-sm text-danger font-medium">{errors.email.message}</p>
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-lg font-bold" disabled={isLoading}>
                 {isLoading ? "Mengirim..." : "Kirim Link Reset"}
               </Button>
             </form>
           ) : (
             <div className="space-y-4 text-center">
               <div className="flex justify-center">
-                <CheckCircle className="h-16 w-16 text-green-500" />
+                <div className="rounded-full bg-secondary-light p-3">
+                  <CheckCircle className="h-12 w-12 text-secondary" />
+                </div>
               </div>
               
               <div className="space-y-2">
@@ -131,7 +141,7 @@ export default function ForgotPasswordForm() {
 
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full hover:bg-primary/10"
                 onClick={handleResend}
                 disabled={isLoading}
               >
@@ -139,7 +149,7 @@ export default function ForgotPasswordForm() {
                 {isLoading ? "Mengirim..." : "Kirim Ulang"}
               </Button>
 
-              <Link href="/login" className="block text-sm text-blue-600 hover:underline">
+              <Link href="/login" className="block text-sm text-primary hover:underline">
                 Kembali ke Login
               </Link>
             </div>
