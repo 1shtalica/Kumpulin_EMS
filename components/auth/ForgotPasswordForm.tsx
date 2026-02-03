@@ -14,7 +14,10 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email("Format email tidak valid"),
+  email: z
+    .string()
+    .min(1, { message: "Email wajib diisi" })
+    .email({ message: "Format email tidak valid" }),
 });
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;

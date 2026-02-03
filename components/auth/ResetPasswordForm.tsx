@@ -18,10 +18,10 @@ const resetPasswordSchema = z
   .object({
     password: z
       .string()
-      .min(8, "Password minimal 8 karakter")
-      .regex(/[A-Z]/, "Harus ada huruf besar")
-      .regex(/[a-z]/, "Harus ada huruf kecil")
-      .regex(/[0-9]/, "Harus ada angka"),
+      .min(8, { message: "Password minimal 8 karakter" })
+      .regex(/[A-Z]/, { message: "Password harus mengandung huruf besar" })
+      .regex(/[a-z]/, { message: "Password harus mengandung huruf kecil" })
+      .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
