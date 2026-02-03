@@ -32,6 +32,8 @@ import { AuthService } from "@/services/auth-service";
 import { toast } from "sonner";
 import router from "next/router";
 import { AxiosError } from "axios";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useRouter } from "next/navigation";
 
 // ⭐ 2 skema register
 const baseFields = {
@@ -90,7 +92,6 @@ const organizerSchema = z
         code: z.ZodIssueCode.custom,
       });
     }
-    
   });
 
 // Dipisahkan oleh discriminator role
@@ -100,13 +101,13 @@ const registerSchema = z.discriminatedUnion("role", [
 ]);
 
 export default function RegisterForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   type RegisterFormValues = z.infer<typeof registerSchema>;
 
-  // Kondisional skema yang dipakai
   const {
     register,
     handleSubmit,
@@ -129,16 +130,13 @@ export default function RegisterForm() {
     } as Partial<RegisterFormValues>,
   });
 
-  // Buat ngecek kondisional form dari rhf
-  const role = watch("role");
+  const role = watch("role") || "attendee";
   const organizerType = watch("organizerType");
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     const toastId = toast.loading("Sedang Mendaftar...");
     try {
-      
-
       if (data.role === "attendee") {
         await AuthService.registerUser({
           email: data.email,
@@ -162,15 +160,15 @@ export default function RegisterForm() {
       }
 
       toast.success("Registrasi berhasil!", { id: toastId });
-    
-    router.push("/login");
+
+      router.push("/login");
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
         axiosError.response?.data?.message ||
         "Gagal mendaftar. Silakan coba lagi.";
       toast.error("Registrasi gagal", { id: toastId });
-    
+
       setError("root", {
         type: "manual",
         message: errorMessage,
@@ -179,6 +177,17 @@ export default function RegisterForm() {
       setIsLoading(false);
     }
   };
+
+  const onGoogleSubmit = useGoogleLogin({
+    onSuccess: async (response) => {
+      await AuthService.googleAuth({ code: response.code, role: role });
+      router.push("/");
+    },
+    onError: (error) => {
+      console.error("Google Login Error:", error);
+    },
+    flow: "auth-code",
+  });
 
   return (
     <div>
@@ -192,7 +201,9 @@ export default function RegisterForm() {
             </span>
           </h1>
 
-          <CardTitle className="font-semibold text-xl sm:text-2xl text-accent ">Mulai Perjalanan Anda Sekarang!</CardTitle>
+          <CardTitle className="font-semibold text-xl sm:text-2xl text-accent ">
+            Mulai Perjalanan Anda Sekarang!
+          </CardTitle>
           <CardDescription className="text-sm text-muted">
             Buat akun kumpul.in kamu
           </CardDescription>
@@ -261,9 +272,7 @@ export default function RegisterForm() {
                 autoComplete="name"
                 {...register("fullName")}
                 className={
-                  errors.fullName
-                    ? "border-danger rounded-lg"
-                    : "rounded-lg"
+                  errors.fullName ? "border-danger rounded-lg" : "rounded-lg"
                 }
               />
               {errors.fullName && (
@@ -283,13 +292,13 @@ export default function RegisterForm() {
                 autoComplete="email"
                 {...register("email")}
                 className={
-                  errors.email
-                    ? "border-danger rounded-lg"
-                    : "rounded-lg"
+                  errors.email ? "border-danger rounded-lg" : "rounded-lg"
                 }
               />
               {errors.email && (
-                <p className="text-xs sm:text-sm text-danger font-medium">{errors.email.message}</p>
+                <p className="text-xs sm:text-sm text-danger font-medium">
+                  {errors.email.message}
+                </p>
               )}
             </div>
             {/* Input No HP  */}
@@ -303,9 +312,7 @@ export default function RegisterForm() {
                 autoComplete="tel"
                 {...register("phoneNumber")}
                 className={
-                  errors.phoneNumber
-                    ? "border-danger rounded-lg"
-                    : "rounded-lg"
+                  errors.phoneNumber ? "border-danger rounded-lg" : "rounded-lg"
                 }
               />
               {errors.phoneNumber && (
@@ -349,9 +356,9 @@ export default function RegisterForm() {
                     onValueChange={(value) =>
                       setValue(
                         "organizerType",
-                        value as
-                          | "Individu"
-                          | "Komunitas",
+                        value as "Individu" | "Komunitas",
+                        // | "Perusahaan"
+                        // | "Rt_Pintar",
                         {
                           shouldValidate: true,
                         },
@@ -383,7 +390,6 @@ export default function RegisterForm() {
                     </FieldLabel>
                   </RadioGroup>
                 </div>
-
               </div>
             )}
             {/* Input Password */}
@@ -504,7 +510,7 @@ export default function RegisterForm() {
               )}
             </div>
 
-{/* ⭐ Root Error Message */}
+            {/* ⭐ Root Error Message */}
             {errors.root && (
               <div className="p-3 rounded-lg bg-danger-light border border-danger text-xs sm:text-sm font-medium text-danger">
                 {errors.root.message}
@@ -543,6 +549,7 @@ export default function RegisterForm() {
           </div>
           {/* ⭐ REGISTER WITH GOOGLE */}
           <Button
+            onClick={() => onGoogleSubmit()}
             type="button"
             variant="outline"
             className="w-full font-semibold hover:bg-primary/10 rounded-lg"

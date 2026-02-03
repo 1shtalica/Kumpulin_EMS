@@ -54,7 +54,7 @@ export const AuthService = {
     async me() {
         return axiosClient.get("/auth/me");
     },
-    async googleAuth(payload: { Code: string }) {
+    async googleAuth(payload: { code: string, role: string }) {
         try {
             const response = await axiosClient.post("/auth/google", payload);
             return response.data;
