@@ -6,10 +6,22 @@ import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/stores/auth-store";
+import { LogOut } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function HeaderSection() {
   const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
+  const { user, logout } = useAuthStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,27 +43,17 @@ export default function HeaderSection() {
         // Base Style: Selalu Putih + Blur + Border Halus
         "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
         // Conditional Style: Tambah shadow jika di-scroll
-        isScrolled ? "shadow-md" : "shadow-none",
+        isScrolled ? "shadow-md" : "shadow-xs",
       )}
     >
       <div className="container mx-auto flex flex-row items-center justify-between">
         {/* === BAGIAN KIRI: LOGO === */}
         <div className="flex items-center gap-4">
-          {/* Tombol Back - hanya muncul di event detail */}
-          {/* <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-            className="rounded-full"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button> */}
-
           <Link href="/" className="flex items-center gap-2 text-2xl group">
             <span className="text-3xl transition-transform group-hover:rotate-12">
               🎉
             </span>
-            <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-kumpulinPurple to-kumpulinGreen">
+            <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
               kumpul.in
             </span>
           </Link>
@@ -59,24 +61,63 @@ export default function HeaderSection() {
 
         {/* === BAGIAN KANAN: AUTH === */}
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            // Teks selalu gelap sekarang
-            className="rounded-xl text-black"
-            asChild
-          >
-            <Link href="/login">Masuk</Link>
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="relative h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all hover:scale-105 active:scale-95">
+                  <Avatar className="h-10 w-10 border-2 border-slate-100 shadow-sm">
+                    <AvatarImage
+                      src={user.avatar || ""}
+                      alt={user.username}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-primary-light text-primary font-bold">
+                      {user.username?.substring(0, 2).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-64 rounded-2xl border-border/60 bg-white/90 backdrop-blur-xl shadow-xl shadow-primary/10 p-2"
+                align="end"
+                forceMount
+              >
+                <DropdownMenuLabel className="font-normal p-2">
+                  <div className="flex flex-col space-y-1.5">
+                    <p className="text-sm font-semibold text-accent leading-none truncate">
+                      {user.username}
+                    </p>
+                    <p className="text-xs leading-none text-muted truncate font-medium">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-border/50 my-1" />
+                <DropdownMenuItem
+                  onClick={() => logout()}
+                  className="rounded-xl p-2.5 text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer font-medium transition-colors"
+                >
+                  <LogOut className="mr-2.5 h-4 w-4" />
+                  <span>Keluar</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="light" size="sm" className="rounded-xl font-bold" asChild>
+              <Link href="/login">Masuk</Link>
+            </Button>
 
-          <Button
-            variant="brand"
-            size="sm"
-            asChild
-            className="hidden rounded-xl md:inline-flex shadow-lg shadow-kumpulinPurple/20"
-          >
-            <Link href="/register">Daftar</Link>
-          </Button>
+              <Button
+              variant="brand"
+              size="sm"
+              asChild
+              className="hidden rounded-xl md:inline-flex font-bold"
+            >
+              <Link href="/register">Daftar</Link>
+            </Button>
+            </>
+          )}
         </div>
       </div>
     </nav>

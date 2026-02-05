@@ -104,7 +104,6 @@ const DUMMY_DB = [
   },
 ];
 
-// Definisikan tipe Props untuk Next.js 15+
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function ExplorePage(props: {
@@ -169,7 +168,7 @@ export default async function ExplorePage(props: {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       <LandingNavbar />
       <main className="container mx-auto px-4 pb-20">
         <SearchBar />
@@ -179,7 +178,7 @@ export default async function ExplorePage(props: {
           <FilterBar />
         </div>
 
-        <div className="mb-6 text-slate-500 text-sm">
+        <div className="mb-6 text-muted text-sm md:text-base">
           Menampilkan <strong>{filteredEvents.length}</strong> event
           {query && <span> untuk pencarian "{query}"</span>}
         </div>

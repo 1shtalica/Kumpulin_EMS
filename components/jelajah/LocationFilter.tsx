@@ -94,18 +94,18 @@ export default function LocationFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between text-sm hover:bg-primary-light"
         >
           {/* 2. Wrapper Flex untuk Icon + Teks */}
-          <div className="flex items-center gap-2 overflow-hidden">
-            <MapPin className="h-4 w-4 shrink-0 text-slate-500" />
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted" />
             <span className="truncate">
               {/* Logic Label: Cari label berdasarkan value, fallback ke "Semua Lokasi" */}
               {Locations.find((loc) => loc.value === currentLocation)?.label ||
-                "Semua Lokasi"}
+                "Lokasi"}
             </span>
           </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
 

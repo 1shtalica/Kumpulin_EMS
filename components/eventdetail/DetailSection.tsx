@@ -29,7 +29,7 @@ export default function DetailSection() {
           </div>
 
           {/* Judul event */}
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-2xl font-bold text-accent">
             Tech Startup Meetup Jakarta 2024
           </h2>
 
@@ -37,24 +37,24 @@ export default function DetailSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
             {/* 1. Tanggal */}
             <div className="flex flex-row items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-kumpulinPurple">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary-light text-primary">
                 <Calendar size={24} />
               </div>
               <div className="flex flex-col">
-                <p className="text-sm text-slate-500">Tanggal</p>
-                <p className="font-semibold text-slate-900">25 Desember 2024</p>
+                <p className="text-sm text-muted">Tanggal</p>
+                <p className="font-semibold text-accent">25 Desember 2024</p>
               </div>
             </div>
 
             {/* 2. Waktu */}
             <div className="flex flex-row items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-kumpulinPurple">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary-light text-primary">
                 <Clock size={24} />
               </div>
               <div className="flex flex-col">
                 {/* FIX 3: Label diganti jadi Waktu */}
-                <p className="text-sm text-slate-500">Waktu</p>
-                <p className="font-semibold text-slate-900">
+                <p className="text-sm text-muted">Waktu</p>
+                <p className="font-semibold text-accent">
                   18:00 - 21:00 WIB
                 </p>
               </div>
@@ -62,25 +62,25 @@ export default function DetailSection() {
 
             {/* 3. Lokasi */}
             <div className="flex flex-row items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-kumpulinPurple">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary-light text-primary">
                 <MapPin size={24} />
               </div>
               <div className="flex flex-col">
                 {/* FIX 4: Label diganti jadi Lokasi */}
-                <p className="text-sm text-slate-500">Lokasi</p>
-                <p className="font-semibold text-slate-900">JCC, Hall A</p>
+                <p className="text-sm text-muted">Lokasi</p>
+                <p className="font-semibold text-accent">JCC, Hall A</p>
               </div>
             </div>
 
             {/* 4. Peserta / Attendee */}
             <div className="flex flex-row items-center gap-4">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-kumpulinPurple">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary-light text-primary">
                 <Users size={24} />
               </div>
               <div className="flex flex-col">
                 {/* FIX 5: Label diganti jadi Peserta */}
-                <p className="text-sm text-slate-500">Peserta</p>
-                <p className="font-semibold text-slate-900">
+                <p className="text-sm text-muted">Peserta</p>
+                <p className="font-semibold text-accent">
                   156/200 terdaftar
                 </p>
               </div>
@@ -96,7 +96,7 @@ export default function DetailSection() {
             <div className="flex flex-row items-center gap-3 w-full md:w-auto">
               {/* Avatar / Foto Profil */}
               <div className="shrink-0">
-                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-slate-200 text-slate-600 font-bold text-lg overflow-hidden">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted text-white font-bold text-lg overflow-hidden">
                   {/* Ganti dengan <Image /> jika ada URL gambar */}
                   SG
                 </div>
@@ -106,7 +106,7 @@ export default function DetailSection() {
               <div className="flex flex-col">
                 {/* Baris 1: Nama + Verified Badge */}
                 <div className="flex flex-row items-center gap-1">
-                  <p className="font-semibold text-slate-900 text-base">
+                  <p className="font-semibold text-accent text-base">
                     Startup Grind Jakarta
                   </p>
                   <CheckCircle2
@@ -115,7 +115,7 @@ export default function DetailSection() {
                   />
                 </div>
                 {/* Baris 2: Stats */}
-                <div className="flex flex-row items-center text-sm text-slate-500">
+                <div className="flex flex-row items-center text-sm text-muted">
                   <p>12.500 pengikut</p>
                   <Dot size={16} />
                   <p>45 Events</p>
@@ -184,23 +184,23 @@ export default function DetailSection() {
 
             {/* Daftar Node Rundown Acara  */}
             <div className="flex flex-col gap-2">
-              <div className="w-full flex gap-4 p-4 rounded-lg bg-slate-100">
+              <div className="w-full flex gap-4 p-4 rounded-lg bg-muted/10">
                 <p>18:00</p>
                 <p>Registration & Networking</p>
               </div>
-              <div className="w-full flex gap-4 p-4 rounded-lg bg-slate-100">
+              <div className="w-full flex gap-4 p-4 rounded-lg bg-muted/10">
                 <p>18:00</p>
                 <p>Registration & Networking</p>
               </div>
-              <div className="w-full flex gap-4 p-4 rounded-lg bg-slate-100">
+              <div className="w-full flex gap-4 p-4 rounded-lg bg-muted/10">
                 <p>18:00</p>
                 <p>Registration & Networking</p>
               </div>
-              <div className="w-full flex gap-4 p-4 rounded-lg bg-slate-100">
+              <div className="w-full flex gap-4 p-4 rounded-lg bg-muted/10">
                 <p>18:00</p>
                 <p>Registration & Networking</p>
               </div>
-              <div className="w-full flex gap-4 p-4 rounded-lg bg-slate-100">
+              <div className="w-full flex gap-4 p-4 rounded-lg bg-muted/10">
                 <p>18:00</p>
                 <p>Registration & Networking</p>
               </div>

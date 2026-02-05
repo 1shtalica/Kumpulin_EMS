@@ -111,6 +111,41 @@ const UPCOMING_EVENTS = [
     quota: 500,
     maxQuota: 500,
   },
+  {
+    id: 7,
+    title: "Seminar Bisnis Digital 2025",
+    category: "Bisnis",
+    date: "22 Jan 2025",
+    location: "Ritz Carlton Jakarta",
+    price: 750000,
+    organizer: "BizGrowth",
+    image:
+      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=800&auto=format&fit=crop",
+    slug: "seminar-bisnis",
+    isHot: true,
+    isOnline: false,
+    isRtPintar: true,
+    quota: 45,
+    maxQuota: 50,
+  },
+  {
+    id: 8,
+    title: "Konser Amal Peduli Kasih",
+    category: "Musik",
+    date: "23 Jan 2025",
+    location: "Balai Sarbini",
+    price: 150000,
+    organizer: "Yayasan Peduli",
+    // Link Baru: Concert Stage
+    image:
+      "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=800&auto=format&fit=crop",
+    slug: "konser-amal",
+    isHot: true,
+    isOnline: false,
+    isRtPintar: false,
+    quota: 500,
+    maxQuota: 500,
+  },
 ];
 
 export default function UpcomingEvents() {
@@ -118,24 +153,26 @@ export default function UpcomingEvents() {
     <section className="py-12 md:py-16 bg-white">
       <div className="container mx-auto px-4">
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+        <div className="flex flex-col gap-3 mb-8">
+          {/* Row 1: Title + Button */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl md:text-3xl font-bold text-accent">
               Event Segera Hadir
             </h2>
-            <p className="text-slate-500 mt-1">
-              Daftar sekarang sebelum ketinggalan
-            </p>
+            <Button variant="link" asChild className="px-0 md:px-4">
+              <Link
+                href="/events?sort=terbaru"
+                className="flex items-center gap-1"
+              >
+                Lihat Semua <ArrowRight size={18} />
+              </Link>
+            </Button>
           </div>
 
-          <Button variant="link" asChild className="px-0 md:px-4">
-            <Link
-              href="/events?sort=upcoming"
-              className="flex items-center gap-1"
-            >
-              Lihat Semua <ArrowRight size={18} />
-            </Link>
-          </Button>
+          {/* Row 2: Description */}
+          <p className="text-muted">
+            Jangan lewatkan event seru yang akan datang
+          </p>
         </div>
 
         {/* GRID LAYOUT */}

@@ -28,14 +28,14 @@ export default function EventList({ events }: EventListProps) {
   // 1. EMPTY STATE (Jika hasil filter kosong)
   if (events.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
+      <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border rounded-3xl bg-muted/20">
         <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-          <Inbox className="w-10 h-10 text-slate-300" />
+          <Inbox className="w-10 h-10 text-muted" />
         </div>
-        <h3 className="text-xl font-bold text-slate-900">
+        <h3 className="text-xl font-bold text-accent">
           Tidak ada event ditemukan
         </h3>
-        <p className="text-slate-500 max-w-md mt-2">
+        <p className="text-muted max-w-md mt-2">
           Coba ganti kata kunci pencarian atau atur ulang filter kamu untuk
           menemukan hasil lainnya.
         </p>

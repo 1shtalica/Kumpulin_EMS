@@ -59,17 +59,17 @@ export default function PriceFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between text-sm hover:bg-primary-light"
         >
-          <div className="flex items-center gap-2">
-            <Ticket className="h-4 w-4 shrink-0 text-slate-500" />
-            <span>
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <Ticket className="h-3.5 w-3.5 shrink-0 text-muted" />
+            <span className="truncate">
               {/* Cari label berdasarkan value URL, fallback ke "Semua Harga" */}
               {priceOptions.find((p) => p.value === currentPrice)?.label ||
-                "Semua Harga"}
+                "Harga"}
             </span>
           </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
 

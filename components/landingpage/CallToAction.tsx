@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 
 export default function CallToAction() {
   return (
-    <section className="w-full bg-linear-to-r from-kumpulinLightPurple to-kumpulinPurple">
+    <section className="w-full bg-linear-to-r from-primary to-primary-hover">
       <div className="container mx-auto px-6 py-10 md:py-16 flex flex-col md:flex-row items-center justify-between gap-6">
         {/* Text Area */}
         <div className="text-white text-center md:text-left space-y-2">

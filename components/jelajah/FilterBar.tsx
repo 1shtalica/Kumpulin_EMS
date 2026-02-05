@@ -33,14 +33,9 @@ export default function FilterBar() {
   return (
     <section className="sticky top-22 z-20 px-4 py-2 pointer-events-none">
       <div className="container mx-auto pointer-events-auto">
-        <div className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 shadow-sm rounded-2xl p-3 md:p-4">
+        <div className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 shadow-sm rounded-xl p-3 md:p-4">
           <div className="flex flex-col lg:flex-row gap-3 lg:items-center justify-between">
-            {/* === PERBAIKAN DISINI === */}
-            {/* Menggunakan GRID SYSTEM agar ukuran konsisten */}
-            {/* Mobile: 1 Kolom */}
-            {/* Tablet: 2 Kolom */}
-            {/* Desktop (lg): 4 Kolom (Semua lebar sama rata) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full flex-1">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full flex-1">
               {/* Hapus div pembungkus width manual, biarkan grid yang mengatur */}
               <CategoryFilter />
               <LocationFilter />
@@ -52,12 +47,12 @@ export default function FilterBar() {
             {isFiltering && (
               <div className="flex justify-end lg:justify-start mt-2 lg:mt-0 lg:pl-4 lg:border-l lg:border-slate-200 shrink-0">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   onClick={handleReset}
-                  className="text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 px-3 h-10 w-full sm:w-auto"
+                  className="text-danger border-danger hover:bg-danger/50 hover:text-danger hover:border-danger gap-2 px-3 h-10 w-full sm:w-auto rounded-xl"
                 >
                   <X size={16} />
-                  Reset
+                  <span>Reset Filter</span>
                 </Button>
               </div>
             )}

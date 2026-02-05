@@ -18,7 +18,7 @@ const badgeVariants = cva(
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         // ⭐custom button variant
-        brand: "border-transparent bg-kumpulinPurple/15 text-kumpulinPurple",
+        brand: "border-transparent bg-primary-light text-primary font-medium",
       },
     },
     defaultVariants: {

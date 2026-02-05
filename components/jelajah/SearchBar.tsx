@@ -49,19 +49,19 @@ export default function SearchBar() {
   return (
     // HAPUS 'sticky top-0'. Gunakan relative.
     // pt-32 disesuaikan agar turun kebawah tidak ketabrak navbar fixed
-    <section className=" border-b border-slate-200 pt-32 pb-10 relative z-10">
+    <section className="pt-32 pb-10 relative z-10">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto space-y-4 text-center">
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
+          <h1 className="text-2xl md:text-3xl font-bold text-accent">
             Cari Event Seru
           </h1>
 
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted h-5 w-5" />
             <Input
               type="text"
               placeholder="Cari konser, workshop, atau seminar..."
-              className="w-full pl-12 h-12 bg-white rounded-full border-slate-200 shadow-sm focus-visible:ring-kumpulinPurple text-base"
+              className="w-full pl-12 h-12 bg-white rounded-full border-border shadow-sm focus-visible:ring-primary text-base"
               // Default value dari URL
               defaultValue={searchParams.get("q")?.toString()}
               // Event Listener Hybrid

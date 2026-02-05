@@ -1,4 +1,10 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search,
   Music,
@@ -10,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+// import HeroImage from 
 
 const categories = [
   {
@@ -45,79 +52,91 @@ const categories = [
 ];
 
 export default function HeroSection() {
-  return (
-    // 1. SECTION: Wrapper Utama (Relative agar anak-anaknya bisa absolute)
-    <section className="relative w-full py-20 md:py-32 flex items-center justify-center bg-slate-900 overflow-hidden">
-      {/* 2. BACKGROUND IMAGE */}
-      <div
-        className="absolute inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop')",
-        }}
-      />
+  const router = useRouter();
+  const [searchValue, setSearchValue] = useState("");
 
-      {/* 3. OVERLAY HITAM (PENTING AGAR TEKS TERBACA) */}
+  // Debounced search (500ms delay)
+  const debouncedSearch = useDebouncedCallback((term: string) => {
+    if (term.trim()) {
+      router.push(`/events?q=${encodeURIComponent(term.trim())}`);
+    }
+  }, 500);
+
+  const handleSearch = (value: string) => {
+    setSearchValue(value);
+    debouncedSearch(value);
+  };
+
+  // Instant search on Enter key
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      debouncedSearch.cancel(); // Cancel pending debounce
+      const value = e.currentTarget.value.trim();
+      if (value) {
+        router.push(`/events?q=${encodeURIComponent(value)}`);
+      }
+    }
+  };
+
+  return (
+    <section className="relative w-full py-20 md:py-32 flex items-center justify-center bg-white overflow-hidden">
+      <div className="absolute inset-0 z-0 w-full h-full">
+        <Image
+          src="/Images/noiseGradient.png"
+          alt="Background Hero"
+          fill
+          className="object-cover object-center"
+          priority
+          quality={100}
+        />
+      </div>
+
       <div className="absolute inset-0 z-10 bg-black/60" />
 
-      {/* 4. KONTEN (Harus z-20 agar di atas overlay) */}
       <div className="relative z-20 container mx-auto px-4 flex flex-col items-center text-center gap-6">
-        {/* JUDUL */}
-        <h1 className="font-bold text-3xl md:text-5xl lg:text-6xl text-white leading-tight">
+        <h1 className="font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight">
           TEMUKAN EVENT{" "}
-          <span className="bg-linear-to-r from-kumpulinPurple to-kumpulinGreen text-transparent bg-clip-text font-extrabold">
+          <span className="bg-linear-to-r from-primary to-secondary text-transparent bg-clip-text font-extrabold">
             TERBAIK
           </span>
         </h1>
 
-        {/* DESKRIPSI */}
-        <p className="text-gray-200 text-sm md:text-lg max-w-2xl">
+        <p className="text-white text-sm font-medium md:text-lg max-w-2xl">
           Temukan berbagai event menarik di sekitarmu. Dari konser musik yang
           meriah, workshop edukatif, hingga festival budaya.
         </p>
 
-        {/* SEARCH BAR */}
-
-        <div className="w-full max-w-2xl bg-white flex flex-row items-center p-2 md:p-3 rounded-full shadow-xl mt-4">
-          <div className="pl-4 hidden md:block text-gray-400">
-            <Search size={20} />
-          </div>
-
+        {/* Unified Search Bar */}
+        <div className="relative w-full max-w-2xl">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5 pointer-events-none" />
           <Input
-            type="search"
-            placeholder="Cari Event, Konser, Workshop..."
-            className="w-full mx-2 shadow-none border-none focus-visible:ring-0 p-2 text-sm md:text-base placeholder:text-gray-400"
+            type="text"
+            placeholder="Cari event, konser, workshop..."
+            className="w-full pl-12 pr-4 h-12 bg-white rounded-full border-slate-200 shadow-sm focus-visible:ring-primary text-base"
+            value={searchValue}
+            onChange={(e) => handleSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
-
-          <Button
-            asChild
-            variant="default"
-            size="icon"
-            hoverEffect="grow"
-            className="rounded-full w-10 h-10 md:w-12 md:h-12 shrink-0 bg-kumpulinPurple"
-          >
-            <Link href="/search">
-              <Search size={18} className="text-white" />
-            </Link>
-          </Button>
         </div>
 
-        {/* DAFTAR TOMBOL KATEGORI  */}
-        <div className="flex flex-wrap justify-center gap-3 mt-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          {categories.map((category) => (
-            <Button
-              key={category.name}
-              asChild
-              variant="light"
-              hoverEffect="hover_up"
-              className="rounded-full px-6 h-10 gap-2 font-medium text-slate-700 hover:text-kumpulinPurple"
-            >
-              <Link href={category.href}>
-                {category.icon}
-                <span>{category.name}</span>
-              </Link>
-            </Button>
-          ))}
+        {/* Horizontal Scrollable Categories */}
+        <div className="w-full max-w-3xl overflow-x-auto scrollbar-hide mt-4">
+          <div className="flex gap-3 p-4 md:justify-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {categories.map((category) => (
+              <Button
+                key={category.name}
+                asChild
+                variant="light"
+                hoverEffect="hover_up"
+                className="rounded-full px-6 h-10 gap-2 font-medium border-0 text-black hover:text-primary shrink-0"
+              >
+                <Link href={category.href}>
+                  {category.icon}
+                  <span>{category.name}</span>
+                </Link>
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
     </section>

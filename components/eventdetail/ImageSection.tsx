@@ -46,7 +46,7 @@ export default function ImageSection() {
           }}
         >
           {/* Base gradient */}
-          <div className="absolute inset-0 bg-linear-to-br from-slate-50 via-blue-50 to-purple-50" />
+          <div className="absolute inset-0 bg-linear-to-br from-muted/20 via-blue-50 to-purple-50" />
 
           {/* Floating orbs for depth */}
           <div className="absolute top-20 left-20 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl" />
@@ -59,18 +59,25 @@ export default function ImageSection() {
       )}
 
       {/* Main Content */}
-      <div className="relative z-10 py-12 md:py-16">
+      <div className="relative z-10 py-8 md:py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-12">
-              <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
+              {/* ⭐ Responsive height dengan max-height */}
+              <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5 
+                h-50 
+                sm:h-75 
+                md:h-100 
+                lg:h-112.5 
+                xl:h-125
+                max-h-125">
                 <Image
                   src="https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1740&auto=format&fit=crop"
                   alt="Ilustrasi Event Teknologi dan Networking"
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-700"
                   priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1400px"
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 85vw, 1200px"
                 />
               </div>
             </div>

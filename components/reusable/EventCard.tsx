@@ -80,7 +80,7 @@ export default function EventCard({
               ) : (
                 <Badge
                   variant="secondary"
-                  className="bg-white/90 text-slate-700 backdrop-blur-sm shadow-sm"
+                  className="bg-muted text-white shadow-sm"
                 >
                   Offline
                 </Badge>
@@ -115,17 +115,17 @@ export default function EventCard({
                   // Layout Diskon: Harga asli DI BAWAH harga diskon
                   <div className="flex flex-col items-end">
                     {/* Harga Sekarang (Besar) */}
-                    <span className="font-bold text-kumpulinPurple text-lg leading-none">
+                    <span className="font-bold text-primary text-lg leading-none">
                       {price === 0 ? "Gratis" : formatCurrency(price)}
                     </span>
                     {/* Harga Coret (Kecil di bawah) */}
-                    <span className="text-[11px] text-slate-400 line-through decoration-slate-400 mt-1">
+                    <span className="text-[11px] text-muted line-through decoration-muted mt-1">
                       {formatCurrency(originalPrice)}
                     </span>
                   </div>
                 ) : (
                   // Harga Normal
-                  <span className="font-bold text-kumpulinPurple text-lg">
+                  <span className="font-bold text-primary text-lg">
                     {price === 0 ? "Gratis" : formatCurrency(price)}
                   </span>
                 )}
@@ -133,35 +133,35 @@ export default function EventCard({
             </div>
 
             {/* Judul Event */}
-            <h3 className="font-bold text-lg leading-snug text-black line-clamp-2 group-hover:text-kumpulinPurple transition-colors min-h-14">
+            <h3 className="font-bold text-lg leading-snug text-accent line-clamp-2 group-hover:text-primary transition-colors min-h-14">
               {title}
             </h3>
 
             {/* Info Tanggal & Lokasi */}
-            <div className="flex flex-col gap-2 text-sm text-slate-500 mt-auto">
+            <div className="flex flex-col gap-2 text-sm text-muted mt-auto">
               <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-slate-400 shrink-0" />
+                <CalendarDays className="w-4 h-4 shrink-0" />
                 <span>{date}</span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                <MapPin className="w-4 h-4 shrink-0" />
                 <span className="line-clamp-1">{location}</span>
               </div>
             </div>
           </CardContent>
 
           {/* Separator Garis Tipis */}
-          <Separator className="bg-slate-100" />
+          <Separator className="bg-slate-200" />
 
           {/* === BAGIAN FOOTER (Organizer & Kuota) === */}
-          <CardFooter className="p-4 flex items-center justify-between text-sm text-slate-600">
+          <CardFooter className="p-4 flex items-center justify-between text-sm ">
             {/* Kiri: Nama Organizer */}
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600 ring-2 ring-white">
+              <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] text-white font-bold ring-2 ring-white">
                 {organizerInitial}
               </div>
               <span
-                className="font-medium truncate max-w-28 md:max-w-36"
+                className="font-medium truncate max-w-28 md:max-w-36 text-accent"
                 title={organizer}
               >
                 {organizer}
@@ -173,7 +173,7 @@ export default function EventCard({
               className={cn(
                 "flex items-center gap-1.5",
 
-                isFull ? "text-red-500 font-bold" : "text-slate-400"
+                isFull ? "text-danger font-bold" : "text-muted"
               )}
             >
               <Users className="w-4 h-4" />

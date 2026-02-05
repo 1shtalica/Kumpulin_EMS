@@ -80,19 +80,20 @@ export default function UpcomingEvents() {
   return (
     <section className="py-16 md:py-24 bg-white">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-8 md:mb-12">
-          <div>
-            <h2 className="text-3xl font-bold text-black">Event Pilihan</h2>
-            <p className="text-slate-500 mt-2">
-              Jangan lewatkan event seru yang akan datang
-            </p>
+        <div className="flex flex-col gap-3 mb-8 md:mb-12">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl md:text-3xl font-bold text-accent">
+              Event Pilihan
+            </h2>
+            <Button variant="link" asChild>
+              <Link href="/events?sort=Populer">
+                Lihat Semua <ArrowRight size={18} />
+              </Link>
+            </Button>
           </div>
-
-          <Button variant="link" asChild>
-            <Link href="/events">
-              Lihat Semua <ArrowRight size={18} />
-            </Link>
-          </Button>
+          <p className="text-sm md:text-base text-muted">
+            Jangan lewatkan event seru yang akan datang
+          </p>
         </div>
 
         {/* GRID EVENT CARD */}

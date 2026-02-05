@@ -34,12 +34,12 @@ function QuotaBar({
             "h-full rounded-full transition-all duration-500",
             isSoldOut
               ? "bg-slate-400" // Warna abu jika habis
-              : "bg-linear-to-r from-blue-600 to-yellow-400", // Warna gradasi jika ada
+              : "bg-linear-to-r from-primary to-secondary", // Warna gradasi jika ada
           )}
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <span className="text-[10px] text-slate-400 whitespace-nowrap min-w-fit">
+      <span className="text-[10px] text-muted whitespace-nowrap min-w-fit">
         {total - sold} tersisa
       </span>
     </div>
@@ -109,9 +109,9 @@ export default function TicketSection() {
 
   return (
     <section className="w-full flex flex-col items-center justify-between relative z-20">
-      <div className="w-full h-fit p-6 bg-white shadow-sm border border-slate-100 rounded-2xl sticky top-24">
+      <div className="w-full h-fit p-6 bg-white shadow-sm border border-border rounded-2xl sticky top-24">
         <div className="flex flex-col gap-6">
-          <h3 className="font-bold text-lg text-slate-900">Pilih Tiket</h3>
+          <h3 className="font-bold text-lg text-accent">Pilih Tiket</h3>
 
           {/* --- LIST TIKET --- */}
           <div className="flex flex-col gap-4">
@@ -129,15 +129,15 @@ export default function TicketSection() {
                     // Logic Styling:
                     // 1. Jika Habis -> Opacity rendah & cursor not-allowed
                     ticket.isSoldOut &&
-                      "opacity-60 cursor-not-allowed bg-slate-50 border-slate-200",
-                    // 2. Jika Dipilih -> Border Biru & Background Biru Muda
+                      "opacity-60 cursor-not-allowed bg-muted/10 border-border",
+                    // 2. Jika Dipilih -> Border Primary & Background Primary Light
                     isSelected &&
                       !ticket.isSoldOut &&
-                      "border-blue-600 bg-blue-50/50 ring-1 ring-blue-600",
+                      "border-primary bg-primary-light ring-1 ring-primary",
                     // 3. Jika Tidak Dipilih -> Border Biasa & Hover effect
                     !isSelected &&
                       !ticket.isSoldOut &&
-                      "border-slate-200 bg-white hover:border-blue-300",
+                      "border-border bg-white hover:border-primary-hover",
                   )}
                 >
                   {/* Header Card */}
@@ -145,7 +145,7 @@ export default function TicketSection() {
                     <h4
                       className={cn(
                         "font-bold text-base",
-                        isSelected ? "text-blue-700" : "text-slate-700",
+                        isSelected ? "text-primary" : "text-slate-700",
                       )}
                     >
                       {ticket.name}
@@ -162,7 +162,7 @@ export default function TicketSection() {
                     <p
                       className={cn(
                         "font-bold text-lg",
-                        isSelected ? "text-blue-600" : "text-blue-600",
+                        isSelected ? "text-primary" : "text-primary",
                       )}
                     >
                       {formatRupiah(ticket.price)}
@@ -175,7 +175,7 @@ export default function TicketSection() {
                   </div>
 
                   {/* Deskripsi */}
-                  <p className="text-xs text-slate-500 mb-3">{ticket.desc}</p>
+                  <p className="text-xs text-muted mb-3">{ticket.desc}</p>
 
                   {/* Progress Bar */}
                   <QuotaBar
@@ -190,9 +190,9 @@ export default function TicketSection() {
 
           {/* --- COUNTER JUMLAH (Hanya muncul jika ada tiket dipilih) --- */}
           {selectedTicket && (
-            <div className="p-4 bg-slate-50 rounded-xl flex items-center justify-between">
+            <div className="p-4 bg-muted/10 rounded-xl flex items-center justify-between">
               <span className="font-medium text-sm text-slate-700">Jumlah</span>
-              <div className="flex items-center gap-3 bg-white px-2 py-1 rounded-lg border border-slate-200">
+              <div className="flex items-center gap-3 bg-white px-2 py-1 rounded-lg border border-border">
                 <button
                   onClick={() => setQty(Math.max(1, qty - 1))}
                   className="p-1 hover:bg-slate-100 rounded text-slate-600 disabled:opacity-50"
@@ -216,15 +216,16 @@ export default function TicketSection() {
           {/* --- TOTAL & TOMBOL BELI --- */}
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-end">
-              <span className="text-slate-500 text-sm">Total</span>
-              <span className="font-bold text-2xl text-blue-600">
+              <span className="text-muted text-sm">Total</span>
+              <span className="font-bold text-2xl text-primary">
                 {selectedTicket ? formatRupiah(totalPrice) : "Rp 0"}
               </span>
             </div>
 
             <Button
               size="lg"
-              className="w-full bg-blue-700 hover:bg-blue-800 font-bold text-base rounded-xl py-6"
+              variant="brand"
+              className="w-full font-bold text-base rounded-xl py-6"
               disabled={!selectedTicket}
             >
               Beli Tiket
@@ -234,7 +235,7 @@ export default function TicketSection() {
           <Separator />
 
           {/* --- SHARE BUTTONS --- */}
-          <div className="flex items-center justify-between text-slate-500">
+          <div className="flex items-center justify-between text-muted">
             <span className="text-sm">Bagikan event ini</span>
             <div className="flex gap-2">
               <Button
@@ -262,7 +263,7 @@ export default function TicketSection() {
               <Button
                 variant="outline"
                 size="icon"
-                className="w-8 h-8 rounded-full bg-slate-50 border-0 hover:bg-slate-200"
+                className="w-8 h-8 rounded-full bg-muted/10 border-0 hover:bg-muted/20"
               >
                 <LinkIcon size={16} />
               </Button>
