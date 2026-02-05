@@ -1,27 +1,20 @@
 import EventCard from "../reusable/EventCard";
 import { Inbox } from "lucide-react";
-
-// Tipe Data Event (Sesuaikan dengan kebutuhan)
-interface Event {
-  id: number;
-  title: string;
-  category: string;
-  date: string;
-  location: string;
-  price: number;
-  originalPrice?: number;
-  organizer: string;
-  image: string;
-  slug: string;
-  isHot?: boolean;
-  isOnline?: boolean;
-  isRtPintar?: boolean;
-  quota?: number;
-  maxQuota?: number;
-}
+import type { Event } from "@/types/event";
 
 interface EventListProps {
   events: Event[];
+}
+
+// Helper function to format date from ISO 8601 to display format
+function formatEventDate(isoDate: string): string {
+  const date = new Date(isoDate);
+  const options: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  };
+  return date.toLocaleDateString("id-ID", options);
 }
 
 export default function EventList({ events }: EventListProps) {
@@ -47,7 +40,20 @@ export default function EventList({ events }: EventListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {events.map((event) => (
-        <EventCard key={event.id} {...event} />
+        <EventCard
+          key={event.id}
+          title={event.title}
+          category={event.category}
+          date={formatEventDate(event.start_date)}
+          location={event.location}
+          price={event.price}
+          organizer={event.organizer?.name || "Organizer"}
+          image={event.banner_url || "/placeholder-event.jpg"}
+          slug={event.slug}
+          isOnline={event.location.toLowerCase() === "online"}
+          quota={0} // TODO: Get from backend when available
+          maxQuota={event.capacity}
+        />
       ))}
     </div>
   );
