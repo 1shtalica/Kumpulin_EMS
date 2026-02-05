@@ -94,7 +94,7 @@ const onSubmit = async (data: LoginFormValues) => {
     const toastId = toast.loading("Memproses login Google...");
     
     try {
-      await AuthService.googleAuth({ Code: response.code });
+      await AuthService.googleAuth({ code: response.code });
       
       toast.success("Login berhasil!", {
         id: toastId,

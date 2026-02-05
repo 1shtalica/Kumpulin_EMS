@@ -54,9 +54,25 @@ export const AuthService = {
     async me() {
         return axiosClient.get("/auth/me");
     },
-    async googleAuth(payload: { code: string, role: string }) {
+    async googleAuth(payload: { code: string }) {
         try {
             const response = await axiosClient.post("/auth/google", payload);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+    async updateProfile(payload: { phone_number?: string; role?: string }) {
+        try {
+            const response = await axiosClient.patch("/auth/profile", payload);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+    async createOrganizer(payload: { name: string; slug: string }) {
+        try {
+            const response = await axiosClient.post("/organizers", payload);
             return response.data;
         } catch (error) {
             throw error;

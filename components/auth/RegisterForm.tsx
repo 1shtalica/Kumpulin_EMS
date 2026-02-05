@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
-import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -19,53 +19,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldLabel,
-  FieldTitle,
-} from "@/components/ui/field";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
 import { Checkbox } from "../ui/checkbox";
 import { AuthService } from "@/services/auth-service";
 import { toast } from "sonner";
-import router from "next/router";
 import { AxiosError } from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 
 // ⭐ 2 skema register
-const baseFields = {
-  fullName: z.string().min(1, { message: "Nama lengkap harus diisi" }),
-  email: z
-    .string()
-    .min(1, { message: "Email Wajib diisi" })
-    .email({ message: "Format email tidak valid" }),
-  phoneNumber: z
-    .string()
-    .min(10, { message: "Nomor HP minimal 10 digit" })
-    .regex(/^(\+62|62|0)[0-9]{9,12}$/, {
-      message: "Format nomor HP tidak valid (contoh: 08xxxxxxxxxx)",
+const registerSchema = z
+  .object({
+    fullName: z.string().min(1, { message: "Nama lengkap harus diisi" }),
+    email: z
+      .string()
+      .min(1, { message: "Email wajib diisi" })
+      .email({ message: "Format email tidak valid" }),
+    password: z
+      .string()
+      .min(8, { message: "Password minimal 8 karakter" })
+      .regex(/[A-Z]/, { message: "Password harus mengandung huruf besar" })
+      .regex(/[a-z]/, { message: "Password harus mengandung huruf kecil" })
+      .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Konfirmasi password wajib diisi" }),
+    agreeToTerms: z.boolean().refine((val) => val === true, {
+      message: "Anda harus menyetujui syarat dan ketentuan",
     }),
-  password: z
-    .string()
-    .min(8, { message: "Password minimal 8 karakter" })
-    .regex(/[A-Z]/, { message: "Password harus mengandung huruf besar" })
-    .regex(/[a-z]/, { message: "Password harus mengandung huruf kecil" })
-    .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
-  confirmPassword: z
-    .string()
-    .min(1, { message: "Konfirmasi password wajib diisi" }),
-  agreeToTerms: z.boolean().refine((val) => val === true, {
-    message: "Anda harus menyetujui syarat dan ketentuan",
-  }),
-};
-
-const attendeeSchema = z
-  .object({
-    role: z.literal("attendee"),
-    ...baseFields,
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
@@ -77,28 +58,7 @@ const attendeeSchema = z
     }
   });
 
-const organizerSchema = z
-  .object({
-    role: z.literal("organizer"),
-    ...baseFields,
-    organizerName: z.string().min(1, { message: "Nama Organizer wajib diisi" }),
-    organizerType: z.enum(["Individu", "Komunitas"]),
-  })
-  .superRefine((data, ctx) => {
-    if (data.password !== data.confirmPassword) {
-      ctx.addIssue({
-        path: ["confirmPassword"],
-        message: "Password tidak cocok",
-        code: z.ZodIssueCode.custom,
-      });
-    }
-  });
-
-// Dipisahkan oleh discriminator role
-const registerSchema = z.discriminatedUnion("role", [
-  attendeeSchema,
-  organizerSchema,
-]);
+  type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -118,49 +78,26 @@ export default function RegisterForm() {
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      role: "attendee",
       fullName: "",
       email: "",
-      phoneNumber: "",
       password: "",
       confirmPassword: "",
       agreeToTerms: false,
-      organizerName: "",
-      organizerType: "Individu",
     } as Partial<RegisterFormValues>,
   });
-
-  const role = watch("role") || "attendee";
-  const organizerType = watch("organizerType");
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     const toastId = toast.loading("Sedang Mendaftar...");
     try {
-      if (data.role === "attendee") {
-        await AuthService.registerUser({
-          email: data.email,
-          password: data.password,
-          username: data.fullName,
-          first_name: data.fullName,
-          last_name: "",
-          phone_number: data.phoneNumber,
-        });
-      } else {
-        await AuthService.registerOrganizer({
-          email: data.email,
-          password: data.password,
-          username: data.fullName,
-          first_name: data.fullName,
-          last_name: "",
-          phone_number: data.phoneNumber,
-          name: data.organizerName,
-          slug: "",
-        });
-      }
-
-      toast.success("Registrasi berhasil!", { id: toastId });
-
+      await AuthService.registerUser({
+        email: data.email,
+        password: data.password,
+        username: data.fullName,
+        first_name: data.fullName,
+        last_name: "",
+      });
+      toast.success("Akun berhasil dibuat!", { id: toastId });
       router.push("/login");
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
@@ -180,10 +117,12 @@ export default function RegisterForm() {
 
   const onGoogleSubmit = useGoogleLogin({
     onSuccess: async (response) => {
-      await AuthService.googleAuth({ code: response.code, role: role });
-      router.push("/");
+      await AuthService.googleAuth({ code: response.code });
+      toast.success("Akun berhasil dibuat!");
+      router.push("/get-started");
     },
     onError: (error) => {
+      toast.error("Registrasi gagal");
       console.error("Google Login Error:", error);
     },
     flow: "auth-code",
@@ -211,42 +150,6 @@ export default function RegisterForm() {
 
         {/* Isi card */}
         <CardContent>
-          {/* Switcher role pada form register  */}
-          <div className="grid gap-4 mb-6">
-            <Label>Daftar Sebagai</Label>
-            <RadioGroup
-              value={role}
-              onValueChange={(value) =>
-                setValue("role", value as "attendee" | "organizer", {
-                  shouldValidate: true,
-                })
-              }
-            >
-              <FieldLabel htmlFor="attendee">
-                <Field orientation="horizontal">
-                  <FieldContent>
-                    <FieldTitle>Peserta Event</FieldTitle>
-                    <FieldDescription>
-                      Temukan dan ikuti berbagai event menarik
-                    </FieldDescription>
-                  </FieldContent>
-                  <RadioGroupItem value="attendee" id="attendee" />
-                </Field>
-              </FieldLabel>
-              <FieldLabel htmlFor="organizer">
-                <Field orientation="horizontal">
-                  <FieldContent>
-                    <FieldTitle>Event Organizer</FieldTitle>
-                    <FieldDescription>
-                      Buat dan kelola event Anda sendiri
-                    </FieldDescription>
-                  </FieldContent>
-                  <RadioGroupItem value="organizer" id="organizer" />
-                </Field>
-              </FieldLabel>
-            </RadioGroup>
-          </div>
-
           <form
             onSubmit={handleSubmit(
               onSubmit,
@@ -301,97 +204,7 @@ export default function RegisterForm() {
                 </p>
               )}
             </div>
-            {/* Input No HP  */}
-            <div className="grid gap-2">
-              <Label htmlFor="phoneNumber">Nomor WhatsApp</Label>
-              <Input
-                id="phoneNumber"
-                type="tel"
-                placeholder="08xxxxxxxxxx"
-                disabled={isLoading}
-                autoComplete="tel"
-                {...register("phoneNumber")}
-                className={
-                  errors.phoneNumber ? "border-danger rounded-lg" : "rounded-lg"
-                }
-              />
-              {errors.phoneNumber && (
-                <p className="text-xs sm:text-sm text-danger font-medium">
-                  {errors.phoneNumber.message}
-                </p>
-              )}
-            </div>
-
-            {/* 🌟 Menampilkan field tambahan untuk organizer  */}
-            {role === "organizer" && (
-              <div className="grid gap-4">
-                {/* Input nama organizer  */}
-                <div className="grid gap-4">
-                  <Label htmlFor="organizerName">Nama Organizer</Label>
-                  <Input
-                    id="organizerName"
-                    type="text"
-                    placeholder="Masukkan nama organisasi anda"
-                    disabled={isLoading}
-                    autoComplete="organization"
-                    {...register("organizerName")}
-                    className={
-                      "organizerName" in errors && errors.organizerName
-                        ? "border-danger rounded-lg"
-                        : "rounded-lg"
-                    }
-                  />
-                  {"organizerName" in errors && errors.organizerName && (
-                    <p className="text-xs sm:text-sm text-danger font-medium">
-                      {errors.organizerName.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Input tipe organizer  */}
-                <div className="grid gap-4">
-                  <Label>Tipe Organizer</Label>
-                  <RadioGroup
-                    value={organizerType}
-                    onValueChange={(value) =>
-                      setValue(
-                        "organizerType",
-                        value as "Individu" | "Komunitas",
-                        // | "Perusahaan"
-                        // | "Rt_Pintar",
-                        {
-                          shouldValidate: true,
-                        },
-                      )
-                    }
-                    className="grid grid-cols-1"
-                  >
-                    <FieldLabel htmlFor="Individu">
-                      <Field orientation="horizontal">
-                        <FieldContent>
-                          <FieldTitle>Individu</FieldTitle>
-                          <FieldDescription>
-                            Satu orang menjadi pengelola
-                          </FieldDescription>
-                        </FieldContent>
-                        <RadioGroupItem value="Individu" id="Individu" />
-                      </Field>
-                    </FieldLabel>
-                    <FieldLabel htmlFor="Komunitas">
-                      <Field orientation="horizontal">
-                        <FieldContent>
-                          <FieldTitle>Komunitas</FieldTitle>
-                          <FieldDescription>
-                            Komunitas menjadi pengelola
-                          </FieldDescription>
-                        </FieldContent>
-                        <RadioGroupItem value="Komunitas" id="Komunitas" />
-                      </Field>
-                    </FieldLabel>
-                  </RadioGroup>
-                </div>
-              </div>
-            )}
+            
             {/* Input Password */}
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
@@ -479,7 +292,7 @@ export default function RegisterForm() {
 
                 <label
                   htmlFor="agreeToTerms"
-                  className="text-sm font-normal leading-relaxed text-slate-600 cursor-pointer"
+                  className="text-sm font-normal leading-relaxed text-muted cursor-pointer"
                 >
                   Saya menyetujui{" "}
                   <Link
