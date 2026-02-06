@@ -51,7 +51,7 @@ export default function EventCard({
   return (
     <Link href={`/events/${slug}`} className="group block h-full w-full">
       <article className="h-full w-full">
-        <Card className="h-full flex flex-col p-0 gap-0 overflow-hidden border-none shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl rounded-2xl bg-white">
+        <Card className="h-full flex flex-col p-0 gap-0 overflow-hidden transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.15)] rounded-2xl bg-white border border-slate-100">
           {/* === BAGIAN GAMBAR === */}
           <div className="relative w-full aspect-4/3 overflow-hidden bg-slate-50">
             <Image

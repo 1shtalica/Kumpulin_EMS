@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Open_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import AuthInitializer from "@/components/auth/AuthInitializer";
 import { getServerUser } from "@/services/server-auth";
 import { Toaster } from "@/components/ui/sonner"
 import "./globals.css";
 
-const openSans = Open_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ export default async function RootLayout({
 
   return (
     <html lang="id">
-      <body className={`${openSans.variable} antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         <AuthInitializer user={user} />
         {children}
         <Toaster position="top-right" duration={3000} richColors />
