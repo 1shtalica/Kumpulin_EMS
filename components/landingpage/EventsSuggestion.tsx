@@ -80,7 +80,7 @@ export default function UpcomingEvents() {
   return (
     <section className="py-16 md:py-24 bg-white">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col gap-3 mb-8 md:mb-12">
+        <div className="flex flex-col gap-2 mb-8 md:mb-12">
           <div className="flex items-center justify-between">
             <h2 className="text-xl md:text-3xl font-bold text-accent">
               Event Pilihan
@@ -97,7 +97,7 @@ export default function UpcomingEvents() {
         </div>
 
         {/* GRID EVENT CARD */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
           {DUMMY_EVENTS.map((event) => (
             <EventCard
               key={event.id}

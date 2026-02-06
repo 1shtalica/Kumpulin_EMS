@@ -20,7 +20,7 @@ export default function LandingPage() {
       <LandingNavbar />
       <main>
         <Hero />
-        <div>
+        <div className="px-[8.5rem] md:px-[6rem] lg:px-[8.5rem]">
           <EventsSuggestion />
           <PopularCategory />
           <UpcomingEvents />
