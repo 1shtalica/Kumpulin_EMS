@@ -8,18 +8,23 @@ export interface LoginPayload {
 }
 
 export interface AuthResponse {
-    user_id: string;
+    id: number;
     email: string;
     username: string;
+    first_name: string;
+    last_name: string;
     role: string;
-    avatar: string;
+    phone_number: string;
+    provider: string;
+    profile_url?: string;
 }
 
 export const AuthService = {
     async login(payload: LoginPayload): Promise<AuthResponse> {
         try {
             const response = await axiosClient.post("/auth/login", payload);
-            return response.data;
+            // Backend returns: { success: true, message: ..., data: { user object } }
+            return response.data.data;
         } catch (error) {
             throw error;
         }

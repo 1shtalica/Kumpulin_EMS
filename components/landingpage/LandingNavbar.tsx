@@ -75,7 +75,6 @@ export default function LandingNavbar() {
     <nav
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out p-4",
-        // Glass Effect consistent with Detail Page
         "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
         isScrolled ? "shadow-md" : "shadow-xs",
       )}

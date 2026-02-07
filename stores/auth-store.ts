@@ -23,11 +23,14 @@ export const useAuthStore = create<AuthState>((set) => ({
             const response = await AuthService.login(payload);
             set({
                 user: {
+                    user_id: String(response.id),
                     username: response.username,
                     email: response.email,
-                    user_id: response.user_id,
                     role: response.role,
-                    avatar: response.avatar,
+                    avatar: response.profile_url,
+                    phone_number: response.phone_number,
+                    first_name: response.first_name,
+                    last_name: response.last_name,
                 }
             });
         } catch (error) {
@@ -59,11 +62,12 @@ export const useAuthStore = create<AuthState>((set) => ({
             const response = (await AuthService.me()).data;
             set({
                 user: {
+                    user_id: String(response.user_id),
                     username: response.username,
                     email: response.email,
-                    user_id: response.user_id,
                     role: response.role,
-                    avatar: response.avatar,
+                    avatar: response.profile_url,
+                    phone_number: response.phone_number,
                 }
             });
         } catch (error) {

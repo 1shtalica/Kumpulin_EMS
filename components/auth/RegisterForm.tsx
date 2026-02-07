@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
+import { splitFullName } from "@/lib/name-utils";
 
 // ⭐ 2 skema register
 const registerSchema = z
@@ -66,7 +67,7 @@ export default function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  type RegisterFormValues = z.infer<typeof registerSchema>;
+  
 
   const {
     register,
@@ -86,6 +87,10 @@ export default function RegisterForm() {
     } as Partial<RegisterFormValues>,
   });
 
+
+const {firstName, lastName} = splitFullName(watch("fullName"));
+
+
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     const toastId = toast.loading("Sedang Mendaftar...");
@@ -94,8 +99,9 @@ export default function RegisterForm() {
         email: data.email,
         password: data.password,
         username: data.fullName,
-        first_name: data.fullName,
-        last_name: "",
+        first_name: firstName,
+        last_name: lastName,
+        // phone_number: "",
       });
       toast.success("Akun berhasil dibuat!", { id: toastId });
       router.push("/login");

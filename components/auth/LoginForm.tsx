@@ -68,7 +68,20 @@ const onSubmit = async (data: LoginFormValues) => {
       id: toastId,  
     });
     
-    router.push("/");
+    // Smart redirect based on profile completion
+    const user = useAuthStore.getState().user;
+    
+    if (user?.phone_number) {
+      // Profile complete → redirect to dashboard
+      if (user.role === "organizer") {
+        router.push("/organizer/dashboard");
+      } else {
+        router.push("/user/dashboard");
+      }
+    } else {
+      // Profile incomplete → redirect to get-started
+      router.push("/get-started");
+    }
   } catch (error: any) {
     const axiosError = error as AxiosError<{ message: string }>;
     const errorMessage =
@@ -100,7 +113,20 @@ const onSubmit = async (data: LoginFormValues) => {
         id: toastId,
       });
       
-      router.push("/");
+      // Smart redirect based on profile completion
+      const user = useAuthStore.getState().user;
+      
+      if (user?.phone_number) {
+        // Profile complete → redirect to dashboard
+        if (user.role === "organizer") {
+          router.push("/organizer/dashboard");
+        } else {
+          router.push("/user/dashboard");
+        }
+      } else {
+        // Profile incomplete → redirect to get-started
+        router.push("/get-started");
+      }
     } catch (error) {
       toast.error("Login gagal", {
         id: toastId,
