@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { AuthService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
+import { User } from "@/types/user";
 
 // Validation Schemas
 const phoneSchema = z.object({
@@ -42,7 +43,11 @@ const organizerSchema = z.object({
 type PhoneFormValues = z.infer<typeof phoneSchema>;
 type OrganizerFormValues = z.infer<typeof organizerSchema>;
 
-export default function GetStartedForm() {
+interface GetStartedFormProps {
+  initialUser?: User | null;
+}
+
+export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [phoneNumber, setPhoneNumber] = useState("");

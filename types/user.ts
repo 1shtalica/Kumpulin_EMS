@@ -4,5 +4,7 @@ export interface User {
     username: string;
     role: string;
     avatar?: string;
-    [key: string]: any;
+    phone_number?: string;
+    first_name?: string;
+    last_name?: string;
 }

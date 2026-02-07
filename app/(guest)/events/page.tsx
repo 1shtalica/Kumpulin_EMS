@@ -1,7 +1,7 @@
 import LandingNavbar from "@/components/landingpage/LandingNavbar";
-import SearchBar from "@/components/jelajah/SearchBar";
-import FilterBar from "@/components/jelajah/FilterBar";
-import EventList from "@/components/jelajah/EventList";
+import SearchBar from "@/components/explore/SearchBar";
+import FilterBar from "@/components/explore/FilterBar";
+import EventList from "@/components/explore/EventList";
 import { EventService } from "@/services/event-service";
 import type { Event } from "@/types/event";
 

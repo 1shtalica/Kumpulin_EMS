@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-// import HeroImage from 
+// import HeroImage from
 
 const categories = [
   {
@@ -31,7 +31,7 @@ const categories = [
   },
   {
     name: "Olahraga",
-    icon: <Trophy size={18} />, 
+    icon: <Trophy size={18} />,
     href: "/events?category=olahraga",
   },
   {
@@ -87,7 +87,6 @@ export default function HeroSection() {
           fill
           className="object-cover object-center"
           priority
-          quality={100}
         />
       </div>
 
