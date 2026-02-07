@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "s3.temanbicara.web.id",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -14,7 +14,7 @@ const DUMMY_EVENTS = [
     originalPrice: 300000,
     organizer: "GBK Entertainment",
     image:
-      "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80&w=800",
+      "https://s3.temanbicara.web.id/test/test.jpg",
     slug: "jakarta-music-festival-2025",
     isHot: true,
     isOnline: false,

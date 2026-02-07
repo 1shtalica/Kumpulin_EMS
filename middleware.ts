@@ -88,8 +88,10 @@ export async function middleware(request: NextRequest) {
     }
 
     const user = await res.json();
-    if (isPublicRoute) {
-      return redirect(request, "/");
+
+    if (isPublicRoute && ["/login", "/register"].includes(pathname)) {
+      const homePage = roleHomePages[user.role] || "/";
+      return redirect(request, homePage);
     }
 
     if (protectedRoute) {

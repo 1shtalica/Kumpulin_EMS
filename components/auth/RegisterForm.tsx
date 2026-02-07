@@ -59,7 +59,7 @@ const registerSchema = z
     }
   });
 
-  type RegisterFormValues = z.infer<typeof registerSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -67,7 +67,7 @@ export default function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  
+
 
   const {
     register,
@@ -88,9 +88,7 @@ export default function RegisterForm() {
   });
 
 
-const {firstName, lastName} = splitFullName(watch("fullName"));
-
-
+  const { firstName, lastName } = splitFullName(watch("fullName"));
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     const toastId = toast.loading("Sedang Mendaftar...");
@@ -210,7 +208,7 @@ const {firstName, lastName} = splitFullName(watch("fullName"));
                 </p>
               )}
             </div>
-            
+
             {/* Input Password */}
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
