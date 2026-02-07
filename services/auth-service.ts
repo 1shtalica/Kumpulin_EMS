@@ -69,7 +69,7 @@ export const AuthService = {
     },
     async updateProfile(payload: { phone_number?: string; role?: string }) {
         try {
-            const response = await axiosClient.patch("/auth/profile", payload);
+            const response = await axiosClient.patch(`/auth/profile?role=${payload.role}`, payload);
             return response.data;
         } catch (error) {
             throw error;
@@ -77,7 +77,7 @@ export const AuthService = {
     },
     async createOrganizer(payload: { name: string; slug: string }) {
         try {
-            const response = await axiosClient.post("/organizers", payload);
+            const response = await axiosClient.post("/auth/register-organizer", payload);
             return response.data;
         } catch (error) {
             throw error;

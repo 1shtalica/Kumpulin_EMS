@@ -99,7 +99,6 @@ export default function RegisterForm() {
         username: data.fullName,
         first_name: firstName,
         last_name: lastName,
-        // phone_number: "",
       });
       toast.success("Akun berhasil dibuat!", { id: toastId });
       router.push("/login");
