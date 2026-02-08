@@ -18,16 +18,29 @@ export default function CreateEventClient() {
     nextStep,
     prevStep,
     validateStep,
+
+    // Step 1
     updateEventType,
+
+    // Step 2
     updateTitle,
     updateCategory,
     updateDescription,
     updateBanner,
-    updateSchedule,
-    updateLocationType,
+
+    // Step 3
+    updateEventSchedule,
+    updateRegistrationSchedule,
+    addRundown,
+    removeRundown,
+    updateRundown,
+    updateIsOnline,
     updateAddress,
     updateMeetingUrl,
+
+    // Step 4
     updateIsPaid,
+    updateMaxCapacity,
     addTicket,
     removeTicket,
     updateTicket,
@@ -36,7 +49,7 @@ export default function CreateEventClient() {
   const isStepValid = validateStep(currentStep);
   const canGoNext = isStepValid && currentStep < 5;
   const canGoPrev = currentStep > 1;
-  // 🌟 Tambahkan kondisional jika jadi button submit
+
   const handleNext = () => {
     if (canGoNext) {
       nextStep();
@@ -50,12 +63,10 @@ export default function CreateEventClient() {
   };
 
   const handleSubmit = async () => {
-    // TODO: Implement submit logic
-    // 1. Upload banner to Supabase
-    // 2. Create event via API
-    // 3. Redirect to event detail or my events
-    console.log("Submitting event:", formData);
-    alert("Submit functionality will be implemented in next phase");
+    // API Submission Logic Placeholder
+
+    console.log("Submitting Event Payload:", JSON.stringify(formData, null, 2));
+    // TODO: Connect to backend API
   };
 
   const renderStep = () => {
@@ -84,13 +95,26 @@ export default function CreateEventClient() {
       case 3:
         return (
           <EventScheduleStep
-            startDate={formData.startDate}
-            endDate={formData.endDate}
-            startTime={formData.startTime}
-            endTime={formData.endTime}
-            onScheduleChange={updateSchedule}
-            locationType={formData.locationType}
-            onLocationTypeChange={updateLocationType}
+            // Event Schedule
+            startEventDate={formData.startEventDate}
+            endEventDate={formData.endEventDate}
+            startEventTime={formData.startEventTime}
+            endEventTime={formData.endEventTime}
+            onEventScheduleChange={updateEventSchedule}
+            // Registration Schedule
+            startRegistration={formData.startRegistration}
+            endRegistration={formData.endRegistration}
+            startRegistrationTime={formData.startRegistrationTime}
+            endRegistrationTime={formData.endRegistrationTime}
+            onRegistrationScheduleChange={updateRegistrationSchedule}
+            // Rundown
+            rundown={formData.rundown}
+            onAddRundown={addRundown}
+            onRemoveRundown={removeRundown}
+            onUpdateRundown={updateRundown}
+            // Location
+            isOnline={formData.isOnline}
+            onIsOnlineChange={updateIsOnline}
             address={formData.address}
             onAddressChange={(field, value) =>
               updateAddress({ [field]: value })
@@ -103,8 +127,10 @@ export default function CreateEventClient() {
         return (
           <EventTicketStep
             isPaid={formData.isPaid}
+            maxCapacity={formData.maxCapacity}
             tickets={formData.tickets}
             onIsPaidChange={updateIsPaid}
+            onMaxCapacityChange={updateMaxCapacity}
             onAddTicket={addTicket}
             onRemoveTicket={removeTicket}
             onUpdateTicket={updateTicket}
@@ -151,17 +177,21 @@ export default function CreateEventClient() {
           <span className="text-sm text-accent">Step {currentStep} dari 5</span>
         </div>
 
-        <Button
-          onClick={handleNext}
-          disabled={!canGoNext}
-          className={cn(
-            "min-w-30 rounded-lg",
-            !isStepValid && "cursor-not-allowed opacity-50",
-          )}
-        >
-          {currentStep === 5 ? "Submit" : "Lanjut"}
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        {currentStep < 5 ? (
+          <Button
+            onClick={handleNext}
+            disabled={!canGoNext}
+            className={cn(
+              "min-w-30 rounded-lg",
+              !isStepValid && "cursor-not-allowed opacity-50",
+            )}
+          >
+            Lanjut
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        ) : (
+          <div /> /* Spacer */
+        )}
       </div>
 
       {/* Validation Hint */}
@@ -170,8 +200,9 @@ export default function CreateEventClient() {
           <p className="text-sm text-red-600">
             {currentStep === 1 && "Pilih tipe event untuk melanjutkan"}
             {currentStep === 2 && "Lengkapi semua informasi event"}
-            {currentStep === 3 && "Lengkapi jadwal dan lokasi event"}
-            {currentStep === 4 && "Tentukan harga event"}
+            {currentStep === 3 &&
+              "Lengkapi jadwal, pendaftaran, rundown, dan lokasi"}
+            {currentStep === 4 && "Lengkapi kapasitas dan tiket event"}
           </p>
         </div>
       )}

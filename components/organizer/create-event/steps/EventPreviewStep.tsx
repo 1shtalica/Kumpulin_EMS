@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, MapPin, Video, Ticket as TicketIcon } from "lucide-react";
+import { Calendar, MapPin, Video, Ticket as TicketIcon, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CreateEventFormState } from "@/types/create-event";
@@ -100,16 +100,34 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-accent">
               <Calendar className="h-4 w-4" />
-              Jadwal
+              Waktu Pelaksanaan
             </div>
             <div className="mt-2 space-y-1 text-sm text-muted">
               <p>
-                <strong>Mulai:</strong> {formatDate(formData.startDate)} •{" "}
-                {formData.startTime || "-"}
+                <strong>Mulai:</strong> {formatDate(formData.startEventDate)} •{" "}
+                {formData.startEventTime || "-"}
               </p>
               <p>
-                <strong>Selesai:</strong> {formatDate(formData.endDate)} •{" "}
-                {formData.endTime || "-"}
+                <strong>Selesai:</strong> {formatDate(formData.endEventDate)} •{" "}
+                {formData.endEventTime || "-"}
+              </p>
+            </div>
+          </div>
+          
+           {/* Registration Schedule */}
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-accent">
+              <Clock className="h-4 w-4" />
+              Periode Pendaftaran
+            </div>
+            <div className="mt-2 space-y-1 text-sm text-muted">
+              <p>
+                <strong>Buka:</strong> {formatDate(formData.startRegistration)} •{" "}
+                {formData.startRegistrationTime || "-"}
+              </p>
+              <p>
+                <strong>Tutup:</strong> {formatDate(formData.endRegistration)} •{" "}
+                {formData.endRegistrationTime || "-"}
               </p>
             </div>
           </div>
@@ -117,15 +135,15 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
           {/* Location */}
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-accent">
-              {formData.locationType === "offline" ? (
+              {!formData.isOnline ? (
                 <MapPin className="h-4 w-4" />
               ) : (
                 <Video className="h-4 w-4" />
               )}
-              Lokasi - {formData.locationType === "offline" ? "Offline" : "Online"}
+              Lokasi - {!formData.isOnline ? "Offline" : "Online"}
             </div>
             <div className="mt-2 text-sm text-muted">
-              {formData.locationType === "offline" ? (
+              {!formData.isOnline ? (
                 <div className="space-y-1">
                   <p>{formData.address.rawAddress}</p>
                   <p>
@@ -147,10 +165,40 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
           </div>
         </div>
       </div>
-
-      {/* Tickets */}
+      
+       {/* Rundown */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-md">
-        <h3 className="mb-3 font-semibold text-accent">Tiket</h3>
+        <h3 className="mb-3 font-semibold text-accent">Susunan Acara</h3>
+        
+        {formData.rundown.length > 0 ? (
+             <div className="space-y-3">
+                {formData.rundown.map((item, index) => (
+                    <div key={index} className="flex gap-4 border-l-2 border-primary pl-4">
+                        <div className="min-w-24 text-sm text-muted">
+                            {item.startTime} - {item.endTime}
+                        </div>
+                        <div>
+                             <p className="font-medium text-accent">{item.title}</p>
+                             {item.location && <p className="text-xs text-muted-foreground">{item.location}</p>}
+                             <p className="text-sm text-slate-600">{item.description}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        ) : (
+            <p className="text-sm text-slate-500 italic">Belum ada rundown</p>
+        )}
+       
+      </div>
+
+      {/* Tickets & Capacity */}
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-md">
+        <h3 className="mb-3 font-semibold text-accent">Tiket & Kapasitas</h3>
+        
+        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+             <Users className="h-4 w-4" />
+             <span>Kapasitas Maksimal: <strong>{formData.maxCapacity > 0 ? `${formData.maxCapacity} Peserta` : "Tidak Terbatas"}</strong></span>
+        </div>
 
         <div className="space-y-3">
           <div className="text-sm">
@@ -189,6 +237,8 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
             </div>
           ))}
         </div>
+        
+
       </div>
 
       {/* Submit Button */}
@@ -205,3 +255,4 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
     </div>
   );
 }
+

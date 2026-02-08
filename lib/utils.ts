@@ -37,13 +37,10 @@ export function splitFullName(fullName: string): {
 }
 
 export const combineDateAndTime = (date: Date, timeString: string): Date => {
-  // 1. Buat copy dari object date agar state asli tidak berubah
   const result = new Date(date);
 
-  // 2. timeString biasanya formatnya "HH:mm" (contoh: "14:30")
   const [hours, minutes] = timeString.split(":").map(Number);
 
-  // 3. Set jam dan menit ke object date
   result.setHours(hours);
   result.setMinutes(minutes);
   result.setSeconds(0);

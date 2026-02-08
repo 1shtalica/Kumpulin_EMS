@@ -24,14 +24,13 @@ import { useAuthStore } from "@/stores/auth-store";
 import { AxiosError } from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import { AuthService } from "@/services/auth-service";
-import { toast } from "sonner"
-
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z
-      .string()
-      .min(1, { message: "Email Wajib diisi" })
-      .email({ message: "Format email tidak valid" }),
+    .string()
+    .min(1, { message: "Email Wajib diisi" })
+    .email({ message: "Format email tidak valid" }),
   password: z.string().min(8, { message: "Password minimal 8 karakter" }),
 });
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -56,99 +55,98 @@ export default function LoginForm() {
 
   const login = useAuthStore((state) => state.login);
 
-const onSubmit = async (data: LoginFormValues) => {
-  setIsLoading(true);
-  
-  const toastId = toast.loading("Sedang Masuk...");
-
-  try {
-    await login(data);  
-    
-    toast.success("Login berhasil!", {
-      id: toastId,  
-    });
-    
-    // Smart redirect based on profile completion
-    const user = useAuthStore.getState().user;
-    
-    if (user?.phone_number) {
-      // Profile complete → redirect to dashboard
-      if (user.role === "organizer") {
-        router.push("/organizer/dashboard");
-      } else {
-        router.push("/user/dashboard");
-      }
-    } else {
-      // Profile incomplete → redirect to get-started
-      router.push("/get-started");
-    }
-  } catch (error: any) {
-    const axiosError = error as AxiosError<{ message: string }>;
-    const errorMessage =
-      axiosError.response?.data?.message ||
-      "Periksa kembali email dan password Anda.";
-
-    toast.error("Login gagal", {
-      id: toastId,  
-    });
-    
-    setError("root", {
-      type: "manual",
-      message: errorMessage,
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
-
-  const onGoogleSubmit = useGoogleLogin({
-  onSuccess: async (response) => {
+  const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    const toastId = toast.loading("Memproses login Google...");
-    
+
+    const toastId = toast.loading("Sedang Masuk...");
+
     try {
-      await AuthService.googleAuth({ code: response.code });
-      
+      await login(data);
+
       toast.success("Login berhasil!", {
         id: toastId,
       });
-      
+
       // Smart redirect based on profile completion
       const user = useAuthStore.getState().user;
-      
+
       if (user?.phone_number) {
-        // Profile complete → redirect to dashboard
         if (user.role === "organizer") {
           router.push("/organizer/dashboard");
         } else {
-          router.push("/user/dashboard");
+          router.push("/user/home");
         }
       } else {
         // Profile incomplete → redirect to get-started
         router.push("/get-started");
       }
-    } catch (error) {
+    } catch (error: any) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Periksa kembali email dan password Anda.";
+
       toast.error("Login gagal", {
         id: toastId,
       });
-      
+
       setError("root", {
         type: "manual",
-        message: "Gagal login dengan Google. Silakan coba lagi.",
+        message: errorMessage,
       });
     } finally {
       setIsLoading(false);
     }
-  },
-  onError: () => {
-    toast.error("Login gagal");
-    setError("root", {
-      type: "manual",
-      message: "Gagal terhubung dengan Google.",
-    });
-  },
-  flow: "auth-code",
-});
+  };
+
+  const onGoogleSubmit = useGoogleLogin({
+    onSuccess: async (response) => {
+      setIsLoading(true);
+      const toastId = toast.loading("Memproses login Google...");
+
+      try {
+        await AuthService.googleAuth({ code: response.code });
+
+        toast.success("Login berhasil!", {
+          id: toastId,
+        });
+
+        // Smart redirect based on profile completion
+        const user = useAuthStore.getState().user;
+
+        if (user?.phone_number) {
+          // Profile complete → redirect to dashboard
+          if (user.role === "organizer") {
+            router.push("/organizer/dashboard");
+          } else {
+            router.push("/user/dashboard");
+          }
+        } else {
+          // Profile incomplete → redirect to get-started
+          router.push("/get-started");
+        }
+      } catch (error) {
+        toast.error("Login gagal", {
+          id: toastId,
+        });
+
+        setError("root", {
+          type: "manual",
+          message: "Gagal login dengan Google. Silakan coba lagi.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => {
+      toast.error("Login gagal");
+      setError("root", {
+        type: "manual",
+        message: "Gagal terhubung dengan Google.",
+      });
+    },
+    flow: "auth-code",
+  });
 
   return (
     <div>
@@ -162,7 +160,9 @@ const onSubmit = async (data: LoginFormValues) => {
             </span>
           </h1>
 
-          <CardTitle className="font-semibold text-xl sm:text-2xl text-accent ">Selamat Datang Kembali!</CardTitle>
+          <CardTitle className="font-semibold text-xl sm:text-2xl text-accent ">
+            Selamat Datang Kembali!
+          </CardTitle>
           <CardDescription className="text-sm text-muted">
             Masuk ke akun kumpul.in kamu
           </CardDescription>
@@ -181,14 +181,14 @@ const onSubmit = async (data: LoginFormValues) => {
                 disabled={isLoading}
                 autoComplete="email"
                 className={
-                  errors.email
-                    ? "border-danger rounded-lg"
-                    : "rounded-lg"
+                  errors.email ? "border-danger rounded-lg" : "rounded-lg"
                 }
                 {...register("email")}
               />
               {errors.email && (
-                <p className="text-xs sm:text-sm text-danger font-medium">{errors.email.message}</p>
+                <p className="text-xs sm:text-sm text-danger font-medium">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
@@ -205,9 +205,7 @@ const onSubmit = async (data: LoginFormValues) => {
                   autoComplete="current-password"
                   {...register("password")}
                   className={
-                    errors.password
-                      ? "border-danger rounded-lg"
-                      : "rounded-lg"
+                    errors.password ? "border-danger rounded-lg" : "rounded-lg"
                   }
                 />
                 {/* Tombol Mata Toggle */}

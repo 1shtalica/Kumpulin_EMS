@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Trash2, Ticket as TicketIcon } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash2, Ticket as TicketIcon, Users, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,12 @@ import type { TicketRequest } from "@/types/create-event";
 
 interface EventTicketStepProps {
   isPaid: boolean;
+  maxCapacity: number;
   tickets: TicketRequest[];
+  
   onIsPaidChange: (isPaid: boolean) => void;
+  onMaxCapacityChange: (capacity: number) => void;
+  
   onAddTicket: () => void;
   onRemoveTicket: (index: number) => void;
   onUpdateTicket: (index: number, field: keyof TicketRequest, value: string | number) => void;
@@ -19,66 +24,118 @@ interface EventTicketStepProps {
 export default function EventTicketStep(props: EventTicketStepProps) {
   const {
     isPaid,
+    maxCapacity,
     tickets,
     onIsPaidChange,
+    onMaxCapacityChange,
     onAddTicket,
     onRemoveTicket,
     onUpdateTicket,
   } = props;
 
+
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900">Pengaturan Tiket</h2>
         <p className="mt-2 text-gray-600">
-          Atur jenis dan harga tiket untuk event Anda
+          Atur kapasitas, batas waktu pendaftaran, dan jenis tiket
         </p>
       </div>
 
-      {/* Free/Paid Toggle */}
-      <div className="space-y-3">
-        <Label>Tipe Tiket</Label>
-        <div className="grid gap-3 md:grid-cols-2">
-          <button
-            onClick={() => onIsPaidChange(false)}
-            className={cn(
-              "rounded-lg border-2 p-4 text-left transition-all",
-              "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-              !isPaid
-                ? "border-green-600 bg-green-50 shadow-md"
-                : "border-gray-200 bg-white hover:border-gray-300"
-            )}
-          >
-            <div className="font-semibold text-gray-900">Gratis</div>
-            <div className="text-sm text-gray-600">Event dapat diakses tanpa biaya</div>
-          </button>
-
-          <button
-            onClick={() => onIsPaidChange(true)}
-            className={cn(
-              "rounded-lg border-2 p-4 text-left transition-all",
-              "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-              isPaid
-                ? "border-blue-600 bg-blue-50 shadow-md"
-                : "border-gray-200 bg-white hover:border-gray-300"
-            )}
-          >
-            <div className="font-semibold text-gray-900">Berbayar</div>
-            <div className="text-sm text-gray-600">Event memerlukan pembelian tiket</div>
-          </button>
+      {/* Basic Settings */}
+      <div className="space-y-4">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+          <Users className="h-5 w-5 text-primary" />
+          Kapasitas & Batas Waktu
+        </h3>
+        
+        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+             {/* Max Capacity */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <Label>Kapasitas Maksimal Peserta</Label>
+                    <div className="flex items-center space-x-2">
+                        <input
+                            type="checkbox"
+                            id="unlimitedCapacity"
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                            checked={maxCapacity === 0}
+                            onChange={(e) => onMaxCapacityChange(e.target.checked ? 0 : 50)}
+                        />
+                        <Label htmlFor="unlimitedCapacity" className="font-normal text-gray-600">
+                            Tanpa Batas
+                        </Label>
+                    </div>
+                </div>
+                
+                {maxCapacity > 0 && (
+                    <Input 
+                        type="number"
+                        min="1"
+                        placeholder="Contoh: 100"
+                        value={maxCapacity}
+                        onChange={(e) => onMaxCapacityChange(parseInt(e.target.value) || 0)}
+                    />
+                )}
+                {maxCapacity === 0 && (
+                    <div className="rounded-md bg-green-50 p-3 text-sm text-green-700 border border-green-200">
+                        Kapasitas peserta tidak dibatasi
+                    </div>
+                )}
+            </div>
         </div>
       </div>
-
+      
       <hr className="border-gray-200" />
+
+      {/* Free/Paid Toggle */}
+      <div className="space-y-4">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+             <TicketIcon className="h-5 w-5 text-primary" />
+             Jenis Tiket
+        </h3>
+      
+        <div className="space-y-3">
+            <Label>Apakah event ini berbayar?</Label>
+            <div className="grid gap-3 md:grid-cols-2">
+            <button
+                onClick={() => onIsPaidChange(false)}
+                className={cn(
+                "rounded-lg border-2 p-4 text-left transition-all",
+                "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                !isPaid
+                    ? "border-green-600 bg-green-50 shadow-md"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                )}
+            >
+                <div className="font-semibold text-gray-900">Gratis</div>
+                <div className="text-sm text-gray-600">Event dapat diakses tanpa biaya</div>
+            </button>
+
+            <button
+                onClick={() => onIsPaidChange(true)}
+                className={cn(
+                "rounded-lg border-2 p-4 text-left transition-all",
+                "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                isPaid
+                    ? "border-blue-600 bg-blue-50 shadow-md"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                )}
+            >
+                <div className="font-semibold text-gray-900">Berbayar</div>
+                <div className="text-sm text-gray-600">Event memerlukan pembelian tiket</div>
+            </button>
+            </div>
+        </div>
+      </div>
 
       {/* Tickets List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-            <TicketIcon className="h-5 w-5 text-primary" />
-            Daftar Tiket
-          </h3>
+          <Label className="text-base font-medium">Daftar Tiket</Label>
           {isPaid && tickets.length < 5 && (
             <Button
               type="button"
@@ -194,3 +251,4 @@ export default function EventTicketStep(props: EventTicketStepProps) {
     </div>
   );
 }
+

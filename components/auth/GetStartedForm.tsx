@@ -84,18 +84,18 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     try {
       await AuthService.updateProfile({
         phone_number: phoneNumber,
-        role: "attendee",
+        role: "user",
       });
 
       await useAuthStore.getState().checkAuth();
 
       toast.success("Profil berhasil dilengkapi!", { id: toastId });
-      router.push("/");
+      router.push("/user/home");
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       toast.error(
         axiosError.response?.data?.message || "Gagal melengkapi profil",
-        { id: toastId }
+        { id: toastId },
       );
     } finally {
       setIsLoading(false);
@@ -113,6 +113,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         role: "organizer",
       });
 
+      // 2. Create organizer (ini yang akan ubah role ke organizer)
       const slug = generateSlug(data.organizerName);
       await AuthService.createOrganizer({
         name: data.organizerName,
@@ -122,12 +123,12 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
       await useAuthStore.getState().checkAuth();
 
       toast.success("Profil organizer berhasil dibuat!", { id: toastId });
-      router.push("/dashboard/organizer");
+      router.push("/organizer/dashboard");
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       toast.error(
         axiosError.response?.data?.message || "Gagal membuat profil",
-        { id: toastId }
+        { id: toastId },
       );
     } finally {
       setIsLoading(false);
@@ -151,9 +152,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     <div className="w-full max-w-md mx-auto space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-semibold text-accent">
-          Selamat Datang!
-        </h1>
+        <h1 className="text-2xl font-semibold text-accent">Selamat Datang!</h1>
         <p className="text-sm text-muted">
           Lengkapi profil Anda untuk melanjutkan
         </p>
@@ -164,13 +163,13 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         <div
           className={cn(
             "h-2 w-16 rounded-full transition-colors",
-            step === 1 ? "bg-primary" : "bg-primary-light"
+            step === 1 ? "bg-primary" : "bg-primary-light",
           )}
         />
         <div
           className={cn(
             "h-2 w-16 rounded-full transition-colors",
-            step === 2 ? "bg-primary" : "bg-slate-200"
+            step === 2 ? "bg-primary" : "bg-slate-200",
           )}
         />
       </div>
@@ -178,7 +177,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
       {/* STEP 1: Phone Number */}
       {step === 1 && (
         <>
-          <Card className="shadow-sm">
+          <Card className="shadow-xs border-slate-100">
             <CardHeader className="space-y-1">
               <CardTitle className="text-xl text-accent">
                 Lengkapi Nomor Telepon
@@ -240,7 +239,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
               <Card
                 className={cn(
                   "cursor-pointer transition-all hover:border-primary hover:shadow-sm",
-                  selectedRole === "attendee" && "border-primary shadow-sm"
+                  selectedRole === "attendee" && "border-primary shadow-sm",
                 )}
                 onClick={() => !isLoading && setSelectedRole("attendee")}
               >
@@ -263,7 +262,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   "transition-all",
                   selectedRole === "organizer"
                     ? "border-secondary shadow-sm"
-                    : "cursor-pointer hover:border-secondary hover:shadow-sm"
+                    : "cursor-pointer hover:border-secondary hover:shadow-sm",
                 )}
                 onClick={() =>
                   !isLoading &&

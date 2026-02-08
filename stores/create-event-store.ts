@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type {
   CreateEventFormState,
   EventType,
-  LocationType,
+  RundownRequest,
   TicketRequest,
 } from "@/types/create-event";
 
@@ -25,18 +25,38 @@ interface CreateEventStore {
   updateBanner: (file: File | null, preview: string) => void;
 
   // Field updates - Step 3
-  updateSchedule: (data: {
-    startDate?: Date;
-    endDate?: Date;
-    startTime?: string;
-    endTime?: string;
+  updateEventSchedule: (data: {
+    startEventDate?: Date;
+    endEventDate?: Date;
+    startEventTime?: string;
+    endEventTime?: string;
   }) => void;
-  updateLocationType: (type: LocationType) => void;
+  
+  updateRegistrationSchedule: (data: {
+    startRegistration?: Date;
+    endRegistration?: Date;
+    startRegistrationTime?: string;
+    endRegistrationTime?: string;
+  }) => void;
+
+  // Rundown Actions
+  addRundown: () => void;
+  removeRundown: (index: number) => void;
+  updateRundown: (
+    index: number,
+    field: keyof RundownRequest,
+    value: string
+  ) => void;
+
+  // Location Actions
+  updateIsOnline: (isOnline: boolean) => void;
   updateAddress: (address: Partial<CreateEventFormState["address"]>) => void;
   updateMeetingUrl: (url: string) => void;
 
   // Field updates - Step 4
   updateIsPaid: (isPaid: boolean) => void;
+  updateMaxCapacity: (capacity: number) => void;
+
   updateTickets: (tickets: TicketRequest[]) => void;
   addTicket: () => void;
   removeTicket: (index: number) => void;
@@ -61,11 +81,20 @@ const initialFormData: CreateEventFormState = {
   description: "",
   bannerFile: null,
   bannerPreview: "",
-  startDate: undefined,
-  endDate: undefined,
-  startTime: "",
-  endTime: "",
-  locationType: "offline",
+  
+  startEventDate: undefined,
+  endEventDate: undefined,
+  startEventTime: "",
+  endEventTime: "",
+  
+  startRegistration: undefined,
+  endRegistration: undefined,
+  startRegistrationTime: "",
+  endRegistrationTime: "",
+
+  rundown: [],
+  
+  isOnline: false,
   address: {
     rawAddress: "",
     city: "",
@@ -75,7 +104,10 @@ const initialFormData: CreateEventFormState = {
     longitude: 0,
   },
   meetingUrl: "",
+  
   isPaid: false,
+  maxCapacity: 0,
+  
   tickets: [],
   step: 1,
 };
@@ -104,15 +136,6 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
       }));
     }
   },
-
-  // goToStep: (step: number) => {
-  //   if (step >= 1 && step <= 5) {
-  //     set({ currentStep: step });
-  //     set((state) => ({
-  //       formData: { ...state.formData, step },
-  //     }));
-  //   }
-  // },
 
   // Step 1 updates
   updateEventType: (type) => {
@@ -147,15 +170,59 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
   },
 
   // Step 3 updates
-  updateSchedule: (data) => {
+  updateEventSchedule: (data) => {
     set((state) => ({
       formData: { ...state.formData, ...data },
     }));
   },
 
-  updateLocationType: (type) => {
+  updateRegistrationSchedule: (data) => {
     set((state) => ({
-      formData: { ...state.formData, locationType: type },
+      formData: { ...state.formData, ...data },
+    }));
+  },
+
+  addRundown: () => {
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        rundown: [
+          ...state.formData.rundown,
+          {
+            title: "",
+            description: "",
+            startTime: "",
+            endTime: "",
+            location: "",
+          },
+        ],
+      },
+    }));
+  },
+
+  removeRundown: (index) => {
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        rundown: state.formData.rundown.filter((_, i) => i !== index),
+      },
+    }));
+  },
+
+  updateRundown: (index, field, value) => {
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        rundown: state.formData.rundown.map((item, i) =>
+          i === index ? { ...item, [field]: value } : item
+        ),
+      },
+    }));
+  },
+
+  updateIsOnline: (isOnline) => {
+    set((state) => ({
+      formData: { ...state.formData, isOnline },
     }));
   },
 
@@ -177,15 +244,23 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
   // Step 4 updates
   updateIsPaid: (isPaid) => {
     set((state) => {
-      // If switching to free, create a default free ticket
-      const tickets = isPaid
-        ? state.formData.tickets
-        : [{ name: "Tiket Gratis", price: 0, quota: 100, description: "" }];
+      // If switching to free, ensure tickets reflect that logic if needed
+      // But typically we just update the flag.
+      // If we want auto-ticket for free:
+      const tickets = !isPaid && state.formData.tickets.length === 0
+          ? [{ name: "Tiket Gratis", price: 0, quota: 100, description: "" }]
+          : state.formData.tickets;
 
       return {
         formData: { ...state.formData, isPaid, tickets },
       };
     });
+  },
+
+  updateMaxCapacity: (maxCapacity) => {
+     set((state) => ({
+      formData: { ...state.formData, maxCapacity },
+    }));
   },
 
   updateTickets: (tickets) => {
@@ -243,37 +318,48 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
         );
 
       case 3: {
-        const hasValidDates =
-          formData.startDate &&
-          formData.endDate &&
-          formData.startTime &&
-          formData.endTime;
+        const hasEventSchedule =
+          formData.startEventDate &&
+          formData.endEventDate &&
+          formData.startEventTime &&
+          formData.endEventTime;
 
-        if (!hasValidDates) return false;
-
-        // Validate location based on type
-        if (formData.locationType === "offline") {
-          return (
-            formData.address.rawAddress.trim() !== "" &&
-            formData.address.city.trim() !== "" &&
-            formData.address.province.trim() !== ""
-          );
+        if (!hasEventSchedule) return false;
+        
+        // Location validation
+        if (!formData.isOnline) {
+             const hasAddress = 
+                formData.address.rawAddress.trim() !== "" &&
+                formData.address.city.trim() !== "" &&
+                formData.address.province.trim() !== "";
+             if (!hasAddress) return false;
         } else {
-          // online
-          return formData.meetingUrl.trim() !== "";
+             if (formData.meetingUrl.trim() === "") return false;
         }
+
+        // Rundown validation (at least one rundown item is recommended, but maybe not strictly required? Let's assume required to be safe)
+        if (formData.rundown.length === 0) return false;
+        const isRundownValid = formData.rundown.every(
+            r => r.title.trim() !== "" && r.startTime !== "" && r.endTime !== ""
+        );
+        if (!isRundownValid) return false;
+
+        return true;
       }
 
       case 4:
-        return (
-          formData.tickets.length > 0 &&
+        const hasTickets = formData.tickets.length > 0 &&
           formData.tickets.every(
             (ticket) =>
               ticket.name.trim() !== "" &&
               ticket.quota > 0 &&
               (formData.isPaid ? ticket.price > 0 : true),
-          )
-        );
+          );
+          
+         // maxCapacity 0 means unlimited
+         if (formData.maxCapacity < 0) return false;
+         
+         return hasTickets;
 
       case 5:
         // Preview step - always valid
@@ -292,3 +378,4 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     });
   },
 }));
+
