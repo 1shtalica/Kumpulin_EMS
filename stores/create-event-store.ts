@@ -244,15 +244,11 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
   // Step 4 updates
   updateIsPaid: (isPaid) => {
     set((state) => {
-      // If switching to free, ensure tickets reflect that logic if needed
-      // But typically we just update the flag.
-      // If we want auto-ticket for free:
-      const tickets = !isPaid && state.formData.tickets.length === 0
-          ? [{ name: "Tiket Gratis", price: 0, quota: 100, description: "" }]
-          : state.formData.tickets;
-
+      // 🌟 FIX: Reset tickets when switching modes
+      // If switching to FREE, we DO NOT create a placeholder ticket anymore (User request)
+      // If switching to PAID, we start with empty tickets
       return {
-        formData: { ...state.formData, isPaid, tickets },
+        formData: { ...state.formData, isPaid, tickets: [] },
       };
     });
   },
@@ -348,18 +344,25 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
       }
 
       case 4:
-        const hasTickets = formData.tickets.length > 0 &&
-          formData.tickets.every(
-            (ticket) =>
-              ticket.name.trim() !== "" &&
-              ticket.quota > 0 &&
-              (formData.isPaid ? ticket.price > 0 : true),
-          );
-          
-         // maxCapacity 0 means unlimited
-         if (formData.maxCapacity < 0) return false;
-         
-         return hasTickets;
+        // Logic Update:
+        // If PAID: Must have at least 1 ticket, and all tickets valid.
+        // If FREE: Tickets array is ignored. Only check maxCapacity (which is always valid as >= 0).
+        
+        if (formData.isPaid) {
+             return (
+                 formData.tickets.length > 0 &&
+                 formData.tickets.every(
+                     (ticket) =>
+                     ticket.name.trim() !== "" &&
+                     ticket.quota > 0 &&
+                     ticket.price > 0
+                 )
+             );
+        } else {
+             // For Free events, maxCapacity >= 0 is the only requirement, which is type-enforced mostly.
+             // Just ensure it's not negative.
+             return formData.maxCapacity >= 0;
+        }
 
       case 5:
         // Preview step - always valid

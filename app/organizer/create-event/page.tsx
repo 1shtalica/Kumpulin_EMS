@@ -3,7 +3,7 @@ import CreateEventClient from "@/components/organizer/create-event/CreateEventCl
 
 export default async function CreateEventPage() {
   return (
-    <main className="pt-16">
+    <main className="pt-16 min-h-screen overflow-x-hidden">
       <CreateEventHeader />
       <CreateEventClient />
     </main>

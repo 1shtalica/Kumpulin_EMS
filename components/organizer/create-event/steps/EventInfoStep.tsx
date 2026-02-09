@@ -6,6 +6,20 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 interface EventInfoStepProps {
   title: string;
@@ -29,10 +43,9 @@ const categories = [
   "Art & Culture",
   "Food & Drink",
   "Community",
-  "Other",
 ];
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 
 export default function EventInfoStep(props: EventInfoStepProps) {
@@ -64,7 +77,7 @@ export default function EventInfoStep(props: EventInfoStepProps) {
 
   const handleFileChange = (file: File) => {
     setFileError("");
-    
+
     const error = handleFileValidation(file);
     if (error) {
       setFileError(error);
@@ -117,15 +130,17 @@ export default function EventInfoStep(props: EventInfoStepProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Informasi Event</h2>
-        <p className="mt-2 text-gray-600">
-          Berikan detail lengkap tentang event Anda
+        <h2 className="text-2xl font-bold text-accent">Informasi Event</h2>
+        <p className="mt-2 text-muted">
+          isikan detail lengkap tentang event Anda
         </p>
       </div>
 
       {/* Title */}
       <div className="space-y-2">
-        <Label htmlFor="title">Judul Event *</Label>
+        <Label htmlFor="title">
+          Judul Event<span className="text-danger">*</span>
+        </Label>
         <Input
           id="title"
           placeholder="Contoh: Festival Musik Jazz Jakarta 2026"
@@ -133,32 +148,72 @@ export default function EventInfoStep(props: EventInfoStepProps) {
           onChange={(e) => onTitleChange(e.target.value)}
           maxLength={50}
         />
-        <p className="text-xs text-gray-500">
-          {title.length}/50 karakter
-        </p>
+        <p className="text-xs text-muted">{title.length}/50 karakter</p>
       </div>
 
       {/* Category */}
       <div className="space-y-2">
-        <Label htmlFor="category">Kategori Event *</Label>
-        <select
-          id="category"
-          value={category}
-          onChange={(e) => onCategoryChange(e.target.value)}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <option value="">Pilih kategori event</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
+        <Label htmlFor="category">
+          Kategori Event <span className="text-danger">*</span>
+        </Label>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              className={cn(
+                "w-full justify-between font-normal",
+                !category && "text-muted-foreground",
+              )}
+            >
+              {category
+                ? categories.find((cat) => cat === category)
+                : "Pilih kategori event"}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-[--radix-popover-trigger-width] p-0"
+            align="start"
+          >
+            <Command>
+              <CommandInput placeholder="Cari kategori..." />
+              <CommandList>
+                <CommandEmpty>Kategori tidak ditemukan.</CommandEmpty>
+                <CommandGroup>
+                  {categories.map((cat) => (
+                    <CommandItem
+                      key={cat}
+                      value={cat}
+                      onSelect={(currentValue) => {
+                        const original = categories.find(
+                          (c) => c.toLowerCase() === currentValue.toLowerCase(),
+                        );
+                        onCategoryChange(original || currentValue);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          category === cat ? "opacity-100" : "opacity-0",
+                        )}
+                      />
+                      {cat}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* Description */}
       <div className="space-y-2">
-        <Label htmlFor="description">Deskripsi Event *</Label>
+        <Label htmlFor="description">
+          Deskripsi Event <span className="text-danger">*</span>
+        </Label>
         <textarea
           id="description"
           className="flex min-h-50 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -173,8 +228,10 @@ export default function EventInfoStep(props: EventInfoStepProps) {
 
       {/* Banner Upload */}
       <div className="space-y-2">
-        <Label>Banner/Poster Event *</Label>
-        
+        <Label>
+          Banner/Poster Event <span className="text-danger">*</span>
+        </Label>
+
         {!bannerPreview ? (
           <div
             className={cn(
@@ -182,7 +239,7 @@ export default function EventInfoStep(props: EventInfoStepProps) {
               dragActive
                 ? "border-primary bg-primary/5"
                 : "border-gray-300 hover:border-gray-400",
-              fileError && "border-red-500"
+              fileError && "border-red-500",
             )}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -198,7 +255,7 @@ export default function EventInfoStep(props: EventInfoStepProps) {
             />
 
             <div className="space-y-4">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center">
                 <Upload className="h-8 w-8 text-gray-400" />
               </div>
 
@@ -229,7 +286,7 @@ export default function EventInfoStep(props: EventInfoStepProps) {
               alt="Banner preview"
               className="h-64 w-full object-cover"
             />
-            
+
             <Button
               type="button"
               variant="destructive"
@@ -254,9 +311,7 @@ export default function EventInfoStep(props: EventInfoStepProps) {
           </div>
         )}
 
-        {fileError && (
-          <p className="text-sm text-red-600">{fileError}</p>
-        )}
+        {fileError && <p className="text-sm text-red-600">{fileError}</p>}
       </div>
     </div>
   );

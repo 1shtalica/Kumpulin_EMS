@@ -37,7 +37,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl font-bold text-accent">Preview Event</h2>
-        <p className="mt-2 text-muted">
+        <p className="mt-2 text-muted-foreground">
           Periksa kembali semua informasi sebelum mempublikasikan event
         </p>
       </div>
@@ -76,7 +76,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
           {/* Title & Category */}
           <div>
             <h4 className="text-xl font-bold text-accent">{formData.title}</h4>
-            <span className="mt-1 inline-block rounded-md bg-slate-100 px-2 py-1 text-sm text-muted">
+            <span className="mt-1 inline-block rounded-md bg-slate-100 px-2 py-1 text-sm text-muted-foreground">
               {formData.category}
             </span>
           </div>
@@ -84,7 +84,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
           {/* Description */}
           <div>
             <p className="text-sm font-medium text-accent">Deskripsi:</p>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-muted">
+            <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
               {formData.description}
             </p>
           </div>
@@ -102,7 +102,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
               <Calendar className="h-4 w-4" />
               Waktu Pelaksanaan
             </div>
-            <div className="mt-2 space-y-1 text-sm text-muted">
+            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
               <p>
                 <strong>Mulai:</strong> {formatDate(formData.startEventDate)} •{" "}
                 {formData.startEventTime || "-"}
@@ -120,7 +120,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
               <Clock className="h-4 w-4" />
               Periode Pendaftaran
             </div>
-            <div className="mt-2 space-y-1 text-sm text-muted">
+            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
               <p>
                 <strong>Buka:</strong> {formatDate(formData.startRegistration)} •{" "}
                 {formData.startRegistrationTime || "-"}
@@ -142,7 +142,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
               )}
               Lokasi - {!formData.isOnline ? "Offline" : "Online"}
             </div>
-            <div className="mt-2 text-sm text-muted">
+            <div className="mt-2 text-sm text-muted-foreground">
               {!formData.isOnline ? (
                 <div className="space-y-1">
                   <p>{formData.address.rawAddress}</p>
@@ -174,7 +174,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
              <div className="space-y-3">
                 {formData.rundown.map((item, index) => (
                     <div key={index} className="flex gap-4 border-l-2 border-primary pl-4">
-                        <div className="min-w-24 text-sm text-muted">
+                        <div className="min-w-24 text-sm text-muted-foreground">
                             {item.startTime} - {item.endTime}
                         </div>
                         <div>
@@ -194,10 +194,35 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
       {/* Tickets & Capacity */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-md">
         <h3 className="mb-3 font-semibold text-accent">Tiket & Kapasitas</h3>
-        
+
         <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-             <Users className="h-4 w-4" />
-             <span>Kapasitas Maksimal: <strong>{formData.maxCapacity > 0 ? `${formData.maxCapacity} Peserta` : "Tidak Terbatas"}</strong></span>
+          <Users className="h-4 w-4" />
+          <span>
+            {formData.isPaid ? (
+              // For Paid Info: Sum of tickets
+              <>
+                Total Kapasitas:{" "}
+                <strong>
+                  {formData.tickets.reduce(
+                    (sum, t) => sum + (t.quota || 0),
+                    0,
+                  )}{" "}
+                  Peserta
+                </strong>{" "}
+                (Akumulasi Tiket)
+              </>
+            ) : (
+              // For Free Info
+              <>
+                Kapasitas Maksimal:{" "}
+                <strong>
+                  {formData.maxCapacity > 0
+                    ? `${formData.maxCapacity} Peserta`
+                    : "Tidak Terbatas"}
+                </strong>
+              </>
+            )}
+          </span>
         </div>
 
         <div className="space-y-3">
@@ -207,7 +232,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                 "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium",
                 formData.isPaid
                   ? "bg-blue-100 text-blue-700"
-                  : "bg-green-100 text-green-700"
+                  : "bg-green-100 text-green-700",
               )}
             >
               {formData.isPaid ? "Berbayar" : "Gratis"}
@@ -220,11 +245,11 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
               className="flex items-center justify-between rounded-md border border-slate-200 p-3"
             >
               <div className="flex items-center gap-3">
-                <TicketIcon className="h-5 w-5 text-muted" />
+                <TicketIcon className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium text-accent">{ticket.name}</p>
                   {ticket.description && (
-                    <p className="text-sm text-muted">{ticket.description}</p>
+                    <p className="text-sm text-muted-foreground">{ticket.description}</p>
                   )}
                 </div>
               </div>
@@ -232,7 +257,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                 <p className="font-semibold text-accent">
                   {formatCurrency(ticket.price)}
                 </p>
-                <p className="text-sm text-muted">Kuota: {ticket.quota}</p>
+                <p className="text-sm text-muted-foreground">Kuota: {ticket.quota}</p>
               </div>
             </div>
           ))}

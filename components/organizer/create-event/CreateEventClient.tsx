@@ -145,7 +145,6 @@ export default function CreateEventClient() {
 
   return (
     <div className="mx-auto min-h-screen max-w-4xl px-4 py-8">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-accent">Buat Event Baru</h1>
         <p className="mt-2 text-muted">
@@ -157,41 +156,52 @@ export default function CreateEventClient() {
       <CreateEventStepper currentStep={currentStep} />
 
       {/* Form Container */}
-      <div className="mt-8 rounded-lg border border-slate-200 bg-white p-6 shadow-xs md:p-8">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs md:p-8">
         {renderStep()}
       </div>
 
       {/* Navigation Buttons */}
-      <div className="mt-8 flex items-center justify-between">
-        <Button
-          variant="ghost"
-          onClick={handlePrev}
-          disabled={!canGoPrev}
-          className={cn("rounded-lg", !canGoPrev && "invisible")}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Sebelumnya
-        </Button>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-accent">Step {currentStep} dari 5</span>
+      <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        {/* Step Indicator - Mobile Order 1, Desktop Order 2 */}
+        <div className="order-1 flex justify-center md:order-2">
+          <span className="text-sm font-medium text-accent">
+            Step {currentStep} dari 5
+          </span>
         </div>
 
-        {currentStep < 5 ? (
+        {/* Buttons - Mobile Order 2, Desktop Order 1 & 3 */}
+        <div className="order-2 flex w-full items-center justify-between md:w-auto md:contents">
+          {/* Prev Button */}
           <Button
-            onClick={handleNext}
-            disabled={!canGoNext}
+            variant="ghost"
+            onClick={handlePrev}
+            disabled={!canGoPrev}
             className={cn(
-              "min-w-30 rounded-lg",
-              !isStepValid && "cursor-not-allowed opacity-50",
+              "order-1 rounded-lg md:order-1",
+              !canGoPrev && "invisible",
             )}
           >
-            Lanjut
-            <ArrowRight className="ml-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Sebelumnya
           </Button>
-        ) : (
-          <div /> /* Spacer */
-        )}
+
+          {/* Next Button */}
+          {currentStep < 5 ? (
+            <Button
+              onClick={handleNext}
+              disabled={!canGoNext}
+              className={cn(
+                "order-2 min-w-30 rounded-lg md:order-3",
+                !isStepValid && "cursor-not-allowed opacity-50",
+              )}
+            >
+              Lanjut
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          ) : (
+            <div className="order-2 md:order-3" /> /* Spacer */
+          )}
+        </div>
       </div>
 
       {/* Validation Hint */}

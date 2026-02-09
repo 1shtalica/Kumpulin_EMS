@@ -2,16 +2,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const protectedRoutes = [
-  // 🌟 Organizer page
-  {
-    path: "/organizer",
-    roles: ["organizer"],
-  },
-  // 🌟 User page
-  {
-    path: "/user",
-    roles: ["user"],
-  },
+  { path: "/organizer", roles: ["organizer"] },
+  { path: "/user", roles: ["user"] },
 ];
 
 const publicRoutes = [
@@ -39,32 +31,27 @@ export async function middleware(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(route + "/"),
   );
 
-  // 🌟 Kalau tidak terdaftar di list maka lewati middleware
   if (!protectedRoute && !isPublicRoute && pathname !== "/get-started") {
     return NextResponse.next();
   }
 
   const accessToken = request.cookies.get("access_token");
   const refreshToken = request.cookies.get("refresh_token");
-  const hasAuthCookies = !!(accessToken && refreshToken);
 
-  if (!hasAuthCookies) {
-    // 🌟 kembali ke login jika masuk ke protected route atau get-started
+  if (!refreshToken) {
     if (protectedRoute || pathname === "/get-started") {
       return redirect(request, "/login");
     }
     return NextResponse.next();
   }
 
+  if (!accessToken) {
+    return NextResponse.next();
+  }
+
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    const cookieHeader = [
-      accessToken && `access_token=${accessToken.value}`,
-      refreshToken && `refresh_token=${refreshToken.value}`,
-    ]
-      .filter(Boolean)
-      .join("; ");
+    const cookieHeader = `access_token=${accessToken.value}; refresh_token=${refreshToken.value}`;
 
     const res = await fetch(`${apiUrl}/auth/me`, {
       headers: {
@@ -74,7 +61,9 @@ export async function middleware(request: NextRequest) {
       cache: "no-store",
     });
 
-    // 🌟 Jika data user tidak berhasil didapat
+    if (res.status === 401) {
+      return NextResponse.next();
+    }
     if (!res.ok) {
       if (protectedRoute || pathname === "/get-started") {
         return redirect(request, "/login");
@@ -84,31 +73,25 @@ export async function middleware(request: NextRequest) {
 
     const user = await res.json();
 
-    // 🌟 CEK PROFIL LENGKAP - langsung dari user object
     const isProfileIncomplete = !user.phone_number;
 
-    // 🌟 Profil belum lengkap → paksa ke /get-started
     if (isProfileIncomplete && pathname !== "/get-started") {
       return redirect(request, "/get-started");
     }
 
-    // 🌟 Profil sudah lengkap tapi masih di /get-started → redirect ke home
     if (!isProfileIncomplete && pathname === "/get-started") {
       const homePage = roleHomePages[user.role] || "/";
       return redirect(request, homePage);
     }
 
-    const homePage = roleHomePages[user.role] || "/";
-
-    // 🌟 Jika sudah login dan akses ke halaman publik maka redirect ke homepagenya sendiri
     if (isPublicRoute) {
+      const homePage = roleHomePages[user.role] || "/";
       return redirect(request, homePage);
     }
-
-    // 🌟 Jika nyasar ke halaman role lain maka kembali ke homepagenya sendiri
     if (protectedRoute) {
       if (protectedRoute.roles.length > 0) {
         if (!protectedRoute.roles.includes(user.role)) {
+          const homePage = roleHomePages[user.role] || "/";
           return redirect(request, homePage);
         }
       }
@@ -117,9 +100,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware Auth Verification Failed:", error);
-    if (protectedRoute || pathname === "/get-started") {
-      return redirect(request, "/login");
-    }
     return NextResponse.next();
   }
 }
