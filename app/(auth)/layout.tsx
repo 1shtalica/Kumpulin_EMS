@@ -1,8 +1,5 @@
 import React from "react";
 
-// ⭐ TAMBAHKAN CEK ROLE DI LAYOUT
-// ⭐ CEK COOKIES
-
 export default function AuthLayout({
   children,
 }: {

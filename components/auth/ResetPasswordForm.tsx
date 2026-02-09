@@ -6,13 +6,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSearchParams, useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import * as z from "zod";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { AuthService } from "@/services/auth-service";
 
 const resetPasswordSchema = z
   .object({
@@ -34,9 +41,9 @@ type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 export default function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
+  const rawToken = searchParams.get("token");
+  const token = rawToken?.includes("/") ? rawToken.split("/")[0] : rawToken;
 
-  // Redirect to not-found if no token
   useEffect(() => {
     if (!token) {
       notFound();
@@ -61,36 +68,34 @@ export default function ResetPasswordForm() {
   });
 
   const onSubmit = async (data: ResetPasswordFormValues) => {
-  setIsLoading(true);
-  const toastId = toast.loading("Mereset password...");
-  try {
-    // TODO: await AuthService.resetPassword({ token, newPassword: data.password });
-    
-    toast.success("Password berhasil direset!", { id: toastId });
-    
-    // Redirect ke login
-    setTimeout(() => {
+    setIsLoading(true);
+    const toastId = toast.loading("Mereset password...");
+    try {
+      await AuthService.resetPassword({
+        token: token!,
+        newPassword: data.password,
+      });
+      toast.success("Password berhasil direset!", { id: toastId });
       router.push("/login");
-    }, 1500);
-  } catch (error: any) {
-    const axiosError = error as AxiosError<{ message: string }>;
-    let errorMessage = "Gagal reset password.";
-    
-    if (axiosError.response?.status === 400) {
-      errorMessage = "Token sudah kadaluarsa. Silakan request ulang.";
-    } else if (axiosError.response?.data?.message) {
-      errorMessage = axiosError.response.data.message;
+    } catch (error: any) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      let errorMessage = "Gagal reset password.";
+
+      if (axiosError.response?.status === 400) {
+        errorMessage = "Token sudah kadaluarsa. Silakan request ulang.";
+      } else if (axiosError.response?.data?.message) {
+        errorMessage = axiosError.response.data.message;
+      }
+      toast.error("Reset gagal", { id: toastId });
+
+      setError("root", {
+        type: "manual",
+        message: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
     }
-    toast.error("Reset gagal", { id: toastId });
-    
-    setError("root", {
-      type: "manual",
-      message: errorMessage,
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   // Token validation
   if (!token) {
@@ -137,11 +142,17 @@ export default function ResetPasswordForm() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
             {errors.password && (
-              <p className="text-xs sm:text-sm text-danger font-medium">{errors.password.message}</p>
+              <p className="text-xs sm:text-sm text-danger font-medium">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
@@ -166,11 +177,17 @@ export default function ResetPasswordForm() {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
               >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="text-xs sm:text-sm text-danger font-medium">{errors.confirmPassword.message}</p>
+              <p className="text-xs sm:text-sm text-danger font-medium">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
@@ -180,7 +197,11 @@ export default function ResetPasswordForm() {
             </div>
           )}
 
-          <Button type="submit" className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-lg font-bold" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-lg font-bold"
+            disabled={isLoading}
+          >
             {isLoading ? "Memproses..." : "Reset Password"}
           </Button>
         </form>

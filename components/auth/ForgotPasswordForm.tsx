@@ -12,6 +12,7 @@ import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { AuthService } from "@/services/auth-service";
 
 const forgotPasswordSchema = z.object({
   email: z
@@ -40,8 +41,7 @@ export default function ForgotPasswordForm() {
   setIsLoading(true);
   const toastId = toast.loading("Mengirim email reset...");
   try {
-    // TODO: await AuthService.forgotPassword(data.email);
-    
+    await AuthService.forgotPassword(data.email);
     toast.success("Email terkirim!", { id: toastId });
     
     setSubmittedEmail(data.email);
