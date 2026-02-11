@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Users, Briefcase, Loader2, ArrowLeft } from "lucide-react";
+import { Users, Briefcase, Loader2, ArrowLeft, Phone, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 
@@ -14,7 +14,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
+  CardTitle, // Import kept although not used, can be removed if strict
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,21 @@ import { AuthService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
 import { User } from "@/types/user";
 
-// Validation Schemas
+// --- Utils ---
+const generateSlug = (name: string): string => {
+  return (
+    name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "") +
+    "-" +
+    Date.now()
+  );
+};
+
+// --- Validation Schemas ---
 const phoneSchema = z.object({
   phoneNumber: z
     .string()
@@ -76,121 +90,104 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     }
   };
 
-  // Step 2a: Submit as Attendee
-  const handleCompleteAsAttendee = async () => {
-    setIsLoading(true);
-    const toastId = toast.loading("Melengkapi profil...");
-
-    try {
-      await AuthService.updateProfile({
-        phone_number: phoneNumber,
-        role: "attendee",
-      });
-
-      await useAuthStore.getState().checkAuth();
-
-      toast.success("Profil berhasil dilengkapi!", { id: toastId });
-      router.push("/");
-    } catch (error) {
-      const axiosError = error as AxiosError<{ message: string }>;
-      toast.error(
-        axiosError.response?.data?.message || "Gagal melengkapi profil",
-        { id: toastId }
-      );
-    } finally {
-      setIsLoading(false);
+  // Unified Submit Handler
+  const handleFinalSubmit = async (organizerData?: OrganizerFormValues) => {
+    if (!selectedRole) {
+      toast.error("Pilih peran terlebih dahulu");
+      return;
     }
-  };
 
-  // Step 2b: Submit as Organizer
-  const handleCompleteAsOrganizer = async (data: OrganizerFormValues) => {
     setIsLoading(true);
-    const toastId = toast.loading("Membuat profil organizer...");
-
-    try {
-      await AuthService.updateProfile({
-        phone_number: phoneNumber,
-        role: "organizer",
-      });
-
-      const slug = generateSlug(data.organizerName);
-      await AuthService.createOrganizer({
-        name: data.organizerName,
-        slug: slug,
-      });
-
-      await useAuthStore.getState().checkAuth();
-
-      toast.success("Profil organizer berhasil dibuat!", { id: toastId });
-      router.push("/dashboard/organizer");
-    } catch (error) {
-      const axiosError = error as AxiosError<{ message: string }>;
-      toast.error(
-        axiosError.response?.data?.message || "Gagal membuat profil",
-        { id: toastId }
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const generateSlug = (name: string): string => {
-    return (
-      name
-        .toLowerCase()
-        .trim()
-        .replace(/[^\w\s-]/g, "")
-        .replace(/[\s_-]+/g, "-")
-        .replace(/^-+|-+$/g, "") +
-      "-" +
-      Date.now()
+    const isOrganizer = selectedRole === "organizer";
+    const toastId = toast.loading(
+      isOrganizer ? "Membuat profil organizer..." : "Melengkapi profil..."
     );
+
+    try {
+      // 1. Update User Profile (Phone & Role)
+      await AuthService.updateProfile({
+        phone_number: phoneNumber,
+        role: selectedRole,
+      });
+
+      // 2. If Organizer, create organizer entity
+      if (isOrganizer && organizerData) {
+        const slug = generateSlug(organizerData.organizerName);
+        await AuthService.createOrganizer({
+          name: organizerData.organizerName,
+          slug: slug,
+        });
+      }
+
+      // 3. Refresh Auth State to get new role/claims
+      await useAuthStore.getState().checkAuth();
+
+      // 4. Success & Redirect
+      toast.success(
+        isOrganizer ? "Profil organizer berhasil dibuat!" : "Profil berhasil dilengkapi!",
+        { id: toastId }
+      );
+      router.push(isOrganizer ? "/dashboard/organizer" : "/");
+
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      toast.error(
+        axiosError.response?.data?.message || "Terjadi kesalahan saat menyimpan data",
+        { id: toastId }
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-2xl font-semibold text-accent">
-          Selamat Datang!
-        </h1>
-        <p className="text-sm text-muted">
-          Lengkapi profil Anda untuk melanjutkan
-        </p>
-      </div>
+    <Card className="w-full max-w-lg mx-auto rounded-3xl py-10 px-4 shadow-lg border-border/50">
+      <CardHeader className="space-y-4 text-center">
+        <div className="space-y-2">
+          <h1 className="font-bold text-3xl">
+            🎉
+            <span className="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text ml-2">
+              Selamat Datang!
+            </span>
+          </h1>
+          <CardDescription className="text-base text-gray-600">
+            Lengkapi profil Anda untuk melanjutkan
+          </CardDescription>
+        </div>
 
-      {/* Progress Indicator */}
-      <div className="flex items-center justify-center gap-2">
-        <div
-          className={cn(
-            "h-2 w-16 rounded-full transition-colors",
-            step === 1 ? "bg-primary" : "bg-primary-light"
-          )}
-        />
-        <div
-          className={cn(
-            "h-2 w-16 rounded-full transition-colors",
-            step === 2 ? "bg-primary" : "bg-slate-200"
-          )}
-        />
-      </div>
+        {/* Progress Indicator */}
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <div
+            className={cn(
+              "h-2 w-16 rounded-full transition-colors duration-300",
+              step === 1 ? "bg-primary" : "bg-primary/20"
+            )}
+          />
+          <div
+            className={cn(
+              "h-2 w-16 rounded-full transition-colors duration-300",
+              step === 2 ? "bg-primary" : "bg-slate-200 dark:bg-slate-800"
+            )}
+          />
+        </div>
+      </CardHeader>
 
-      {/* STEP 1: Phone Number */}
-      {step === 1 && (
-        <>
-          <Card className="shadow-sm">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-xl text-accent">
-                Lengkapi Nomor Telepon
-              </CardTitle>
-              <CardDescription className="text-muted">
+      <CardContent className="pt-6">
+        {/* STEP 1: Phone Number */}
+        {step === 1 && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-1 text-center">
+              <h2 className="text-xl font-semibold text-foreground">Lengkapi Nomor Telepon</h2>
+              <p className="text-sm text-gray-600">
                 Kami memerlukan nomor telepon Anda untuk verifikasi
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              </p>
+            </div>
+
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber">Nomor WhatsApp</Label>
                 <Input
+                  startIcon={<Phone className="h-4 w-4 text-gray-500" />}
                   id="phoneNumber"
                   type="tel"
                   placeholder="08xxxxxxxxxx"
@@ -198,8 +195,8 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   {...phoneForm.register("phoneNumber")}
                   className={
                     phoneForm.formState.errors.phoneNumber
-                      ? "border-danger rounded-lg"
-                      : "rounded-lg"
+                      ? "border-danger"
+                      : ""
                   }
                 />
                 {phoneForm.formState.errors.phoneNumber && (
@@ -208,62 +205,62 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   </p>
                 )}
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Buttons outside card */}
-          <div className="flex justify-end">
-            <Button
-              onClick={handleNextStep}
-              className="bg-linear-to-r from-primary to-secondary hover:opacity-90 transition-opacity rounded-lg font-bold"
-            >
-              Lanjutkan
-            </Button>
+              <Button
+                onClick={handleNextStep}
+                className="w-full py-6 bg-gradient-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
+              >
+                Lanjutkan
+              </Button>
+            </div>
           </div>
-        </>
-      )}
+        )}
 
-      {/* STEP 2: Role Selection */}
-      {step === 2 && (
-        <>
-          <Card className="shadow-sm">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-xl text-accent">
-                Pilih Peran Anda
-              </CardTitle>
-              <CardDescription className="text-muted">
+        {/* STEP 2: Role Selection */}
+        {step === 2 && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="space-y-1 text-center">
+              <h2 className="text-xl font-semibold text-foreground">Pilih Peran Anda</h2>
+              <p className="text-sm text-gray-600">
                 Bagaimana Anda ingin menggunakan kumpul.in?
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Attendee Card */}
-              <Card
+              </p>
+            </div>
+
+            <div className="grid gap-4">
+              {/* Attendee Option */}
+              <div
                 className={cn(
-                  "cursor-pointer transition-all hover:border-primary hover:shadow-sm",
-                  selectedRole === "attendee" && "border-primary shadow-sm"
+                  "relative flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:bg-muted-foreground/10",
+                  selectedRole === "attendee"
+                    ? "border-primary bg-primary/5 shadow-sm"
+                    : "border-border"
                 )}
                 onClick={() => !isLoading && setSelectedRole("attendee")}
               >
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className="h-12 w-12 rounded-full bg-primary-light flex items-center justify-center shrink-0">
-                    <Users className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-accent">Saya Pengguna</h3>
-                    <p className="text-sm text-muted">
-                      Jelajahi dan ikuti berbagai event menarik
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                <div className={cn(
+                  "h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                  selectedRole === "attendee" ? "bg-primary text-primary-foreground" : "bg-gray-100 text-gray-600"
+                )}>
+                  <Users className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground">Saya Pengguna</h3>
+                  <p className="text-sm text-gray-600">
+                    Jelajahi dan ikuti berbagai event menarik
+                  </p>
+                </div>
+                {selectedRole === "attendee" && (
+                  <div className="absolute right-4 top-4 h-3 w-3 rounded-full bg-primary animate-pulse" />
+                )}
+              </div>
 
-              {/* Organizer Card */}
-              <Card
+              {/* Organizer Option */}
+              <div
                 className={cn(
-                  "transition-all",
+                  "relative flex flex-col gap-4 p-4 rounded-2xl border-2 transition-all duration-200",
                   selectedRole === "organizer"
-                    ? "border-secondary shadow-sm"
-                    : "cursor-pointer hover:border-secondary hover:shadow-sm"
+                    ? "border-secondary bg-secondary/5 shadow-sm"
+                    : "border-border cursor-pointer hover:bg-muted-foreground/10"
                 )}
                 onClick={() =>
                   !isLoading &&
@@ -271,96 +268,97 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   setSelectedRole("organizer")
                 }
               >
-                <CardContent className="p-4 space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-secondary-light flex items-center justify-center shrink-0">
-                      <Briefcase className="h-6 w-6 text-secondary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-accent">
-                        Saya Organizer
-                      </h3>
-                      <p className="text-sm text-muted">
-                        Buat dan kelola event Anda sendiri
-                      </p>
+                <div className="flex items-center gap-4">
+                  <div className={cn(
+                    "h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                    selectedRole === "organizer" ? "bg-secondary text-secondary-foreground" : "bg-gray-100 text-gray-600"
+                  )}>
+                    <Briefcase className="h-6 w-6" color={selectedRole === "organizer" ? "white" : "black"} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">
+                      Saya Organizer
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Buat dan kelola event Anda sendiri
+                    </p>
+                  </div>
+                  {selectedRole === "organizer" && (
+                    <div className="absolute right-4 top-4 h-3 w-3 rounded-full bg-secondary animate-pulse" />
+                  )}
+                </div>
+
+                {/* Conditional Organizer Input */}
+                {selectedRole === "organizer" && (
+                  <div
+                    className="space-y-3 pt-2 animate-in slide-in-from-top-2 duration-200"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="organizerName">Nama Organizer</Label>
+                      <Input
+                        startIcon={<Building2 className="h-4 w-4 text-gray-500" />}
+                        id="organizerName"
+                        placeholder="Nama organisasi atau komunitas"
+                        autoComplete="organization"
+                        {...organizerForm.register("organizerName")}
+                        className={
+                          organizerForm.formState.errors.organizerName
+                            ? "border-danger"
+                            : ""
+                        }
+                      />
+                      {organizerForm.formState.errors.organizerName && (
+                        <p className="text-xs text-danger font-medium">
+                          {organizerForm.formState.errors.organizerName.message}
+                        </p>
+                      )}
                     </div>
                   </div>
+                )}
+              </div>
+            </div>
 
-                  {/* Conditional Organizer Form */}
-                  {selectedRole === "organizer" && (
-                    <div
-                      className="space-y-4 pt-4 border-t border-border"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="space-y-2">
-                        <Label htmlFor="organizerName">Nama Organizer</Label>
-                        <Input
-                          id="organizerName"
-                          placeholder="Nama organisasi atau komunitas Anda"
-                          autoComplete="organization"
-                          {...organizerForm.register("organizerName")}
-                          className={
-                            organizerForm.formState.errors.organizerName
-                              ? "border-danger rounded-lg"
-                              : "rounded-lg"
-                          }
-                        />
-                        {organizerForm.formState.errors.organizerName && (
-                          <p className="text-xs text-danger font-medium">
-                            {
-                              organizerForm.formState.errors.organizerName
-                                .message
-                            }
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </CardContent>
-          </Card>
+            <div className="flex gap-4 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setStep(1);
+                  setSelectedRole(null);
+                }}
+                disabled={isLoading}
+                className="flex-1 py-6 rounded-2xl font-semibold shadow-none border-border hover:bg-muted-foreground/10"
+              >
+                <ArrowLeft className="h-4 w-4 " />
+                Kembali
+              </Button>
 
-          {/* Buttons outside card */}
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setStep(1);
-                setSelectedRole(null);
-              }}
-              disabled={isLoading}
-              className="text-muted hover:text-accent"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
-            </Button>
-
-            <Button
-              onClick={() => {
-                if (selectedRole === "attendee") {
-                  handleCompleteAsAttendee();
-                } else if (selectedRole === "organizer") {
-                  organizerForm.handleSubmit(handleCompleteAsOrganizer)();
-                } else {
-                  toast.error("Pilih peran terlebih dahulu");
-                }
-              }}
-              disabled={isLoading || !selectedRole}
-              className="bg-linear-to-r from-primary to-secondary hover:opacity-90 transition-opacity rounded-lg font-bold"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Menyimpan...
-                </>
-              ) : (
-                "Selesai"
-              )}
-            </Button>
+              <Button
+                onClick={() => {
+                  if (selectedRole === "attendee") {
+                    handleFinalSubmit();
+                  } else if (selectedRole === "organizer") {
+                    organizerForm.handleSubmit(handleFinalSubmit)();
+                  } else {
+                    toast.error("Pilih peran terlebih dahulu");
+                  }
+                }}
+                disabled={isLoading || !selectedRole}
+                className="flex-[2] py-6 bg-gradient-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  "Selesai"
+                )}
+              </Button>
+            </div>
           </div>
-        </>
-      )}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

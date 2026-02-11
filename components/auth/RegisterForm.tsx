@@ -67,8 +67,6 @@ export default function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-
-
   const {
     register,
     handleSubmit,
@@ -132,7 +130,7 @@ export default function RegisterForm() {
   });
 
   return (
-    <Card className="w-full rounded-3xl py-10 px-4">
+    <Card className="w-full rounded-3xl py-10 px-4 my-3">
       <CardHeader className="space-y-1 text-center">
         <h1 className="font-bold text-3xl mb-4">
           🎉
