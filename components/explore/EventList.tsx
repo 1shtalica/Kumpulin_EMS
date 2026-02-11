@@ -6,7 +6,6 @@ interface EventListProps {
   events: Event[];
 }
 
-// Helper function to format date from ISO 8601 to display format
 function formatEventDate(isoDate: string): string {
   const date = new Date(isoDate);
   const options: Intl.DateTimeFormatOptions = {
@@ -50,8 +49,8 @@ export default function EventList({ events }: EventListProps) {
           organizer={event.organizer?.name || "Organizer"}
           image={event.banner_url || "/placeholder-event.jpg"}
           slug={event.slug}
-          isOnline={event.location.toLowerCase() === "online"}
-          quota={0} // TODO: Get from backend when available
+          isOnline={event.location?.toLowerCase() === "online"}
+          quota={0}
           maxQuota={event.capacity}
         />
       ))}

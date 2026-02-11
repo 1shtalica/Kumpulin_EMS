@@ -17,7 +17,7 @@ export default async function ExplorePage(props: {
   let error: string | null = null;
 
   try {
-    events = await EventService.getEvents({ limit: 1000 });
+    events = await EventService.getEvents({ limit: 10 });
   } catch (err) {
     console.error("Failed to fetch events:", err);
     error = "Gagal memuat event. Silakan coba lagi nanti.";
@@ -36,23 +36,30 @@ export default async function ExplorePage(props: {
 
   // Client-side filtering (temporary until backend supports query params)
   let filteredEvents = events.filter((event) => {
-    // Search filter
-    if (query && !event.title.toLowerCase().includes(query.toLowerCase())) {
-      return false;
+    // Search filter - with null safety
+    if (query) {
+      const eventTitle = event.title?.toLowerCase() || "";
+      if (!eventTitle.includes(query.toLowerCase())) {
+        return false;
+      }
     }
 
-    // Category filter
-    if (category && event.category.toLowerCase() !== category.toLowerCase()) {
-      return false;
+    // Category filter - with null safety
+    if (category) {
+      const eventCategory = event.category?.toLowerCase() || "";
+      if (eventCategory !== category.toLowerCase()) {
+        return false;
+      }
     }
 
-    // Location filter
+    // Location filter - with null safety
     if (location && location !== "semua_lokasi") {
-      const normalizedLocation = event.location
-        .toLowerCase()
-        .replace(/ /g, "_");
+      const eventLocation = event.location?.toLowerCase() || "";
+      if (!eventLocation) return false; // Skip events without location
+
+      const normalizedLocation = eventLocation.replace(/ /g, "_");
       const isLocationMatch = normalizedLocation === location;
-      const isOnlineEvent = event.location.toLowerCase() === "online";
+      const isOnlineEvent = eventLocation === "online";
       const isOnlineFilter = location === "online";
 
       if (!isLocationMatch && !(isOnlineEvent && isOnlineFilter)) {
@@ -60,18 +67,19 @@ export default async function ExplorePage(props: {
       }
     }
 
-    // Price type filter
-    if (priceType === "gratis" && event.price > 0) return false;
-    if (priceType === "berbayar" && event.price === 0) return false;
+    // Price type filter - with null safety
+    const eventPrice = event.price ?? 0;
+    if (priceType === "gratis" && eventPrice > 0) return false;
+    if (priceType === "berbayar" && eventPrice === 0) return false;
 
     return true;
   });
 
-  // Client-side sorting
+  // Client-side sorting - with null safety
   if (sort === "Harga_Terendah") {
-    filteredEvents.sort((a, b) => a.price - b.price);
+    filteredEvents.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
   } else if (sort === "Harga_Tertinggi") {
-    filteredEvents.sort((a, b) => b.price - a.price);
+    filteredEvents.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
   }
   // Default "Terbaru" would need created_at field from backend
 
@@ -95,7 +103,7 @@ export default async function ExplorePage(props: {
 
         {/* Results Count */}
         <div className="mb-6 text-muted text-sm md:text-base">
-          Menampilkan <strong>{filteredEvents.length}</strong> event
+          Menampilkan <strong>{filteredEvents?.length}</strong> event
           {query && <span> untuk pencarian "{query}"</span>}
         </div>
 

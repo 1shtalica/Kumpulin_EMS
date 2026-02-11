@@ -9,7 +9,7 @@
   --card-foreground: #0a0a0a;
   --popover: #ffffff;
   --popover-foreground: #0a0a0a;
-  --primary: #3f37b6;
+  --primary: #002cee;
   --primary-foreground: #fafafa;
   --secondary: #f5f5f5;
   --secondary-foreground: #171717;
@@ -47,20 +47,19 @@
   --shadow-color: oklch(0 0 0);
   --shadow-2xs: 0 1px 10px 1px hsl(0 0% 0% / 0.09);
   --shadow-xs: 0 1px 10px 1px hsl(0 0% 0% / 0.09);
-  --shadow-sm:
-    0 1px 10px 1px hsl(0 0% 0% / 0.18), 0 1px 2px 0px hsl(0 0% 0% / 0.18);
-  --shadow:
-    0 1px 10px 1px hsl(0 0% 0% / 0.18), 0 1px 2px 0px hsl(0 0% 0% / 0.18);
-  --shadow-md:
-    0 1px 10px 1px hsl(0 0% 0% / 0.18), 0 2px 4px 0px hsl(0 0% 0% / 0.18);
-  --shadow-lg:
-    0 1px 10px 1px hsl(0 0% 0% / 0.18), 0 4px 6px 0px hsl(0 0% 0% / 0.18);
-  --shadow-xl:
-    0 1px 10px 1px hsl(0 0% 0% / 0.18), 0 8px 10px 0px hsl(0 0% 0% / 0.18);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  /* customed shadow */
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-glow: 0 0 20px rgba(46, 75, 211, 0.3);
   --shadow-2xl: 0 1px 10px 1px hsl(0 0% 0% / 0.45);
   --tracking-normal: 0.025em;
   --spacing: 0.25rem;
+  --gray: #E5E7EB;
 }
+
 
 .dark {
   --background: #0a0a0a;
@@ -171,6 +170,7 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+  --shadow-glow: var(--shadow-glow);
 
   --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
   --tracking-tight: calc(var(--tracking-normal) - 0.025em);
@@ -211,7 +211,10 @@
   --color-info: oklch(62.7% 0.165 210);
   --color-info-hover: oklch(56.4% 0.155 211);
   --color-info-light: oklch(93.1% 0.063 210);
+
+  --color-custom-gray: var(--gray);
 }
+
 
 body {
   letter-spacing: var(--tracking-normal);

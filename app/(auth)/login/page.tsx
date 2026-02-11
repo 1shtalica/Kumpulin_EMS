@@ -9,10 +9,8 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
     return (
-        <div>
-            <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
-                <LoginForm />
-            </GoogleOAuthProvider>
-        </div>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+            <LoginForm />
+        </GoogleOAuthProvider>
     );
 }

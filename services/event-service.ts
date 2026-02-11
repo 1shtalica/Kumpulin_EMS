@@ -7,7 +7,7 @@ export const EventService = {
    */
   async getEvents(params: GetEventsParams = {}): Promise<Event[]> {
     const { offset = 0, limit = 100 } = params;
-    
+
     try {
       const response = await axiosClient.get<EventsResponse>("/events", {
         params: { offset, limit },
