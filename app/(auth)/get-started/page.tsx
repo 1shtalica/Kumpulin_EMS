@@ -1,4 +1,5 @@
 import GetStartedForm from "@/components/auth/GetStartedForm";
+import { MeshGradientBackground } from "@/components/ui/mesh-gradient-background";
 
 
 export default async function GetStartedPage() {
