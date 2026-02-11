@@ -1,43 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Trash2, Ticket as TicketIcon, Users, Clock } from "lucide-react";
+import { useEffect } from "react";
+import { Plus, Trash2, Ticket as TicketIcon, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { TicketRequest } from "@/types/create-event";
+import { useFormContext, useFieldArray } from "react-hook-form";
+import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
 
-interface EventTicketStepProps {
-  isPaid: boolean;
-  maxCapacity: number;
-  tickets: TicketRequest[];
-  
-  onIsPaidChange: (isPaid: boolean) => void;
-  onMaxCapacityChange: (capacity: number) => void;
-  
-  onAddTicket: () => void;
-  onRemoveTicket: (index: number) => void;
-  onUpdateTicket: (index: number, field: keyof TicketRequest, value: string | number) => void;
-}
-
-export default function EventTicketStep(props: EventTicketStepProps) {
+export default function EventTicketStep() {
   const {
-    isPaid,
-    maxCapacity,
-    tickets,
-    onIsPaidChange,
-    onMaxCapacityChange,
-    onAddTicket,
-    onRemoveTicket,
-    onUpdateTicket,
-  } = props;
+    control,
+    register,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<CreateEventSchema>();
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "tickets",
+  });
+
+  const isPaid = watch("isPaid");
+  const maxCapacity = watch("maxCapacity");
+  const tickets = watch("tickets"); // Watch tickets to calculate total quota
 
   // Calculate total quota for Paid events
-  const totalTicketQuota = tickets.reduce(
-    (sum, ticket) => sum + (ticket.quota || 0),
+  const totalTicketQuota = (tickets || []).reduce(
+    (sum, ticket) => sum + (Number(ticket.quota) || 0),
     0,
   );
+
+  const handlePaidChange = (paid: boolean) => {
+    setValue("isPaid", paid, { shouldValidate: true });
+    if (!paid) {
+      setValue("tickets", []);
+    } else {
+      if (fields.length === 0) {
+        append({ name: "", price: 0, quota: 0, description: "" });
+      }
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -60,12 +65,13 @@ export default function EventTicketStep(props: EventTicketStepProps) {
           <Label>Apakah event ini berbayar?</Label>
           <div className="grid gap-3 md:grid-cols-2">
             <button
-              onClick={() => onIsPaidChange(false)}
+              type="button"
+              onClick={() => handlePaidChange(false)}
               className={cn(
                 "rounded-lg border-2 p-4 text-left transition-all",
-                "hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
                 !isPaid
-                  ? "border-primary bg-primary-light shadow-sm"
+                  ? "border-primary bg-primary-light shadow-xs"
                   : "border-gray-200 bg-white hover:border-gray-300",
               )}
             >
@@ -76,12 +82,13 @@ export default function EventTicketStep(props: EventTicketStepProps) {
             </button>
 
             <button
-              onClick={() => onIsPaidChange(true)}
+              type="button"
+              onClick={() => handlePaidChange(true)}
               className={cn(
                 "rounded-lg border-2 p-4 text-left transition-all",
-                "hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
                 isPaid
-                  ? "border-primary bg-primary-light shadow-sm"
+                  ? "border-primary bg-primary-light shadow-xs"
                   : "border-gray-200 bg-white hover:border-gray-300",
               )}
             >
@@ -93,6 +100,41 @@ export default function EventTicketStep(props: EventTicketStepProps) {
           </div>
         </div>
       </div>
+
+      {/* Max Purchase Per User - ONLY FOR PAID EVENTS */}
+      {isPaid && (
+        <div className="space-y-3 rounded-lg border border-primary/20 bg-primary-light/30 p-4">
+          <Label htmlFor="maxPurchasePerUser" className="text-accent">
+            Batas Pembelian Per User <span className="text-danger">*</span>
+          </Label>
+          <Input
+            id="maxPurchasePerUser"
+            type="text"
+            placeholder="Contoh: 3 (atau 0 untuk tanpa batas)"
+            {...register("maxPurchasePerUser")}
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 0;
+              setValue("maxPurchasePerUser", value, { shouldValidate: true });
+            }}
+            className={cn(
+              "shadow-xs bg-white",
+              errors.maxPurchasePerUser &&
+                "border-danger focus-visible:ring-danger",
+            )}
+          />
+          <p className="text-xs text-muted-foreground">
+            💡 Batas total tiket yang dapat dibeli oleh 1 user (mencegah
+            scalping). <br />• Contoh: Jika batas 3, user hanya bisa membeli
+            maksimal 3 tiket. <br />• Isi <strong>0</strong> untuk{" "}
+            <strong>tanpa batas pembelian</strong>.
+          </p>
+          {errors.maxPurchasePerUser && (
+            <p className="text-xs text-danger">
+              {errors.maxPurchasePerUser.message}
+            </p>
+          )}
+        </div>
+      )}
 
       <hr className="border-gray-200" />
 
@@ -116,7 +158,9 @@ export default function EventTicketStep(props: EventTicketStepProps) {
                     className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                     checked={maxCapacity === 0}
                     onChange={(e) =>
-                      onMaxCapacityChange(e.target.checked ? 0 : 50)
+                      setValue("maxCapacity", e.target.checked ? 0 : 50, {
+                        shouldValidate: true,
+                      })
                     }
                   />
                   <Label
@@ -132,14 +176,24 @@ export default function EventTicketStep(props: EventTicketStepProps) {
                 <div className="space-y-2">
                   <Label>Jumlah Kapasitas Maksimal</Label>
                   <Input
-                    type="number"
-                    min="1"
+                    type="text"
                     placeholder="Contoh: 100"
-                    value={maxCapacity}
-                    onChange={(e) =>
-                      onMaxCapacityChange(parseInt(e.target.value) || 0)
-                    }
+                    {...register("maxCapacity")}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 0;
+                      setValue("maxCapacity", value, { shouldValidate: true });
+                    }}
+                    className={cn(
+                      "shadow-xs",
+                      errors.maxCapacity &&
+                        "border-danger focus-visible:ring-danger",
+                    )}
                   />
+                  {errors.maxCapacity && (
+                    <p className="text-xs text-danger">
+                      {errors.maxCapacity.message}
+                    </p>
+                  )}
                 </div>
               )}
               {maxCapacity === 0 && (
@@ -173,12 +227,14 @@ export default function EventTicketStep(props: EventTicketStepProps) {
             <Label className="text-base font-medium text-accent">
               Daftar Tiket
             </Label>
-            {tickets.length < 5 && (
+            {fields.length < 5 && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={onAddTicket}
+                onClick={() =>
+                  append({ name: "", price: 0, quota: 0, description: "" })
+                }
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Tambah Tiket
@@ -186,7 +242,15 @@ export default function EventTicketStep(props: EventTicketStepProps) {
             )}
           </div>
 
-          {tickets.length === 0 && (
+          {errors.tickets &&
+            !Array.isArray(errors.tickets) &&
+            "message" in errors.tickets && (
+              <p className="text-sm text-danger bg-danger-light p-2 rounded-md border border-danger">
+                {errors.tickets.message}
+              </p>
+            )}
+
+          {fields.length === 0 && (
             <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
               <p className="text-muted-foreground">
                 Klik tombol 'Tambah Tiket' untuk membuat tiket pertama
@@ -195,10 +259,10 @@ export default function EventTicketStep(props: EventTicketStepProps) {
           )}
 
           <div className="space-y-4">
-            {tickets.map((ticket, index) => (
+            {fields.map((ticket, index) => (
               <div
-                key={index}
-                className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+                key={ticket.id}
+                className="rounded-lg border border-gray-200 bg-white p-4 shadow-xs"
               >
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-accent">
@@ -208,8 +272,8 @@ export default function EventTicketStep(props: EventTicketStepProps) {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => onRemoveTicket(index)}
-                    className="text-red-500 hover:bg-red-50 hover:text-red-600"
+                    onClick={() => remove(index)}
+                    className="text-danger hover:bg-danger-light hover:text-danger"
                   >
                     <Trash2 className="mr-1 h-4 w-4" />
                     Hapus
@@ -223,11 +287,18 @@ export default function EventTicketStep(props: EventTicketStepProps) {
                     <Input
                       id={`ticket-name-${index}`}
                       placeholder="Contoh: VIP, Regular"
-                      value={ticket.name}
-                      onChange={(e) =>
-                        onUpdateTicket(index, "name", e.target.value)
-                      }
+                      {...register(`tickets.${index}.name`)}
+                      className={cn(
+                        "shadow-xs bg-white",
+                        errors.tickets?.[index]?.name &&
+                          "border-danger focus-visible:ring-danger",
+                      )}
                     />
+                    {errors.tickets?.[index]?.name && (
+                      <p className="text-xs text-danger">
+                        {errors.tickets[index].name.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Ticket Price */}
@@ -237,18 +308,27 @@ export default function EventTicketStep(props: EventTicketStepProps) {
                     </Label>
                     <Input
                       id={`ticket-price-${index}`}
-                      type="number"
-                      min="0"
+                      type="text"
                       placeholder="0"
-                      value={ticket.price}
-                      onChange={(e) =>
-                        onUpdateTicket(
-                          index,
-                          "price",
-                          parseInt(e.target.value) || 0,
-                        )
-                      }
+                      {...register(`tickets.${index}.price`)}
+                      onChange={(e) => {
+                        const value =
+                          parseInt(e.target.value.replace(/\D/g, "")) || 0;
+                        setValue(`tickets.${index}.price`, value, {
+                          shouldValidate: true,
+                        });
+                      }}
+                      className={cn(
+                        "shadow-xs bg-white",
+                        errors.tickets?.[index]?.price &&
+                          "border-danger focus-visible:ring-danger",
+                      )}
                     />
+                    {errors.tickets?.[index]?.price && (
+                      <p className="text-xs text-danger">
+                        {errors.tickets[index].price.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Ticket Quota */}
@@ -256,18 +336,27 @@ export default function EventTicketStep(props: EventTicketStepProps) {
                     <Label htmlFor={`ticket-quota-${index}`}>Kuota *</Label>
                     <Input
                       id={`ticket-quota-${index}`}
-                      type="number"
-                      min="1"
+                      type="text"
                       placeholder="100"
-                      value={ticket.quota}
-                      onChange={(e) =>
-                        onUpdateTicket(
-                          index,
-                          "quota",
-                          parseInt(e.target.value) || 0,
-                        )
-                      }
+                      {...register(`tickets.${index}.quota`)}
+                      onChange={(e) => {
+                        const value =
+                          parseInt(e.target.value.replace(/\D/g, "")) || 0;
+                        setValue(`tickets.${index}.quota`, value, {
+                          shouldValidate: true,
+                        });
+                      }}
+                      className={cn(
+                        "shadow-xs bg-white",
+                        errors.tickets?.[index]?.quota &&
+                          "border-danger focus-visible:ring-danger",
+                      )}
                     />
+                    {errors.tickets?.[index]?.quota && (
+                      <p className="text-xs text-danger">
+                        {errors.tickets[index].quota.message}
+                      </p>
+                    )}
                   </div>
 
                   {/* Ticket Description */}
@@ -278,18 +367,25 @@ export default function EventTicketStep(props: EventTicketStepProps) {
                     <Input
                       id={`ticket-desc-${index}`}
                       placeholder="Benefit atau keterangan tiket"
-                      value={ticket.description}
-                      onChange={(e) =>
-                        onUpdateTicket(index, "description", e.target.value)
-                      }
+                      {...register(`tickets.${index}.description`)}
+                      className={cn(
+                        "shadow-xs bg-white",
+                        errors.tickets?.[index]?.description &&
+                          "border-danger focus-visible:ring-danger",
+                      )}
                     />
+                    {errors.tickets?.[index]?.description && (
+                      <p className="text-xs text-danger">
+                        {errors.tickets[index].description.message}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {tickets.length >= 5 && (
+          {fields.length >= 5 && (
             <p className="text-sm text-muted-foreground">
               Maksimal 5 jenis tiket per event
             </p>
@@ -299,4 +395,3 @@ export default function EventTicketStep(props: EventTicketStepProps) {
     </div>
   );
 }
-

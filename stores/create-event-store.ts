@@ -14,6 +14,7 @@ interface CreateEventStore {
   currentStep: number;
   nextStep: () => void;
   prevStep: () => void;
+  setStep: (step: number) => void;
 
   // Field updates - Step 1
   updateEventType: (type: EventType) => void;
@@ -24,19 +25,15 @@ interface CreateEventStore {
   updateDescription: (description: string) => void;
   updateBanner: (file: File | null, preview: string) => void;
 
-  // Field updates - Step 3
-  updateEventSchedule: (data: {
-    startEventDate?: Date;
-    endEventDate?: Date;
-    startEventTime?: string;
-    endEventTime?: string;
+  // Field updates - Step 3 - DateTime versions
+  updateEventDateTime: (data: {
+    startEventDateTime?: Date;
+    endEventDateTime?: Date;
   }) => void;
   
-  updateRegistrationSchedule: (data: {
-    startRegistration?: Date;
-    endRegistration?: Date;
-    startRegistrationTime?: string;
-    endRegistrationTime?: string;
+  updateRegistrationDateTime: (data: {
+    startRegistrationDateTime?: Date;
+    endRegistrationDateTime?: Date;
   }) => void;
 
   // Rundown Actions
@@ -66,31 +63,27 @@ interface CreateEventStore {
     value: string | number,
   ) => void;
 
-  // Validation
-  validateStep: (step: number) => boolean;
-
   // Form actions
   reset: () => void;
+  
+  // Sync form data from RHF to Store
+  syncFormData: (data: Partial<CreateEventFormState>) => void;
 }
 
 // Initial state
 const initialFormData: CreateEventFormState = {
-  eventType: null,
+  eventType: undefined,
   title: "",
   category: "",
   description: "",
   bannerFile: null,
   bannerPreview: "",
   
-  startEventDate: undefined,
-  endEventDate: undefined,
-  startEventTime: "",
-  endEventTime: "",
+  startEventDateTime: undefined,
+  endEventDateTime: undefined,
   
-  startRegistration: undefined,
-  endRegistration: undefined,
-  startRegistrationTime: "",
-  endRegistrationTime: "",
+  startRegistrationDateTime: undefined,
+  endRegistrationDateTime: undefined,
 
   rundown: [],
   
@@ -107,6 +100,7 @@ const initialFormData: CreateEventFormState = {
   
   isPaid: false,
   maxCapacity: 0,
+  maxPurchasePerUser: undefined,
   
   tickets: [],
   step: 1,
@@ -118,8 +112,8 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
 
   // Navigation
   nextStep: () => {
-    const { currentStep, validateStep } = get();
-    if (validateStep(currentStep) && currentStep < 5) {
+    const { currentStep } = get();
+    if (currentStep < 5) {
       set({ currentStep: currentStep + 1 });
       set((state) => ({
         formData: { ...state.formData, step: currentStep + 1 },
@@ -135,6 +129,13 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
         formData: { ...state.formData, step: currentStep - 1 },
       }));
     }
+  },
+  
+  setStep: (step) => {
+      set({ currentStep: step });
+      set((state) => ({
+        formData: { ...state.formData, step },
+      }));
   },
 
   // Step 1 updates
@@ -169,14 +170,14 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     }));
   },
 
-  // Step 3 updates
-  updateEventSchedule: (data) => {
+  // Step 3 updates - DateTime
+  updateEventDateTime: (data: {startEventDateTime?: Date; endEventDateTime?: Date}) => {
     set((state) => ({
       formData: { ...state.formData, ...data },
     }));
   },
 
-  updateRegistrationSchedule: (data) => {
+  updateRegistrationDateTime: (data: {startRegistrationDateTime?: Date; endRegistrationDateTime?: Date}) => {
     set((state) => ({
       formData: { ...state.formData, ...data },
     }));
@@ -193,7 +194,6 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
             description: "",
             startTime: "",
             endTime: "",
-            location: "",
           },
         ],
       },
@@ -297,82 +297,6 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     }));
   },
 
-  // Validation
-  validateStep: (step) => {
-    const { formData } = get();
-
-    switch (step) {
-      case 1:
-        return formData.eventType !== null;
-
-      case 2:
-        return (
-          formData.title.trim() !== "" &&
-          formData.category.trim() !== "" &&
-          formData.description.trim().length >= 10 &&
-          formData.bannerFile !== null
-        );
-
-      case 3: {
-        const hasEventSchedule =
-          formData.startEventDate &&
-          formData.endEventDate &&
-          formData.startEventTime &&
-          formData.endEventTime;
-
-        if (!hasEventSchedule) return false;
-        
-        // Location validation
-        if (!formData.isOnline) {
-             const hasAddress = 
-                formData.address.rawAddress.trim() !== "" &&
-                formData.address.city.trim() !== "" &&
-                formData.address.province.trim() !== "";
-             if (!hasAddress) return false;
-        } else {
-             if (formData.meetingUrl.trim() === "") return false;
-        }
-
-        // Rundown validation (at least one rundown item is recommended, but maybe not strictly required? Let's assume required to be safe)
-        if (formData.rundown.length === 0) return false;
-        const isRundownValid = formData.rundown.every(
-            r => r.title.trim() !== "" && r.startTime !== "" && r.endTime !== ""
-        );
-        if (!isRundownValid) return false;
-
-        return true;
-      }
-
-      case 4:
-        // Logic Update:
-        // If PAID: Must have at least 1 ticket, and all tickets valid.
-        // If FREE: Tickets array is ignored. Only check maxCapacity (which is always valid as >= 0).
-        
-        if (formData.isPaid) {
-             return (
-                 formData.tickets.length > 0 &&
-                 formData.tickets.every(
-                     (ticket) =>
-                     ticket.name.trim() !== "" &&
-                     ticket.quota > 0 &&
-                     ticket.price > 0
-                 )
-             );
-        } else {
-             // For Free events, maxCapacity >= 0 is the only requirement, which is type-enforced mostly.
-             // Just ensure it's not negative.
-             return formData.maxCapacity >= 0;
-        }
-
-      case 5:
-        // Preview step - always valid
-        return true;
-
-      default:
-        return false;
-    }
-  },
-
   // Reset
   reset: () => {
     set({
@@ -380,5 +304,11 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
       currentStep: 1,
     });
   },
+  
+  syncFormData: (data) => {
+      set((state) => ({
+          formData: { ...state.formData, ...data }
+      }));
+  }
 }));
 

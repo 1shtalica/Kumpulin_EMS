@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import {
   MapPin,
   Video,
@@ -28,131 +25,69 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
 import { INDONESIA_REGIONS } from "@/constants/regions";
-import type { RundownRequest } from "@/types/create-event";
+import { useFormContext, useFieldArray, Controller } from "react-hook-form";
+import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
+import DateTimePicker from "@/components/reusable/DateTimePicker";
+import TimePicker from "@/components/reusable/TimePicker";
+import { useEffect } from "react";
 
-interface EventScheduleStepProps {
-  // Event Schedule
-  startEventDate?: Date;
-  endEventDate?: Date;
-  startEventTime: string;
-  endEventTime: string;
-  onEventScheduleChange: (data: {
-    startEventDate?: Date;
-    endEventDate?: Date;
-    startEventTime?: string;
-    endEventTime?: string;
-  }) => void;
-
-  // Registration Schedule
-  startRegistration?: Date;
-  endRegistration?: Date;
-  startRegistrationTime: string;
-  endRegistrationTime: string;
-  onRegistrationScheduleChange: (data: {
-    startRegistration?: Date;
-    endRegistration?: Date;
-    startRegistrationTime?: string;
-    endRegistrationTime?: string;
-  }) => void;
-
-  // Rundown
-  rundown: RundownRequest[];
-  onAddRundown: () => void;
-  onRemoveRundown: (index: number) => void;
-  onUpdateRundown: (
-    index: number,
-    field: keyof RundownRequest,
-    value: string,
-  ) => void;
-
-  // Location
-  isOnline: boolean;
-  onIsOnlineChange: (isOnline: boolean) => void;
-
-  address: {
-    rawAddress: string;
-    city: string;
-    province: string;
-    postalCode: string;
-  };
-  onAddressChange: (field: string, value: string) => void;
-
-  meetingUrl: string;
-  onMeetingUrlChange: (url: string) => void;
-}
-
-export default function EventScheduleStep(props: EventScheduleStepProps) {
+export default function EventScheduleStep() {
   const {
-    // Event
-    startEventDate,
-    endEventDate,
-    startEventTime,
-    endEventTime,
-    onEventScheduleChange,
+    control,
+    watch,
+    setValue,
+    register,
+    formState: { errors },
+  } = useFormContext<CreateEventSchema>();
 
-    // Registration
-    startRegistration,
-    endRegistration,
-    startRegistrationTime,
-    endRegistrationTime,
-    onRegistrationScheduleChange,
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "rundown",
+  });
 
-    // Rundown
-    rundown,
-    onAddRundown,
-    onRemoveRundown,
-    onUpdateRundown,
+  const isOnline = watch("isOnline");
+  const watchProvince = watch("address.province");
 
-    // Location
-    isOnline,
-    onIsOnlineChange,
-    address,
-    onAddressChange,
-    meetingUrl,
-    onMeetingUrlChange,
-  } = props;
+  // Watch for progressive date selection
+  const startRegistrationDateTime = watch("startRegistrationDateTime");
+  const endRegistrationDateTime = watch("endRegistrationDateTime");
+  const startEventDateTime = watch("startEventDateTime");
+  const endEventDateTime = watch("endEventDateTime");
 
-  // Local state for date inputs (formatted as YYYY-MM-DD)
-  const [startDateStr, setStartDateStr] = useState(
-    startEventDate ? startEventDate.toISOString().split("T")[0] : "",
-  );
-  const [endDateStr, setEndDateStr] = useState(
-    endEventDate ? endEventDate.toISOString().split("T")[0] : "",
-  );
-
-  const [startRegStr, setStartRegStr] = useState(
-    startRegistration ? startRegistration.toISOString().split("T")[0] : "",
-  );
-  const [endRegStr, setEndRegStr] = useState(
-    endRegistration ? endRegistration.toISOString().split("T")[0] : "",
-  );
-
-  const handleDateChange = (
-    field: "startEvent" | "endEvent" | "startReg" | "endReg",
-    value: string,
-  ) => {
-    switch (field) {
-      case "startEvent":
-        setStartDateStr(value);
-        if (value) onEventScheduleChange({ startEventDate: new Date(value) });
-        break;
-      case "endEvent":
-        setEndDateStr(value);
-        if (value) onEventScheduleChange({ endEventDate: new Date(value) });
-        break;
-      case "startReg":
-        setStartRegStr(value);
-        if (value)
-          onRegistrationScheduleChange({ startRegistration: new Date(value) });
-        break;
-      case "endReg":
-        setEndRegStr(value);
-        if (value)
-          onRegistrationScheduleChange({ endRegistration: new Date(value) });
-        break;
+  // Auto-clear dependent fields when prerequisite is cleared (cascade)
+  useEffect(() => {
+    // If Start Registration is cleared → clear everything below
+    if (!startRegistrationDateTime) {
+      if (endRegistrationDateTime)
+        setValue("endRegistrationDateTime", undefined as any);
+      if (startEventDateTime) setValue("startEventDateTime", undefined as any);
+      if (endEventDateTime) setValue("endEventDateTime", undefined as any);
+      return;
     }
+    // If End Registration is cleared → clear event fields
+    if (!endRegistrationDateTime) {
+      if (startEventDateTime) setValue("startEventDateTime", undefined as any);
+      if (endEventDateTime) setValue("endEventDateTime", undefined as any);
+      return;
+    }
+    // If Start Event is cleared → clear End Event
+    if (!startEventDateTime) {
+      if (endEventDateTime) setValue("endEventDateTime", undefined as any);
+    }
+  }, [
+    startRegistrationDateTime,
+    endRegistrationDateTime,
+    startEventDateTime,
+    endEventDateTime,
+    setValue,
+  ]);
+
+  // Helper: Add 1 day to a date
+  const addDays = (date: Date, days: number): Date => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
   };
 
   return (
@@ -165,60 +100,7 @@ export default function EventScheduleStep(props: EventScheduleStepProps) {
         </p>
       </div>
 
-      {/* --- Section 1: Jadwal Acara --- */}
-      <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
-          <CalendarIcon className="h-5 w-5 text-primary" />
-          Waktu Pelaksanaan Event
-        </h3>
-
-        <div className="grid gap-4 rounded-lg border border-gray-100 bg-gray-50 p-4 grid-cols-1">
-          {/* Start Date & Time */}
-          <div className="space-y-2">
-            <Label>Mulai Event</Label>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Input
-                type="date"
-                value={startDateStr}
-                onChange={(e) => handleDateChange("startEvent", e.target.value)}
-                className="flex-1"
-              />
-              <Input
-                type="time"
-                value={startEventTime}
-                onChange={(e) =>
-                  onEventScheduleChange({ startEventTime: e.target.value })
-                }
-                className="w-full sm:w-auto"
-              />
-            </div>
-          </div>
-
-          {/* End Date & Time */}
-          <div className="space-y-2">
-            <Label>Selesai Event</Label>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Input
-                type="date"
-                value={endDateStr}
-                onChange={(e) => handleDateChange("endEvent", e.target.value)}
-                min={startDateStr}
-                className="flex-1"
-              />
-              <Input
-                type="time"
-                value={endEventTime}
-                onChange={(e) =>
-                  onEventScheduleChange({ endEventTime: e.target.value })
-                }
-                className="w-full sm:w-auto"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* --- Section 2: Jadwal Pendaftaran --- */}
+      {/* --- Section 1: Periode Pendaftaran (FIRST) --- */}
       <div className="space-y-4">
         <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
           <Clock className="h-5 w-5 text-primary" />
@@ -226,372 +108,555 @@ export default function EventScheduleStep(props: EventScheduleStepProps) {
         </h3>
 
         <div className="grid gap-4 rounded-lg border border-gray-100 bg-gray-50 p-4 grid-cols-1">
-          {/* Start Reg */}
+          {/* Start Registration DateTime */}
           <div className="space-y-2">
-            <Label>Buka Pendaftaran</Label>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Input
-                type="date"
-                value={startRegStr}
-                onChange={(e) => handleDateChange("startReg", e.target.value)}
-                className="flex-1"
-              />
-              <Input
-                type="time"
-                value={startRegistrationTime}
-                onChange={(e) =>
-                  onRegistrationScheduleChange({
-                    startRegistrationTime: e.target.value,
-                  })
-                }
-                className="w-full sm:w-auto"
-              />
-            </div>
-          </div>
-
-          {/* End Reg */}
-          <div className="space-y-2">
-            <Label>Tutup Pendaftaran</Label>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Input
-                type="date"
-                value={endRegStr}
-                onChange={(e) => handleDateChange("endReg", e.target.value)}
-                min={startRegStr}
-                className="flex-1"
-              />
-              <Input
-                type="time"
-                value={endRegistrationTime}
-                onChange={(e) =>
-                  onRegistrationScheduleChange({
-                    endRegistrationTime: e.target.value,
-                  })
-                }
-                className="w-full sm:w-auto"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* --- Section 3: Detail Lokasi --- */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
-            {isOnline ? (
-              <Video className="h-5 w-5 text-primary" />
-            ) : (
-              <MapPin className="h-5 w-5 text-primary" />
-            )}
-            Lokasi Event
-          </h3>
-
-          <div className="flex items-center rounded-lg border bg-white p-1 shadow-xs">
-            <button
-              onClick={() => onIsOnlineChange(false)}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
-                !isOnline
-                  ? "bg-primary text-white shadow-xs"
-                  : "text-gray-600 hover:bg-gray-50",
-              )}
-            >
-              Offline
-            </button>
-            <button
-              onClick={() => onIsOnlineChange(true)}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
-                isOnline
-                  ? "bg-primary text-white shadow-xs"
-                  : "text-gray-600 hover:bg-gray-50",
-              )}
-            >
-              Online
-            </button>
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-          {!isOnline ? (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Alamat Lengkap</Label>
-                <Input
-                  placeholder="Nama Gedung, Jalan, No..."
-                  value={address.rawAddress}
-                  onChange={(e) =>
-                    onAddressChange("rawAddress", e.target.value)
-                  }
+            <Label>
+              Buka Pendaftaran <span className="text-danger">*</span>
+            </Label>
+            <Controller
+              control={control}
+              name="startRegistrationDateTime"
+              render={({ field }) => (
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pilih waktu buka pendaftaran"
+                  minDate={new Date()}
+                  className={cn(
+                    errors.startRegistrationDateTime && "border-danger",
+                  )}
                 />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                {/* --- Province Selector --- */}
-                <div className="space-y-2">
-                  <Label>Provinsi</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "w-full justify-between font-normal",
-                          !address.province && "text-muted-foreground",
-                        )}
-                      >
-                        {address.province || "Pilih Provinsi"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput placeholder="Cari provinsi..." />
-                        <CommandList>
-                          <CommandEmpty>Provinsi tidak ditemukan.</CommandEmpty>
-                          <CommandGroup>
-                            {INDONESIA_REGIONS.map((province) => (
-                              <CommandItem
-                                key={province.id}
-                                value={province.name}
-                                onSelect={(currentValue) => {
-                                  // Find the matched province
-                                  const matched = INDONESIA_REGIONS.find(
-                                    (p) =>
-                                      p.name.toLowerCase() ===
-                                      currentValue.toLowerCase(),
-                                  );
-
-                                  if (matched) {
-                                    // Update state: Set province, reset city
-                                    onAddressChange("province", matched.name);
-                                    onAddressChange("city", ""); // RESET CITY
-                                  }
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    address.province === province.name
-                                      ? "opacity-100"
-                                      : "opacity-0",
-                                  )}
-                                />
-                                {province.name}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {/* --- City Selector --- */}
-                <div className="space-y-2">
-                  <Label>Kota/Kabupaten</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        disabled={!address.province} // DISABLE if no province
-                        className={cn(
-                          "w-full justify-between font-normal",
-                          !address.city && "text-muted-foreground",
-                        )}
-                      >
-                        {address.city || "Pilih Kota/Kabupaten"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                      <Command>
-                        <CommandInput placeholder="Cari kota..." />
-                        <CommandList>
-                          <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>
-                          <CommandGroup>
-                            {(() => {
-                              // Filter cities based on selected province
-                              const selectedProv = INDONESIA_REGIONS.find(
-                                (p) => p.name === address.province,
-                              );
-                              const cities = selectedProv
-                                ? selectedProv.cities
-                                : [];
-
-                              return cities.map((city) => (
-                                <CommandItem
-                                  key={city.id}
-                                  value={city.name}
-                                  onSelect={(currentValue) => {
-                                    const matched = cities.find(
-                                      (c) =>
-                                        c.name.toLowerCase() ===
-                                        currentValue.toLowerCase(),
-                                    );
-                                    onAddressChange(
-                                      "city",
-                                      matched ? matched.name : currentValue,
-                                    );
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      address.city === city.name
-                                        ? "opacity-100"
-                                        : "opacity-0",
-                                    )}
-                                  />
-                                  {city.name}
-                                </CommandItem>
-                              ));
-                            })()}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Kode Pos (Opsional)</Label>
-                <Input
-                  placeholder="12345"
-                  className="w-32"
-                  value={address.postalCode}
-                  onChange={(e) =>
-                    onAddressChange("postalCode", e.target.value)
-                  }
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Label>Link Meeting / Streaming</Label>
-              <Input
-                type="url"
-                placeholder="https://zoom.us/..."
-                value={meetingUrl}
-                onChange={(e) => onMeetingUrlChange(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                URL platform meeting (Zoom, GMeet, Youtube, dll)
+              )}
+            />
+            {errors.startRegistrationDateTime && (
+              <p className="text-xs text-danger">
+                {errors.startRegistrationDateTime.message}
               </p>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* End Registration DateTime */}
+          <div className="space-y-2">
+            <Label>
+              Tutup Pendaftaran <span className="text-danger">*</span>
+            </Label>
+            <Controller
+              control={control}
+              name="endRegistrationDateTime"
+              render={({ field }) => (
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pilih waktu tutup pendaftaran"
+                  minDate={startRegistrationDateTime || new Date()}
+                  disabled={!startRegistrationDateTime}
+                  className={cn(
+                    errors.endRegistrationDateTime && "border-danger",
+                  )}
+                />
+              )}
+            />
+            {errors.endRegistrationDateTime && (
+              <p className="text-xs text-danger">
+                {errors.endRegistrationDateTime.message}
+              </p>
+            )}
+            {!startRegistrationDateTime && (
+              <p className="text-xs text-muted">
+                Pilih waktu buka pendaftaran terlebih dahulu
+              </p>
+            )}
+            {startRegistrationDateTime &&
+              endRegistrationDateTime &&
+              endRegistrationDateTime <= startRegistrationDateTime && (
+                <p className="text-xs text-danger">
+                  Waktu tutup harus setelah waktu buka pendaftaran
+                </p>
+              )}
+          </div>
         </div>
       </div>
 
-      {/* --- Section 4: Rundown --- */}
+      {/* --- Section 2: Waktu Pelaksanaan Event (AFTER Registration) --- */}
+      <div className="space-y-4">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+          <CalendarIcon className="h-5 w-5 text-primary" />
+          Waktu Pelaksanaan Event
+        </h3>
+
+        <div className="grid gap-4 rounded-lg border border-gray-100 bg-gray-50 p-4 grid-cols-1">
+          {/* Start Event DateTime */}
+          <div className="space-y-2">
+            <Label>
+              Mulai Event <span className="text-danger">*</span>
+            </Label>
+            <Controller
+              control={control}
+              name="startEventDateTime"
+              render={({ field }) => (
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pilih waktu mulai event"
+                  minDate={
+                    endRegistrationDateTime
+                      ? addDays(endRegistrationDateTime, 1)
+                      : new Date()
+                  }
+                  disabled={!endRegistrationDateTime}
+                  className={cn(errors.startEventDateTime && "border-danger")}
+                />
+              )}
+            />
+            {errors.startEventDateTime && (
+              <p className="text-xs text-danger">
+                {errors.startEventDateTime.message}
+              </p>
+            )}
+            {!endRegistrationDateTime && (
+              <p className="text-xs text-muted">
+                Pilih waktu tutup pendaftaran terlebih dahulu
+              </p>
+            )}
+          </div>
+
+          {/* End Event DateTime */}
+          <div className="space-y-2">
+            <Label>
+              Selesai Event <span className="text-danger">*</span>
+            </Label>
+            <Controller
+              control={control}
+              name="endEventDateTime"
+              render={({ field }) => (
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pilih waktu selesai event"
+                  minDate={startEventDateTime || new Date()}
+                  disabled={!startEventDateTime}
+                  className={cn(errors.endEventDateTime && "border-danger")}
+                />
+              )}
+            />
+            {errors.endEventDateTime && (
+              <p className="text-xs text-danger">
+                {errors.endEventDateTime.message}
+              </p>
+            )}
+            {!startEventDateTime && (
+              <p className="text-xs text-muted">
+                Pilih waktu mulai event terlebih dahulu
+              </p>
+            )}
+            {startEventDateTime &&
+              endEventDateTime &&
+              endEventDateTime <= startEventDateTime && (
+                <p className="text-xs text-danger">
+                  Waktu selesai harus setelah waktu mulai event
+                </p>
+              )}
+          </div>
+        </div>
+      </div>
+
+      {/* --- Section 3: Rundown --- */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
-            <Clock className="h-5 w-5 text-primary" />
-            Susunan Acara (Rundown)
+            <CalendarIcon className="h-5 w-5 text-primary" />
+            Rundown Acara
           </h3>
-          <Button size="sm" variant="outline" onClick={onAddRundown}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              append({
+                title: "",
+                startTime: "",
+                endTime: "",
+                description: "",
+                location: "",
+              })
+            }
+          >
             <Plus className="mr-2 h-4 w-4" />
             Tambah Sesi
           </Button>
         </div>
 
-        <div className="space-y-4">
-          {rundown.length === 0 && (
-            <div className="flex h-32 flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 bg-gray-50">
-              <p className="text-sm text-muted-foreground">
-                Belum ada rundown acara
-              </p>
-              <Button variant="link" onClick={onAddRundown}>
-                Tambah sesi pertama
-              </Button>
-            </div>
-          )}
-
-          {rundown.map((item, index) => (
-            <div
-              key={index}
-              className="relative grid gap-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm grid-cols-1 md:grid-cols-12"
+        {fields.length === 0 && (
+          <div
+            className={cn(
+              "rounded-lg border border-dashed p-8 text-center",
+              errors.rundown
+                ? "border-danger bg-red-50"
+                : "border-gray-300 bg-gray-50",
+            )}
+          >
+            <p
+              className={cn(
+                "text-sm",
+                errors.rundown
+                  ? "text-danger font-medium"
+                  : "text-muted-foreground",
+              )}
             >
-              {/* Delete Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute -right-2 -top-2 h-8 w-8 rounded-full bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 shadow-sm z-10"
-                onClick={() => onRemoveRundown(index)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {errors.rundown &&
+              !Array.isArray(errors.rundown) &&
+              "message" in errors.rundown
+                ? errors.rundown.message
+                : 'Belum ada sesi rundown. Klik tombol "Tambah Sesi" untuk memulai.'}
+            </p>
+          </div>
+        )}
 
-              {/* Time */}
-              <div className="space-y-2 md:col-span-12 lg:col-span-4">
-                <Label className="text-xs text-muted-foreground">Waktu</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="time"
-                    value={item.startTime}
-                    onChange={(e) =>
-                      onUpdateRundown(index, "startTime", e.target.value)
-                    }
-                    className="h-9 text-sm"
-                  />
-                  <span className="text-muted-foreground">-</span>
-                  <Input
-                    type="time"
-                    value={item.endTime}
-                    onChange={(e) =>
-                      onUpdateRundown(index, "endTime", e.target.value)
-                    }
-                    className="h-9 text-sm"
-                  />
-                </div>
+        <div className="space-y-4">
+          {fields.map((item, index) => (
+            <div
+              key={item.id}
+              className={cn(
+                "rounded-lg border bg-white shadow-xs overflow-hidden transition-all",
+                (errors.rundown?.[index]?.title ||
+                  errors.rundown?.[index]?.startTime ||
+                  errors.rundown?.[index]?.endTime) &&
+                "border-danger ring-1 ring-danger",
+              )}
+            >
+              {/* Header Row */}
+              <div className="flex items-center justify-between border-b bg-gray-50 px-4 py-2">
+                <span className="font-medium text-sm text-gray-700">
+                  Sesi #{index + 1}
+                </span>
+                {fields.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-danger hover:bg-danger-light hover:text-danger"
+                    onClick={() => remove(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
 
-              {/* Details */}
-              <div className="space-y-2 md:col-span-12 lg:col-span-8">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">
-                      Sesi
-                    </Label>
-                    <Input
-                      placeholder="Judul sesi..."
-                      value={item.title}
-                      onChange={(e) =>
-                        onUpdateRundown(index, "title", e.target.value)
-                      }
-                      className="h-9"
-                    />
+              {/* Content Grid */}
+              <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-12">
+                {/* Time Inputs */}
+                <div className="space-y-2 md:col-span-12 lg:col-span-4">
+                  <Label className="text-xs text-muted-foreground">
+                    Waktu *
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <Controller
+                        control={control}
+                        name={`rundown.${index}.startTime`}
+                        render={({ field }) => (
+                          <TimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Mulai"
+                            className={cn(
+                              "h-9 text-sm w-full",
+                              errors.rundown?.[index]?.startTime &&
+                                "border-danger",
+                            )}
+                          />
+                        )}
+                      />
+                    </div>
+                    <span className="text-muted-foreground shrink-0">-</span>
+                    <div className="flex-1 min-w-0">
+                      <Controller
+                        control={control}
+                        name={`rundown.${index}.endTime`}
+                        render={({ field }) => (
+                          <TimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Selesai"
+                            className={cn(
+                              "h-9 text-sm w-full",
+                              errors.rundown?.[index]?.endTime &&
+                                "border-danger",
+                            )}
+                          />
+                        )}
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">
-                      Lokasi (Opsional)
-                    </Label>
-                    <Input
-                      placeholder="Panggung utama..."
-                      value={item.location || ""}
-                      onChange={(e) =>
-                        onUpdateRundown(index, "location", e.target.value)
-                      }
-                      className="h-9"
-                    />
-                  </div>
+                  {(errors.rundown?.[index]?.startTime ||
+                    errors.rundown?.[index]?.endTime) && (
+                    <p className="text-xs text-danger">
+                      {errors.rundown?.[index]?.startTime?.message ||
+                        errors.rundown?.[index]?.endTime?.message}
+                    </p>
+                  )}
                 </div>
-                <div className="space-y-1">
+
+                {/* Title */}
+                <div className="space-y-1 md:col-span-12 lg:col-span-8">
+                  <Label className="text-xs text-muted-foreground">
+                    Sesi *
+                  </Label>
+                  <Input
+                    placeholder="Nama sesi (contoh: Opening Ceremony)"
+                    className={cn(
+                      "h-9",
+                      errors.rundown?.[index]?.title && "border-danger",
+                    )}
+                    {...register(`rundown.${index}.title`)}
+                  />
+                  {errors.rundown?.[index]?.title && (
+                    <p className="text-xs text-danger">
+                      {errors.rundown?.[index]?.title?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Location */}
+                <div className="space-y-1 md:col-span-6">
+                  <Label className="text-xs text-muted-foreground">
+                    Lokasi (Opsional)
+                  </Label>
+                  <Input
+                    placeholder="Tempat (contoh: Aula Utama)"
+                    className="h-9"
+                    {...register(`rundown.${index}.location`)}
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-1 md:col-span-6">
+                  <Label className="text-xs text-muted-foreground">
+                    Deskripsi (Opsional)
+                  </Label>
                   <Input
                     placeholder="Deskripsi singkat..."
-                    value={item.description}
-                    onChange={(e) =>
-                      onUpdateRundown(index, "description", e.target.value)
-                    }
                     className="h-9"
+                    {...register(`rundown.${index}.description`)}
                   />
                 </div>
               </div>
             </div>
           ))}
         </div>
+      </div>
+
+      {/* --- Section 4: Location --- */}
+      <div className="space-y-4">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+          <MapPin className="h-5 w-5 text-primary" />
+          Lokasi Event
+        </h3>
+
+        {/* Toggle Online/Offline */}
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant={isOnline ? "default" : "outline"}
+            onClick={() => setValue("isOnline", true)}
+            className="flex-1"
+          >
+            <Video className="mr-2 h-4 w-4" />
+            Online
+          </Button>
+          <Button
+            type="button"
+            variant={!isOnline ? "default" : "outline"}
+            onClick={() => setValue("isOnline", false)}
+            className="flex-1"
+          >
+            <MapPin className="mr-2 h-4 w-4" />
+            Offline
+          </Button>
+        </div>
+
+        {/* Online: Meeting URL */}
+        {isOnline && (
+          <div className="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
+            <Label>Link Meeting</Label>
+            <Input
+              type="url"
+              placeholder="https://meet.google.com/xxx-xxxx-xxx"
+              className={cn(
+                errors.meetingUrl &&
+                  "border-danger focus-visible:ring-danger",
+              )}
+              {...register("meetingUrl")}
+            />
+            {errors.meetingUrl && (
+              <p className="text-xs text-danger">
+                {errors.meetingUrl.message}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Masukkan link Zoom, Google Meet, atau platform video conference
+              lainnya
+            </p>
+          </div>
+        )}
+
+        {/* Offline: Address */}
+        {!isOnline && (
+          <div className="space-y-4 rounded-lg border border-gray-100 bg-gray-50 p-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Province */}
+              <div className="space-y-2">
+                <Label>Provinsi</Label>
+                <Controller
+                  control={control}
+                  name="address.province"
+                  render={({ field }) => (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground",
+                            errors.address?.province && "border-danger",
+                          )}
+                        >
+                          {field.value || "Pilih provinsi"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Cari provinsi..." />
+                          <CommandList>
+                            <CommandEmpty>
+                              Provinsi tidak ditemukan.
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {INDONESIA_REGIONS.map((region) => (
+                                <CommandItem
+                                  key={region.name}
+                                  value={region.name}
+                                  onSelect={() => {
+                                    field.onChange(region.name);
+                                    setValue("address.city", "");
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === region.name
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                  {region.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                />
+                {errors.address?.province && (
+                  <p className="text-xs text-danger">
+                    {errors.address.province.message}
+                  </p>
+                )}
+              </div>
+
+              {/* City */}
+              <div className="space-y-2">
+                <Label>Kota/Kabupaten</Label>
+                <Controller
+                  control={control}
+                  name="address.city"
+                  render={({ field }) => (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          disabled={!watchProvince}
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground",
+                            errors.address?.city && "border-danger",
+                          )}
+                        >
+                          {field.value || "Pilih kota"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Cari kota..." />
+                          <CommandList>
+                            <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>
+                            <CommandGroup>
+                              {INDONESIA_REGIONS.find(
+                                (r) => r.name === watchProvince,
+                              )?.cities.map((city) => (
+                                <CommandItem
+                                  key={city.name}
+                                  value={city.name}
+                                  onSelect={() => field.onChange(city.name)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === city.name
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                  {city.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                />
+                {errors.address?.city && (
+                  <p className="text-xs text-danger">
+                    {errors.address.city.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Full Address */}
+            <div className="space-y-2">
+              <Label>Alamat Lengkap</Label>
+              <Input
+                placeholder="Jalan, nomor, gedung, dll."
+                className={cn(errors.address?.rawAddress && "border-danger")}
+                {...register("address.rawAddress")}
+              />
+              {errors.address?.rawAddress && (
+                <p className="text-xs text-danger">
+                  {errors.address.rawAddress.message}
+                </p>
+              )}
+            </div>
+
+            {/* Postal Code (Optional) */}
+            <div className="space-y-2">
+              <Label>Kode Pos (Opsional)</Label>
+              <Input
+                placeholder="12345"
+                type="text"
+                {...register("address.postalCode")}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

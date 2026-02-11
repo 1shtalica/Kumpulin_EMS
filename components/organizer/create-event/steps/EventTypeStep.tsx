@@ -1,37 +1,41 @@
-"use client";
-
 import { cn } from "@/lib/utils";
-import type { EventType } from "@/types/create-event";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { useFormContext } from "react-hook-form";
+import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
 
-interface EventTypeStepProps {
-  selectedType: EventType;
-  onSelectType: (type: Exclude<EventType, null>) => void;
-}
+export default function EventTypeStep() {
+  const {
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<CreateEventSchema>();
+  const selectedType = watch("eventType");
 
-export default function EventTypeStep({
-  selectedType,
-  onSelectType,
-}: EventTypeStepProps) {
+  const onSelectType = (type: "public" | "internal") => {
+    setValue("eventType", type, { shouldValidate: true });
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-accent">Pilih Tipe Event</h2>
         <p className="mt-2 text-muted">
-          Tentukan apakah event ini terbuka untuk umum atau internal
+          Tentukan apakah event ini terbuka untuk publik atau internal
         </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Button
+          type="button"
           variant="ghost"
           onClick={() => onSelectType("public")}
           className={cn(
-            "relative flex h-auto flex-col items-start gap-4 rounded-xl border-2 p-6 text-left transition-all shadow-xs hover:shadow-sm hover:bg-transparent whitespace-normal wrap-break-word w-full",
+            "relative flex h-auto flex-col items-start gap-4 rounded-xl border-2 p-6 text-left transition-all shadow-xs hover:shadow-sm whitespace-normal wrap-break-word w-full",
             selectedType === "public"
               ? "border-primary bg-primary-light hover:bg-primary-light"
-              : "border-slate-100 bg-white hover:bg-white hover:border-slate-200",
+              : "border-slate-100 bg-white hover:bg-white",
+            errors.eventType && "border-danger",
           )}
         >
           {selectedType === "public" && (
@@ -71,13 +75,15 @@ export default function EventTypeStep({
         </Button>
 
         <Button
+          type="button"
           variant="ghost"
           onClick={() => onSelectType("internal")}
           className={cn(
             "relative flex h-auto flex-col items-start gap-4 rounded-xl border-2 p-6 text-left transition-all shadow-xs hover:shadow-sm hover:bg-transparent whitespace-normal wrap-break-word w-full",
             selectedType === "internal"
               ? "border-secondary bg-secondary-light hover:bg-secondary-light"
-              : "border-slate-100 bg-white hover:bg-white hover:border-slate-200",
+              : "border-slate-100 bg-white hover:bg-white",
+            errors.eventType && "border-danger",
           )}
         >
           {selectedType === "internal" && (
@@ -118,6 +124,11 @@ export default function EventTypeStep({
           </div>
         </Button>
       </div>
+      {errors.eventType && (
+        <p className="text-center text-sm text-danger">
+          {errors.eventType.message}
+        </p>
+      )}
     </div>
   );
 }

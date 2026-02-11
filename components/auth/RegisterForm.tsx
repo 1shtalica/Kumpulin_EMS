@@ -60,7 +60,6 @@ const registerSchema = z
   });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
-type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const router = useRouter();

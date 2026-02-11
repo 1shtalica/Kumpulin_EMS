@@ -1,13 +1,5 @@
-// slug dikerjakan di be untuk menambahkna idnya
-// type di be ganti antara internal/eksternal, lalu untuk tags diganti jadi category (dan mungkin hanya 1)
-// max capacity diambil dari total ticket quota jika berbayar, atau isi field jika gratis
-// total sold tidak masuk ke form
-//
-
-// 🌟 Ini skema yang support event berlangsung 1 hari
-
-export type EventType = "public" | "internal" | null;
-export type isOnline = true | false | null;
+export type EventType = "public" | "internal" | undefined;
+export type isOnline = true | false;
 
 export interface TicketRequest {
   name: string;
@@ -16,7 +8,6 @@ export interface TicketRequest {
   description: string;
 }
 
-// 🌟 location sengaja dibikin opsional sebab belum pasti kalau setiap rundown ada tempat
 export interface RundownRequest {
   title: string;
   description: string;
@@ -36,42 +27,28 @@ export interface CreateEventFormState {
   bannerFile: File | null;
   bannerPreview: string;
 
-  // 📌 Step 3: Tanggal Event Berlangsung, Tanggal Pendaftaran, Rundown, Location
-  startEventDate: Date | undefined;
-  endEventDate: Date | undefined;
-  startEventTime: string;
-  endEventTime: string;
-
-  //mengatur tanggal buka dan tutup pendaftaran
-  startRegistration: Date | undefined;
-  startRegistrationTime: string;
-  endRegistration: Date | undefined;
-  endRegistrationTime: string;
-
+  // 📌 Step 3: Combined DateTime fields (instead of separate date + time)
+  startEventDateTime: Date | undefined;
+  endEventDateTime: Date | undefined;
+  startRegistrationDateTime: Date | undefined;
+  endRegistrationDateTime: Date | undefined;
   rundown: RundownRequest[];
-
-  // Offline / Hybrid Location
   isOnline: boolean;
-
-  // offline form
   address: {
     rawAddress: string;
     city: string;
     province: string;
-    postalCode: string;
-    latitude: number;
-    longitude: number;
+    postalCode?: string;
+    latitude?: number;
+    longitude?: number;
   };
-
-  //online form
   meetingUrl: string;
 
   // 📌 Step 4: Tickets
   isPaid: boolean;
   maxCapacity: number;
-
+  maxPurchasePerUser?: number;
   tickets: TicketRequest[];
 
-  // Metadata
-  step: number; // 1-5
+  step: number;
 }

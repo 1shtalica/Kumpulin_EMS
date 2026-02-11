@@ -1,6 +1,7 @@
 "use client";
 
 import { useCreateEventStore } from "@/stores/create-event-store";
+import type { CreateEventFormState } from "@/types/create-event";
 import CreateEventStepper from "@/components/organizer/create-event/CreateEventStepper";
 import EventTypeStep from "@/components/organizer/create-event/steps/EventTypeStep";
 import EventInfoStep from "@/components/organizer/create-event/steps/EventInfoStep";
@@ -10,134 +11,131 @@ import EventPreviewStep from "@/components/organizer/create-event/steps/EventPre
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  useForm,
+  FormProvider,
+  SubmitHandler,
+  type DeepPartial,
+} from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  createEventSchema,
+  CreateEventSchema,
+} from "@/lib/validator/create-event.schema";
+import { useEffect } from "react";
 
 export default function CreateEventClient() {
   const {
     currentStep,
-    formData,
-    nextStep,
-    prevStep,
-    validateStep,
-
-    // Step 1
-    updateEventType,
-
-    // Step 2
-    updateTitle,
-    updateCategory,
-    updateDescription,
-    updateBanner,
-
-    // Step 3
-    updateEventSchedule,
-    updateRegistrationSchedule,
-    addRundown,
-    removeRundown,
-    updateRundown,
-    updateIsOnline,
-    updateAddress,
-    updateMeetingUrl,
-
-    // Step 4
-    updateIsPaid,
-    updateMaxCapacity,
-    addTicket,
-    removeTicket,
-    updateTicket,
+    nextStep: storeNextStep,
+    prevStep: storePrevStep,
+    formData: storeFormData,
+    syncFormData,
+    setStep,
   } = useCreateEventStore();
 
-  const isStepValid = validateStep(currentStep);
-  const canGoNext = isStepValid && currentStep < 5;
+  const methods = useForm<CreateEventSchema>({
+    resolver: zodResolver(createEventSchema) as any, // Type inference issue with z.coerce.number()
+    mode: "onChange",
+    defaultValues: storeFormData as Partial<CreateEventSchema>,
+  });
+
+  const { trigger, handleSubmit, watch, getValues } = methods;
+
+  // Sync form data to store whenever it changes
+  useEffect(() => {
+    const subscription = watch((value) => {
+      // Type assertion needed because RHF returns DeepPartialFieldValues which makes array elements optional
+      syncFormData(value as Partial<CreateEventFormState>);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, syncFormData]);
+
+  // Determine if we can go back
   const canGoPrev = currentStep > 1;
 
-  const handleNext = () => {
-    if (canGoNext) {
-      nextStep();
+  const handleNext = async () => {
+    let isStepValid = false;
+
+    // Validate only fields for the current step
+    switch (currentStep) {
+      case 1:
+        isStepValid = await trigger(["eventType"] as const);
+        break;
+      case 2:
+        isStepValid = await trigger([
+          "title",
+          "category",
+          "description",
+          "bannerFile",
+        ] as const);
+        break;
+      case 3:
+        const step3Fields = [
+          "startEventDateTime",
+          "endEventDateTime",
+          "startRegistrationDateTime",
+          "endRegistrationDateTime",
+          "rundown",
+          "isOnline",
+          "address",
+          "meetingUrl",
+        ] as const;
+        isStepValid = await trigger(step3Fields);
+        break;
+      case 4:
+        isStepValid = await trigger([
+          "isPaid",
+          "maxCapacity",
+          "maxPurchasePerUser",
+          "tickets",
+        ] as const);
+        break;
+      case 5:
+        isStepValid = true;
+        break;
+    }
+
+    if (isStepValid) {
+      storeNextStep();
+      window.scrollTo(0, 0);
     }
   };
 
   const handlePrev = () => {
     if (canGoPrev) {
-      prevStep();
+      storePrevStep();
+      window.scrollTo(0, 0);
     }
   };
 
-  const handleSubmit = async () => {
-    // API Submission Logic Placeholder
-
-    console.log("Submitting Event Payload:", JSON.stringify(formData, null, 2));
-    // TODO: Connect to backend API
+  const onSubmit: SubmitHandler<CreateEventSchema> = async (data) => {
+    console.log("Submitting Event Payload:", JSON.stringify(data, null, 2));
+    // 🌟 TODO: Connect to backend API
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return (
-          <EventTypeStep
-            selectedType={formData.eventType}
-            onSelectType={updateEventType}
-          />
-        );
+        return <EventTypeStep />;
       case 2:
-        return (
-          <EventInfoStep
-            title={formData.title}
-            category={formData.category}
-            description={formData.description}
-            bannerFile={formData.bannerFile}
-            bannerPreview={formData.bannerPreview}
-            onTitleChange={updateTitle}
-            onCategoryChange={updateCategory}
-            onDescriptionChange={updateDescription}
-            onBannerChange={updateBanner}
-          />
-        );
+        return <EventInfoStep />;
       case 3:
-        return (
-          <EventScheduleStep
-            // Event Schedule
-            startEventDate={formData.startEventDate}
-            endEventDate={formData.endEventDate}
-            startEventTime={formData.startEventTime}
-            endEventTime={formData.endEventTime}
-            onEventScheduleChange={updateEventSchedule}
-            // Registration Schedule
-            startRegistration={formData.startRegistration}
-            endRegistration={formData.endRegistration}
-            startRegistrationTime={formData.startRegistrationTime}
-            endRegistrationTime={formData.endRegistrationTime}
-            onRegistrationScheduleChange={updateRegistrationSchedule}
-            // Rundown
-            rundown={formData.rundown}
-            onAddRundown={addRundown}
-            onRemoveRundown={removeRundown}
-            onUpdateRundown={updateRundown}
-            // Location
-            isOnline={formData.isOnline}
-            onIsOnlineChange={updateIsOnline}
-            address={formData.address}
-            onAddressChange={(field, value) =>
-              updateAddress({ [field]: value })
-            }
-            meetingUrl={formData.meetingUrl}
-            onMeetingUrlChange={updateMeetingUrl}
-          />
-        );
+        return <EventScheduleStep />;
       case 4:
+        return <EventTicketStep />;
+      case 5:
+        // For preview step, we can use watch or getValues since we sync to store anyway
+        // But passing getValues() ensures fresh render data if component re-renders
+        // Add step field from store since getValues() doesn't include it
         return (
-          <EventTicketStep
-            isPaid={formData.isPaid}
-            maxCapacity={formData.maxCapacity}
-            tickets={formData.tickets}
-            onIsPaidChange={updateIsPaid}
-            onMaxCapacityChange={updateMaxCapacity}
-            onAddTicket={addTicket}
-            onRemoveTicket={removeTicket}
-            onUpdateTicket={updateTicket}
+          <EventPreviewStep
+            formData={
+              { ...getValues(), step: currentStep } as CreateEventFormState
+            }
+            onSubmit={handleSubmit(onSubmit)}
           />
         );
-      case 5:
-        return <EventPreviewStep formData={formData} onSubmit={handleSubmit} />;
       default:
         return null;
     }
@@ -147,7 +145,7 @@ export default function CreateEventClient() {
     <div className="mx-auto min-h-screen max-w-4xl px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-accent">Buat Event Baru</h1>
-        <p className="mt-2 text-muted">
+        <p className="mt-2 text-muted-foreground">
           Lengkapi informasi berikut untuk membuat event Anda
         </p>
       </div>
@@ -155,30 +153,32 @@ export default function CreateEventClient() {
       {/* Stepper */}
       <CreateEventStepper currentStep={currentStep} />
 
-      {/* Form Container */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs md:p-8">
-        {renderStep()}
-      </div>
+      <FormProvider {...methods}>
+        {/* Form Container */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs md:p-8">
+          {renderStep()}
+        </div>
+      </FormProvider>
 
-      {/* Navigation Buttons */}
-      <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        {/* Step Indicator - Mobile Order 1, Desktop Order 2 */}
-        <div className="order-1 flex justify-center md:order-2">
+      {/* Navigation Section */}
+      <div className="mt-8 space-y-4">
+        {/* Step Indicator - Separate Row, Centered */}
+        <div className="flex justify-center">
           <span className="text-sm font-medium text-accent">
             Step {currentStep} dari 5
           </span>
         </div>
 
-        {/* Buttons - Mobile Order 2, Desktop Order 1 & 3 */}
-        <div className="order-2 flex w-full items-center justify-between md:w-auto md:contents">
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between">
           {/* Prev Button */}
           <Button
             variant="ghost"
             onClick={handlePrev}
             disabled={!canGoPrev}
             className={cn(
-              "order-1 rounded-lg md:order-1",
-              !canGoPrev && "invisible",
+              "rounded-lg transition-opacity",
+              !canGoPrev && "opacity-0 pointer-events-none",
             )}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -188,34 +188,18 @@ export default function CreateEventClient() {
           {/* Next Button */}
           {currentStep < 5 ? (
             <Button
+              type="button"
               onClick={handleNext}
-              disabled={!canGoNext}
-              className={cn(
-                "order-2 min-w-30 rounded-lg md:order-3",
-                !isStepValid && "cursor-not-allowed opacity-50",
-              )}
+              className="min-w-30 rounded-lg"
             >
               Lanjut
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <div className="order-2 md:order-3" /> /* Spacer */
+            <div /> /* Spacer */
           )}
         </div>
       </div>
-
-      {/* Validation Hint */}
-      {!isStepValid && currentStep < 5 && (
-        <div className="mt-4 text-center">
-          <p className="text-sm text-red-600">
-            {currentStep === 1 && "Pilih tipe event untuk melanjutkan"}
-            {currentStep === 2 && "Lengkapi semua informasi event"}
-            {currentStep === 3 &&
-              "Lengkapi jadwal, pendaftaran, rundown, dan lokasi"}
-            {currentStep === 4 && "Lengkapi kapasitas dan tiket event"}
-          </p>
-        </div>
-      )}
     </div>
   );
 }
