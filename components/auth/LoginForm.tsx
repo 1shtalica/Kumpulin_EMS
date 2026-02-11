@@ -57,42 +57,37 @@ export default function LoginForm() {
 
   const login = useAuthStore((state) => state.login);
 
+  const handlePostLoginRedirect = () => {
+    const user = useAuthStore.getState().user;
+
+    if (user?.phone_number) {
+      // Profile complete → redirect to dashboard
+      if (user.role === "organizer") {
+        router.push("/organizer/dashboard");
+      } else {
+        router.push("/user/dashboard");
+      }
+    } else {
+      // Profile incomplete → redirect to get-started
+      router.push("/get-started");
+    }
+  };
+
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-
     const toastId = toast.loading("Sedang Masuk...");
 
     try {
       await login(data);
-
-      toast.success("Login berhasil!", {
-        id: toastId,
-      });
-
-      // Smart redirect based on profile completion
-      const user = useAuthStore.getState().user;
-
-      if (user?.phone_number) {
-        // Profile complete → redirect to dashboard
-        if (user.role === "organizer") {
-          router.push("/organizer/dashboard");
-        } else {
-          router.push("/user/dashboard");
-        }
-      } else {
-        // Profile incomplete → redirect to get-started
-        router.push("/get-started");
-      }
+      toast.success("Login berhasil!", { id: toastId });
+      handlePostLoginRedirect();
     } catch (error: any) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
         axiosError.response?.data?.message ||
         "Periksa kembali email dan password Anda.";
 
-      toast.error("Login gagal", {
-        id: toastId,
-      });
-
+      toast.error("Login gagal", { id: toastId });
       setError("root", {
         type: "manual",
         message: errorMessage,
@@ -109,30 +104,10 @@ export default function LoginForm() {
 
       try {
         await AuthService.googleAuth({ code: response.code });
-
-        toast.success("Login berhasil!", {
-          id: toastId,
-        });
-
-        // Smart redirect based on profile completion
-        const user = useAuthStore.getState().user;
-
-        if (user?.phone_number) {
-          // Profile complete → redirect to dashboard
-          if (user.role === "organizer") {
-            router.push("/organizer/dashboard");
-          } else {
-            router.push("/user/dashboard");
-          }
-        } else {
-          // Profile incomplete → redirect to get-started
-          router.push("/get-started");
-        }
+        toast.success("Login berhasil!", { id: toastId });
+        handlePostLoginRedirect();
       } catch (error) {
-        toast.error("Login gagal", {
-          id: toastId,
-        });
-
+        toast.error("Login gagal", { id: toastId });
         setError("root", {
           type: "manual",
           message: "Gagal login dengan Google. Silakan coba lagi.",
@@ -173,7 +148,7 @@ export default function LoginForm() {
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
-              startIcon={<Mail className="h-4 w-4" color="#9CA3AF" />}
+              startIcon={<Mail className="h-4 w-4 text-muted-foreground" />}
               id="email"
               type="email"
               placeholder="nama@email.com"
@@ -197,7 +172,7 @@ export default function LoginForm() {
 
             <div className="relative">
               <Input
-                startIcon={<Lock className="h-4 w-4" color="#9CA3AF" />}
+                startIcon={<Lock className="h-4 w-4 text-muted-foreground" />}
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
@@ -214,6 +189,7 @@ export default function LoginForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
               >
                 {showPassword ? (

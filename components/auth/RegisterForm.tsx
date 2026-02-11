@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail, Lock, User } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -151,33 +151,21 @@ export default function RegisterForm() {
 
       {/* Isi card */}
       <CardContent>
-        <form
-          onSubmit={handleSubmit(
-            onSubmit,
-            // ⭐ Tambahkan error handler ini
-            (errors) => {
-              console.log("❌ VALIDASI GAGAL!");
-              console.log("Errors:", errors);
-              console.log("Form Values:", watch());
-            },
-          )}
-          className="grid gap-4"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
           {/* 🌟 nama lengkap - email - no hp - password - confirm password */}
 
           {/* Input Fullname  */}
           <div className="grid gap-2">
             <Label htmlFor="fullName">Nama Lengkap</Label>
             <Input
+              startIcon={<User className="h-4 w-4 text-muted-foreground" />}
               id="fullName"
               type="text"
               placeholder="Masukkan nama lengkap"
               disabled={isLoading}
               autoComplete="name"
               {...register("fullName")}
-              className={
-                errors.fullName ? "border-danger rounded-lg" : "rounded-lg"
-              }
+              className={errors.fullName ? "border-danger" : ""}
             />
             {errors.fullName && (
               <p className="text-xs sm:text-sm text-danger font-medium">
@@ -189,15 +177,14 @@ export default function RegisterForm() {
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
+              startIcon={<Mail className="h-4 w-4 text-muted-foreground" />}
               id="email"
               type="email"
               placeholder="you@example.com"
               disabled={isLoading}
               autoComplete="email"
               {...register("email")}
-              className={
-                errors.email ? "border-danger rounded-lg" : "rounded-lg"
-              }
+              className={errors.email ? "border-danger" : ""}
             />
             {errors.email && (
               <p className="text-xs sm:text-sm text-danger font-medium">
@@ -211,24 +198,22 @@ export default function RegisterForm() {
             <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Input
+                startIcon={<Lock className="h-4 w-4 text-muted-foreground" />}
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Buat password"
                 disabled={isLoading}
                 autoComplete="new-password"
                 {...register("password")}
-                className={
-                  errors.password
-                    ? "border-danger rounded-lg pr-10"
-                    : "rounded-lg pr-10"
-                }
+                className={errors.password ? "border-danger pr-10" : "pr-10"}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.password && (
@@ -242,27 +227,25 @@ export default function RegisterForm() {
             <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
             <div className="relative">
               <Input
+                startIcon={<Lock className="h-4 w-4 text-muted-foreground" />}
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Ulangi password"
                 disabled={isLoading}
                 autoComplete="new-password"
                 {...register("confirmPassword")}
-                className={
-                  errors.confirmPassword
-                    ? "border-danger rounded-lg pr-10"
-                    : "rounded-lg pr-10"
-                }
+                className={errors.confirmPassword ? "border-danger pr-10" : "pr-10"}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? "Sembunyikan konfirmasi password" : "Tampilkan konfirmasi password"}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
               >
                 {showConfirmPassword ? (
-                  <EyeOff size={20} />
+                  <EyeOff className="h-4 w-4" />
                 ) : (
-                  <Eye size={20} />
+                  <Eye className="h-4 w-4" />
                 )}
               </button>
             </div>
@@ -287,7 +270,6 @@ export default function RegisterForm() {
                   });
                 }}
                 aria-invalid={!!errors.agreeToTerms}
-                // Tambahkan mt-1 agar sejajar dengan baris pertama teks karena teks menggunakan leading-relaxed
                 className="mt-1"
               />
 
@@ -326,7 +308,7 @@ export default function RegisterForm() {
 
           {/* ⭐ Root Error Message */}
           {errors.root && (
-            <div className="p-3 rounded-lg bg-danger-light border border-danger text-xs sm:text-sm font-medium text-danger">
+            <div className="p-3 rounded-xl bg-danger-light border border-danger text-xs sm:text-sm font-medium text-danger">
               {errors.root.message}
             </div>
           )}
@@ -335,7 +317,7 @@ export default function RegisterForm() {
           <Button
             type="submit"
             disabled={isLoading || !watch("agreeToTerms")}
-            className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold"
+            className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl font-semibold text-md shadow-glow py-5"
           >
             {isLoading ? (
               <>
@@ -366,7 +348,7 @@ export default function RegisterForm() {
           onClick={() => onGoogleSubmit()}
           type="button"
           variant="outline"
-          className="w-full font-semibold hover:bg-primary/10 rounded-lg"
+          className="w-full font-semibold hover:bg-primary/10 rounded-2xl py-5 shadow-none"
           disabled={isLoading}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
