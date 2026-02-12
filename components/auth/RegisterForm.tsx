@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
-import { splitFullName } from "@/lib/name-utils";
+import { splitFullName } from "@/lib/utils";
 
 // ⭐ 2 skema register
 const registerSchema = z
@@ -85,8 +85,8 @@ export default function RegisterForm() {
     } as Partial<RegisterFormValues>,
   });
 
-
   const { firstName, lastName } = splitFullName(watch("fullName"));
+
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     const toastId = toast.loading("Sedang Mendaftar...");

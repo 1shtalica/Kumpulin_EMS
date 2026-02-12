@@ -34,6 +34,16 @@ export default async function ExplorePage(props: {
   const sort =
     typeof searchParams.sort === "string" ? searchParams.sort : "Terbaru";
 
+  try {
+    events = await EventService.getEvents({
+      limit: 100, // Fetch more events for client-side filtering
+      offset: 0,
+    });
+  } catch (err) {
+    console.error("Failed to fetch events:", err);
+    error = "Gagal memuat event. Silakan coba lagi nanti.";
+  }
+
   // Client-side filtering (temporary until backend supports query params)
   let filteredEvents = events.filter((event) => {
     // Search filter - with null safety

@@ -1,9 +1,6 @@
 import React from "react";
 import { MeshGradientBackground } from "@/components/ui/mesh-gradient-background";
 
-// ⭐ TAMBAHKAN CEK ROLE DI LAYOUT
-// ⭐ CEK COOKIES
-
 export default function AuthLayout({
   children,
 }: {

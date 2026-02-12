@@ -2,35 +2,22 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const protectedRoutes = [
-  // 🌟 Organizer page
-  // {
-  //     path: "/organizer",
-  //     roles: ["organizer"],
-  // },
-  // 🌟 User page
-  {
-    path: "/user",
-    roles: ["user"],
-  },
-  {
-    path: "/get-started",
-    roles: ["user"],
-  },
+  { path: "/organizer", roles: ["organizer"] },
+  { path: "/user", roles: ["user"] },
 ];
 
 const publicRoutes = [
   "/",
   "/events",
-  "events/:slug",
   "/login",
   "/register",
-  "forgot-password",
-  "reset-password",
+  "/forgot-password",
+  "/reset-password",
 ];
 
 const roleHomePages: Record<string, string> = {
-  organizer: "/organizer",
-  user: "/user",
+  organizer: "/organizer/dashboard",
+  user: "/user/home",
 };
 
 export async function middleware(request: NextRequest) {
@@ -40,37 +27,31 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route.path),
   );
 
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const isPublicRoute = publicRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/"),
+  );
 
-  // 🌟 Kalau tidak terdaftar di list maka harus di verifikasi dahulu
-  if (!protectedRoute && !isPublicRoute) {
+  if (!protectedRoute && !isPublicRoute && pathname !== "/get-started") {
     return NextResponse.next();
   }
 
-  // const allCookies = request.cookies.getAll();
   const accessToken = request.cookies.get("access_token");
   const refreshToken = request.cookies.get("refresh_token");
-  const hasAuthCookies = !!(accessToken && refreshToken);
 
-  if (!hasAuthCookies) {
-    if (protectedRoute) {
+  if (!refreshToken) {
+    if (protectedRoute || pathname === "/get-started") {
       return redirect(request, "/login");
     }
     return NextResponse.next();
   }
 
+  if (!accessToken) {
+    return NextResponse.next();
+  }
+
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    // const cookieHeader = allCookies
-    //   .map((c) => `${c.name}=${c.value}`)
-    //   .join("; ");
-
-    const cookieHeader = [
-      accessToken && `access_token=${accessToken.value}`,
-      refreshToken && `refresh_token=${refreshToken.value}`,
-    ]
-      .filter(Boolean)
-      .join("; ");
+    const cookieHeader = `access_token=${accessToken.value}; refresh_token=${refreshToken.value}`;
 
     const res = await fetch(`${apiUrl}/auth/me`, {
       headers: {
@@ -80,8 +61,11 @@ export async function middleware(request: NextRequest) {
       cache: "no-store",
     });
 
+    if (res.status === 401) {
+      return NextResponse.next();
+    }
     if (!res.ok) {
-      if (protectedRoute) {
+      if (protectedRoute || pathname === "/get-started") {
         return redirect(request, "/login");
       }
       return NextResponse.next();
@@ -89,15 +73,26 @@ export async function middleware(request: NextRequest) {
 
     const user = await res.json();
 
-    if (isPublicRoute && ["/login", "/register"].includes(pathname)) {
+    const isProfileIncomplete = !user.phone_number;
+
+    if (isProfileIncomplete && pathname !== "/get-started") {
+      return redirect(request, "/get-started");
+    }
+
+    if (!isProfileIncomplete && pathname === "/get-started") {
       const homePage = roleHomePages[user.role] || "/";
       return redirect(request, homePage);
     }
 
+    if (isPublicRoute) {
+      const homePage = roleHomePages[user.role] || "/";
+      return redirect(request, homePage);
+    }
     if (protectedRoute) {
       if (protectedRoute.roles.length > 0) {
         if (!protectedRoute.roles.includes(user.role)) {
-          return redirect(request, "/");
+          const homePage = roleHomePages[user.role] || "/";
+          return redirect(request, homePage);
         }
       }
     }
@@ -105,9 +100,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware Auth Verification Failed:", error);
-    if (protectedRoute) {
-      return redirect(request, "/login");
-    }
     return NextResponse.next();
   }
 }

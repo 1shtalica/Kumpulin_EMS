@@ -1,320 +1,659 @@
-"use client";
-
-import { useState } from "react";
-import { MapPin, Video, CalendarIcon, Clock } from "lucide-react";
+import {
+  MapPin,
+  Video,
+  CalendarIcon,
+  Clock,
+  Plus,
+  Trash2,
+  Check,
+  ChevronsUpDown,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { LocationType } from "@/types/create-event";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { INDONESIA_REGIONS } from "@/constants/regions";
+import { useFormContext, useFieldArray, Controller } from "react-hook-form";
+import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
+import DateTimePicker from "@/components/reusable/DateTimePicker";
+import TimePicker from "@/components/reusable/TimePicker";
+import { useEffect } from "react";
 
-interface EventScheduleStepProps {
-  // Schedule
-  startDate?: Date;
-  endDate?: Date;
-  startTime: string;
-  endTime: string;
-  onScheduleChange: (data: {
-    startDate?: Date;
-    endDate?: Date;
-    startTime?: string;
-    endTime?: string;
-  }) => void;
-
-  // Location
-  locationType: LocationType;
-  onLocationTypeChange: (type: LocationType) => void;
-  
-  address: {
-    rawAddress: string;
-    city: string;
-    province: string;
-    postalCode: string;
-  };
-  onAddressChange: (field: string, value: string) => void;
-  
-  meetingUrl: string;
-  onMeetingUrlChange: (url: string) => void;
-}
-
-const locationTypes = [
-  {
-    type: "offline" as const,
-    icon: MapPin,
-    title: "Offline",
-    description: "Event di lokasi fisik",
-    color: "text-green-600",
-    bgColor: "bg-green-50",
-    borderColor: "border-green-600",
-  },
-  {
-    type: "online" as const,
-    icon: Video,
-    title: "Online",
-    description: "Event virtual (Zoom, Meet, dll)",
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
-    borderColor: "border-blue-600",
-  },
-];
-
-export default function EventScheduleStep(props: EventScheduleStepProps) {
+export default function EventScheduleStep() {
   const {
-    startDate,
-    endDate,
-    startTime,
-    endTime,
-    onScheduleChange,
-    locationType,
-    onLocationTypeChange,
-    address,
-    onAddressChange,
-    meetingUrl,
-    onMeetingUrlChange,
-  } = props;
+    control,
+    watch,
+    setValue,
+    register,
+    formState: { errors },
+  } = useFormContext<CreateEventSchema>();
 
-  // Local state for date inputs (formatted as YYYY-MM-DD)
-  const [startDateStr, setStartDateStr] = useState(
-    startDate ? startDate.toISOString().split("T")[0] : ""
-  );
-  const [endDateStr, setEndDateStr] = useState(
-    endDate ? endDate.toISOString().split("T")[0] : ""
-  );
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "rundown",
+  });
 
-  const handleStartDateChange = (value: string) => {
-    setStartDateStr(value);
-    if (value) {
-      onScheduleChange({ startDate: new Date(value) });
+  const isOnline = watch("isOnline");
+  const watchProvince = watch("address.province");
+
+  // Watch for progressive date selection
+  const startRegistrationDateTime = watch("startRegistrationDateTime");
+  const endRegistrationDateTime = watch("endRegistrationDateTime");
+  const startEventDateTime = watch("startEventDateTime");
+  const endEventDateTime = watch("endEventDateTime");
+
+  // Auto-clear dependent fields when prerequisite is cleared (cascade)
+  useEffect(() => {
+    // If Start Registration is cleared → clear everything below
+    if (!startRegistrationDateTime) {
+      if (endRegistrationDateTime)
+        setValue("endRegistrationDateTime", undefined as any);
+      if (startEventDateTime) setValue("startEventDateTime", undefined as any);
+      if (endEventDateTime) setValue("endEventDateTime", undefined as any);
+      return;
     }
-  };
-
-  const handleEndDateChange = (value: string) => {
-    setEndDateStr(value);
-    if (value) {
-      onScheduleChange({ endDate: new Date(value) });
+    // If End Registration is cleared → clear event fields
+    if (!endRegistrationDateTime) {
+      if (startEventDateTime) setValue("startEventDateTime", undefined as any);
+      if (endEventDateTime) setValue("endEventDateTime", undefined as any);
+      return;
     }
+    // If Start Event is cleared → clear End Event
+    if (!startEventDateTime) {
+      if (endEventDateTime) setValue("endEventDateTime", undefined as any);
+    }
+  }, [
+    startRegistrationDateTime,
+    endRegistrationDateTime,
+    startEventDateTime,
+    endEventDateTime,
+    setValue,
+  ]);
+
+  // Helper: Add 1 day to a date
+  const addDays = (date: Date, days: number): Date => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Jadwal & Lokasi</h2>
-        <p className="mt-2 text-gray-600">
-          Tentukan waktu dan tempat pelaksanaan event
+        <h2 className="text-2xl font-bold text-accent">Jadwal & Lokasi</h2>
+        <p className="mt-2 text-muted-foreground">
+          Atur waktu acara, pendaftaran, dan lokasi event
         </p>
       </div>
 
-      {/* Schedule Section */}
+      {/* --- Section 1: Periode Pendaftaran (FIRST) --- */}
       <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-          <CalendarIcon className="h-5 w-5 text-primary" />
-          Jadwal Event
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+          <Clock className="h-5 w-5 text-primary" />
+          Periode Pendaftaran
         </h3>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Start Date & Time */}
+        <div className="grid gap-4 rounded-lg border border-gray-100 bg-gray-50 p-4 grid-cols-1">
+          {/* Start Registration DateTime */}
           <div className="space-y-2">
-            <Label htmlFor="start-date">Tanggal Mulai *</Label>
-            <Input
-              id="start-date"
-              type="date"
-              value={startDateStr}
-              onChange={(e) => handleStartDateChange(e.target.value)}
-              className="w-full"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="start-time">Jam Mulai *</Label>
-            <div className="relative">
-              <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                id="start-time"
-                type="time"
-                value={startTime}
-                onChange={(e) => onScheduleChange({ startTime: e.target.value })}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          {/* End Date & Time */}
-          <div className="space-y-2">
-            <Label htmlFor="end-date">Tanggal Selesai *</Label>
-            <Input
-              id="end-date"
-              type="date"
-              value={endDateStr}
-              onChange={(e) => handleEndDateChange(e.target.value)}
-              min={startDateStr}
-              className="w-full"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="end-time">Jam Selesai *</Label>
-            <div className="relative">
-              <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                id="end-time"
-                type="time"
-                value={endTime}
-                onChange={(e) => onScheduleChange({ endTime: e.target.value })}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <hr className="border-gray-200" />
-
-      {/* Location Type Selection */}
-      <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-          <MapPin className="h-5 w-5 text-primary" />
-          Tipe Lokasi
-        </h3>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          {locationTypes.map((locType) => {
-            const Icon = locType.icon;
-            const isSelected = locationType === locType.type;
-
-            return (
-              <button
-                key={locType.type}
-                onClick={() => onLocationTypeChange(locType.type)}
-                className={cn(
-                  "relative flex items-center gap-4 rounded-lg border-2 p-4 text-left transition-all",
-                  "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                  isSelected
-                    ? `${locType.borderColor} ${locType.bgColor} shadow-md`
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                )}
-              >
-                <div
+            <Label>
+              Buka Pendaftaran <span className="text-danger">*</span>
+            </Label>
+            <Controller
+              control={control}
+              name="startRegistrationDateTime"
+              render={({ field }) => (
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pilih waktu buka pendaftaran"
+                  minDate={new Date()}
                   className={cn(
-                    "rounded-lg p-2",
-                    isSelected ? locType.bgColor : "bg-gray-100"
+                    errors.startRegistrationDateTime && "border-danger",
                   )}
-                >
-                  <Icon
-                    className={cn(
-                      "h-5 w-5",
-                      isSelected ? locType.color : "text-gray-600"
-                    )}
-                  />
-                </div>
+                />
+              )}
+            />
+            {errors.startRegistrationDateTime && (
+              <p className="text-xs text-danger">
+                {errors.startRegistrationDateTime.message}
+              </p>
+            )}
+          </div>
 
-                <div className="flex-1">
-                  <h4
-                    className={cn(
-                      "font-semibold",
-                      isSelected ? locType.color : "text-gray-900"
-                    )}
-                  >
-                    {locType.title}
-                  </h4>
-                  <p className="text-sm text-gray-600">{locType.description}</p>
-                </div>
-
-                {isSelected && (
-                  <div className="absolute right-4 top-4">
-                    <div
-                      className={cn(
-                        "flex h-5 w-5 items-center justify-center rounded-full",
-                        locType.color,
-                        locType.bgColor
-                      )}
-                    >
-                      <svg
-                        className="h-3 w-3"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                )}
-              </button>
-            );
-          })}
+          {/* End Registration DateTime */}
+          <div className="space-y-2">
+            <Label>
+              Tutup Pendaftaran <span className="text-danger">*</span>
+            </Label>
+            <Controller
+              control={control}
+              name="endRegistrationDateTime"
+              render={({ field }) => (
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pilih waktu tutup pendaftaran"
+                  minDate={startRegistrationDateTime || new Date()}
+                  disabled={!startRegistrationDateTime}
+                  className={cn(
+                    errors.endRegistrationDateTime && "border-danger",
+                  )}
+                />
+              )}
+            />
+            {errors.endRegistrationDateTime && (
+              <p className="text-xs text-danger">
+                {errors.endRegistrationDateTime.message}
+              </p>
+            )}
+            {!startRegistrationDateTime && (
+              <p className="text-xs text-muted">
+                Pilih waktu buka pendaftaran terlebih dahulu
+              </p>
+            )}
+            {startRegistrationDateTime &&
+              endRegistrationDateTime &&
+              endRegistrationDateTime <= startRegistrationDateTime && (
+                <p className="text-xs text-danger">
+                  Waktu tutup harus setelah waktu buka pendaftaran
+                </p>
+              )}
+          </div>
         </div>
       </div>
 
-      {/* Location Details */}
+      {/* --- Section 2: Waktu Pelaksanaan Event (AFTER Registration) --- */}
       <div className="space-y-4">
-        {locationType === "offline" && (
-          <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <h4 className="font-semibold text-gray-900">Detail Lokasi Offline</h4>
-            
-            <div className="space-y-2">
-              <Label htmlFor="raw-address">Alamat Lengkap *</Label>
-              <Input
-                id="raw-address"
-                placeholder="Contoh: Jl. Sudirman No. 123"
-                value={address.rawAddress}
-                onChange={(e) => onAddressChange("rawAddress", e.target.value)}
-              />
-            </div>
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+          <CalendarIcon className="h-5 w-5 text-primary" />
+          Waktu Pelaksanaan Event
+        </h3>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="city">Kota *</Label>
-                <Input
-                  id="city"
-                  placeholder="Contoh: Jakarta"
-                  value={address.city}
-                  onChange={(e) => onAddressChange("city", e.target.value)}
+        <div className="grid gap-4 rounded-lg border border-gray-100 bg-gray-50 p-4 grid-cols-1">
+          {/* Start Event DateTime */}
+          <div className="space-y-2">
+            <Label>
+              Mulai Event <span className="text-danger">*</span>
+            </Label>
+            <Controller
+              control={control}
+              name="startEventDateTime"
+              render={({ field }) => (
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pilih waktu mulai event"
+                  minDate={
+                    endRegistrationDateTime
+                      ? addDays(endRegistrationDateTime, 1)
+                      : new Date()
+                  }
+                  disabled={!endRegistrationDateTime}
+                  className={cn(errors.startEventDateTime && "border-danger")}
                 />
-              </div>
+              )}
+            />
+            {errors.startEventDateTime && (
+              <p className="text-xs text-danger">
+                {errors.startEventDateTime.message}
+              </p>
+            )}
+            {!endRegistrationDateTime && (
+              <p className="text-xs text-muted">
+                Pilih waktu tutup pendaftaran terlebih dahulu
+              </p>
+            )}
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="province">Provinsi *</Label>
-                <Input
-                  id="province"
-                  placeholder="Contoh: DKI Jakarta"
-                  value={address.province}
-                  onChange={(e) => onAddressChange("province", e.target.value)}
+          {/* End Event DateTime */}
+          <div className="space-y-2">
+            <Label>
+              Selesai Event <span className="text-danger">*</span>
+            </Label>
+            <Controller
+              control={control}
+              name="endEventDateTime"
+              render={({ field }) => (
+                <DateTimePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Pilih waktu selesai event"
+                  minDate={startEventDateTime || new Date()}
+                  disabled={!startEventDateTime}
+                  className={cn(errors.endEventDateTime && "border-danger")}
                 />
-              </div>
-            </div>
+              )}
+            />
+            {errors.endEventDateTime && (
+              <p className="text-xs text-danger">
+                {errors.endEventDateTime.message}
+              </p>
+            )}
+            {!startEventDateTime && (
+              <p className="text-xs text-muted">
+                Pilih waktu mulai event terlebih dahulu
+              </p>
+            )}
+            {startEventDateTime &&
+              endEventDateTime &&
+              endEventDateTime <= startEventDateTime && (
+                <p className="text-xs text-danger">
+                  Waktu selesai harus setelah waktu mulai event
+                </p>
+              )}
+          </div>
+        </div>
+      </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="postal-code">Kode Pos</Label>
-              <Input
-                id="postal-code"
-                placeholder="Contoh: 12345"
-                value={address.postalCode}
-                onChange={(e) => onAddressChange("postalCode", e.target.value)}
-              />
-            </div>
+      {/* --- Section 3: Rundown --- */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+            <CalendarIcon className="h-5 w-5 text-primary" />
+            Rundown Acara
+          </h3>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              append({
+                title: "",
+                startTime: "",
+                endTime: "",
+                description: "",
+                location: "",
+              })
+            }
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Tambah Sesi
+          </Button>
+        </div>
+
+        {fields.length === 0 && (
+          <div
+            className={cn(
+              "rounded-lg border border-dashed p-8 text-center",
+              errors.rundown
+                ? "border-danger bg-red-50"
+                : "border-gray-300 bg-gray-50",
+            )}
+          >
+            <p
+              className={cn(
+                "text-sm",
+                errors.rundown
+                  ? "text-danger font-medium"
+                  : "text-muted-foreground",
+              )}
+            >
+              {errors.rundown &&
+              !Array.isArray(errors.rundown) &&
+              "message" in errors.rundown
+                ? errors.rundown.message
+                : 'Belum ada sesi rundown. Klik tombol "Tambah Sesi" untuk memulai.'}
+            </p>
           </div>
         )}
 
-        {locationType === "online" && (
-          <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-            <h4 className="font-semibold text-gray-900">Detail Lokasi Online</h4>
-            
-            <div className="space-y-2">
-              <Label htmlFor="meeting-url">Link Meeting *</Label>
-              <Input
-                id="meeting-url"
-                type="url"
-                placeholder="https://zoom.us/j/... atau https://meet.google.com/..."
-                value={meetingUrl}
-                onChange={(e) => onMeetingUrlChange(e.target.value)}
-              />
-              <p className="text-sm text-gray-500">
-                Masukkan link Zoom, Google Meet, atau platform meeting lainnya
+        <div className="space-y-4">
+          {fields.map((item, index) => (
+            <div
+              key={item.id}
+              className={cn(
+                "rounded-lg border bg-white shadow-xs overflow-hidden transition-all",
+                (errors.rundown?.[index]?.title ||
+                  errors.rundown?.[index]?.startTime ||
+                  errors.rundown?.[index]?.endTime) &&
+                "border-danger ring-1 ring-danger",
+              )}
+            >
+              {/* Header Row */}
+              <div className="flex items-center justify-between border-b bg-gray-50 px-4 py-2">
+                <span className="font-medium text-sm text-gray-700">
+                  Sesi #{index + 1}
+                </span>
+                {fields.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-danger hover:bg-danger-light hover:text-danger"
+                    onClick={() => remove(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+
+              {/* Content Grid */}
+              <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-12">
+                {/* Time Inputs */}
+                <div className="space-y-2 md:col-span-12 lg:col-span-4">
+                  <Label className="text-xs text-muted-foreground">
+                    Waktu *
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <Controller
+                        control={control}
+                        name={`rundown.${index}.startTime`}
+                        render={({ field }) => (
+                          <TimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Mulai"
+                            className={cn(
+                              "h-9 text-sm w-full",
+                              errors.rundown?.[index]?.startTime &&
+                                "border-danger",
+                            )}
+                          />
+                        )}
+                      />
+                    </div>
+                    <span className="text-muted-foreground shrink-0">-</span>
+                    <div className="flex-1 min-w-0">
+                      <Controller
+                        control={control}
+                        name={`rundown.${index}.endTime`}
+                        render={({ field }) => (
+                          <TimePicker
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Selesai"
+                            className={cn(
+                              "h-9 text-sm w-full",
+                              errors.rundown?.[index]?.endTime &&
+                                "border-danger",
+                            )}
+                          />
+                        )}
+                      />
+                    </div>
+                  </div>
+                  {(errors.rundown?.[index]?.startTime ||
+                    errors.rundown?.[index]?.endTime) && (
+                    <p className="text-xs text-danger">
+                      {errors.rundown?.[index]?.startTime?.message ||
+                        errors.rundown?.[index]?.endTime?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Title */}
+                <div className="space-y-1 md:col-span-12 lg:col-span-8">
+                  <Label className="text-xs text-muted-foreground">
+                    Sesi *
+                  </Label>
+                  <Input
+                    placeholder="Nama sesi (contoh: Opening Ceremony)"
+                    className={cn(
+                      "h-9",
+                      errors.rundown?.[index]?.title && "border-danger",
+                    )}
+                    {...register(`rundown.${index}.title`)}
+                  />
+                  {errors.rundown?.[index]?.title && (
+                    <p className="text-xs text-danger">
+                      {errors.rundown?.[index]?.title?.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Location */}
+                <div className="space-y-1 md:col-span-6">
+                  <Label className="text-xs text-muted-foreground">
+                    Lokasi (Opsional)
+                  </Label>
+                  <Input
+                    placeholder="Tempat (contoh: Aula Utama)"
+                    className="h-9"
+                    {...register(`rundown.${index}.location`)}
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-1 md:col-span-6">
+                  <Label className="text-xs text-muted-foreground">
+                    Deskripsi (Opsional)
+                  </Label>
+                  <Input
+                    placeholder="Deskripsi singkat..."
+                    className="h-9"
+                    {...register(`rundown.${index}.description`)}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* --- Section 4: Location --- */}
+      <div className="space-y-4">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+          <MapPin className="h-5 w-5 text-primary" />
+          Lokasi Event
+        </h3>
+
+        {/* Toggle Online/Offline */}
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant={isOnline ? "default" : "outline"}
+            onClick={() => setValue("isOnline", true)}
+            className="flex-1"
+          >
+            <Video className="mr-2 h-4 w-4" />
+            Online
+          </Button>
+          <Button
+            type="button"
+            variant={!isOnline ? "default" : "outline"}
+            onClick={() => setValue("isOnline", false)}
+            className="flex-1"
+          >
+            <MapPin className="mr-2 h-4 w-4" />
+            Offline
+          </Button>
+        </div>
+
+        {/* Online: Meeting URL */}
+        {isOnline && (
+          <div className="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
+            <Label>Link Meeting</Label>
+            <Input
+              type="url"
+              placeholder="https://meet.google.com/xxx-xxxx-xxx"
+              className={cn(
+                errors.meetingUrl &&
+                  "border-danger focus-visible:ring-danger",
+              )}
+              {...register("meetingUrl")}
+            />
+            {errors.meetingUrl && (
+              <p className="text-xs text-danger">
+                {errors.meetingUrl.message}
               </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Masukkan link Zoom, Google Meet, atau platform video conference
+              lainnya
+            </p>
+          </div>
+        )}
+
+        {/* Offline: Address */}
+        {!isOnline && (
+          <div className="space-y-4 rounded-lg border border-gray-100 bg-gray-50 p-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Province */}
+              <div className="space-y-2">
+                <Label>Provinsi</Label>
+                <Controller
+                  control={control}
+                  name="address.province"
+                  render={({ field }) => (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground",
+                            errors.address?.province && "border-danger",
+                          )}
+                        >
+                          {field.value || "Pilih provinsi"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Cari provinsi..." />
+                          <CommandList>
+                            <CommandEmpty>
+                              Provinsi tidak ditemukan.
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {INDONESIA_REGIONS.map((region) => (
+                                <CommandItem
+                                  key={region.name}
+                                  value={region.name}
+                                  onSelect={() => {
+                                    field.onChange(region.name);
+                                    setValue("address.city", "");
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === region.name
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                  {region.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                />
+                {errors.address?.province && (
+                  <p className="text-xs text-danger">
+                    {errors.address.province.message}
+                  </p>
+                )}
+              </div>
+
+              {/* City */}
+              <div className="space-y-2">
+                <Label>Kota/Kabupaten</Label>
+                <Controller
+                  control={control}
+                  name="address.city"
+                  render={({ field }) => (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          disabled={!watchProvince}
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground",
+                            errors.address?.city && "border-danger",
+                          )}
+                        >
+                          {field.value || "Pilih kota"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Cari kota..." />
+                          <CommandList>
+                            <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>
+                            <CommandGroup>
+                              {INDONESIA_REGIONS.find(
+                                (r) => r.name === watchProvince,
+                              )?.cities.map((city) => (
+                                <CommandItem
+                                  key={city.name}
+                                  value={city.name}
+                                  onSelect={() => field.onChange(city.name)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === city.name
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                  {city.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                />
+                {errors.address?.city && (
+                  <p className="text-xs text-danger">
+                    {errors.address.city.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Full Address */}
+            <div className="space-y-2">
+              <Label>Alamat Lengkap</Label>
+              <Input
+                placeholder="Jalan, nomor, gedung, dll."
+                className={cn(errors.address?.rawAddress && "border-danger")}
+                {...register("address.rawAddress")}
+              />
+              {errors.address?.rawAddress && (
+                <p className="text-xs text-danger">
+                  {errors.address.rawAddress.message}
+                </p>
+              )}
+            </div>
+
+            {/* Postal Code (Optional) */}
+            <div className="space-y-2">
+              <Label>Kode Pos (Opsional)</Label>
+              <Input
+                placeholder="12345"
+                type="text"
+                {...register("address.postalCode")}
+              />
             </div>
           </div>
         )}

@@ -1,121 +1,134 @@
-"use client";
-
-import { Building2, Globe2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { EventType } from "@/types/create-event";
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
+import { useFormContext } from "react-hook-form";
+import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
 
-interface EventTypeStepProps {
-  selectedType: EventType;
-  onSelectType: (type: Exclude<EventType, null>) => void;
-}
+export default function EventTypeStep() {
+  const {
+    watch,
+    setValue,
+    formState: { errors },
+  } = useFormContext<CreateEventSchema>();
+  const selectedType = watch("eventType");
 
-const eventTypes = [
-  {
-    type: "public" as const,
-    icon: Globe2,
-    title: "Event Publik",
-    description: "Terbuka untuk umum dan dapat diakses oleh siapa saja",
-    color: "text-primary",
-    bgColor: "bg-primary-light",
-    borderColor: "border-primary",
-  },
-  {
-    type: "internal" as const,
-    icon: Building2,
-    title: "Event Internal",
-    description: "Khusus untuk anggota organisasi atau komunitas tertentu",
-    color: "text-secondary",
-    bgColor: "bg-secondary-light",
-    borderColor: "border-secondary",
-  },
-];
+  const onSelectType = (type: "public" | "internal") => {
+    setValue("eventType", type, { shouldValidate: true });
+  };
 
-export default function EventTypeStep({
-  selectedType,
-  onSelectType,
-}: EventTypeStepProps) {
   return (
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-accent">Pilih Tipe Event</h2>
         <p className="mt-2 text-muted">
-          Tentukan apakah event ini terbuka untuk umum atau internal
+          Tentukan apakah event ini terbuka untuk publik atau internal
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {eventTypes.map((eventType) => {
-          const Icon = eventType.icon;
-          const isSelected = selectedType === eventType.type;
+      <div className="grid gap-6 md:grid-cols-2">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => onSelectType("public")}
+          className={cn(
+            "relative flex h-auto flex-col items-start gap-4 rounded-xl border-2 p-6 text-left transition-all shadow-xs hover:shadow-sm whitespace-normal wrap-break-word w-full",
+            selectedType === "public"
+              ? "border-primary bg-primary-light hover:bg-primary-light"
+              : "border-slate-100 bg-white hover:bg-white",
+            errors.eventType && "border-danger",
+          )}
+        >
+          {selectedType === "public" && (
+            <div className="absolute top-4 right-4 rounded-full bg-primary p-1 text-white shadow-xs">
+              <Check className="h-4 w-4" />
+            </div>
+          )}
 
-          return (
-            <button
-              key={eventType.type}
-              onClick={() => onSelectType(eventType.type)}
-              className={cn(
-                "relative flex flex-col items-start rounded-lg border-2 p-6 text-left transition-all",
-                "hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                isSelected
-                  ? `${eventType.borderColor} ${eventType.bgColor} shadow-md`
-                  : "border-gray-200 bg-white hover:border-gray-300",
-              )}
-            >
-              {/* Icon */}
-              <div
-                className={cn(
-                  "mb-4 rounded-lg p-3",
-                  isSelected ? eventType.bgColor : "bg-gray-100",
-                )}
-              >
-                <Icon
-                  className={cn(
-                    "h-6 w-6",
-                    isSelected ? eventType.color : "text-gray-600",
-                  )}
-                />
-              </div>
+          <div className="flex w-full items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl shadow-sm border border-slate-100">
+              🌍
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-accent">Event Publik</h3>
+              <p className="text-sm font-medium text-muted">
+                Terbuka untuk umum
+              </p>
+            </div>
+          </div>
 
-              {/* Content */}
-              <div className="space-y-1">
-                <h3
-                  className={cn(
-                    "text-lg font-semibold",
-                    isSelected ? eventType.color : "text-gray-900",
-                  )}
-                >
-                  {eventType.title}
-                </h3>
-                <p className="text-sm text-gray-600">{eventType.description}</p>
-              </div>
+          <div className="w-full space-y-2 rounded-lg p-3 text-sm text-muted">
+            <ul className="space-y-2">
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                <span>Tampil di halaman utama pencarian</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                <span>Dapat berbayar atau gratis</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                <span>Jangkauan audiens lebih luas</span>
+              </li>
+            </ul>
+          </div>
+        </Button>
 
-              {/* Selected Indicator */}
-              {isSelected && (
-                <div className="absolute right-4 top-4">
-                  <div
-                    className={cn(
-                      "flex h-6 w-6 items-center justify-center rounded-full",
-                      eventType.color,
-                      eventType.bgColor,
-                    )}
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              )}
-            </button>
-          );
-        })}
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => onSelectType("internal")}
+          className={cn(
+            "relative flex h-auto flex-col items-start gap-4 rounded-xl border-2 p-6 text-left transition-all shadow-xs hover:shadow-sm hover:bg-transparent whitespace-normal wrap-break-word w-full",
+            selectedType === "internal"
+              ? "border-secondary bg-secondary-light hover:bg-secondary-light"
+              : "border-slate-100 bg-white hover:bg-white",
+            errors.eventType && "border-danger",
+          )}
+        >
+          {selectedType === "internal" && (
+            <div className="absolute top-4 right-4 rounded-full bg-secondary p-1 text-white shadow-xs">
+              <Check className="h-4 w-4" />
+            </div>
+          )}
+
+          <div className="flex w-full items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl shadow-sm border border-slate-100">
+              🔒
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">
+                Event Internal
+              </h3>
+              <p className="text-sm font-medium text-slate-500">
+                Khusus anggota komunitas
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full space-y-2 rounded-lg p-3 text-sm text-muted">
+            <ul className="space-y-2">
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-secondary" />
+                <span>Khusus komunitas RTPintar</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-secondary" />
+                <span>Privasi acara lebih terjaga</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-secondary" />
+                <span>Undangan & akses terbatas</span>
+              </li>
+            </ul>
+          </div>
+        </Button>
       </div>
+      {errors.eventType && (
+        <p className="text-center text-sm text-danger">
+          {errors.eventType.message}
+        </p>
+      )}
     </div>
   );
 }

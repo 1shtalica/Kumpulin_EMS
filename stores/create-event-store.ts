@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type {
   CreateEventFormState,
   EventType,
-  LocationType,
+  RundownRequest,
   TicketRequest,
 } from "@/types/create-event";
 
@@ -14,6 +14,7 @@ interface CreateEventStore {
   currentStep: number;
   nextStep: () => void;
   prevStep: () => void;
+  setStep: (step: number) => void;
 
   // Field updates - Step 1
   updateEventType: (type: EventType) => void;
@@ -24,19 +25,35 @@ interface CreateEventStore {
   updateDescription: (description: string) => void;
   updateBanner: (file: File | null, preview: string) => void;
 
-  // Field updates - Step 3
-  updateSchedule: (data: {
-    startDate?: Date;
-    endDate?: Date;
-    startTime?: string;
-    endTime?: string;
+  // Field updates - Step 3 - DateTime versions
+  updateEventDateTime: (data: {
+    startEventDateTime?: Date;
+    endEventDateTime?: Date;
   }) => void;
-  updateLocationType: (type: LocationType) => void;
+  
+  updateRegistrationDateTime: (data: {
+    startRegistrationDateTime?: Date;
+    endRegistrationDateTime?: Date;
+  }) => void;
+
+  // Rundown Actions
+  addRundown: () => void;
+  removeRundown: (index: number) => void;
+  updateRundown: (
+    index: number,
+    field: keyof RundownRequest,
+    value: string
+  ) => void;
+
+  // Location Actions
+  updateIsOnline: (isOnline: boolean) => void;
   updateAddress: (address: Partial<CreateEventFormState["address"]>) => void;
   updateMeetingUrl: (url: string) => void;
 
   // Field updates - Step 4
   updateIsPaid: (isPaid: boolean) => void;
+  updateMaxCapacity: (capacity: number) => void;
+
   updateTickets: (tickets: TicketRequest[]) => void;
   addTicket: () => void;
   removeTicket: (index: number) => void;
@@ -46,26 +63,31 @@ interface CreateEventStore {
     value: string | number,
   ) => void;
 
-  // Validation
-  validateStep: (step: number) => boolean;
-
   // Form actions
   reset: () => void;
+  
+  // Sync form data from RHF to Store
+  syncFormData: (data: Partial<CreateEventFormState>) => void;
 }
 
 // Initial state
 const initialFormData: CreateEventFormState = {
-  eventType: null,
+  eventType: undefined,
   title: "",
   category: "",
   description: "",
   bannerFile: null,
   bannerPreview: "",
-  startDate: undefined,
-  endDate: undefined,
-  startTime: "",
-  endTime: "",
-  locationType: "offline",
+  
+  startEventDateTime: undefined,
+  endEventDateTime: undefined,
+  
+  startRegistrationDateTime: undefined,
+  endRegistrationDateTime: undefined,
+
+  rundown: [],
+  
+  isOnline: false,
   address: {
     rawAddress: "",
     city: "",
@@ -75,7 +97,11 @@ const initialFormData: CreateEventFormState = {
     longitude: 0,
   },
   meetingUrl: "",
+  
   isPaid: false,
+  maxCapacity: 0,
+  maxPurchasePerUser: undefined,
+  
   tickets: [],
   step: 1,
 };
@@ -86,8 +112,8 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
 
   // Navigation
   nextStep: () => {
-    const { currentStep, validateStep } = get();
-    if (validateStep(currentStep) && currentStep < 5) {
+    const { currentStep } = get();
+    if (currentStep < 5) {
       set({ currentStep: currentStep + 1 });
       set((state) => ({
         formData: { ...state.formData, step: currentStep + 1 },
@@ -104,15 +130,13 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
       }));
     }
   },
-
-  // goToStep: (step: number) => {
-  //   if (step >= 1 && step <= 5) {
-  //     set({ currentStep: step });
-  //     set((state) => ({
-  //       formData: { ...state.formData, step },
-  //     }));
-  //   }
-  // },
+  
+  setStep: (step) => {
+      set({ currentStep: step });
+      set((state) => ({
+        formData: { ...state.formData, step },
+      }));
+  },
 
   // Step 1 updates
   updateEventType: (type) => {
@@ -146,16 +170,59 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     }));
   },
 
-  // Step 3 updates
-  updateSchedule: (data) => {
+  // Step 3 updates - DateTime
+  updateEventDateTime: (data: {startEventDateTime?: Date; endEventDateTime?: Date}) => {
     set((state) => ({
       formData: { ...state.formData, ...data },
     }));
   },
 
-  updateLocationType: (type) => {
+  updateRegistrationDateTime: (data: {startRegistrationDateTime?: Date; endRegistrationDateTime?: Date}) => {
     set((state) => ({
-      formData: { ...state.formData, locationType: type },
+      formData: { ...state.formData, ...data },
+    }));
+  },
+
+  addRundown: () => {
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        rundown: [
+          ...state.formData.rundown,
+          {
+            title: "",
+            description: "",
+            startTime: "",
+            endTime: "",
+          },
+        ],
+      },
+    }));
+  },
+
+  removeRundown: (index) => {
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        rundown: state.formData.rundown.filter((_, i) => i !== index),
+      },
+    }));
+  },
+
+  updateRundown: (index, field, value) => {
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        rundown: state.formData.rundown.map((item, i) =>
+          i === index ? { ...item, [field]: value } : item
+        ),
+      },
+    }));
+  },
+
+  updateIsOnline: (isOnline) => {
+    set((state) => ({
+      formData: { ...state.formData, isOnline },
     }));
   },
 
@@ -177,15 +244,19 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
   // Step 4 updates
   updateIsPaid: (isPaid) => {
     set((state) => {
-      // If switching to free, create a default free ticket
-      const tickets = isPaid
-        ? state.formData.tickets
-        : [{ name: "Tiket Gratis", price: 0, quota: 100, description: "" }];
-
+      // 🌟 FIX: Reset tickets when switching modes
+      // If switching to FREE, we DO NOT create a placeholder ticket anymore (User request)
+      // If switching to PAID, we start with empty tickets
       return {
-        formData: { ...state.formData, isPaid, tickets },
+        formData: { ...state.formData, isPaid, tickets: [] },
       };
     });
+  },
+
+  updateMaxCapacity: (maxCapacity) => {
+     set((state) => ({
+      formData: { ...state.formData, maxCapacity },
+    }));
   },
 
   updateTickets: (tickets) => {
@@ -226,64 +297,6 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     }));
   },
 
-  // Validation
-  validateStep: (step) => {
-    const { formData } = get();
-
-    switch (step) {
-      case 1:
-        return formData.eventType !== null;
-
-      case 2:
-        return (
-          formData.title.trim() !== "" &&
-          formData.category.trim() !== "" &&
-          formData.description.trim().length >= 10 &&
-          formData.bannerFile !== null
-        );
-
-      case 3: {
-        const hasValidDates =
-          formData.startDate &&
-          formData.endDate &&
-          formData.startTime &&
-          formData.endTime;
-
-        if (!hasValidDates) return false;
-
-        // Validate location based on type
-        if (formData.locationType === "offline") {
-          return (
-            formData.address.rawAddress.trim() !== "" &&
-            formData.address.city.trim() !== "" &&
-            formData.address.province.trim() !== ""
-          );
-        } else {
-          // online
-          return formData.meetingUrl.trim() !== "";
-        }
-      }
-
-      case 4:
-        return (
-          formData.tickets.length > 0 &&
-          formData.tickets.every(
-            (ticket) =>
-              ticket.name.trim() !== "" &&
-              ticket.quota > 0 &&
-              (formData.isPaid ? ticket.price > 0 : true),
-          )
-        );
-
-      case 5:
-        // Preview step - always valid
-        return true;
-
-      default:
-        return false;
-    }
-  },
-
   // Reset
   reset: () => {
     set({
@@ -291,4 +304,11 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
       currentStep: 1,
     });
   },
+  
+  syncFormData: (data) => {
+      set((state) => ({
+          formData: { ...state.formData, ...data }
+      }));
+  }
 }));
+

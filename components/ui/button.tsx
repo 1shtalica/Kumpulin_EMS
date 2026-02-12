@@ -13,15 +13,14 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border bg-background shadow-xs hover:bg-slate-100 hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "text-black hover:bg-slate-200 dark:hover:bg-primary ",
         link: "text-primary underline-offset-4 hover:underline",
 
         // ⭐custom button variant
-        brand:
-          "bg-primary text-white hover:bg-primary-hover hover:shadow-md",
+        brand: "bg-primary text-white hover:bg-primary-hover hover:shadow-md",
         light:
           "bg-white text-primary hover:text-primary-hover border-2 border-primary hover:shadow-md",
         rtpintar:

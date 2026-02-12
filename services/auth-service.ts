@@ -23,7 +23,6 @@ export const AuthService = {
     async login(payload: LoginPayload): Promise<AuthResponse> {
         try {
             const response = await axiosClient.post("/auth/login", payload);
-            // Backend returns: { success: true, message: ..., data: { user object } }
             return response.data.data;
         } catch (error) {
             throw error;
@@ -82,6 +81,28 @@ export const AuthService = {
         } catch (error) {
             throw error;
         }
-    }
+    },
+    async forgotPassword( email: string ) {
+        try {
+            const response = await axiosClient.post("/auth/send-code", {
+                email,
+                type: "forgot-password",
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+    async resetPassword(payload: { token: string; newPassword: string }) {
+        try {
+            const response = await axiosClient.post("/auth/forgot-password", {
+                token: payload.token,
+                new_password: payload.newPassword,
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
 };
 

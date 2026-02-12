@@ -33,6 +33,9 @@ const loginSchema = z.object({
     .string()
     .min(1, { message: "Email Wajib diisi" })
     .email({ message: "Format email tidak valid" }),
+    .string()
+    .min(1, { message: "Email Wajib diisi" })
+    .email({ message: "Format email tidak valid" }),
   password: z.string().min(8, { message: "Password minimal 8 karakter" }),
 });
 type LoginFormValues = z.infer<typeof loginSchema>;

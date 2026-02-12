@@ -50,7 +50,7 @@ export default function CreateEventStepper({ currentStep }: CreateEventStepperPr
                 </div>
 
                 {/* Label Judul (Absolute biar ga ganggu layout flex) */}
-                <div className="absolute top-12 left-1/2 -translate-x-1/2 w-32 text-center">
+                <div className="absolute top-12 left-1/2 -translate-x-1/2 w-32 text-center hidden md:block">
                   <span
                     className={cn(
                       "text-xs font-semibold transition-colors duration-300",
