@@ -10,6 +10,7 @@ export async function getServerUser(): Promise<User | null> {
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
         const res = await fetch(`${apiUrl}/auth/me`, {
+            method: "GET",
             headers: {
                 Cookie: cookieHeader,
                 "Content-Type": "application/json",
@@ -19,8 +20,6 @@ export async function getServerUser(): Promise<User | null> {
 
         if (res.ok) {
             const data = await res.json();
-            // Backend /auth/me returns: { success: true, user_id, email, role, username, profile_url }
-            // Note: phone_number is NOT included in /auth/me (only JWT claims)
             return {
                 user_id: String(data.user_id),
                 email: data.email,

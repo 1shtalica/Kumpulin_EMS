@@ -24,7 +24,7 @@ export default async function RootLayout({
 
   return (
     <html lang="id">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${inter.className} antialiased`} suppressHydrationWarning={true}>
         <AuthInitializer user={user} />
         {children}
         <Toaster position="top-right" duration={3000} richColors />
