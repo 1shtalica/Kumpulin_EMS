@@ -91,13 +91,10 @@ export default function CreateEventClient() {
       case 4:
         const fieldValid = await trigger();
 
-        // 2. Manual cross-field validation for Paid Events
-        // (Because trigger() doesn't run superRefine validations)
         const values = getValues();
         let manualValid = true;
 
         if (values.isPaid) {
-          // Validate Tickets exist
           if (!values.tickets || values.tickets.length === 0) {
             methods.setError("tickets", {
               type: "manual",
@@ -105,7 +102,6 @@ export default function CreateEventClient() {
             });
             manualValid = false;
           } else {
-            // Validate Ticket Prices > 0
             const hasInvalidPrice = values.tickets.some(
               (t) => (t.price ?? 0) <= 0,
             );
@@ -118,8 +114,6 @@ export default function CreateEventClient() {
             }
           }
 
-          // Validate Max Purchase Per User
-          // It must be defined (can be 0 for unlimited)
           if (
             values.maxPurchasePerUser === undefined ||
             values.maxPurchasePerUser === null ||
@@ -318,7 +312,7 @@ export default function CreateEventClient() {
               onClick={handleNext}
               className="min-w-30 rounded-lg"
             >
-              Lanjut
+              Selanjutnya
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (

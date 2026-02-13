@@ -100,10 +100,18 @@ const rundownSchema = z
 export const step3Schema = z
   .object({
     // Combined DateTime fields
-    startEventDateTime: z.date(),
-    endEventDateTime: z.date(),
-    startRegistrationDateTime: z.date(),
-    endRegistrationDateTime: z.date(),
+    startEventDateTime: z.date({
+      message: "Tanggal mulai event wajib diisi",
+    }),
+    endEventDateTime: z.date({
+      message: "Tanggal selesai event wajib diisi",
+    }),
+    startRegistrationDateTime: z.date({
+      message: "Tanggal mulai pendaftaran wajib diisi",
+    }),
+    endRegistrationDateTime: z.date({
+      message: "Tanggal selesai pendaftaran wajib diisi",
+    }),
 
     // Rundown (Minimal 1)
     rundown: z.array(rundownSchema).min(1, "Sesi Rundown harus diisi"),
