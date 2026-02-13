@@ -12,8 +12,6 @@ import UpcomingEvents from "@/components/landingpage/UpcomingEvents";
 import CallToAction from "@/components/landingpage/CallToAction";
 import LandingFooter from "@/components/landingpage/LandingFooter";
 
-
-
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">

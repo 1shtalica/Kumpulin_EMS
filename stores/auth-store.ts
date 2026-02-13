@@ -5,7 +5,8 @@ import { User } from "@/types/user";
 interface AuthState {
   user: User | null;
   isLoading: boolean;
-  login: (payload: LoginPayload) => Promise<void>;
+  loginWithEmail: (payload: LoginPayload) => Promise<void>;
+  loginWithGoogle: (code: string) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -16,8 +17,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   setUser: (user) => set({ user }),
-
-  login: async (payload: LoginPayload) => {
+  loginWithGoogle: async (code: string) => {
+    const response = await AuthService.googleAuth({ code });
+    set({
+      user: {
+        ...response.data,
+        role: response.data.role
+      }
+    });
+  },
+  loginWithEmail: async (payload: LoginPayload) => {
     set({ isLoading: true });
     try {
       const response = await AuthService.login(payload);

@@ -55,7 +55,8 @@ export default function LoginForm() {
     },
   });
 
-  const login = useAuthStore((state) => state.login);
+  const loginWithEmail = useAuthStore((state) => state.loginWithEmail);
+  const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
 
   const handlePostLoginRedirect = () => {
     const user = useAuthStore.getState().user;
@@ -65,7 +66,7 @@ export default function LoginForm() {
       if (user.role === "organizer") {
         router.push("/organizer/dashboard");
       } else {
-        router.push("/user/dashboard");
+        router.push("/");
       }
     } else {
       // Profile incomplete → redirect to get-started
@@ -78,7 +79,7 @@ export default function LoginForm() {
     const toastId = toast.loading("Sedang Masuk...");
 
     try {
-      await login(data);
+      await loginWithEmail(data);
       toast.success("Login berhasil!", { id: toastId });
 
       const user = useAuthStore.getState().user;
@@ -88,7 +89,7 @@ export default function LoginForm() {
         if (user.role === "organizer") {
           targetPath = "/organizer/dashboard";
         } else {
-          targetPath = "/user/dashboard";
+          targetPath = "/";
         }
       }
 
@@ -116,7 +117,8 @@ export default function LoginForm() {
       const toastId = toast.loading("Memproses login Google...");
 
       try {
-        await AuthService.googleAuth({ code: response.code });
+        await loginWithGoogle(response.code);
+
         toast.success("Login berhasil!", { id: toastId });
         handlePostLoginRedirect();
       } catch (error) {
