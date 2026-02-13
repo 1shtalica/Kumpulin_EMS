@@ -7,7 +7,7 @@ export const step1Schema = z.object({
   }),
 });
 
-// 🌟 Step 2: pada tiptap editor, limitnya dipasang 100 namun tidak ditunjukkan sebab pmnya ada bug dari sananya yang menyebabkan count characternya kadang kehitung 2 kali
+// 🌟 Step 2: pada tiptap editor, limitnya dipasang 2000 namun tidak ditunjukkan sebab pmnya ada bug dari sananya yang menyebabkan count characternya kadang kehitung 2 kali
 const MAX_FILE_SIZE = 1024 * 1024 * 5;
 const ACCEPTED_IMAGE_FORMATS = ["image/jpeg"];
 
@@ -279,15 +279,6 @@ export const step4Schema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Event berbayar wajib memiliki minimal 1 tiket",
-          path: ["tickets"],
-        });
-      }
-
-      const hasInvalidPrice = data.tickets.some((t) => t.price <= 0);
-      if (hasInvalidPrice) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Tiket berbayar harus memiliki harga > 0",
           path: ["tickets"],
         });
       }

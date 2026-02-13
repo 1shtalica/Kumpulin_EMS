@@ -114,7 +114,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         isOrganizer ? "Profil organizer berhasil dibuat!" : "Profil berhasil dilengkapi!",
         { id: toastId }
       );
-      router.push(isOrganizer ? "/dashboard/organizer" : "/");
+      router.push(isOrganizer ? "/organizer/dashboard" : "/user/home");
 
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;

@@ -15,16 +15,21 @@ import {
   useForm,
   FormProvider,
   SubmitHandler,
-  type DeepPartial,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createEventSchema,
   CreateEventSchema,
 } from "@/lib/validator/create-event.schema";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { EventService } from "@/services/event-service";
 
 export default function CreateEventClient() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     currentStep,
     nextStep: storeNextStep,
@@ -84,13 +89,7 @@ export default function CreateEventClient() {
         isStepValid = await trigger(step3Fields);
         break;
       case 4:
-        // 1. Trigger per-field validations
-        const fieldValid = await trigger([
-          "isPaid",
-          "maxCapacity",
-          "maxPurchasePerUser",
-          "tickets",
-        ] as const);
+        const fieldValid = await trigger();
 
         // 2. Manual cross-field validation for Paid Events
         // (Because trigger() doesn't run superRefine validations)
@@ -155,9 +154,89 @@ export default function CreateEventClient() {
     }
   };
 
+  // Helper to create slug
+  const createSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  };
+
   const onSubmit: SubmitHandler<CreateEventSchema> = async (data) => {
-    console.log("Submitting Event Payload:", JSON.stringify(data, null, 2));
-    // 🌟 TODO: Connect to backend API
+    setIsSubmitting(true);
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const formData = new FormData();
+
+        // --- STEP 1: Event Type ---
+        formData.append("type", data.eventType);
+
+        // --- STEP 2: Basic Info ---
+        formData.append("title", data.title);
+        formData.append("category", data.category);
+        formData.append("description", data.description);
+        if (data.bannerFile) {
+          formData.append("images", data.bannerFile);
+        }
+
+        // --- STEP 3: Date, Time, Location, Rundown ---
+        formData.append("is_online", String(data.isOnline));
+        if (data.startEventDateTime)
+          formData.append("start_date", data.startEventDateTime.toISOString());
+        if (data.endEventDateTime)
+          formData.append("end_date", data.endEventDateTime.toISOString());
+        if (data.startRegistrationDateTime)
+          formData.append(
+            "start_registration",
+            data.startRegistrationDateTime.toISOString(),
+          );
+        if (data.endRegistrationDateTime)
+          formData.append(
+            "end_registration",
+            data.endRegistrationDateTime.toISOString(),
+          );
+
+        // Location vs Meeting URL
+        if (data.isOnline && data.meetingUrl) {
+          formData.append("meeting_url", data.meetingUrl);
+        } else if (!data.isOnline && data.address) {
+          formData.append("address", JSON.stringify(data.address));
+        }
+
+        // Rundown
+        formData.append("rundowns", JSON.stringify(data.rundown));
+
+        // --- STEP 4: Tickets & Capacity ---
+        formData.append("isPaid", String(data.isPaid)); // Sent as requested (pure form data)
+        formData.append("max_capacity", String(data.maxCapacity));
+        formData.append(
+          "max_ticket_per_user",
+          String(data.maxPurchasePerUser || 0),
+        );
+
+        if (data.isPaid && data.tickets) {
+          formData.append("ticket_categories", JSON.stringify(data.tickets));
+        }
+
+        // 5. Call API
+        await EventService.createEvent(formData);
+        resolve("Event berhasil dibuat!");
+
+        // 6. Redirect (Delayed to show success toast)
+        setTimeout(() => {
+          router.push("/organizer/events");
+        }, 1000);
+      } catch (error) {
+        setIsSubmitting(false); // Enable button again if error
+        reject(error);
+      }
+    });
+
+    toast.promise(promise, {
+      loading: "Sedang mempublikasikan event...",
+      success: (msg) => `${msg}`,
+      error: "Gagal membuat event. Silakan coba lagi.",
+    });
   };
 
   const renderStep = () => {
@@ -180,6 +259,7 @@ export default function CreateEventClient() {
               { ...getValues(), step: currentStep } as CreateEventFormState
             }
             onSubmit={handleSubmit(onSubmit)}
+            isSubmitting={isSubmitting}
           />
         );
       default:

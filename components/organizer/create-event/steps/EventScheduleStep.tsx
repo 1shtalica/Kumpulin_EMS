@@ -317,7 +317,7 @@ export default function EventScheduleStep() {
             <div
               key={item.id}
               className={cn(
-                "rounded-lg border bg-white shadow-xs overflow-hidden transition-all",
+                "rounded-lg border bg-white p-4 shadow-xs",
                 (errors.rundown?.[index]?.title ||
                   errors.rundown?.[index]?.startTime ||
                   errors.rundown?.[index]?.endTime) &&
@@ -325,8 +325,8 @@ export default function EventScheduleStep() {
               )}
             >
               {/* Header Row */}
-              <div className="flex items-center justify-between border-b bg-gray-50 px-4 py-2">
-                <span className="font-medium text-sm text-gray-700">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-medium text-accent">
                   Sesi #{index + 1}
                 </span>
                 {fields.length > 0 && (
@@ -334,10 +334,11 @@ export default function EventScheduleStep() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-danger hover:bg-danger-light hover:text-danger"
+                    className="text-danger hover:bg-danger-light hover:text-danger"
                     onClick={() => remove(index)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="mr-1 h-4 w-4" />
+                    Hapus
                   </Button>
                 )}
               </div>
@@ -347,7 +348,7 @@ export default function EventScheduleStep() {
                 {/* Time Inputs */}
                 <div className="space-y-2 md:col-span-12 lg:col-span-4">
                   <Label className="text-xs text-muted-foreground">
-                    Waktu *
+                    Waktu <span className="text-danger">*</span>
                   </Label>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 min-w-0">
@@ -400,7 +401,7 @@ export default function EventScheduleStep() {
                 {/* Title */}
                 <div className="space-y-1 md:col-span-12 lg:col-span-8">
                   <Label className="text-xs text-muted-foreground">
-                    Sesi *
+                    Sesi <span className="text-danger">*</span>
                   </Label>
                   <Input
                     placeholder="Nama sesi (contoh: Opening Ceremony)"
@@ -478,7 +479,7 @@ export default function EventScheduleStep() {
         {/* Online: Meeting URL */}
         {isOnline && (
           <div className="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
-            <Label>Link Meeting</Label>
+            <Label>Link Meeting <span className="text-danger">*</span></Label>
             <Input
               type="url"
               placeholder="https://meet.google.com/xxx-xxxx-xxx"
@@ -506,7 +507,9 @@ export default function EventScheduleStep() {
             <div className="grid gap-4 md:grid-cols-2">
               {/* Province */}
               <div className="space-y-2">
-                <Label>Provinsi</Label>
+                <Label>
+                  Provinsi <span className="text-danger">*</span>
+                </Label>
                 <Controller
                   control={control}
                   name="address.province"
@@ -570,7 +573,9 @@ export default function EventScheduleStep() {
 
               {/* City */}
               <div className="space-y-2">
-                <Label>Kota/Kabupaten</Label>
+                <Label>
+                  Kota/Kabupaten <span className="text-danger">*</span>
+                </Label>
                 <Controller
                   control={control}
                   name="address.city"
@@ -633,7 +638,9 @@ export default function EventScheduleStep() {
 
             {/* Full Address */}
             <div className="space-y-2">
-              <Label>Alamat Lengkap</Label>
+              <Label>
+                Alamat Lengkap <span className="text-danger">*</span>
+              </Label>
               <Input
                 placeholder="Jalan, nomor, gedung, dll."
                 className={cn(errors.address?.rawAddress && "border-danger")}
