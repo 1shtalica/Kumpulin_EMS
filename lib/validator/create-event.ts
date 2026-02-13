@@ -2,7 +2,7 @@ import z from "zod";
 
 // 🌟 Step 1
 export const step1Schema = z.object({
-  eventType: z.enum(["public", "internal"], {
+  type: z.enum(["public", "internal"], {
     message: "Tipe event wajib dipilih",
   }),
 });
@@ -23,16 +23,16 @@ export const step2Schema = z.object({
     .max(2000, "Deskripsi event terlalu panjang")
     .refine(
       (html) => {
-        const tempDiv = typeof document !== 'undefined' 
-          ? document.createElement('div') 
+        const tempDiv = typeof document !== 'undefined'
+          ? document.createElement('div')
           : null;
-        
+
         if (tempDiv) {
           tempDiv.innerHTML = html;
           const textContent = tempDiv.textContent || tempDiv.innerText || '';
           return textContent.trim().length > 0;
         }
-        
+
         const stripped = html.replace(/<[^>]*>/g, '').trim();
         return stripped.length > 0;
       },
@@ -152,13 +152,13 @@ export const step3Schema = z
     }
 
     // SAME DAY time validation for event
-    const isSameEventDay = 
+    const isSameEventDay =
       data.startEventDateTime.toDateString() === data.endEventDateTime.toDateString();
-    
+
     if (isSameEventDay) {
       const startEventTime = data.startEventDateTime.getTime();
       const endEventTime = data.endEventDateTime.getTime();
-      
+
       if (endEventTime <= startEventTime) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -187,13 +187,13 @@ export const step3Schema = z
     }
 
     // SAME DAY time validation for registration
-    const isSameRegistrationDay = 
+    const isSameRegistrationDay =
       data.startRegistrationDateTime.toDateString() === data.endRegistrationDateTime.toDateString();
-    
+
     if (isSameRegistrationDay) {
       const startRegisTime = data.startRegistrationDateTime.getTime();
       const endRegisTime = data.endRegistrationDateTime.getTime();
-      
+
       if (endRegisTime <= startRegisTime) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -207,12 +207,12 @@ export const step3Schema = z
     const oneDayInMs = 24 * 60 * 60 * 1000;
     const endRegistrationDate = new Date(data.endRegistrationDateTime);
     endRegistrationDate.setHours(0, 0, 0, 0);
-    
+
     const startEventDate = new Date(data.startEventDateTime);
     startEventDate.setHours(0, 0, 0, 0);
-    
+
     const daysDiff = (startEventDate.getTime() - endRegistrationDate.getTime()) / oneDayInMs;
-    
+
     if (daysDiff < 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

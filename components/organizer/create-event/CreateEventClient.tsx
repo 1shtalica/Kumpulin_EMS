@@ -23,6 +23,7 @@ import {
   CreateEventSchema,
 } from "@/lib/validator/create-event.schema";
 import { useEffect } from "react";
+import { EventService } from "@/services/event-service";
 
 export default function CreateEventClient() {
   const {
@@ -60,7 +61,7 @@ export default function CreateEventClient() {
     // Validate only fields for the current step
     switch (currentStep) {
       case 1:
-        isStepValid = await trigger(["eventType"] as const);
+        isStepValid = await trigger(["type"] as const);
         break;
       case 2:
         isStepValid = await trigger([
@@ -110,8 +111,10 @@ export default function CreateEventClient() {
   };
 
   const onSubmit: SubmitHandler<CreateEventSchema> = async (data) => {
-    console.log("Submitting Event Payload:", JSON.stringify(data, null, 2));
+    console.log("Submitting Event Payload:", data);
+    await EventService.CreateEvent(data as CreateEventFormState);
     // 🌟 TODO: Connect to backend API
+
   };
 
   const renderStep = () => {

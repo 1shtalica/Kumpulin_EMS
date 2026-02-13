@@ -58,12 +58,12 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
           <span
             className={cn(
               "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium",
-              formData.eventType === "public"
+              formData.type === "external"
                 ? "bg-primary-light text-primary"
                 : "bg-secondary-light text-secondary",
             )}
           >
-            {formData.eventType === "public" ? "Publik" : "Internal"}
+            {formData.type === "external" ? "External" : "Internal"}
           </span>
         </div>
       </div>

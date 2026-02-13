@@ -30,7 +30,7 @@ interface CreateEventStore {
     startEventDateTime?: Date;
     endEventDateTime?: Date;
   }) => void;
-  
+
   updateRegistrationDateTime: (data: {
     startRegistrationDateTime?: Date;
     endRegistrationDateTime?: Date;
@@ -65,28 +65,28 @@ interface CreateEventStore {
 
   // Form actions
   reset: () => void;
-  
+
   // Sync form data from RHF to Store
   syncFormData: (data: Partial<CreateEventFormState>) => void;
 }
 
 // Initial state
 const initialFormData: CreateEventFormState = {
-  eventType: undefined,
+  type: undefined,
   title: "",
   category: "",
   description: "",
   bannerFile: null,
   bannerPreview: "",
-  
+
   startEventDateTime: undefined,
   endEventDateTime: undefined,
-  
+
   startRegistrationDateTime: undefined,
   endRegistrationDateTime: undefined,
 
   rundown: [],
-  
+
   isOnline: false,
   address: {
     rawAddress: "",
@@ -97,11 +97,11 @@ const initialFormData: CreateEventFormState = {
     longitude: 0,
   },
   meetingUrl: "",
-  
+
   isPaid: false,
   maxCapacity: 0,
   maxPurchasePerUser: undefined,
-  
+
   tickets: [],
   step: 1,
 };
@@ -130,18 +130,18 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
       }));
     }
   },
-  
+
   setStep: (step) => {
-      set({ currentStep: step });
-      set((state) => ({
-        formData: { ...state.formData, step },
-      }));
+    set({ currentStep: step });
+    set((state) => ({
+      formData: { ...state.formData, step },
+    }));
   },
 
   // Step 1 updates
   updateEventType: (type) => {
     set((state) => ({
-      formData: { ...state.formData, eventType: type },
+      formData: { ...state.formData, type: type },
     }));
   },
 
@@ -171,13 +171,13 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
   },
 
   // Step 3 updates - DateTime
-  updateEventDateTime: (data: {startEventDateTime?: Date; endEventDateTime?: Date}) => {
+  updateEventDateTime: (data: { startEventDateTime?: Date; endEventDateTime?: Date }) => {
     set((state) => ({
       formData: { ...state.formData, ...data },
     }));
   },
 
-  updateRegistrationDateTime: (data: {startRegistrationDateTime?: Date; endRegistrationDateTime?: Date}) => {
+  updateRegistrationDateTime: (data: { startRegistrationDateTime?: Date; endRegistrationDateTime?: Date }) => {
     set((state) => ({
       formData: { ...state.formData, ...data },
     }));
@@ -254,7 +254,7 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
   },
 
   updateMaxCapacity: (maxCapacity) => {
-     set((state) => ({
+    set((state) => ({
       formData: { ...state.formData, maxCapacity },
     }));
   },
@@ -304,11 +304,11 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
       currentStep: 1,
     });
   },
-  
+
   syncFormData: (data) => {
-      set((state) => ({
-          formData: { ...state.formData, ...data }
-      }));
+    set((state) => ({
+      formData: { ...state.formData, ...data }
+    }));
   }
 }));
 

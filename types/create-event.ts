@@ -1,5 +1,4 @@
-export type EventType = "public" | "internal" | undefined;
-export type isOnline = true | false;
+export type EventType = "external" | "internal" | undefined;
 
 export interface TicketRequest {
   name: string;
@@ -18,7 +17,7 @@ export interface RundownRequest {
 
 export interface CreateEventFormState {
   // 📌 Step 1: Type (pilih publik atau eksternal)
-  eventType: EventType;
+  type: EventType;
 
   // 📌 Step 2: Basic Info
   title: string;

@@ -10,10 +10,10 @@ export default function EventTypeStep() {
     setValue,
     formState: { errors },
   } = useFormContext<CreateEventSchema>();
-  const selectedType = watch("eventType");
+  const selectedType = watch("type");
 
   const onSelectType = (type: "public" | "internal") => {
-    setValue("eventType", type, { shouldValidate: true });
+    setValue("type", type, { shouldValidate: true });
   };
 
   return (
@@ -35,7 +35,7 @@ export default function EventTypeStep() {
             selectedType === "public"
               ? "border-primary bg-primary-light hover:bg-primary-light"
               : "border-slate-100 bg-white hover:bg-white",
-            errors.eventType && "border-danger",
+            errors.type && "border-danger",
           )}
         >
           {selectedType === "public" && (
@@ -83,7 +83,7 @@ export default function EventTypeStep() {
             selectedType === "internal"
               ? "border-secondary bg-secondary-light hover:bg-secondary-light"
               : "border-slate-100 bg-white hover:bg-white",
-            errors.eventType && "border-danger",
+            errors.type && "border-danger",
           )}
         >
           {selectedType === "internal" && (
@@ -124,9 +124,9 @@ export default function EventTypeStep() {
           </div>
         </Button>
       </div>
-      {errors.eventType && (
+      {errors.type && (
         <p className="text-center text-sm text-danger">
-          {errors.eventType.message}
+          {errors.type.message}
         </p>
       )}
     </div>
