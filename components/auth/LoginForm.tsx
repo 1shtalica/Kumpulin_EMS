@@ -32,8 +32,6 @@ const loginSchema = z.object({
   email: z
     .string()
     .min(1, { message: "Email Wajib diisi" })
-    .email({ message: "Format email tidak valid" })
-    .min(1, { message: "Email Wajib diisi" })
     .email({ message: "Format email tidak valid" }),
   password: z.string().min(8, { message: "Password minimal 8 karakter" }),
 });
@@ -82,7 +80,20 @@ export default function LoginForm() {
     try {
       await login(data);
       toast.success("Login berhasil!", { id: toastId });
-      handlePostLoginRedirect();
+
+      const user = useAuthStore.getState().user;
+      let targetPath = "/get-started";
+
+      if (user?.phone_number) {
+        if (user.role === "organizer") {
+          targetPath = "/organizer/dashboard";
+        } else {
+          targetPath = "/user/dashboard";
+        }
+      }
+
+      // Force a full reload to ensure cookies are sent correctly
+      window.location.href = targetPath;
     } catch (error: any) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
@@ -130,8 +141,7 @@ export default function LoginForm() {
 
   return (
     <div>
-      {/* ⭐ BAGIAN HEADER */}
-      <Card className="w-full">
+      <Card className="w-full rounded-3xl py-10 px-4">
         <CardHeader className="space-y-1 text-center">
           <h1 className="font-bold text-3xl mb-4">
             🎉

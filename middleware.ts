@@ -15,9 +15,16 @@ const publicRoutes = [
   "/reset-password",
 ];
 
+const authRoutes = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+];
+
 const roleHomePages: Record<string, string> = {
-  organizer: "/organizer/dashboard",
-  user: "/user/home",
+  organizer: "/dashboard/organizer",
+  user: "/",
 };
 
 export async function middleware(request: NextRequest) {
@@ -85,8 +92,14 @@ export async function middleware(request: NextRequest) {
     }
 
     if (isPublicRoute) {
-      const homePage = roleHomePages[user.role] || "/";
-      return redirect(request, homePage);
+      const isAuthRoute = authRoutes.some(
+        (route) => pathname === route || pathname.startsWith(route + "/"),
+      );
+
+      if (isAuthRoute) {
+        const homePage = roleHomePages[user.role] || "/";
+        return redirect(request, homePage);
+      }
     }
     if (protectedRoute) {
       if (protectedRoute.roles.length > 0) {

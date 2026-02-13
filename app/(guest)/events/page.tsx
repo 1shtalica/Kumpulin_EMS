@@ -4,6 +4,7 @@ import FilterBar from "@/components/explore/FilterBar";
 import EventList from "@/components/explore/EventList";
 import { EventService } from "@/services/event-service";
 import type { Event } from "@/types/event";
+import { Suspense } from "react";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -97,11 +98,15 @@ export default async function ExplorePage(props: {
     <div className="min-h-screen bg-background">
       <LandingNavbar />
       <main className="container mx-auto px-4 pb-20">
-        <SearchBar />
+        <Suspense fallback={<div className="w-full h-32" />}>
+          <SearchBar />
+        </Suspense>
 
         {/* Sticky Filter */}
         <div className="-mt-8 mb-8 relative z-20">
-          <FilterBar />
+          <Suspense fallback={<div className="w-full h-16" />}>
+            <FilterBar />
+          </Suspense>
         </div>
 
         {/* Error Message */}

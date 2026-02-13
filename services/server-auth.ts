@@ -9,6 +9,8 @@ export async function getServerUser(): Promise<User | null> {
 
     try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+        console.log("getServerUser: Fetching with cookies:", cookieHeader);
+
         const res = await fetch(`${apiUrl}/auth/me`, {
             method: "GET",
             headers: {
@@ -20,6 +22,7 @@ export async function getServerUser(): Promise<User | null> {
 
         if (res.ok) {
             const data = await res.json();
+            console.log("getServerUser: Success:", data.username);
             return {
                 user_id: String(data.user_id),
                 email: data.email,
@@ -28,6 +31,8 @@ export async function getServerUser(): Promise<User | null> {
                 avatar: data.profile_url,
                 // phone_number not available from /auth/me
             };
+        } else {
+            console.error("getServerUser: Auth Check Failed", res.status, await res.text());
         }
 
         return null;

@@ -36,7 +36,14 @@ export default function LandingNavbar() {
   // TODO: TEMPORARY - Remove when dashboard redirects authenticated users
   const { user, logout } = useAuthStore();
 
+  // Hydration fix: ensures component is mounted before rendering user-specific UI
+  const [isMounted, setIsMounted] = useState(false);
+
   useEffect(() => {
+    setIsMounted(true);
+    console.log("LandingNavbar mounted. User:", user);
+    console.log("LandingNavbar cookies:", document.cookie);
+
     const handleScroll = () => {
       if (window.scrollY > 10) {
         setIsScrolled(true);
@@ -49,15 +56,15 @@ export default function LandingNavbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  
+
   const getNavLinkClass = (path: string) => {
     const isActive = pathname === path;
 
     return cn(
       "rounded-full transition-all duration-300",
       isActive
-        ? "bg-none hover:bg-primary-light text-primary text-md font-bold" 
-        : " hover:bg-primary-light text-accent text-md font-semibold", 
+        ? "bg-none hover:bg-primary-light text-primary text-md font-bold"
+        : " hover:bg-primary-light text-accent text-md font-semibold",
     );
   };
 
@@ -66,11 +73,35 @@ export default function LandingNavbar() {
     return cn(
       "w-full justify-start text-base font-medium transition-colors",
       isActive
-        ? "bg-primary-light hover:bg-primary-light text-primary text-md font-bold" 
-        : "hover:bg-primary-light text-accent text-md font-semibold", 
+        ? "bg-primary-light hover:bg-primary-light text-primary text-md font-bold"
+        : "hover:bg-primary-light text-accent text-md font-semibold",
     );
   };
-  
+
+  // Prevent hydration mismatch by not rendering auth buttons until mounted
+  if (!isMounted) {
+    return (
+      <nav
+        className={cn(
+          "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out p-4",
+          "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
+          isScrolled ? "shadow-md" : "shadow-xs",
+        )}
+      >
+        <div className="container mx-auto flex flex-row items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-xl md:text-2xl group">
+            <span className="transition-transform group-hover:rotate-12">🎉</span>
+            <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
+              kumpul.in
+            </span>
+          </Link>
+          {/* Skeleton or empty state for buttons during mismatch prevention */}
+          <div className="hidden md:flex items-center gap-2"></div>
+        </div>
+      </nav>
+    )
+  }
+
   return (
     <nav
       className={cn(
@@ -136,25 +167,25 @@ export default function LandingNavbar() {
                 {/* Navigation Links - Text Style */}
                 <nav className="flex flex-col gap-1">
                   <Button
-            asChild
-            variant="ghost"
-            size="lg"
-            className={getMobileNavLinkClass("/")}
-          >
-            <Link href="/">Beranda</Link>
-          </Button>
+                    asChild
+                    variant="ghost"
+                    size="lg"
+                    className={getMobileNavLinkClass("/")}
+                  >
+                    <Link href="/">Beranda</Link>
+                  </Button>
 
-          <Button
-            asChild
-            variant="ghost"
-            size="lg"
-            className={getMobileNavLinkClass("/events")}
-          >
-            <Link href="/events">Jelajah</Link>
-          </Button>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="lg"
+                    className={getMobileNavLinkClass("/events")}
+                  >
+                    <Link href="/events">Jelajah</Link>
+                  </Button>
                 </nav>
 
-                <Separator/>
+                <Separator />
 
                 {/* Auth Buttons */}
                 {user ? (
@@ -195,7 +226,7 @@ export default function LandingNavbar() {
                       <Link href="/login">Masuk</Link>
                     </Button>
 
-                  
+
                     <Button
                       asChild
                       variant="brand"
