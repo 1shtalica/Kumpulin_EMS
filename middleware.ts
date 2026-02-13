@@ -53,12 +53,20 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!accessToken) {
-    return NextResponse.next();
+    // No access token but has refresh token.
+    // For public (non-protected) routes, let the client-side interceptor handle token refresh.
+    if (!protectedRoute && pathname !== "/get-started") {
+      return NextResponse.next();
+    }
+    // For protected routes, fall through to attempt auth check with refresh_token only.
   }
 
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const cookieHeader = `access_token=${accessToken.value}; refresh_token=${refreshToken.value}`;
+    const cookieParts: string[] = [];
+    if (accessToken) cookieParts.push(`access_token=${accessToken.value}`);
+    if (refreshToken) cookieParts.push(`refresh_token=${refreshToken.value}`);
+    const cookieHeader = cookieParts.join("; ");
 
     const res = await fetch(`${apiUrl}/auth/me`, {
       headers: {

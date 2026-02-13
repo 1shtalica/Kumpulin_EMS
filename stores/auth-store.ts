@@ -18,13 +18,20 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setUser: (user) => set({ user }),
   loginWithGoogle: async (code: string) => {
-    const response = await AuthService.googleAuth({ code });
-    set({
-      user: {
-        ...response.data,
-        role: response.data.role
-      }
-    });
+    set({ isLoading: true });
+    try {
+      const response = await AuthService.googleAuth({ code });
+      set({
+        user: {
+          ...response.data,
+          role: response.data.role
+        }
+      });
+    } catch (error) {
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
   },
   loginWithEmail: async (payload: LoginPayload) => {
     set({ isLoading: true });

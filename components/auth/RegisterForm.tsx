@@ -118,13 +118,28 @@ export default function RegisterForm() {
 
   const onGoogleSubmit = useGoogleLogin({
     onSuccess: async (response) => {
-      await AuthService.googleAuth({ code: response.code });
-      toast.success("Akun berhasil dibuat!");
-      router.push("/get-started");
+      setIsLoading(true);
+      const toastId = toast.loading("Memproses registrasi Google...");
+      try {
+        await AuthService.googleAuth({ code: response.code });
+        toast.success("Akun berhasil dibuat!", { id: toastId });
+        window.location.href = "/get-started";
+      } catch (error) {
+        toast.error("Registrasi gagal", { id: toastId });
+        setError("root", {
+          type: "manual",
+          message: "Gagal registrasi dengan Google. Silakan coba lagi.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     },
-    onError: (error) => {
+    onError: () => {
       toast.error("Registrasi gagal");
-      console.error("Google Login Error:", error);
+      setError("root", {
+        type: "manual",
+        message: "Gagal terhubung dengan Google.",
+      });
     },
     flow: "auth-code",
   });

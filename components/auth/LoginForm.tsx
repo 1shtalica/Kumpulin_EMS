@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,7 +37,6 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,17 +59,17 @@ export default function LoginForm() {
   const handlePostLoginRedirect = () => {
     const user = useAuthStore.getState().user;
 
+    let targetPath = "/get-started";
     if (user?.phone_number) {
-      // Profile complete → redirect to dashboard
       if (user.role === "organizer") {
-        router.push("/organizer/dashboard");
+        targetPath = "/organizer/dashboard";
       } else {
-        router.push("/");
+        targetPath = "/";
       }
-    } else {
-      // Profile incomplete → redirect to get-started
-      router.push("/get-started");
     }
+
+    // Force a full reload to ensure cookies are sent correctly
+    window.location.href = targetPath;
   };
 
   const onSubmit = async (data: LoginFormValues) => {
@@ -81,20 +79,7 @@ export default function LoginForm() {
     try {
       await loginWithEmail(data);
       toast.success("Login berhasil!", { id: toastId });
-
-      const user = useAuthStore.getState().user;
-      let targetPath = "/get-started";
-
-      if (user?.phone_number) {
-        if (user.role === "organizer") {
-          targetPath = "/organizer/dashboard";
-        } else {
-          targetPath = "/";
-        }
-      }
-
-      // Force a full reload to ensure cookies are sent correctly
-      window.location.href = targetPath;
+      handlePostLoginRedirect();
     } catch (error: any) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =

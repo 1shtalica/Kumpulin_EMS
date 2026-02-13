@@ -45,15 +45,7 @@ export const AuthService = {
         }
     },
     async logout() {
-        try {
-            await axiosClient.post("/auth/logout");
-        } catch (error) {
-            console.error("Logout failed", error);
-        } finally {
-            if (typeof window !== "undefined") {
-                window.location.href = "/login";
-            }
-        }
+        await axiosClient.post("/auth/logout");
     },
     async me() {
         return axiosClient.get("/auth/me");
@@ -82,7 +74,7 @@ export const AuthService = {
             throw error;
         }
     },
-    async forgotPassword( email: string ) {
+    async forgotPassword(email: string) {
         try {
             const response = await axiosClient.post("/auth/send-code", {
                 email,
