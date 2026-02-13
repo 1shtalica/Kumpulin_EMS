@@ -258,7 +258,7 @@ export const step3Schema = z
 // 🌟 Step 4: Tiket & Kapasitas
 const ticketSchema = z.object({
   name: z.string().min(1, "Nama tiket wajib diisi"),
-  price: z.coerce.number().min(0, "Harga tidak boleh negatif"),
+  price: z.coerce.number().min(1, "Harga tiket harus lebih dari 0"),
   quota: z.coerce.number().min(1, "Kuota tiket minimal 1"),
   description: z.string().optional(),
 });

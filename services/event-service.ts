@@ -1,5 +1,10 @@
 import axiosClient from "@/lib/axios-client";
-import type { Event, EventsResponse, EventResponse, GetEventsParams } from "@/types/event";
+import type {
+  Event,
+  EventsResponse,
+  EventResponse,
+  GetEventsParams,
+} from "@/types/event";
 
 export const EventService = {
   /**
@@ -45,4 +50,6 @@ export const EventService = {
       throw error;
     }
   },
+
+  // Buat event
 };

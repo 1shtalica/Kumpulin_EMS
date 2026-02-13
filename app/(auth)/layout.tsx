@@ -1,5 +1,5 @@
 import React from "react";
-import { MeshGradientBackground } from "@/components/ui/mesh-gradient-background";
+import { MeshGradientBackground } from "@/components/reusable/mesh-gradient-background";
 
 export default function AuthLayout({
   children,

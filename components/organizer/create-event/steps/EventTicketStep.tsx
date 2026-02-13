@@ -109,12 +109,17 @@ export default function EventTicketStep() {
           </Label>
           <Input
             id="maxPurchasePerUser"
-            type="text"
+            type="number"
+            min={0}
             placeholder="Contoh: 3 (atau 0 untuk tanpa batas)"
             {...register("maxPurchasePerUser")}
             onChange={(e) => {
-              const value = parseInt(e.target.value) || 0;
-              setValue("maxPurchasePerUser", value, { shouldValidate: true });
+              const value = e.target.value;
+              setValue(
+                "maxPurchasePerUser",
+                value === "" ? undefined : parseInt(value),
+                { shouldValidate: true },
+              );
             }}
             className={cn(
               "shadow-xs bg-white",
@@ -251,9 +256,23 @@ export default function EventTicketStep() {
             )}
 
           {fields.length === 0 && (
-            <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-              <p className="text-muted-foreground">
-                Klik tombol 'Tambah Tiket' untuk membuat tiket pertama
+            <div
+              className={cn(
+                "rounded-lg border-2 border-dashed p-8 text-center transition-colors",
+                errors.tickets
+                  ? "border-danger bg-red-50"
+                  : "border-gray-300 bg-white",
+              )}
+            >
+              <p
+                className={cn(
+                  "text-muted-foreground",
+                  errors.tickets && "text-danger font-medium",
+                )}
+              >
+                {errors.tickets
+                  ? "Anda wajib menambahkan minimal 1 tiket"
+                  : "Klik tombol 'Tambah Tiket' untuk membuat tiket pertama"}
               </p>
             </div>
           )}

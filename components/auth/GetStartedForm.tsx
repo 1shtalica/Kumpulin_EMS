@@ -23,20 +23,7 @@ import { cn } from "@/lib/utils";
 import { AuthService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
 import { User } from "@/types/user";
-
-// --- Utils ---
-const generateSlug = (name: string): string => {
-  return (
-    name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-")
-      .replace(/^-+|-+$/g, "") +
-    "-" +
-    Date.now()
-  );
-};
+import { generateSlug } from "@/lib/utils";
 
 // --- Validation Schemas ---
 const phoneSchema = z.object({

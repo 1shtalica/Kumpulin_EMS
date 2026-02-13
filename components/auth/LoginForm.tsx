@@ -131,7 +131,7 @@ export default function LoginForm() {
   return (
     <div>
       {/* ⭐ BAGIAN HEADER */}
-      <Card className="w-full">
+      <Card className="w-full rounded-3xl py-10 px-4 my-3">
         <CardHeader className="space-y-1 text-center">
           <h1 className="font-bold text-3xl mb-4">
             🎉

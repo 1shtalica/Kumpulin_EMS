@@ -84,12 +84,58 @@ export default function CreateEventClient() {
         isStepValid = await trigger(step3Fields);
         break;
       case 4:
-        isStepValid = await trigger([
+        // 1. Trigger per-field validations
+        const fieldValid = await trigger([
           "isPaid",
           "maxCapacity",
           "maxPurchasePerUser",
           "tickets",
         ] as const);
+
+        // 2. Manual cross-field validation for Paid Events
+        // (Because trigger() doesn't run superRefine validations)
+        const values = getValues();
+        let manualValid = true;
+
+        if (values.isPaid) {
+          // Validate Tickets exist
+          if (!values.tickets || values.tickets.length === 0) {
+            methods.setError("tickets", {
+              type: "manual",
+              message: "Event berbayar wajib memiliki minimal 1 tiket",
+            });
+            manualValid = false;
+          } else {
+            // Validate Ticket Prices > 0
+            const hasInvalidPrice = values.tickets.some(
+              (t) => (t.price ?? 0) <= 0,
+            );
+            if (hasInvalidPrice) {
+              methods.setError("tickets", {
+                type: "manual",
+                message: "Tiket berbayar harus memiliki harga > 0",
+              });
+              manualValid = false;
+            }
+          }
+
+          // Validate Max Purchase Per User
+          // It must be defined (can be 0 for unlimited)
+          if (
+            values.maxPurchasePerUser === undefined ||
+            values.maxPurchasePerUser === null ||
+            isNaN(values.maxPurchasePerUser)
+          ) {
+            methods.setError("maxPurchasePerUser", {
+              type: "manual",
+              message:
+                "Batas pembelian per user wajib diisi untuk event berbayar",
+            });
+            manualValid = false;
+          }
+        }
+
+        isStepValid = fieldValid && manualValid;
         break;
       case 5:
         isStepValid = true;

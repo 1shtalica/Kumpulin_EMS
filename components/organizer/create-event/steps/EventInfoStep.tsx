@@ -292,6 +292,7 @@ export default function EventInfoStep() {
 
               <div className="space-y-1 text-xs text-muted">
                 <p>Format: JPEG • Maksimal 5MB</p>
+                <p>Ukuran gambar ideal: 1920x1080 (16:9)</p>
               </div>
             </div>
           </div>
