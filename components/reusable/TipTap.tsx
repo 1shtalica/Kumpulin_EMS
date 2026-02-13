@@ -40,10 +40,16 @@ export default function Tiptap({ content = "", onChange }: TiptapProps) {
         types: ["heading", "paragraph"],
       }),
     ],
-    content,
+    content: (() => {
+      try {
+        return content ? JSON.parse(content) : "";
+      } catch {
+        return content;
+      }
+    })(),
     onUpdate: ({ editor }) => {
       if (onChange) {
-        onChange(editor.getHTML());
+        onChange(JSON.stringify(editor.getJSON()));
       }
     },
     immediatelyRender: false,
