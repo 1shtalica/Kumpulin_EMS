@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Mail, CheckCircle } from "lucide-react";
+import { Mail, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
@@ -27,6 +27,7 @@ export default function ForgotPasswordForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [timer, setTimer] = useState(0);
 
   const {
     register,
@@ -37,50 +38,67 @@ export default function ForgotPasswordForm() {
     resolver: zodResolver(forgotPasswordSchema),
   });
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
   const onSubmit = async (data: ForgotPasswordFormValues) => {
-  setIsLoading(true);
-  const toastId = toast.loading("Mengirim email reset...");
-  try {
-    await AuthService.forgotPassword(data.email);
-    toast.success("Email terkirim!", { id: toastId });
-    
-    setSubmittedEmail(data.email);
-    setIsSubmitted(true);
-  } catch (error: any) {
-    const axiosError = error as AxiosError<{ message: string }>;
-    const errorMessage =
-      axiosError.response?.data?.message ||
-      "Gagal mengirim email. Coba lagi.";
-    toast.error("Pengiriman gagal", { id: toastId });
-    
-    setError("root", {
-      type: "manual",
-      message: errorMessage,
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
+    setIsLoading(true);
+    const toastId = toast.loading("Mengirim email reset...");
+    try {
+      await AuthService.forgotPassword(data.email);
+      toast.success("Email terkirim!", { id: toastId });
+      
+      setSubmittedEmail(data.email);
+      setIsSubmitted(true);
+      setTimer(60); // Start timer after initial success
+    } catch (error: any) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Gagal mengirim email. Coba lagi.";
+      toast.error("Pengiriman gagal", { id: toastId });
+      
+      setError("root", {
+        type: "manual",
+        message: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleResend = async () => {
-  setIsLoading(true);
-  const toastId = toast.loading("Mengirim ulang email...");
-  try {
-    // TODO: await AuthService.forgotPassword(submittedEmail);
+    if (timer > 0) return;
     
-    toast.success("Email terkirim ulang!", { id: toastId });
-  } catch (error: any) {
-    toast.error("Gagal mengirim ulang", { id: toastId });
-  } finally {
-    setIsLoading(false);
-  }
-};
+    setIsLoading(true);
+    const toastId = toast.loading("Mengirim ulang email...");
+    try {
+      await AuthService.forgotPassword(submittedEmail);
+      
+      toast.success("Email terkirim ulang!", { id: toastId });
+      setTimer(60); // Reset timer on successful resend
+    } catch (error: any) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Gagal mengirim ulang email.";
+      
+      toast.error(errorMessage, { id: toastId });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div>
-      
-
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md mx-auto rounded-3xl py-10 px-4 shadow-lg border-border/50">
         <CardHeader className="space-y-1 text-center">
           <h1 className="font-bold text-3xl mb-4">
             🎉
@@ -146,10 +164,14 @@ export default function ForgotPasswordForm() {
                 variant="outline"
                 className="w-full hover:bg-primary/10"
                 onClick={handleResend}
-                disabled={isLoading}
+                disabled={isLoading || timer > 0}
               >
                 <Mail className="mr-2 h-4 w-4" />
-                {isLoading ? "Mengirim..." : "Kirim Ulang"}
+                {isLoading 
+                  ? "Mengirim..." 
+                  : timer > 0 
+                    ? `Kirim Ulang (${timer}s)` 
+                    : "Kirim Ulang"}
               </Button>
 
               <Link href="/login" className="block text-sm text-primary hover:underline">

@@ -63,14 +63,12 @@ export default function LoginForm() {
     const user = useAuthStore.getState().user;
 
     if (user?.phone_number) {
-      // Profile complete → redirect to dashboard
       if (user.role === "organizer") {
         router.push("/organizer/dashboard");
       } else {
-        router.push("/user/dashboard");
+        router.push("/user/home");
       }
     } else {
-      // Profile incomplete → redirect to get-started
       router.push("/get-started");
     }
   };
