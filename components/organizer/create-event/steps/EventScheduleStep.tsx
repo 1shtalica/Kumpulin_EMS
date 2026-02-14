@@ -166,13 +166,6 @@ export default function EventScheduleStep() {
                 Pilih waktu buka pendaftaran terlebih dahulu
               </p>
             )}
-            {startRegistrationDateTime &&
-              endRegistrationDateTime &&
-              endRegistrationDateTime <= startRegistrationDateTime && (
-                <p className="text-xs text-danger">
-                  Waktu tutup harus setelah waktu buka pendaftaran
-                </p>
-              )}
           </div>
         </div>
       </div>
@@ -249,13 +242,6 @@ export default function EventScheduleStep() {
                 Pilih waktu mulai event terlebih dahulu
               </p>
             )}
-            {startEventDateTime &&
-              endEventDateTime &&
-              endEventDateTime <= startEventDateTime && (
-                <p className="text-xs text-danger">
-                  Waktu selesai harus setelah waktu mulai event
-                </p>
-              )}
           </div>
         </div>
       </div>

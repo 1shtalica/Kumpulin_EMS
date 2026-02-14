@@ -12,15 +12,16 @@ export default function AuthInitializer({ user }: { user: User | null }) {
         initialized.current = true;
     }
 
-    // const checkAuth = useAuthStore((state) => state.checkAuth);
-    // const currentUser = useAuthStore((state) => state.user);
+    // 🌟 kalau mau dimatikan checkauthnya 
+    const checkAuth = useAuthStore((state) => state.checkAuth);
+    const currentUser = useAuthStore((state) => state.user);
 
-    // useEffect(() => {
-    //     if (!initialized.current && !user && !currentUser) {
-    //         checkAuth();
-    //         initialized.current = true;
-    //     }
-    // }, [checkAuth, user, currentUser]);
+    useEffect(() => {
+        if (!initialized.current && !user && !currentUser) {
+            checkAuth();
+            initialized.current = true;
+        }
+    }, [checkAuth, user, currentUser]);
 
     return null;
 }
