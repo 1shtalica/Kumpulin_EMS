@@ -67,7 +67,7 @@ export default function LoginForm() {
         targetPath = "/";
       }
     } else {
-      router.push("/get-started");
+      targetPath = "/get-started";
     }
 
     // Force a full reload to ensure cookies are sent correctly

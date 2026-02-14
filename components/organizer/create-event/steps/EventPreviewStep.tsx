@@ -74,12 +74,19 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
 
         <div className="space-y-4">
           {/* Banner */}
-          {formData.bannerPreview && (
-            <img
-              src={formData.bannerPreview}
-              alt="Banner"
-              className="h-48 w-full rounded-lg object-cover"
-            />
+          {formData.imagePreviews && formData.imagePreviews.length > 0 && (
+            <div className="space-y-2">
+              <img
+                src={formData.imagePreviews[0]}
+                alt="Banner"
+                className="h-48 w-full rounded-lg object-cover"
+              />
+              {formData.imagePreviews.length > 1 && (
+                <p className="text-xs text-muted-foreground text-center">
+                  +{formData.imagePreviews.length - 1} gambar lainnya
+                </p>
+              )}
+            </div>
           )}
 
           {/* Title & Category */}

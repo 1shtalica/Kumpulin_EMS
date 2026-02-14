@@ -21,8 +21,9 @@ import {
   createEventSchema,
   CreateEventSchema,
 } from "@/lib/validator/create-event.schema";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { EventService } from "@/services/event-service";
+import { useRouter } from "next/navigation";
 
 export default function CreateEventClient() {
   const router = useRouter();
@@ -70,7 +71,7 @@ export default function CreateEventClient() {
           "title",
           "category",
           "description",
-          "bannerFile",
+          "images",
         ] as const);
         break;
       case 3:

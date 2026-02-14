@@ -12,7 +12,7 @@ export default function EventTypeStep() {
   } = useFormContext<CreateEventSchema>();
   const selectedType = watch("type");
 
-  const onSelectType = (type: "public" | "internal") => {
+  const onSelectType = (type: "external" | "internal") => {
     setValue("type", type, { shouldValidate: true });
   };
 
@@ -29,16 +29,16 @@ export default function EventTypeStep() {
         <Button
           type="button"
           variant="ghost"
-          onClick={() => onSelectType("public")}
+          onClick={() => onSelectType("external")}
           className={cn(
             "relative flex h-auto flex-col items-start gap-4 rounded-xl border-2 p-6 text-left transition-all shadow-xs hover:shadow-sm whitespace-normal wrap-break-word w-full",
-            selectedType === "public"
+            selectedType === "external"
               ? "border-primary bg-primary-light hover:bg-primary-light"
               : "border-slate-100 bg-white hover:bg-white",
             errors.type && "border-danger",
           )}
         >
-          {selectedType === "public" && (
+          {selectedType === "external" && (
             <div className="absolute top-4 right-4 rounded-full bg-primary p-1 text-white shadow-xs">
               <Check className="h-4 w-4" />
             </div>

@@ -23,8 +23,8 @@ export interface CreateEventFormState {
   title: string;
   category: string;
   description: string;
-  bannerFile: File | null;
-  bannerPreview: string;
+  images: File[];
+  imagePreviews: string[];
 
   // 📌 Step 3: Combined DateTime fields (instead of separate date + time)
   startEventDateTime: Date | undefined;

@@ -59,8 +59,10 @@ export const EventService = {
         formData.append("meetingUrl", data.meetingUrl);
       }
 
-      if (data.bannerFile) {
-        formData.append("bannerFile", data.bannerFile);
+      if (data.images && data.images.length > 0) {
+        data.images.forEach((file) => {
+          formData.append("images", file);
+        });
       }
 
       if (data.startEventDateTime) {
@@ -77,7 +79,7 @@ export const EventService = {
       }
 
       formData.append("tickets", JSON.stringify(data.tickets));
-      formData.append("rundown", JSON.stringify(data.rundown));
+      formData.append("rundowns", JSON.stringify(data.rundown));
       formData.append("address", JSON.stringify(data.address));
 
       console.log("formData", formData);

@@ -2,7 +2,7 @@ import z from "zod";
 
 // 🌟 Step 1
 export const step1Schema = z.object({
-  type: z.enum(["public", "internal"], {
+  type: z.enum(["external", "internal"], {
     message: "Tipe event wajib dipilih",
   }),
 });
@@ -38,19 +38,22 @@ export const step2Schema = z.object({
       },
       { message: "Deskripsi event wajib diisi" }
     ),
-  bannerFile: z
-    .custom<File>((v) => v instanceof File, {
-      message: "Banner wajib diupload",
-    })
-    .refine((file) => file.size <= MAX_FILE_SIZE, {
-      message: "Ukuran file maksimal 5MB",
-    })
-    .refine((file) => ACCEPTED_IMAGE_FORMATS.includes(file.type), {
-      message: "Format file harus .jpeg",
-    })
-    .nullable()
-    .refine((file) => file !== null, { message: "Banner wajib diupload" }),
-  bannerPreview: z.string().optional(),
+  images: z
+    .array(
+      z
+        .custom<File>((v) => v instanceof File, {
+          message: "File tidak valid",
+        })
+        .refine((file) => file.size <= MAX_FILE_SIZE, {
+          message: "Ukuran file maksimal 5MB",
+        })
+        .refine((file) => ACCEPTED_IMAGE_FORMATS.includes(file.type), {
+          message: "Format file harus .jpeg",
+        })
+    )
+    .min(1, "Minimal 1 gambar wajib diupload")
+    .max(5, "Maksimal 5 gambar"),
+  imagePreviews: z.array(z.string()).optional(),
 });
 
 // 🌟 Step 3: Jadwal & Lokasi
