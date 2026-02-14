@@ -48,7 +48,7 @@ export default function EventTicketStep() {
     <div className="space-y-8">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-accent">Pengaturan Tiket</h2>
+        <h2 className="text-2xl font-bold text-foreground">Pengaturan Tiket</h2>
         <p className="mt-2 text-muted-foreground">
           Atur kapasitas, batas waktu pendaftaran, dan jenis tiket
         </p>
@@ -56,7 +56,7 @@ export default function EventTicketStep() {
 
       {/* Free/Paid Toggle */}
       <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
           <TicketIcon className="h-5 w-5 text-primary" />
           Jenis Tiket
         </h3>
@@ -68,14 +68,14 @@ export default function EventTicketStep() {
               type="button"
               onClick={() => handlePaidChange(false)}
               className={cn(
-                "rounded-lg border-2 p-4 text-left transition-all",
+                "rounded-xl border-2 p-4 text-left transition-all",
                 "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
                 !isPaid
                   ? "border-primary bg-primary-light shadow-xs"
                   : "border-gray-200 bg-white hover:border-gray-300",
               )}
             >
-              <div className="font-semibold text-accent">Gratis</div>
+              <div className="font-semibold text-foreground">Gratis</div>
               <div className="text-sm text-muted-foreground">
                 Event dapat diakses tanpa biaya
               </div>
@@ -85,14 +85,14 @@ export default function EventTicketStep() {
               type="button"
               onClick={() => handlePaidChange(true)}
               className={cn(
-                "rounded-lg border-2 p-4 text-left transition-all",
+                "rounded-xl border-2 p-4 text-left transition-all",
                 "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
                 isPaid
                   ? "border-primary bg-primary-light shadow-xs"
                   : "border-gray-200 bg-white hover:border-gray-300",
               )}
             >
-              <div className="font-semibold text-accent">Berbayar</div>
+              <div className="font-semibold text-foreground">Berbayar</div>
               <div className="text-sm text-muted-foreground">
                 Event memerlukan pembelian tiket
               </div>
@@ -103,8 +103,8 @@ export default function EventTicketStep() {
 
       {/* Max Purchase Per User - ONLY FOR PAID EVENTS */}
       {isPaid && (
-        <div className="space-y-3 rounded-lg border border-primary/20 bg-primary-light/30 p-4">
-          <Label htmlFor="maxPurchasePerUser" className="text-accent">
+        <div className="space-y-3 rounded-xl border border-primary/20 bg-primary-light/30 p-4">
+          <Label htmlFor="maxPurchasePerUser" className="text-foreground">
             Batas Pembelian Per User <span className="text-danger">*</span>
           </Label>
           <Input
@@ -125,7 +125,7 @@ export default function EventTicketStep() {
             className={cn(
               "shadow-xs bg-white",
               errors.maxPurchasePerUser &&
-                "border-danger focus-visible:ring-danger",
+              "border-danger focus-visible:ring-danger",
             )}
           />
           <p className="text-xs text-muted-foreground">
@@ -146,12 +146,12 @@ export default function EventTicketStep() {
 
       {/* Capacity Settings - ONLY FOR FREE EVENTS OR DISPLAY FOR PAID */}
       <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
           <Users className="h-5 w-5 text-primary" />
           Kapasitas Peserta
         </h3>
 
-        <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
           {/* Custom Capacity for Free Events */}
           {!isPaid ? (
             <div className="space-y-4">
@@ -192,7 +192,7 @@ export default function EventTicketStep() {
                     className={cn(
                       "shadow-xs",
                       errors.maxCapacity &&
-                        "border-danger focus-visible:ring-danger",
+                      "border-danger focus-visible:ring-danger",
                     )}
                   />
                   {errors.maxCapacity && (
@@ -230,7 +230,7 @@ export default function EventTicketStep() {
       {isPaid && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="text-base font-medium text-accent">
+            <Label className="text-base font-medium text-foreground">
               Daftar Tiket
             </Label>
             {fields.length < 5 && (
@@ -253,7 +253,7 @@ export default function EventTicketStep() {
           {fields.length === 0 && (
             <div
               className={cn(
-                "rounded-lg border-2 border-dashed p-8 text-center transition-colors",
+                "rounded-2xl border-2 border-dashed p-8 text-center transition-colors",
                 errors.tickets
                   ? "border-danger bg-red-50"
                   : "border-gray-300 bg-white",
@@ -277,7 +277,7 @@ export default function EventTicketStep() {
               <div
                 key={ticket.id}
                 className={cn(
-                  "rounded-lg border bg-white p-4 shadow-xs",
+                  "rounded-2xl border bg-card p-6 shadow-sm",
                   errors.tickets?.[index]?.name ||
                     errors.tickets?.[index]?.price ||
                     errors.tickets?.[index]?.quota ||
@@ -315,7 +315,7 @@ export default function EventTicketStep() {
                       className={cn(
                         "shadow-xs bg-white",
                         errors.tickets?.[index]?.name &&
-                          "border-danger focus-visible:ring-danger",
+                        "border-danger focus-visible:ring-danger",
                       )}
                     />
                     {errors.tickets?.[index]?.name && (
@@ -345,7 +345,7 @@ export default function EventTicketStep() {
                       className={cn(
                         "shadow-xs bg-white",
                         errors.tickets?.[index]?.price &&
-                          "border-danger focus-visible:ring-danger",
+                        "border-danger focus-visible:ring-danger",
                       )}
                     />
                     {errors.tickets?.[index]?.price && (
@@ -375,7 +375,7 @@ export default function EventTicketStep() {
                       className={cn(
                         "shadow-xs bg-white",
                         errors.tickets?.[index]?.quota &&
-                          "border-danger focus-visible:ring-danger",
+                        "border-danger focus-visible:ring-danger",
                       )}
                     />
                     {errors.tickets?.[index]?.quota && (
@@ -397,7 +397,7 @@ export default function EventTicketStep() {
                       className={cn(
                         "shadow-xs bg-white",
                         errors.tickets?.[index]?.description &&
-                          "border-danger focus-visible:ring-danger",
+                        "border-danger focus-visible:ring-danger",
                       )}
                     />
                     {errors.tickets?.[index]?.description && (

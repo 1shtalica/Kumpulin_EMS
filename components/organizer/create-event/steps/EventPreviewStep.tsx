@@ -45,15 +45,15 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-accent">Preview Event</h2>
+        <h2 className="text-2xl font-bold text-foreground">Preview Event</h2>
         <p className="mt-2 text-muted-foreground">
           Periksa kembali semua informasi sebelum mempublikasikan event
         </p>
       </div>
 
       {/* Event Type */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs">
-        <h3 className="mb-3 font-semibold text-accent">Tipe Event</h3>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="mb-3 font-semibold text-foreground">Tipe Event</h3>
         <div>
           <span
             className={cn(
@@ -69,8 +69,8 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
       </div>
 
       {/* Banner & Info */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs">
-        <h3 className="mb-3 font-semibold text-accent">Informasi Event</h3>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="mb-3 font-semibold text-foreground">Informasi Event</h3>
 
         <div className="space-y-4">
           {/* Banner */}
@@ -91,8 +91,8 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
 
           {/* Title & Category */}
           <div>
-            <h4 className="text-xl font-bold text-accent">{formData.title}</h4>
-            <span className="mt-1 inline-block rounded-md bg-slate-100 px-2 py-1 text-sm text-muted-foreground">
+            <h4 className="text-xl font-bold text-foreground">{formData.title}</h4>
+            <span className="mt-1 inline-block rounded-md bg-muted px-2 py-1 text-sm text-foreground">
               {formData.category}
             </span>
           </div>
@@ -109,8 +109,8 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
       </div>
 
       {/* Schedule & Location */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs">
-        <h3 className="mb-3 font-semibold text-accent">Jadwal & Lokasi</h3>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="mb-3 font-semibold text-foreground">Jadwal & Lokasi</h3>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Registration Schedule (First) */}
@@ -197,8 +197,8 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
       </div>
 
       {/* Rundown */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs">
-        <h3 className="mb-3 font-semibold text-accent">Susunan Acara</h3>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="mb-3 font-semibold text-foreground">Susunan Acara</h3>
 
         {formData.rundown.length > 0 ? (
           <div className="space-y-3">
@@ -228,8 +228,8 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
       </div>
 
       {/* Tickets & Capacity */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs">
-        <h3 className="mb-3 font-semibold text-accent">Tiket & Kapasitas</h3>
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <h3 className="mb-3 font-semibold text-foreground">Tiket & Kapasitas</h3>
 
         <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
           <Users className="h-4 w-4" />

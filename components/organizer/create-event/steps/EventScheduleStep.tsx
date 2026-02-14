@@ -94,7 +94,7 @@ export default function EventScheduleStep() {
     <div className="space-y-10">
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-accent">Jadwal & Lokasi</h2>
+        <h2 className="text-2xl font-bold text-foreground">Jadwal & Lokasi</h2>
         <p className="mt-2 text-muted-foreground">
           Atur waktu acara, pendaftaran, dan lokasi event
         </p>
@@ -102,12 +102,12 @@ export default function EventScheduleStep() {
 
       {/* --- Section 1: Periode Pendaftaran (FIRST) --- */}
       <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
           <Clock className="h-5 w-5 text-primary" />
           Periode Pendaftaran
         </h3>
 
-        <div className="grid gap-4 rounded-lg border border-gray-100 bg-gray-50 p-4 grid-cols-1">
+        <div className="grid gap-4 rounded-xl border border-border bg-card p-6 shadow-sm grid-cols-1">
           {/* Start Registration DateTime */}
           <div className="space-y-2">
             <Label>
@@ -124,7 +124,9 @@ export default function EventScheduleStep() {
                   minDate={new Date()}
                   className={cn(
                     errors.startRegistrationDateTime && "border-danger",
+                    "shadow-none"
                   )}
+
                 />
               )}
             />
@@ -152,6 +154,7 @@ export default function EventScheduleStep() {
                   disabled={!startRegistrationDateTime}
                   className={cn(
                     errors.endRegistrationDateTime && "border-danger",
+                    "shadow-none"
                   )}
                 />
               )}
@@ -179,12 +182,12 @@ export default function EventScheduleStep() {
 
       {/* --- Section 2: Waktu Pelaksanaan Event (AFTER Registration) --- */}
       <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
           <CalendarIcon className="h-5 w-5 text-primary" />
           Waktu Pelaksanaan Event
         </h3>
 
-        <div className="grid gap-4 rounded-lg border border-gray-100 bg-gray-50 p-4 grid-cols-1">
+        <div className="grid gap-4 rounded-xl border border-border bg-card p-6 shadow-sm grid-cols-1">
           {/* Start Event DateTime */}
           <div className="space-y-2">
             <Label>
@@ -204,7 +207,7 @@ export default function EventScheduleStep() {
                       : new Date()
                   }
                   disabled={!endRegistrationDateTime}
-                  className={cn(errors.startEventDateTime && "border-danger")}
+                  className={cn(errors.startEventDateTime && "border-danger", "shadow-none")}
                 />
               )}
             />
@@ -235,7 +238,7 @@ export default function EventScheduleStep() {
                   placeholder="Pilih waktu selesai event"
                   minDate={startEventDateTime || new Date()}
                   disabled={!startEventDateTime}
-                  className={cn(errors.endEventDateTime && "border-danger")}
+                  className={cn(errors.endEventDateTime && "border-danger", "shadow-none")}
                 />
               )}
             />
@@ -263,14 +266,14 @@ export default function EventScheduleStep() {
       {/* --- Section 3: Rundown --- */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
             <CalendarIcon className="h-5 w-5 text-primary" />
             Rundown Acara
           </h3>
           <Button
             type="button"
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={() =>
               append({
                 title: "",
@@ -281,7 +284,7 @@ export default function EventScheduleStep() {
               })
             }
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             Tambah Sesi
           </Button>
         </div>
@@ -289,7 +292,7 @@ export default function EventScheduleStep() {
         {fields.length === 0 && (
           <div
             className={cn(
-              "rounded-lg border border-dashed p-8 text-center",
+              "rounded-xl border border-dashed p-12 text-center",
               errors.rundown
                 ? "border-danger bg-red-50"
                 : "border-gray-300 bg-gray-50",
@@ -304,8 +307,8 @@ export default function EventScheduleStep() {
               )}
             >
               {errors.rundown &&
-              !Array.isArray(errors.rundown) &&
-              "message" in errors.rundown
+                !Array.isArray(errors.rundown) &&
+                "message" in errors.rundown
                 ? errors.rundown.message
                 : 'Belum ada sesi rundown. Klik tombol "Tambah Sesi" untuk memulai.'}
             </p>
@@ -317,7 +320,7 @@ export default function EventScheduleStep() {
             <div
               key={item.id}
               className={cn(
-                "rounded-lg border bg-white p-4 shadow-xs",
+                "rounded-2xl border bg-card p-6 shadow-sm",
                 (errors.rundown?.[index]?.title ||
                   errors.rundown?.[index]?.startTime ||
                   errors.rundown?.[index]?.endTime) &&
@@ -361,9 +364,9 @@ export default function EventScheduleStep() {
                             onChange={field.onChange}
                             placeholder="Mulai"
                             className={cn(
-                              "h-9 text-sm w-full",
+                              "h-9 text-sm w-full shadow-none",
                               errors.rundown?.[index]?.startTime &&
-                                "border-danger",
+                              "border-danger",
                             )}
                           />
                         )}
@@ -380,9 +383,9 @@ export default function EventScheduleStep() {
                             onChange={field.onChange}
                             placeholder="Selesai"
                             className={cn(
-                              "h-9 text-sm w-full",
+                              "h-9 text-sm w-full shadow-none",
                               errors.rundown?.[index]?.endTime &&
-                                "border-danger",
+                              "border-danger",
                             )}
                           />
                         )}
@@ -391,11 +394,11 @@ export default function EventScheduleStep() {
                   </div>
                   {(errors.rundown?.[index]?.startTime ||
                     errors.rundown?.[index]?.endTime) && (
-                    <p className="text-xs text-danger">
-                      {errors.rundown?.[index]?.startTime?.message ||
-                        errors.rundown?.[index]?.endTime?.message}
-                    </p>
-                  )}
+                      <p className="text-xs text-danger">
+                        {errors.rundown?.[index]?.startTime?.message ||
+                          errors.rundown?.[index]?.endTime?.message}
+                      </p>
+                    )}
                 </div>
 
                 {/* Title */}
@@ -449,7 +452,7 @@ export default function EventScheduleStep() {
 
       {/* --- Section 4: Location --- */}
       <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-accent">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
           <MapPin className="h-5 w-5 text-primary" />
           Lokasi Event
         </h3>
@@ -460,7 +463,7 @@ export default function EventScheduleStep() {
             type="button"
             variant={isOnline ? "default" : "outline"}
             onClick={() => setValue("isOnline", true)}
-            className="flex-1"
+            className="flex-1 shadow-glow"
           >
             <Video className="mr-2 h-4 w-4" />
             Online
@@ -478,14 +481,14 @@ export default function EventScheduleStep() {
 
         {/* Online: Meeting URL */}
         {isOnline && (
-          <div className="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
+          <div className="space-y-2 rounded-2xl border border-border bg-card p-6 shadow-sm">
             <Label>Link Meeting <span className="text-danger">*</span></Label>
             <Input
               type="url"
               placeholder="https://meet.google.com/xxx-xxxx-xxx"
               className={cn(
                 errors.meetingUrl &&
-                  "border-danger focus-visible:ring-danger",
+                "border-danger focus-visible:ring-danger",
               )}
               {...register("meetingUrl")}
             />
@@ -503,7 +506,7 @@ export default function EventScheduleStep() {
 
         {/* Offline: Address */}
         {!isOnline && (
-          <div className="space-y-4 rounded-lg border border-gray-100 bg-gray-50 p-4">
+          <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
             <div className="grid gap-4 md:grid-cols-2">
               {/* Province */}
               <div className="space-y-2">
@@ -520,7 +523,7 @@ export default function EventScheduleStep() {
                           variant="outline"
                           role="combobox"
                           className={cn(
-                            "w-full justify-between",
+                            "w-full justify-between shadow-none font-normal",
                             !field.value && "text-muted-foreground",
                             errors.address?.province && "border-danger",
                           )}
@@ -529,8 +532,8 @@ export default function EventScheduleStep() {
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
+                      <PopoverContent className="w-full p-0 rounded-xl">
+                        <Command className="rounded-xl">
                           <CommandInput placeholder="Cari provinsi..." />
                           <CommandList>
                             <CommandEmpty>
@@ -539,6 +542,7 @@ export default function EventScheduleStep() {
                             <CommandGroup>
                               {INDONESIA_REGIONS.map((region) => (
                                 <CommandItem
+                                  className="rounded-lg"
                                   key={region.name}
                                   value={region.name}
                                   onSelect={() => {
@@ -548,7 +552,7 @@ export default function EventScheduleStep() {
                                 >
                                   <Check
                                     className={cn(
-                                      "mr-2 h-4 w-4",
+                                      "h-4 w-4",
                                       field.value === region.name
                                         ? "opacity-100"
                                         : "opacity-0",
@@ -587,7 +591,7 @@ export default function EventScheduleStep() {
                           role="combobox"
                           disabled={!watchProvince}
                           className={cn(
-                            "w-full justify-between",
+                            "w-full justify-between shadow-none font-normal",
                             !field.value && "text-muted-foreground",
                             errors.address?.city && "border-danger",
                           )}
@@ -596,8 +600,8 @@ export default function EventScheduleStep() {
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
+                      <PopoverContent className="w-full p-0 rounded-xl">
+                        <Command className="rounded-xl">
                           <CommandInput placeholder="Cari kota..." />
                           <CommandList>
                             <CommandEmpty>Kota tidak ditemukan.</CommandEmpty>
@@ -612,7 +616,7 @@ export default function EventScheduleStep() {
                                 >
                                   <Check
                                     className={cn(
-                                      "mr-2 h-4 w-4",
+                                      "h-4 w-4",
                                       field.value === city.name
                                         ? "opacity-100"
                                         : "opacity-0",
