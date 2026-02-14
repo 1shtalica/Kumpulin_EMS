@@ -26,19 +26,19 @@ export default function CreateEventStepper({ currentStep }: CreateEventStepperPr
 
           return (
             <div key={step.number} className={cn("flex items-center", !isLastStep && "flex-1")}>
-              
+
               {/* 1. STEP CIRCLE & LABEL WRAPPER */}
               <div className="relative flex flex-col items-center z-10">
                 <div
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
                     // Kondisi Completed: Biru Penuh
-                    isCompleted 
+                    isCompleted
                       ? "border-primary bg-primary text-white"
                       : // Kondisi Active: Lingkaran Putih, Border Biru
                       isActive
-                      ? "border-primary bg-white text-primary ring-4 ring-primary/20"
-                      : // Kondisi Inactive: Abu-abu
+                        ? "border-primary bg-white text-primary ring-2 ring-primary/20"
+                        : // Kondisi Inactive: Abu-abu
                         "border-slate-200 bg-white text-slate-400"
                   )}
                 >
@@ -67,11 +67,11 @@ export default function CreateEventStepper({ currentStep }: CreateEventStepperPr
               {!isLastStep && (
                 <div className="flex-1 h-0.5 mx-2 bg-slate-200 relative">
                   {/* Garis Biru (Progress) yang mengisi di atas garis abu-abu */}
-                  <div 
+                  <div
                     className={cn(
-                        "absolute left-0 top-0 h-full bg-primary transition-all duration-500 ease-in-out",
-                        isCompleted ? "w-full" : "w-0" // Kuncinya di sini: Kalo step ini selesai, garis kanannya biru full
-                    )} 
+                      "absolute left-0 top-0 h-full bg-primary transition-all duration-500 ease-in-out",
+                      isCompleted ? "w-full" : "w-0" // Kuncinya di sini: Kalo step ini selesai, garis kanannya biru full
+                    )}
                   />
                 </div>
               )}
@@ -79,7 +79,7 @@ export default function CreateEventStepper({ currentStep }: CreateEventStepperPr
           );
         })}
       </div>
-      
+
       {/* Spacer bawah untuk menampung teks label yang absolute tadi */}
       <div className="h-8" />
     </div>

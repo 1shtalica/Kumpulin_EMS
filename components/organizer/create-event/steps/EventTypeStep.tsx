@@ -31,10 +31,10 @@ export default function EventTypeStep() {
           variant="ghost"
           onClick={() => onSelectType("external")}
           className={cn(
-            "relative flex h-auto flex-col items-start gap-4 rounded-xl border-2 p-6 text-left transition-all shadow-xs hover:shadow-sm whitespace-normal wrap-break-word w-full",
+            "relative flex h-auto flex-col items-start gap-4 rounded-xl border p-6 text-left transition-all hover:shadow-md whitespace-normal wrap-break-word w-full",
             selectedType === "external"
               ? "border-primary bg-primary-light hover:bg-primary-light"
-              : "border-slate-100 bg-white hover:bg-white",
+              : "bg-white hover:bg-white",
             errors.type && "border-danger",
           )}
         >
@@ -79,10 +79,10 @@ export default function EventTypeStep() {
           variant="ghost"
           onClick={() => onSelectType("internal")}
           className={cn(
-            "relative flex h-auto flex-col items-start gap-4 rounded-xl border-2 p-6 text-left transition-all shadow-xs hover:shadow-sm hover:bg-transparent whitespace-normal wrap-break-word w-full",
+            "relative flex h-auto flex-col items-start gap-4 rounded-xl border p-6 text-left transition-all hover:shadow-md hover:bg-transparent whitespace-normal wrap-break-word w-full",
             selectedType === "internal"
               ? "border-secondary bg-secondary-light hover:bg-secondary-light"
-              : "border-slate-100 bg-white hover:bg-white",
+              : "bg-white hover:bg-white",
             errors.type && "border-danger",
           )}
         >

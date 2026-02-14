@@ -190,7 +190,6 @@ export default function EventInfoStep() {
           {...register("title")}
           maxLength={100}
           className={cn(
-            "shadow-xs",
             errors.title && "border-danger focus-visible:ring-danger",
           )}
         />
@@ -213,10 +212,11 @@ export default function EventInfoStep() {
             <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  size="lg"
                   variant="outline"
                   role="combobox"
                   className={cn(
-                    "w-full justify-between font-normal",
+                    "w-full justify-between font-normal rounded-xl shadow-none",
                     !field.value && "text-muted-foreground",
                     errors.category && "border-danger text-danger",
                   )}
@@ -228,16 +228,17 @@ export default function EventInfoStep() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-[--radix-popover-trigger-width] p-0"
+                className="w-[--radix-popover-trigger-width] p-0 rounded-xl"
                 align="start"
               >
-                <Command>
+                <Command className="rounded-xl">
                   <CommandInput placeholder="Cari kategori..." />
                   <CommandList>
                     <CommandEmpty>Kategori tidak ditemukan.</CommandEmpty>
                     <CommandGroup>
                       {categories.map((cat) => (
                         <CommandItem
+                          className="rounded-lg"
                           key={cat}
                           value={cat}
                           onSelect={(currentValue) => {
@@ -281,7 +282,7 @@ export default function EventInfoStep() {
             <>
               <div
                 className={cn(
-                  "rounded-lg border transition-colors",
+                  "transition-colors",
                   errors.description && "border-danger",
                 )}
               >
@@ -311,7 +312,7 @@ export default function EventInfoStep() {
         {currentImages.length < MAX_FILES && (
           <div
             className={cn(
-              "relative rounded-lg border-2 border-dashed p-6 text-center transition-colors",
+              "relative rounded-xl border-2 border-dashed p-6 text-center transition-colors",
               dragActive
                 ? "border-primary bg-primary/5"
                 : "border-gray-300 hover:border-gray-400",
@@ -341,6 +342,7 @@ export default function EventInfoStep() {
                   Drag & drop gambar di sini, atau
                 </p>
                 <Button
+                  className="my-2 rounded-xl"
                   type="button"
                   variant="outline"
                   size="sm"

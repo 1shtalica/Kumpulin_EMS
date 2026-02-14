@@ -28,19 +28,19 @@ export default function CreateEventHeader() {
 
   return (
     <nav
-          className={cn(
-            "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out px-4 py-3 md:px-6 md:py-4",
-            "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
-            isScrolled ? "shadow-md" : "shadow-xs",
-          )}
-        >
+      className={cn(
+        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out px-4 py-3 md:px-6 md:py-4",
+        "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
+        isScrolled ? "shadow-md" : "shadow-xs",
+      )}
+    >
       <div className="container mx-auto flex flex-row items-center justify-between">
         <Button
           variant="ghost"
           className="rounded-xl pl-2 gap-2 text-muted hover:text-accent"
           asChild
         >
-            {/* 🌟 Nanti diubah pakai callback jika iya */}
+          {/* 🌟 Nanti diubah pakai callback jika iya */}
           <Link href="/organizer/my-event">
             <ChevronLeft className="h-4 w-4" />
             <span className="text-sm font-medium">Kembali</span>

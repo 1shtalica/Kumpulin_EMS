@@ -61,7 +61,7 @@ export default function Tiptap({ content = "", onChange }: TiptapProps) {
   });
 
   return (
-    <div className="border rounded-lg shadow-xs bg-white overflow-hidden">
+    <div className="border rounded-xl bg-white overflow-hidden">
       <div className="p-3 border-b bg-primary-light">
         <TipTapMenuBar editor={editor} />
       </div>

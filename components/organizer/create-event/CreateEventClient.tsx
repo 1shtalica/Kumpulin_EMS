@@ -204,7 +204,7 @@ export default function CreateEventClient() {
 
       <FormProvider {...methods}>
         {/* Form Container */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs md:p-8">
+        <div className="rounded-2xl border shadow-lg bg-white p-6 md:p-8">
           {renderStep()}
         </div>
       </FormProvider>
