@@ -100,7 +100,7 @@ export default function ResetPasswordForm() {
   // Token validation
   if (!token) {
     return (
-      <Card>
+      <Card className="w-full max-w-md mx-auto rounded-3xl py-10 px-4 shadow-lg border-border/50">
         <CardContent className="pt-6">
           <p className="text-center text-red-500">
             Link reset password tidak valid atau sudah kadaluarsa
@@ -111,8 +111,14 @@ export default function ResetPasswordForm() {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="text-center">
+    <Card className="w-full max-w-md mx-auto rounded-3xl py-10 px-4 shadow-lg border-border/50">
+      <CardHeader className="space-y-1 text-center">
+        <h1 className="font-bold text-3xl mb-4">
+          🎉
+          <span className="bg-linear-to-r from-primary to-secondary text-transparent bg-clip-text">
+            kumpul.in
+          </span>
+        </h1>
         <CardTitle className="text-2xl">Reset Password</CardTitle>
         <p className="text-sm text-muted-foreground">
           Masukkan password baru Anda

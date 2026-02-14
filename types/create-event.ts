@@ -38,8 +38,6 @@ export interface CreateEventFormState {
     city: string;
     province: string;
     postalCode?: string;
-    latitude?: number;
-    longitude?: number;
   };
   meetingUrl: string;
 

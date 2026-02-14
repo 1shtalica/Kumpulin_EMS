@@ -3,7 +3,7 @@ export interface Event {
   title: string;
   slug: string;
   description: string;
-  start_date: string; // ISO 8601
+  start_date: string;
   end_date: string;
   location: string;
   category: string;

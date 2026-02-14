@@ -105,45 +105,53 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs">
         <h3 className="mb-3 font-semibold text-accent">Jadwal & Lokasi</h3>
 
-        <div className="space-y-4">
-          {/* Schedule */}
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-accent">
-              <Calendar className="h-4 w-4" />
-              Waktu Pelaksanaan
-            </div>
-            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <p>
-                <strong>Mulai:</strong>{" "}
-                {formatDate(formData.startEventDateTime)}
-              </p>
-              <p>
-                <strong>Selesai:</strong>{" "}
-                {formatDate(formData.endEventDateTime)}
-              </p>
-            </div>
-          </div>
-
-          {/* Registration Schedule */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Registration Schedule (First) */}
           <div>
             <div className="flex items-center gap-2 text-sm font-medium text-accent">
               <Clock className="h-4 w-4" />
               Periode Pendaftaran
             </div>
             <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <p>
-                <strong>Buka:</strong>{" "}
-                {formatDate(formData.startRegistrationDateTime)}
-              </p>
-              <p>
-                <strong>Tutup:</strong>{" "}
-                {formatDate(formData.endRegistrationDateTime)}
-              </p>
+              <div className="flex justify-between md:block">
+                <span>Buka:</span>
+                <span className="font-medium text-accent ml-2">
+                  {formatDate(formData.startRegistrationDateTime)}
+                </span>
+              </div>
+              <div className="flex justify-between md:block">
+                <span>Tutup:</span>
+                <span className="font-medium text-accent ml-2">
+                  {formatDate(formData.endRegistrationDateTime)}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Location */}
+          {/* Schedule (Second) */}
           <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-accent">
+              <Calendar className="h-4 w-4" />
+              Waktu Pelaksanaan
+            </div>
+            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+              <div className="flex justify-between md:block">
+                <span>Mulai:</span>
+                <span className="font-medium text-accent ml-2">
+                  {formatDate(formData.startEventDateTime)}
+                </span>
+              </div>
+              <div className="flex justify-between md:block">
+                <span>Selesai:</span>
+                <span className="font-medium text-accent ml-2">
+                  {formatDate(formData.endEventDateTime)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Location (Full Width) */}
+          <div className="md:col-span-2">
             <div className="flex items-center gap-2 text-sm font-medium text-accent">
               {!formData.isOnline ? (
                 <MapPin className="h-4 w-4" />
@@ -154,8 +162,10 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
             </div>
             <div className="mt-2 text-sm text-muted-foreground">
               {!formData.isOnline ? (
-                <div className="space-y-1">
-                  <p>{formData.address.rawAddress}</p>
+                <div className="rounded-md bg-slate-50 p-3">
+                  <p className="font-medium text-accent">
+                    {formData.address.rawAddress}
+                  </p>
                   <p>
                     {formData.address.city}, {formData.address.province} •{" "}
                     {formData.address.postalCode || "-"}
@@ -166,9 +176,12 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                   href={formData.meetingUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
+                  className="flex items-center gap-2 text-blue-600 hover:underline"
                 >
-                  {formData.meetingUrl}
+                  Link Meeting
+                  <span className="text-xs text-muted-foreground">
+                    ({formData.meetingUrl})
+                  </span>
                 </a>
               )}
             </div>

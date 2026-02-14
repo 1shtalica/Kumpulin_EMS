@@ -109,12 +109,18 @@ export default function EventTicketStep() {
           </Label>
           <Input
             id="maxPurchasePerUser"
-            type="text"
-            placeholder="Contoh: 3 (atau 0 untuk tanpa batas)"
+            type="number"
+            min={0}
+            placeholder="0"
+            defaultValue={0}
             {...register("maxPurchasePerUser")}
             onChange={(e) => {
-              const value = parseInt(e.target.value) || 0;
-              setValue("maxPurchasePerUser", value, { shouldValidate: true });
+              const value = e.target.value;
+              setValue(
+                "maxPurchasePerUser",
+                value === "" ? 0 : parseInt(value),
+                { shouldValidate: true },
+              );
             }}
             className={cn(
               "shadow-xs bg-white",
@@ -242,18 +248,26 @@ export default function EventTicketStep() {
             )}
           </div>
 
-          {errors.tickets &&
-            !Array.isArray(errors.tickets) &&
-            "message" in errors.tickets && (
-              <p className="text-sm text-danger bg-danger-light p-2 rounded-md border border-danger">
-                {errors.tickets.message}
-              </p>
-            )}
+
 
           {fields.length === 0 && (
-            <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
-              <p className="text-muted-foreground">
-                Klik tombol 'Tambah Tiket' untuk membuat tiket pertama
+            <div
+              className={cn(
+                "rounded-lg border-2 border-dashed p-8 text-center transition-colors",
+                errors.tickets
+                  ? "border-danger bg-red-50"
+                  : "border-gray-300 bg-white",
+              )}
+            >
+              <p
+                className={cn(
+                  "text-muted-foreground",
+                  errors.tickets && "text-danger font-medium",
+                )}
+              >
+                {errors.tickets
+                  ? "Anda wajib menambahkan minimal 1 tiket"
+                  : "Klik tombol 'Tambah Tiket' untuk membuat tiket pertama"}
               </p>
             </div>
           )}
@@ -262,7 +276,15 @@ export default function EventTicketStep() {
             {fields.map((ticket, index) => (
               <div
                 key={ticket.id}
-                className="rounded-lg border border-gray-200 bg-white p-4 shadow-xs"
+                className={cn(
+                  "rounded-lg border bg-white p-4 shadow-xs",
+                  errors.tickets?.[index]?.name ||
+                    errors.tickets?.[index]?.price ||
+                    errors.tickets?.[index]?.quota ||
+                    errors.tickets?.[index]?.description
+                    ? "border-danger ring-1 ring-danger"
+                    : "border-gray-200",
+                )}
               >
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-accent">
@@ -283,7 +305,9 @@ export default function EventTicketStep() {
                 <div className="grid gap-4 md:grid-cols-2">
                   {/* Ticket Name */}
                   <div className="space-y-2">
-                    <Label htmlFor={`ticket-name-${index}`}>Nama Tiket *</Label>
+                    <Label htmlFor={`ticket-name-${index}`}>
+                      Nama Tiket <span className="text-danger">*</span>
+                    </Label>
                     <Input
                       id={`ticket-name-${index}`}
                       placeholder="Contoh: VIP, Regular"
@@ -304,7 +328,7 @@ export default function EventTicketStep() {
                   {/* Ticket Price */}
                   <div className="space-y-2">
                     <Label htmlFor={`ticket-price-${index}`}>
-                      Harga (Rp) *
+                      Harga (Rp) <span className="text-danger">*</span>
                     </Label>
                     <Input
                       id={`ticket-price-${index}`}
@@ -333,7 +357,9 @@ export default function EventTicketStep() {
 
                   {/* Ticket Quota */}
                   <div className="space-y-2">
-                    <Label htmlFor={`ticket-quota-${index}`}>Kuota *</Label>
+                    <Label htmlFor={`ticket-quota-${index}`}>
+                      Kuota <span className="text-danger">*</span>
+                    </Label>
                     <Input
                       id={`ticket-quota-${index}`}
                       type="text"

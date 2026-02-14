@@ -178,10 +178,10 @@
 
 @theme {
   /* Primary Colors */
-  --color-primary: oklch(47.06% 0.175 273.83); 
+  --color-primary: oklch(47.06% 0.175 273.83);
   --color-primary-hover: oklch(41.43% 0.165 274.65);
   --color-primary-light: oklch(95.63% 0.016 273.83);
-  
+
   /* Secondary Colors */
   --color-secondary: oklch(67.56% 0.165 156.4);
   --color-secondary-hover: oklch(57.7% 0.151 157.4);
@@ -189,7 +189,7 @@
 
   /* Text Colors */
   --color-accent: oklch(27.6% 0.024 256);
-  --color-muted: oklch(55.5% 0.03 256); 
+  --color-muted: oklch(55.5% 0.03 256);
 
   /* Status Colors */
   --color-success: oklch(54.2% 0.197 146.4);
@@ -224,7 +224,6 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 
 @layer base {
   * {

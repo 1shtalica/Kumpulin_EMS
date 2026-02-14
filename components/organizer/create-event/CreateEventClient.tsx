@@ -15,7 +15,6 @@ import {
   useForm,
   FormProvider,
   SubmitHandler,
-  type DeepPartial,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -26,6 +25,9 @@ import { useEffect } from "react";
 import { EventService } from "@/services/event-service";
 
 export default function CreateEventClient() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     currentStep,
     nextStep: storeNextStep,
@@ -85,12 +87,46 @@ export default function CreateEventClient() {
         isStepValid = await trigger(step3Fields);
         break;
       case 4:
-        isStepValid = await trigger([
-          "isPaid",
-          "maxCapacity",
-          "maxPurchasePerUser",
-          "tickets",
-        ] as const);
+        const fieldValid = await trigger();
+
+        const values = getValues();
+        let manualValid = true;
+
+        if (values.isPaid) {
+          if (!values.tickets || values.tickets.length === 0) {
+            methods.setError("tickets", {
+              type: "manual",
+              message: "Event berbayar wajib memiliki minimal 1 tiket",
+            });
+            manualValid = false;
+          } else {
+            const hasInvalidPrice = values.tickets.some(
+              (t) => (t.price ?? 0) <= 0,
+            );
+            if (hasInvalidPrice) {
+              methods.setError("tickets", {
+                type: "manual",
+                message: "Tiket berbayar harus memiliki harga > 0",
+              });
+              manualValid = false;
+            }
+          }
+
+          if (
+            values.maxPurchasePerUser === undefined ||
+            values.maxPurchasePerUser === null ||
+            isNaN(values.maxPurchasePerUser)
+          ) {
+            methods.setError("maxPurchasePerUser", {
+              type: "manual",
+              message:
+                "Batas pembelian per user wajib diisi untuk event berbayar",
+            });
+            manualValid = false;
+          }
+        }
+
+        isStepValid = fieldValid && manualValid;
         break;
       case 5:
         isStepValid = true;
@@ -108,6 +144,14 @@ export default function CreateEventClient() {
       storePrevStep();
       window.scrollTo(0, 0);
     }
+  };
+
+  // Helper to create slug
+  const createSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   };
 
   const onSubmit: SubmitHandler<CreateEventSchema> = async (data) => {
@@ -137,6 +181,7 @@ export default function CreateEventClient() {
               { ...getValues(), step: currentStep } as CreateEventFormState
             }
             onSubmit={handleSubmit(onSubmit)}
+            isSubmitting={isSubmitting}
           />
         );
       default:
@@ -195,7 +240,7 @@ export default function CreateEventClient() {
               onClick={handleNext}
               className="min-w-30 rounded-lg"
             >
-              Lanjut
+              Selanjutnya
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (

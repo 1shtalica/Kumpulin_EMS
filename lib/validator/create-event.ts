@@ -7,7 +7,7 @@ export const step1Schema = z.object({
   }),
 });
 
-// 🌟 Step 2: pada tiptap editor, limitnya dipasang 100 namun tidak ditunjukkan sebab pmnya ada bug dari sananya yang menyebabkan count characternya kadang kehitung 2 kali
+// 🌟 Step 2: pada tiptap editor, limitnya dipasang 2000 namun tidak ditunjukkan sebab pmnya ada bug dari sananya yang menyebabkan count characternya kadang kehitung 2 kali
 const MAX_FILE_SIZE = 1024 * 1024 * 5;
 const ACCEPTED_IMAGE_FORMATS = ["image/jpeg"];
 
@@ -100,10 +100,18 @@ const rundownSchema = z
 export const step3Schema = z
   .object({
     // Combined DateTime fields
-    startEventDateTime: z.date(),
-    endEventDateTime: z.date(),
-    startRegistrationDateTime: z.date(),
-    endRegistrationDateTime: z.date(),
+    startEventDateTime: z.date({
+      message: "Tanggal mulai event wajib diisi",
+    }),
+    endEventDateTime: z.date({
+      message: "Tanggal selesai event wajib diisi",
+    }),
+    startRegistrationDateTime: z.date({
+      message: "Tanggal mulai pendaftaran wajib diisi",
+    }),
+    endRegistrationDateTime: z.date({
+      message: "Tanggal selesai pendaftaran wajib diisi",
+    }),
 
     // Rundown (Minimal 1)
     rundown: z.array(rundownSchema).min(1, "Sesi Rundown harus diisi"),
@@ -258,7 +266,7 @@ export const step3Schema = z
 // 🌟 Step 4: Tiket & Kapasitas
 const ticketSchema = z.object({
   name: z.string().min(1, "Nama tiket wajib diisi"),
-  price: z.coerce.number().min(0, "Harga tidak boleh negatif"),
+  price: z.coerce.number().min(1, "Harga tiket harus lebih dari 0"),
   quota: z.coerce.number().min(1, "Kuota tiket minimal 1"),
   description: z.string().optional(),
 });
@@ -279,15 +287,6 @@ export const step4Schema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Event berbayar wajib memiliki minimal 1 tiket",
-          path: ["tickets"],
-        });
-      }
-
-      const hasInvalidPrice = data.tickets.some((t) => t.price <= 0);
-      if (hasInvalidPrice) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Tiket berbayar harus memiliki harga > 0",
           path: ["tickets"],
         });
       }

@@ -14,7 +14,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle, // Import kept although not used, can be removed if strict
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,20 +22,7 @@ import { cn } from "@/lib/utils";
 import { AuthService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
 import { User } from "@/types/user";
-
-// --- Utils ---
-const generateSlug = (name: string): string => {
-  return (
-    name
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-")
-      .replace(/^-+|-+$/g, "") +
-    "-" +
-    Date.now()
-  );
-};
+import { generateSlug } from "@/lib/utils";
 
 // --- Validation Schemas ---
 const phoneSchema = z.object({
@@ -127,7 +113,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         isOrganizer ? "Profil organizer berhasil dibuat!" : "Profil berhasil dilengkapi!",
         { id: toastId }
       );
-      router.push(isOrganizer ? "/dashboard/organizer" : "/");
+      router.push(isOrganizer ? "/organizer/dashboard" : "/user/home");
 
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;

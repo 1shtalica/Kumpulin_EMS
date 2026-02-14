@@ -48,3 +48,16 @@ export const combineDateAndTime = (date: Date, timeString: string): Date => {
 
   return result;
 };
+
+export const generateSlug = (name: string): string => {
+  return (
+    name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "") +
+    "-" +
+    Date.now()
+  );
+};

@@ -74,7 +74,6 @@ export default function EventInfoStep() {
       return;
     }
 
-    // Create preview
     const reader = new FileReader();
     reader.onloadend = () => {
       setValue("bannerFile", file, { shouldValidate: true });
@@ -142,7 +141,7 @@ export default function EventInfoStep() {
           )}
         />
         <div className="flex justify-between text-xs">
-          <p className="text-danger">{errors.title?.message}</p>
+          <p className="text-danger text-xs">{errors.title?.message}</p>
           <p className="text-muted">{title?.length || 0}/100 karakter</p>
         </div>
       </div>
@@ -292,6 +291,7 @@ export default function EventInfoStep() {
 
               <div className="space-y-1 text-xs text-muted">
                 <p>Format: JPEG • Maksimal 5MB</p>
+                <p>Ukuran gambar ideal: 1920x1080 (16:9)</p>
               </div>
             </div>
           </div>
