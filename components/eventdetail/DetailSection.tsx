@@ -272,8 +272,8 @@ export default function DetailSection({ event }: { event: Event }) {
                     className="group flex flex-col md:flex-row gap-3 md:gap-6 p-5 rounded-3xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 transition-all duration-300"
                   >
                     {/* Waktu (Kiri) */}
-                    <div className="md:w-32 shrink-0 flex flex-col justify-start pt-1">
-                      <div className="flex items-center gap-2 text-sm font-bold text-primary bg-white border border-primary/10 px-3 py-1.5 rounded-full w-fit shadow-xs">
+                    <div className=" shrink-0 flex flex-col justify-start md:justify-center pt-1">
+                      <div className="flex items-center gap-2 text-sm font-bold text-primary bg-white border border-primary/10 px-3 py-1.5 rounded-xl w-fit">
                         <Clock size={14} className="md:w-5 md:h-5" />
                         <span>
                           {item.start_time} - {item.end_time}
@@ -282,7 +282,10 @@ export default function DetailSection({ event }: { event: Event }) {
                     </div>
 
                     {/* Detail (Kanan) */}
-                    <div className="flex flex-col gap-2 w-full">
+                    <div className={cn(
+                    "flex flex-col w-full",
+                    (item.location || item.description) ? "gap-2" : "justify-center"
+                  )}>
                       <h5 className="font-bold text-accent text-lg leading-tight group-hover:text-primary transition-colors">
                         {item.title}
                       </h5>

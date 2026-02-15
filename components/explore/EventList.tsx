@@ -44,8 +44,8 @@ export default function EventList({ events }: EventListProps) {
           title={event.title}
           category={event.category}
           date={formatEventDate(event.start_date)}
-          location={event.location}
-          price={event.price}
+          location={event.address?.province}
+          price={event.ticket_categories}
           organizer={event.organizer?.name || "Organizer"}
           image={event.banner_url || "/placeholder-event.jpg"}
           slug={event.slug}

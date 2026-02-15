@@ -59,10 +59,10 @@ export default function TicketSection({ event }: { event: Event }) {
   const effectiveTickets = isFreeEventWithNoTickets
     ? [
         {
-          id: -1, // ID spesial untuk tiket gratis virtual
+          id: -1, 
           name: "Tiket Gratis",
           price: 0,
-          quota: event.capacity || 0, // 0 means unlimited in this context for now
+          quota: event.capacity || 0, 
           sold: event.sold_event || 0,
           description: "Tiket masuk untuk event ini.",
         },
@@ -199,7 +199,7 @@ export default function TicketSection({ event }: { event: Event }) {
                 <div className="flex items-center gap-3 bg-white px-2 py-1 rounded-3xl border-slate-200">
                   <button
                     onClick={() => setQty(Math.max(1, qty - 1))}
-                    className="p-1 hover:bg-primary text-accent hover:text-white disabled:opacity-50 rounded-full"
+                    className="p-1 hover:bg-primary text-accent hover:text-white disabled:opacity-50 rounded-full cursor-pointer disabled:cursor-default"
                     disabled={qty <= 1}
                   >
                     <Minus size={16} />
@@ -223,7 +223,7 @@ export default function TicketSection({ event }: { event: Event }) {
 
                         if (qty < maxPurchase) setQty(qty + 1);
                     }}
-                    className="p-1 hover:bg-primary text-accent hover:text-white disabled:opacity-50 rounded-full"
+                    className="p-1 hover:bg-primary text-accent hover:text-white disabled:opacity-50 rounded-full cursor-pointer disabled:cursor-default"
                     disabled={
                         selectedTicket.quota > 0 
                           ? qty >= Math.min(selectedTicket.quota - selectedTicket.sold, event.max_purchases || 10)
@@ -234,7 +234,6 @@ export default function TicketSection({ event }: { event: Event }) {
                   </button>
                 </div>
               </div>
-             {/* Info Max Purchase (Neutral) - Moved here */}
              {(event.max_purchases ?? 0) > 0 && (
                 <p className="text-xs text-muted text-right mt-1 px-1">
                     Maksimal pembelian {event.max_purchases} tiket per transaksi

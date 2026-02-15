@@ -9,7 +9,7 @@ export const step1Schema = z.object({
 
 // 🌟 Step 2: pada tiptap editor, limitnya dipasang 2000 namun tidak ditunjukkan sebab pmnya ada bug dari sananya yang menyebabkan count characternya kadang kehitung 2 kali
 const MAX_FILE_SIZE = 1024 * 1024 * 5;
-const ACCEPTED_IMAGE_FORMATS = ["image/jpeg"];
+const ACCEPTED_IMAGE_FORMATS = ["image/jpeg", "image/png"];
 
 export const step2Schema = z.object({
   title: z
@@ -48,7 +48,7 @@ export const step2Schema = z.object({
           message: "Ukuran file maksimal 5MB",
         })
         .refine((file) => ACCEPTED_IMAGE_FORMATS.includes(file.type), {
-          message: "Format file harus .jpeg",
+          message: "Format file harus .jpeg atau .png",
         })
     )
     .min(1, "Minimal 1 gambar wajib diupload")

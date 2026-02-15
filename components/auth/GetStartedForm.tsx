@@ -117,8 +117,9 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
 
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage = axiosError.response?.data?.message || "Terjadi kesalahan saat menyimpan data";
       toast.error(
-        axiosError.response?.data?.message || "Terjadi kesalahan saat menyimpan data",
+        errorMessage,
         { id: toastId }
       );
     } finally {

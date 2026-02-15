@@ -104,7 +104,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                   />
 
                   {/* Overlay Gradient for Text Readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-80" />
 
                   <div className="absolute bottom-4 left-4 right-4 text-white z-10">
                     <div className="inline-flex items-center rounded-md bg-white/20 backdrop-blur-md px-2.5 py-1 text-xs font-medium text-white ring-1 ring-white/30 mb-2">
@@ -177,12 +177,12 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
               </div>
               <div className="space-y-3 pl-6 border-l-2 border-primary/20">
                 <div className="relative">
-                  <div className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+                  <div className="absolute -left-7.75 top-1.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Dibuka</p>
                   <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.startRegistrationDateTime)}</p>
                 </div>
                 <div className="relative">
-                  <div className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-background bg-red-500" />
+                  <div className="absolute -left-7.75 top-1.5 h-3 w-3 rounded-full border-2 border-background bg-red-500" />
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Ditutup</p>
                   <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.endRegistrationDateTime)}</p>
                 </div>
@@ -197,12 +197,12 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
               </div>
               <div className="space-y-3 pl-6 border-l-2 border-primary/20">
                 <div className="relative">
-                  <div className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-background bg-primary" />
+                  <div className="absolute -left-7.75 top-1.5 h-3 w-3 rounded-full border-2 border-background bg-primary" />
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Mulai</p>
                   <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.startEventDateTime)}</p>
                 </div>
                 <div className="relative">
-                  <div className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-background bg-primary/40" />
+                  <div className="absolute -left-7.75 top-1.5 h-3 w-3 rounded-full border-2 border-background bg-primary-light" />
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selesai</p>
                   <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.endEventDateTime)}</p>
                 </div>
@@ -216,7 +216,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                 <span>Lokasi - {!formData.isOnline ? "Offline" : "Online"}</span>
               </div>
 
-              <div className="bg-secondary/10 rounded-xl p-5 border border-border/40">
+              <div className="bg-primary-light rounded-xl p-5 border border-border/40">
                 {!formData.isOnline ? (
                   <div className="flex flex-col gap-1">
                     <p className="font-semibold text-foreground text-lg">
@@ -254,29 +254,46 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
           <SectionHeader icon={Clock} title="Susunan Acara" />
 
           {formData.rundown.length > 0 ? (
-            <div className="relative pl-6 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border/50">
+            <div className="flex flex-col gap-4">
               {formData.rundown.map((item, index) => (
-                <div key={index} className="relative group">
-                  {/* Timeline Dot */}
-                  <div className="absolute -left-[30px] top-1 h-6 w-6 rounded-full border-[3px] border-card bg-secondary text-[10px] font-bold flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors z-10 shadow-sm">
-                    {index + 1}
-                  </div>
-
-                  <div className="rounded-xl bg-secondary/10 hover:bg-secondary/20 p-4 border border-transparent hover:border-border/60 transition-all">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                      <span className="inline-flex items-center rounded-md bg-background border border-border px-2.5 py-0.5 text-xs font-mono font-medium text-foreground shadow-xs">
+                <div
+                  key={index}
+                  className="group flex flex-col md:flex-row gap-3 md:gap-6 p-5 rounded-3xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 transition-all duration-300"
+                >
+                  {/* Waktu (Kiri) */}
+                  <div className=" shrink-0 flex flex-col justify-start md:justify-center pt-1">
+                    <div className="flex items-center gap-2 text-sm font-bold text-primary bg-white border border-primary/10 px-3 py-1.5 rounded-xl w-fit">
+                      <Clock size={14} className="md:w-5 md:h-5" />
+                      <span>
                         {item.startTime} - {item.endTime}
                       </span>
-                      {item.location && (
-                        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-primary/70" /> {item.location}
-                        </span>
-                      )}
                     </div>
-                    <p className="font-semibold text-foreground">{item.title}</p>
-                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                      {item.description}
-                    </p>
+                  </div>
+
+                  {/* Detail (Kanan) */}
+                  <div className={cn(
+                    "flex flex-col w-full",
+                    (item.location || item.description) ? "gap-2" : "justify-center"
+                  )}>
+                    <h5 className="font-bold text-foreground text-lg leading-tight group-hover:text-primary transition-colors">
+                      {item.title}
+                    </h5>
+
+                    {item.location && (
+                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <MapPin size={16} className="text-primary shrink-0" />
+                        <span className="font-medium">{item.location}</span>
+                      </div>
+                    )}
+
+                    {/* Line Separator if description exists */}
+                    {item.description && (
+                      <div className="mt-1 pb-1 border-l-2 border-slate-200 pl-3 ml-1">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -287,6 +304,8 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
             </div>
           )}
         </div>
+
+
 
         {/* Tickets & Capacity */}
         <div className="rounded-xl border border-border/60 bg-card p-6 lg:p-8 shadow-sm transition-all hover:shadow-md">
@@ -304,7 +323,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
             </span>
           </div>
 
-          <div className="mb-8 p-4 bg-primary/5 rounded-xl border border-primary/10 flex items-center gap-3 text-primary-dark">
+          <div className="mb-8 p-4 bg-primary-light rounded-xl border border-primary/10 flex items-center gap-3 text-primary-dark">
             <div className="p-2 bg-white rounded-full shadow-xs">
               <Users className="h-5 w-5 text-primary" />
             </div>
@@ -318,7 +337,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                 ) : (
                   formData.maxCapacity > 0 ? formData.maxCapacity : "Tidak Terbatas"
                 )}
-                <span className="text-sm font-normal text-muted-foreground ml-1">Peserta</span>
+                <span className="text-sm font-normal text-muted-foreground ml-1">{formData.maxCapacity > 0 ? "Peserta" : ""}</span>
               </span>
             </div>
           </div>
@@ -367,7 +386,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
           size="xl"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="w-full sm:w-auto min-w-[240px] shadow-lg shadow-primary/20 text-base"
+          className="w-full sm:w-auto min-w-60 shadow-lg shadow-primary/20 text-base"
         >
           {isSubmitting ? "Memproses..." : "Publikasikan Event"}
         </Button>
