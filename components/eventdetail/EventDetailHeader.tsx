@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
@@ -20,7 +18,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function HeaderSection() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const router = useRouter();
   const { user, logout } = useAuthStore();
 
   useEffect(() => {
@@ -40,9 +37,7 @@ export default function HeaderSection() {
     <nav
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out p-4",
-        // Base Style: Selalu Putih + Blur + Border Halus
         "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
-        // Conditional Style: Tambah shadow jika di-scroll
         isScrolled ? "shadow-md" : "shadow-xs",
       )}
     >
@@ -95,7 +90,7 @@ export default function HeaderSection() {
                 <DropdownMenuSeparator className="bg-border/50 my-1" />
                 <DropdownMenuItem
                   onClick={() => logout()}
-                  className="rounded-xl p-2.5 text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer font-medium transition-colors"
+                  className="rounded-xl p-2.5 text-danger focus:text-red-700 focus:bg-red-50 cursor-pointer font-medium transition-colors"
                 >
                   <LogOut className="mr-2.5 h-4 w-4" />
                   <span>Keluar</span>
@@ -104,18 +99,23 @@ export default function HeaderSection() {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="light" size="sm" className="rounded-xl font-bold" asChild>
-              <Link href="/login">Masuk</Link>
-            </Button>
+              <Button
+                variant="light"
+                size="sm"
+                className="rounded-xl font-bold"
+                asChild
+              >
+                <Link href="/login">Masuk</Link>
+              </Button>
 
               <Button
-              variant="brand"
-              size="sm"
-              asChild
-              className="hidden rounded-xl md:inline-flex font-bold"
-            >
-              <Link href="/register">Daftar</Link>
-            </Button>
+                variant="brand"
+                size="sm"
+                asChild
+                className="hidden rounded-xl md:inline-flex font-bold"
+              >
+                <Link href="/register">Daftar</Link>
+              </Button>
             </>
           )}
         </div>

@@ -7,18 +7,21 @@ import { User } from "@/types/user";
 export default function AuthInitializer({ user }: { user: User | null }) {
     const checkAuth = useAuthStore((state) => state.checkAuth);
 
+    if (!initialized.current && user) {
+        useAuthStore.setState({ user, isLoading: false });
+        initialized.current = true;
+    }
+
+    // 🌟 kalau mau dimatikan checkauthnya 
+    const checkAuth = useAuthStore((state) => state.checkAuth);
+    const currentUser = useAuthStore((state) => state.user);
+
     useEffect(() => {
-        if (user) {
-            // Server successfully resolved user, sync to store
-            console.log("AuthInitializer: server user found, syncing...");
-            useAuthStore.setState({ user, isLoading: false });
-        } else {
-            // Server returned null (guest or failed fetch).
-            // Try client-side check to see if we can recover session (e.g. refresh token)
-            console.log("AuthInitializer: no server user, attempting client check...");
+        if (!initialized.current && !user && !currentUser) {
             checkAuth();
+            initialized.current = true;
         }
-    }, [user, checkAuth]);
+    }, [checkAuth, user, currentUser]);
 
     return null;
 }

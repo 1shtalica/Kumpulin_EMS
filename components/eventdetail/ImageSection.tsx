@@ -3,10 +3,32 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-export default function ImageSection() {
+import { Event } from "@/types/event";
+
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+
+import Autoplay from "embla-carousel-autoplay";
+
+export default function ImageSection({ event }: { event: Event }) {
   const [isVisible, setIsVisible] = useState(true);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [blurOpacity, setBlurOpacity] = useState(1);
+
+  // Use posters if available, otherwise fallback to banner_url
+  // 🌟 Nanti tambahkan image eror jika sudah ada 
+  const images =
+    event.posters && event.posters.length > 0
+      ? event.posters
+      : [
+          event.banner_url ||
+            "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2070",
+        ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,23 +85,51 @@ export default function ImageSection() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-12">
-              {/* ⭐ Responsive height dengan max-height */}
-              <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5 
-                h-50 
-                sm:h-75 
-                md:h-100 
-                lg:h-112.5 
-                xl:h-125
-                max-h-125">
-                <Image
-                  src="https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1740&auto=format&fit=crop"
-                  alt="Ilustrasi Event Teknologi dan Networking"
-                  fill
-                  className="object-cover hover:scale-105 transition-transform duration-700"
-                  priority
-                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 85vw, 1200px"
-                />
-              </div>
+              <Carousel
+                className="w-full"
+                plugins={[
+                  Autoplay({
+                    delay: 4000,
+                  }),
+                ]}
+                opts={{
+                  loop: true,
+                }}
+              >
+                <CarouselContent>
+                  {images.map((src, index) => (
+                    <CarouselItem key={index}>
+                      {/* ⭐ Responsive height dengan max-height */}
+                      
+                        <div
+                          className="relative w-full rounded-2xl overflow-hidden ring-1 ring-black/5 
+                                      h-50 
+                                      sm:h-75 
+                                      md:h-100 
+                                      lg:h-112.5 
+                                      xl:h-125
+                                      max-h-125"
+                        >
+                          <Image
+                            src={src}
+                            alt={`${event.title} - Poster ${index + 1}`}
+                            fill
+                            className="object-cover hover:scale-105 transition-transform duration-700"
+                            priority={index === 0}
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 85vw, 1200px"
+                          />
+                        </div>
+                      
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {images.length > 1 && (
+                  <>
+                    <CarouselPrevious className="left-4 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md" />
+                    <CarouselNext className="right-4 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md" />
+                  </>
+                )}
+              </Carousel>
             </div>
           </div>
         </div>
