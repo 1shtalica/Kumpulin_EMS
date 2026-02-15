@@ -68,7 +68,7 @@ export default function EventTicketStep() {
               type="button"
               onClick={() => handlePaidChange(false)}
               className={cn(
-                "rounded-xl border-2 p-4 text-left transition-all",
+                "rounded-xl border p-4 text-left transition-all",
                 "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
                 !isPaid
                   ? "border-primary bg-primary-light shadow-xs"
@@ -85,7 +85,7 @@ export default function EventTicketStep() {
               type="button"
               onClick={() => handlePaidChange(true)}
               className={cn(
-                "rounded-xl border-2 p-4 text-left transition-all",
+                "rounded-xl border p-4 text-left transition-all",
                 "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
                 isPaid
                   ? "border-primary bg-primary-light shadow-xs"
@@ -123,7 +123,7 @@ export default function EventTicketStep() {
               );
             }}
             className={cn(
-              "shadow-xs bg-white",
+              "shadow-none bg-white",
               errors.maxPurchasePerUser &&
               "border-danger focus-visible:ring-danger",
             )}
@@ -151,7 +151,7 @@ export default function EventTicketStep() {
           Kapasitas Peserta
         </h3>
 
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           {/* Custom Capacity for Free Events */}
           {!isPaid ? (
             <div className="space-y-4">
@@ -190,7 +190,6 @@ export default function EventTicketStep() {
                       setValue("maxCapacity", value, { shouldValidate: true });
                     }}
                     className={cn(
-                      "shadow-xs",
                       errors.maxCapacity &&
                       "border-danger focus-visible:ring-danger",
                     )}
@@ -203,7 +202,7 @@ export default function EventTicketStep() {
                 </div>
               )}
               {maxCapacity === 0 && (
-                <div className="rounded-md bg-green-50 p-3 text-sm text-green-700 border border-green-200">
+                <div className="rounded-xl bg-green-50 p-3 text-sm text-green-700 border border-green-200">
                   Event gratis ini terbuka untuk umum tanpa batasan kuota.
                 </div>
               )}
@@ -230,19 +229,20 @@ export default function EventTicketStep() {
       {isPaid && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="text-base font-medium text-foreground">
+            <Label className="text-base font-bold text-foreground">
               Daftar Tiket
             </Label>
             {fields.length < 5 && (
               <Button
+                className="shadow-glow"
                 type="button"
                 variant="outline"
-                size="sm"
+                size="lg"
                 onClick={() =>
                   append({ name: "", price: 0, quota: 0, description: "" })
                 }
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 Tambah Tiket
               </Button>
             )}
@@ -253,7 +253,7 @@ export default function EventTicketStep() {
           {fields.length === 0 && (
             <div
               className={cn(
-                "rounded-2xl border-2 border-dashed p-8 text-center transition-colors",
+                "rounded-xl border border-dashed p-8 text-center transition-colors",
                 errors.tickets
                   ? "border-danger bg-red-50"
                   : "border-gray-300 bg-white",
@@ -277,7 +277,7 @@ export default function EventTicketStep() {
               <div
                 key={ticket.id}
                 className={cn(
-                  "rounded-2xl border bg-card p-6 shadow-sm",
+                  "rounded-xl border bg-card p-6 shadow",
                   errors.tickets?.[index]?.name ||
                     errors.tickets?.[index]?.price ||
                     errors.tickets?.[index]?.quota ||
@@ -313,7 +313,7 @@ export default function EventTicketStep() {
                       placeholder="Contoh: VIP, Regular"
                       {...register(`tickets.${index}.name`)}
                       className={cn(
-                        "shadow-xs bg-white",
+                        "bg-white",
                         errors.tickets?.[index]?.name &&
                         "border-danger focus-visible:ring-danger",
                       )}
@@ -343,7 +343,7 @@ export default function EventTicketStep() {
                         });
                       }}
                       className={cn(
-                        "shadow-xs bg-white",
+                        "bg-white",
                         errors.tickets?.[index]?.price &&
                         "border-danger focus-visible:ring-danger",
                       )}
@@ -373,7 +373,7 @@ export default function EventTicketStep() {
                         });
                       }}
                       className={cn(
-                        "shadow-xs bg-white",
+                        "bg-white",
                         errors.tickets?.[index]?.quota &&
                         "border-danger focus-visible:ring-danger",
                       )}
@@ -395,7 +395,7 @@ export default function EventTicketStep() {
                       placeholder="Benefit atau keterangan tiket"
                       {...register(`tickets.${index}.description`)}
                       className={cn(
-                        "shadow-xs bg-white",
+                        "bg-white",
                         errors.tickets?.[index]?.description &&
                         "border-danger focus-visible:ring-danger",
                       )}

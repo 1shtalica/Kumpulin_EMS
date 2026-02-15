@@ -1,5 +1,4 @@
 import GetStartedForm from "@/components/auth/GetStartedForm";
-import { MeshGradientBackground } from "@/components/ui/mesh-gradient-background";
 import { getServerUser } from "@/services/server-auth";
 
 

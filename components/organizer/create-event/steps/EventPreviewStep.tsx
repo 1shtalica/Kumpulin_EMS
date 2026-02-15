@@ -7,6 +7,8 @@ import {
   Ticket as TicketIcon,
   Clock,
   Users,
+  Info,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -38,279 +40,334 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
       style: "currency",
       currency: "IDR",
       minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
+  const SectionHeader = ({ icon: Icon, title }: { icon?: any; title: string }) => (
+    <div className="flex items-center gap-2 mb-6 text-foreground/80">
+      {Icon && <Icon className="h-5 w-5 text-primary" />}
+      <h3 className="text-lg font-bold tracking-tight">{title}</h3>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-foreground">Preview Event</h2>
-        <p className="mt-2 text-muted-foreground">
-          Periksa kembali semua informasi sebelum mempublikasikan event
+      <div className="text-center space-y-2 mb-8">
+        <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground">
+          Preview Event
+        </h2>
+        <p className="text-muted-foreground max-w-lg mx-auto text-sm lg:text-base leading-relaxed">
+          Periksa kembali detail event Anda. Pastikan semua informasi sudah tepat sebelum dipublikasikan kepada khalayak.
         </p>
       </div>
 
-      {/* Event Type */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <h3 className="mb-3 font-semibold text-foreground">Tipe Event</h3>
-        <div>
-          <span
-            className={cn(
-              "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium",
-              formData.type === "external"
-                ? "bg-primary-light text-primary"
-                : "bg-secondary-light text-secondary",
-            )}
-          >
-            {formData.type === "external" ? "External" : "Internal"}
-          </span>
-        </div>
-      </div>
-
-      {/* Banner & Info */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <h3 className="mb-3 font-semibold text-foreground">Informasi Event</h3>
-
-        <div className="space-y-4">
-          {/* Banner */}
-          {formData.imagePreviews && formData.imagePreviews.length > 0 && (
-            <div className="space-y-2">
-              <img
-                src={formData.imagePreviews[0]}
-                alt="Banner"
-                className="h-48 w-full rounded-lg object-cover"
-              />
-              {formData.imagePreviews.length > 1 && (
-                <p className="text-xs text-muted-foreground text-center">
-                  +{formData.imagePreviews.length - 1} gambar lainnya
-                </p>
-              )}
+      <div className="grid gap-8">
+        {/* Event Type */}
+        <div className="rounded-xl border border-border/60 bg-card p-6 lg:p-8 shadow-sm transition-all hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Tipe Event</h3>
+              <p className="mt-1 text-sm text-foreground/70">
+                Jenis event yang akan diselenggarakan
+              </p>
             </div>
-          )}
-
-          {/* Title & Category */}
-          <div>
-            <h4 className="text-xl font-bold text-foreground">{formData.title}</h4>
-            <span className="mt-1 inline-block rounded-md bg-muted px-2 py-1 text-sm text-foreground">
-              {formData.category}
-            </span>
-          </div>
-
-          {/* Description */}
-          <div>
-            <p className="text-sm font-medium text-accent">Deskripsi:</p>
-            <div
-              className="mt-1 text-sm text-muted-foreground prose prose-sm max-w-none break-words overflow-wrap-anywhere"
-              dangerouslySetInnerHTML={{ __html: formData.description || "" }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Schedule & Location */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <h3 className="mb-3 font-semibold text-foreground">Jadwal & Lokasi</h3>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Registration Schedule (First) */}
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-accent">
-              <Clock className="h-4 w-4" />
-              Periode Pendaftaran
-            </div>
-            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <div className="flex justify-between md:block">
-                <span>Buka:</span>
-                <span className="font-medium text-accent ml-2">
-                  {formatDate(formData.startRegistrationDateTime)}
-                </span>
-              </div>
-              <div className="flex justify-between md:block">
-                <span>Tutup:</span>
-                <span className="font-medium text-accent ml-2">
-                  {formatDate(formData.endRegistrationDateTime)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Schedule (Second) */}
-          <div>
-            <div className="flex items-center gap-2 text-sm font-medium text-accent">
-              <Calendar className="h-4 w-4" />
-              Waktu Pelaksanaan
-            </div>
-            <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-              <div className="flex justify-between md:block">
-                <span>Mulai:</span>
-                <span className="font-medium text-accent ml-2">
-                  {formatDate(formData.startEventDateTime)}
-                </span>
-              </div>
-              <div className="flex justify-between md:block">
-                <span>Selesai:</span>
-                <span className="font-medium text-accent ml-2">
-                  {formatDate(formData.endEventDateTime)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Location (Full Width) */}
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2 text-sm font-medium text-accent">
-              {!formData.isOnline ? (
-                <MapPin className="h-4 w-4" />
-              ) : (
-                <Video className="h-4 w-4" />
-              )}
-              Lokasi - {!formData.isOnline ? "Offline" : "Online"}
-            </div>
-            <div className="mt-2 text-sm text-muted-foreground">
-              {!formData.isOnline ? (
-                <div className="rounded-md bg-slate-50 p-3">
-                  <p className="font-medium text-accent">
-                    {formData.address.rawAddress}
-                  </p>
-                  <p>
-                    {formData.address.city}, {formData.address.province} •{" "}
-                    {formData.address.postalCode || "-"}
-                  </p>
-                </div>
-              ) : (
-                <a
-                  href={formData.meetingUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-blue-600 hover:underline"
-                >
-                  Link Meeting
-                  <span className="text-xs text-muted-foreground">
-                    ({formData.meetingUrl})
-                  </span>
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Rundown */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <h3 className="mb-3 font-semibold text-foreground">Susunan Acara</h3>
-
-        {formData.rundown.length > 0 ? (
-          <div className="space-y-3">
-            {formData.rundown.map((item, index) => (
-              <div
-                key={index}
-                className="flex gap-4 border-l-2 border-primary pl-4"
-              >
-                <div className="min-w-24 text-sm text-muted-foreground">
-                  {item.startTime} - {item.endTime}
-                </div>
-                <div>
-                  <p className="font-medium text-accent">{item.title}</p>
-                  {item.location && (
-                    <p className="text-xs text-muted-foreground">
-                      {item.location}
-                    </p>
-                  )}
-                  <p className="text-sm text-slate-600">{item.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500 italic">Belum ada rundown</p>
-        )}
-      </div>
-
-      {/* Tickets & Capacity */}
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <h3 className="mb-3 font-semibold text-foreground">Tiket & Kapasitas</h3>
-
-        <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-          <Users className="h-4 w-4" />
-          <span>
-            {formData.isPaid ? (
-              // For Paid Info: Sum of tickets
-              <>
-                Total Kapasitas:{" "}
-                <strong>
-                  {formData.tickets.reduce(
-                    (sum, t) => sum + Number(t.quota || 0),
-                    0,
-                  )}{" "}
-                  Peserta
-                </strong>{" "}
-                (Akumulasi Tiket)
-              </>
-            ) : (
-              // For Free Info
-              <>
-                Kapasitas Maksimal:{" "}
-                <strong>
-                  {formData.maxCapacity > 0
-                    ? `${formData.maxCapacity} Peserta`
-                    : "Tidak Terbatas"}
-                </strong>
-              </>
-            )}
-          </span>
-        </div>
-
-        <div className="space-y-3">
-          <div className="text-sm">
             <span
               className={cn(
-                "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium",
-                formData.isPaid
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-green-100 text-green-700",
+                "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-inset",
+                formData.type === "external"
+                  ? "bg-primary/10 text-primary ring-primary/20"
+                  : "bg-secondary/50 text-secondary-foreground ring-secondary-foreground/10",
               )}
             >
-              {formData.isPaid ? "Berbayar" : "Gratis"}
+              {formData.type === "external" ? <Users className="h-3.5 w-3.5" /> : <Info className="h-3.5 w-3.5" />}
+              {formData.type === "external" ? "External Public" : "Internal Organization"}
+            </span>
+          </div>
+        </div>
+
+        {/* Banner & Info */}
+        <div className="rounded-xl border border-border/60 bg-card p-6 lg:p-8 shadow-sm transition-all hover:shadow-md overflow-hidden">
+          <SectionHeader icon={Info} title="Informasi Utama" />
+
+          <div className="space-y-8">
+            {/* Image Gallery */}
+            {formData.imagePreviews && formData.imagePreviews.length > 0 ? (
+              <div className="space-y-3">
+                {/* Main Image */}
+                <div className="relative group rounded-2xl overflow-hidden bg-secondary/20 aspect-video w-full border border-border/50">
+                  <img
+                    src={formData.imagePreviews[0]}
+                    alt="Main Event Banner"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+
+                  {/* Overlay Gradient for Text Readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+
+                  <div className="absolute bottom-4 left-4 right-4 text-white z-10">
+                    <div className="inline-flex items-center rounded-md bg-white/20 backdrop-blur-md px-2.5 py-1 text-xs font-medium text-white ring-1 ring-white/30 mb-2">
+                      {formData.category}
+                    </div>
+                    <h4 className="text-xl lg:text-3xl font-bold leading-tight shadow-black/10 drop-shadow-sm line-clamp-2">
+                      {formData.title}
+                    </h4>
+                  </div>
+                </div>
+
+                {/* Thumbnails Grid */}
+                {formData.imagePreviews.length > 1 && (
+                  <div className="grid grid-cols-4 gap-3">
+                    {formData.imagePreviews.slice(1, 5).map((img, idx) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-square rounded-lg overflow-hidden border border-border/50 bg-secondary/20 group"
+                      >
+                        <img
+                          src={img}
+                          alt={`Preview ${idx + 2}`}
+                          className="h-full w-full object-cover transition-colors hover:opacity-90"
+                        />
+                        {/* Show +N overlay on the last item if there are more than 5 images total (1 main + 4 thumbs) */}
+                        {idx === 3 && formData.imagePreviews && formData.imagePreviews.length > 5 && (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-sm backdrop-blur-xs">
+                            +{formData.imagePreviews.length - 5}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-secondary/10 rounded-2xl p-8 text-center border border-dashed border-border/60">
+                <div className="mx-auto h-12 w-12 text-muted-foreground/50 mb-3">
+                  <Info className="h-full w-full" />
+                </div>
+                <h4 className="text-xl font-bold text-foreground mb-1">{formData.title}</h4>
+                <span className="inline-block rounded-full bg-secondary px-3 py-1 text-sm font-medium text-muted-foreground">
+                  {formData.category}
+                </span>
+                <p className="text-sm text-muted-foreground mt-4">Belum ada gambar yang diunggah.</p>
+              </div>
+            )}
+
+            {/* Description */}
+            <div className="space-y-3 pt-4 border-t border-border/40">
+              <h5 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Deskripsi Event</h5>
+              <div
+                className="prose prose-slate prose-sm max-w-none text-foreground/90 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: formData.description || "<p class='text-muted-foreground italic'>Tidak ada deskripsi.</p>" }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Schedule & Location */}
+        <div className="rounded-xl border border-border/60 bg-card p-6 lg:p-8 shadow-sm transition-all hover:shadow-md">
+          <SectionHeader icon={Calendar} title="Jadwal & Lokasi" />
+
+          <div className="grid grid-cols-1 gap-y-8 gap-x-12 md:grid-cols-2">
+            {/* Registration Schedule */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-primary font-semibold">
+                <Clock className="h-4.5 w-4.5" />
+                <span>Periode Pendaftaran</span>
+              </div>
+              <div className="space-y-3 pl-6 border-l-2 border-primary/20">
+                <div className="relative">
+                  <div className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Dibuka</p>
+                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.startRegistrationDateTime)}</p>
+                </div>
+                <div className="relative">
+                  <div className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-background bg-red-500" />
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Ditutup</p>
+                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.endRegistrationDateTime)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Event Schedule */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-primary font-semibold">
+                <Calendar className="h-4.5 w-4.5" />
+                <span>Waktu Pelaksanaan</span>
+              </div>
+              <div className="space-y-3 pl-6 border-l-2 border-primary/20">
+                <div className="relative">
+                  <div className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-background bg-primary" />
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Mulai</p>
+                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.startEventDateTime)}</p>
+                </div>
+                <div className="relative">
+                  <div className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-background bg-primary/40" />
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selesai</p>
+                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.endEventDateTime)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Location (Full Width) */}
+            <div className="md:col-span-2 pt-4 border-t border-border/50 mt-2">
+              <div className="flex items-center gap-2 text-foreground font-semibold mb-3">
+                {!formData.isOnline ? <MapPin className="h-4.5 w-4.5 text-primary" /> : <Video className="h-4.5 w-4.5 text-primary" />}
+                <span>Lokasi - {!formData.isOnline ? "Offline" : "Online"}</span>
+              </div>
+
+              <div className="bg-secondary/10 rounded-xl p-5 border border-border/40">
+                {!formData.isOnline ? (
+                  <div className="flex flex-col gap-1">
+                    <p className="font-semibold text-foreground text-lg">
+                      {formData.address.rawAddress || "Alamat belum diatur"}
+                    </p>
+                    <p className="text-muted-foreground">
+                      {[formData.address.city, formData.address.province, formData.address.postalCode].filter(Boolean).join(", ")}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Meeting Link</p>
+                      <a
+                        href={formData.meetingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:underline truncate block max-w-md"
+                      >
+                        {formData.meetingUrl}
+                      </a>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={formData.meetingUrl} target="_blank" rel="noopener noreferrer">Buka Link</a>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Rundown */}
+        <div className="rounded-xl border border-border/60 bg-card p-6 lg:p-8 shadow-sm transition-all hover:shadow-md">
+          <SectionHeader icon={Clock} title="Susunan Acara" />
+
+          {formData.rundown.length > 0 ? (
+            <div className="relative pl-6 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border/50">
+              {formData.rundown.map((item, index) => (
+                <div key={index} className="relative group">
+                  {/* Timeline Dot */}
+                  <div className="absolute -left-[30px] top-1 h-6 w-6 rounded-full border-[3px] border-card bg-secondary text-[10px] font-bold flex items-center justify-center text-muted-foreground group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors z-10 shadow-sm">
+                    {index + 1}
+                  </div>
+
+                  <div className="rounded-xl bg-secondary/10 hover:bg-secondary/20 p-4 border border-transparent hover:border-border/60 transition-all">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                      <span className="inline-flex items-center rounded-md bg-background border border-border px-2.5 py-0.5 text-xs font-mono font-medium text-foreground shadow-xs">
+                        {item.startTime} - {item.endTime}
+                      </span>
+                      {item.location && (
+                        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-primary/70" /> {item.location}
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-semibold text-foreground">{item.title}</p>
+                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-muted/20 rounded-2xl border border-dashed border-border">
+              <p className="text-muted-foreground">Belum ada rundown acara yang ditambahkan.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Tickets & Capacity */}
+        <div className="rounded-xl border border-border/60 bg-card p-6 lg:p-8 shadow-sm transition-all hover:shadow-md">
+          <div className="flex items-center justify-between mb-6">
+            <SectionHeader icon={TicketIcon} title="Tiket & Kapasitas" />
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider",
+                formData.isPaid
+                  ? "bg-blue-50 text-blue-700 ring-1 ring-blue-700/10"
+                  : "bg-green-50 text-green-700 ring-1 ring-green-700/10",
+              )}
+            >
+              {formData.isPaid ? "Event Berbayar" : "Event Gratis"}
             </span>
           </div>
 
-          {formData.tickets.map((ticket, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between rounded-md border border-slate-200 p-3"
-            >
-              <div className="flex items-center gap-3">
-                <TicketIcon className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="font-medium text-accent">{ticket.name}</p>
+          <div className="mb-8 p-4 bg-primary/5 rounded-xl border border-primary/10 flex items-center gap-3 text-primary-dark">
+            <div className="p-2 bg-white rounded-full shadow-xs">
+              <Users className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-sm">
+              <span className="block text-xs font-bold uppercase tracking-wider text-primary/70 mb-0.5">
+                {formData.isPaid ? "Total Kapasitas (Akumulasi)" : "Kapasitas Maksimal"}
+              </span>
+              <span className="font-bold text-lg text-foreground">
+                {formData.isPaid ? (
+                  formData.tickets.reduce((sum, t) => sum + Number(t.quota || 0), 0)
+                ) : (
+                  formData.maxCapacity > 0 ? formData.maxCapacity : "Tidak Terbatas"
+                )}
+                <span className="text-sm font-normal text-muted-foreground ml-1">Peserta</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {formData.tickets.map((ticket, index) => (
+              <div
+                key={index}
+                className="group relative flex flex-col justify-between rounded-2xl border border-border/60 bg-background p-5 shadow-xs transition-all hover:shadow-md hover:border-primary/20"
+              >
+                <div className="mb-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <p className="font-bold text-lg text-foreground line-clamp-1 pr-2" title={ticket.name}>{ticket.name}</p>
+                    <TicketIcon className="h-5 w-5 text-primary/20 group-hover:text-primary transition-colors" />
+                  </div>
                   {ticket.description && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                       {ticket.description}
                     </p>
                   )}
                 </div>
+
+                <div className="mt-auto pt-4 border-t border-border/40 flex items-end justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase">Harga</p>
+                    <p className="font-bold text-primary text-xl">
+                      {Number(ticket.price) === 0 ? "Gratis" : formatCurrency(Number(ticket.price || 0))}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground font-medium uppercase">Kuota</p>
+                    <p className="font-semibold text-foreground">
+                      {ticket.quota}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="font-semibold text-accent">
-                  {formatCurrency(Number(ticket.price || 0))}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Kuota: {ticket.quota}
-                </p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-center pt-4">
+      <div className="flex justify-center pt-8 pb-4">
         <Button
-          size="lg"
+          size="xl"
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="min-w-50"
+          className="w-full sm:w-auto min-w-[240px] shadow-lg shadow-primary/20 text-base"
         >
           {isSubmitting ? "Memproses..." : "Publikasikan Event"}
         </Button>
