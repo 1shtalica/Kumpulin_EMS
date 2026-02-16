@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CreateEventFormState } from "@/types/create-event";
+import TipTapViewer from "@/components/reusable/TipTapViewer";
 
 interface EventPreviewStepProps {
   formData: CreateEventFormState;
@@ -156,10 +157,11 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
             {/* Description */}
             <div className="space-y-3 pt-4 border-t border-border/40">
               <h5 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Deskripsi Event</h5>
-              <div
-                className="prose prose-slate prose-sm max-w-none text-foreground/90 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: formData.description || "<p class='text-muted-foreground italic'>Tidak ada deskripsi.</p>" }}
-              />
+              {formData.description ? (
+                <TipTapViewer content={formData.description} />
+              ) : (
+                <p className="text-muted-foreground italic text-sm">Tidak ada deskripsi.</p>
+              )}
             </div>
           </div>
         </div>
@@ -219,10 +221,18 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
               <div className="bg-primary-light rounded-xl p-5 border border-border/40">
                 {!formData.isOnline ? (
                   <div className="flex flex-col gap-1">
-                    <p className="font-semibold text-foreground text-lg">
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
+                      Detail Lokasi
+                    </p>
+                    {formData.address.title && (
+                      <p className="font-bold text-foreground text-lg">
+                        {formData.address.title}
+                      </p>
+                    )}
+                    <p className={cn("text-base", formData.address.title ? "text-muted-foreground" : "font-semibold text-foreground text-lg")}>
                       {formData.address.rawAddress || "Alamat belum diatur"}
                     </p>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {[formData.address.city, formData.address.province, formData.address.postalCode].filter(Boolean).join(", ")}
                     </p>
                   </div>
@@ -346,7 +356,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
             {formData.tickets.map((ticket, index) => (
               <div
                 key={index}
-                className="group relative flex flex-col justify-between rounded-2xl border border-border/60 bg-background p-5 shadow-xs transition-all hover:shadow-md hover:border-primary/20"
+                className="group relative flex flex-col justify-between rounded-2xl border bg-background p-5 transition-all hover:shadow-md hover:border-primary/20"
               >
                 <div className="mb-4">
                   <div className="flex items-start justify-between mb-2">

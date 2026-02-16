@@ -127,9 +127,10 @@ export const step3Schema = z
       .optional()
       .or(z.literal("")),
     address: z.object({
-      province: z.string().optional(),
-      city: z.string().optional(),
-      rawAddress: z.string().optional(),
+      title: z.string(),
+      province: z.string(),
+      city: z.string(),
+      rawAddress: z.string(),
       postalCode: z.string().optional(),
     }),
   })

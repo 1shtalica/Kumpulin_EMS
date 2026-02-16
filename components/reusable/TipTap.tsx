@@ -49,7 +49,7 @@ export default function Tiptap({ content = "", onChange }: TiptapProps) {
     })(),
     onUpdate: ({ editor }) => {
       if (onChange) {
-        onChange(editor.getHTML());
+        onChange(JSON.stringify(editor.getJSON()));
       }
     },
     immediatelyRender: false,

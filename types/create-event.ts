@@ -34,6 +34,7 @@ export interface CreateEventFormState {
   rundown: RundownRequest[];
   isOnline: boolean;
   address: {
+    title: string;
     rawAddress: string;
     city: string;
     province: string;

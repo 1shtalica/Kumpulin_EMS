@@ -644,13 +644,23 @@ export default function EventScheduleStep() {
             </div>
 
             {/* Postal Code (Optional) */}
-            <div className="space-y-2">
-              <Label>Kode Pos (Opsional)</Label>
-              <Input
-                placeholder="12345"
-                type="text"
-                {...register("address.postalCode")}
-              />
+            <div className="flex justify-evenly gap-3">
+              <div className="space-y-2 w-full">
+                <Label>Nama Alamat</Label>
+                <Input
+                  placeholder="Contoh. Gedung A"
+                  type="text"
+                  {...register("address.title")}
+                />
+              </div>
+              <div className="space-y-2 w-full">
+                <Label>Kode Pos (Opsional)</Label>
+                <Input
+                  placeholder="12345"
+                  type="text"
+                  {...register("address.postalCode")}
+                />
+              </div>
             </div>
           </div>
         )}
