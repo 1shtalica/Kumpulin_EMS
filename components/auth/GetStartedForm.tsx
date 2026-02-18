@@ -52,7 +52,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
   const [step, setStep] = useState<1 | 2>(1);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [selectedRole, setSelectedRole] = useState<
-    "attendee" | "organizer" | null
+    "user" | "organizer" | null
   >(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -214,19 +214,19 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
             </div>
 
             <div className="grid gap-4">
-              {/* Attendee Option */}
+              {/* user Option */}
               <div
                 className={cn(
                   "relative flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:bg-muted-foreground/10",
-                  selectedRole === "attendee"
+                  selectedRole === "user"
                     ? "border-primary bg-primary/5 shadow-sm"
                     : "border-border"
                 )}
-                onClick={() => !isLoading && setSelectedRole("attendee")}
+                onClick={() => !isLoading && setSelectedRole("user")}
               >
                 <div className={cn(
                   "h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                  selectedRole === "attendee" ? "bg-primary text-primary-foreground" : "bg-gray-100 text-gray-600"
+                  selectedRole === "user" ? "bg-primary text-primary-foreground" : "bg-gray-100 text-gray-600"
                 )}>
                   <Users className="h-6 w-6" />
                 </div>
@@ -236,7 +236,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                     Jelajahi dan ikuti berbagai event menarik
                   </p>
                 </div>
-                {selectedRole === "attendee" && (
+                {selectedRole === "user" && (
                   <div className="absolute right-4 top-4 h-3 w-3 rounded-full bg-primary animate-pulse" />
                 )}
               </div>
@@ -322,7 +322,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
 
               <Button
                 onClick={() => {
-                  if (selectedRole === "attendee") {
+                  if (selectedRole === "user") {
                     handleFinalSubmit();
                   } else if (selectedRole === "organizer") {
                     organizerForm.handleSubmit(handleFinalSubmit)();
