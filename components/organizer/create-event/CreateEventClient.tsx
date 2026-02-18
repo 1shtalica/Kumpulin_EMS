@@ -24,6 +24,8 @@ import {
 import { useEffect, useState } from "react";
 import { EventService } from "@/services/event-service";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 export default function CreateEventClient() {
   const router = useRouter();
@@ -71,6 +73,7 @@ export default function CreateEventClient() {
           "title",
           "category",
           "description",
+          "bannerImage",
           "images",
         ] as const);
         break;
@@ -147,19 +150,23 @@ export default function CreateEventClient() {
     }
   };
 
-  // Helper to create slug
-  const createSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-  };
-
   const onSubmit: SubmitHandler<CreateEventSchema> = async (data) => {
-    console.log("Submitting Event Payload:", data);
+    setIsSubmitting(true);
+    const toastId = toast.loading("Sedang Membuat Event...");
+    try {
     await EventService.CreateEvent(data as CreateEventFormState);
-    // 🌟 TODO: Connect to backend API
-
+    toast.success("Event berhasil dibuat", { id: toastId });
+    router.push("/organizer/my-event");
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Gagal membuat event.";
+      
+      toast.error(errorMessage, { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {

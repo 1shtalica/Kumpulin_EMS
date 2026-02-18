@@ -59,6 +59,10 @@ export const EventService = {
         formData.append("meetingUrl", data.meetingUrl);
       }
 
+      // Banner image selalu di index 0, diikuti poster-poster
+      if (data.bannerImage) {
+        formData.append("images", data.bannerImage);
+      }
       if (data.images && data.images.length > 0) {
         data.images.forEach((file) => {
           formData.append("images", file);

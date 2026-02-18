@@ -69,8 +69,6 @@ export default function LoginForm() {
     } else {
       targetPath = "/get-started";
     }
-
-    // Force a full reload to ensure cookies are sent correctly
     window.location.href = targetPath;
   };
 

@@ -31,7 +31,13 @@ import { splitFullName } from "@/lib/utils";
 // ⭐ 2 skema register
 const registerSchema = z
   .object({
-    fullName: z.string().min(1, { message: "Nama lengkap harus diisi" }),
+    userName: z
+      .string()
+      .min(3, { message: "Username minimal 3 karakter" })
+      .max(20, { message: "Username maksimal 20 karakter" })
+      .regex(/^[a-zA-Z0-9]+$/, {
+        message: "Username hanya boleh huruf, angka, dan tanpa spasi",
+      }),
     email: z
       .string()
       .min(1, { message: "Email wajib diisi" })
@@ -77,7 +83,7 @@ export default function RegisterForm() {
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      fullName: "",
+      userName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -85,7 +91,7 @@ export default function RegisterForm() {
     } as Partial<RegisterFormValues>,
   });
 
-  const { firstName, lastName } = splitFullName(watch("fullName"));
+  const { firstName, lastName } = splitFullName(watch("userName"));
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
@@ -94,7 +100,7 @@ export default function RegisterForm() {
       await AuthService.registerUser({
         email: data.email,
         password: data.password,
-        username: data.fullName,
+        username: data.userName,
         first_name: firstName,
         last_name: lastName,
       });
@@ -165,24 +171,24 @@ export default function RegisterForm() {
       {/* Isi card */}
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
-          {/* 🌟 nama lengkap - email - no hp - password - confirm password */}
+          {/* 🌟 userName - email - no hp - password - confirm password */}
 
-          {/* Input Fullname  */}
+          {/* Input userName  */}
           <div className="grid gap-2">
-            <Label htmlFor="fullName">Nama Lengkap</Label>
+            <Label htmlFor="userName">Username</Label>
             <Input
               startIcon={<User className="h-4 w-4 text-muted-foreground" />}
-              id="fullName"
+              id="userName"
               type="text"
-              placeholder="Masukkan nama lengkap"
+              placeholder="Masukkan username"
               disabled={isLoading}
-              autoComplete="name"
-              {...register("fullName")}
-              className={errors.fullName ? "border-danger" : ""}
+              autoComplete="username"
+              {...register("userName")}
+              className={errors.userName ? "border-danger" : ""}
             />
-            {errors.fullName && (
+            {errors.userName && (
               <p className="text-xs sm:text-sm text-danger font-medium">
-                {errors.fullName.message}
+                {errors.userName.message}
               </p>
             )}
           </div>
@@ -193,7 +199,7 @@ export default function RegisterForm() {
               startIcon={<Mail className="h-4 w-4 text-muted-foreground" />}
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder="nama@example.com"
               disabled={isLoading}
               autoComplete="email"
               {...register("email")}

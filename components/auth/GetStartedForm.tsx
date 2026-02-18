@@ -5,7 +5,14 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Users, Briefcase, Loader2, ArrowLeft, Phone, Building2 } from "lucide-react";
+import {
+  Users,
+  Briefcase,
+  Loader2,
+  ArrowLeft,
+  Phone,
+  Building2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 
@@ -28,9 +35,13 @@ import { generateSlug } from "@/lib/utils";
 const phoneSchema = z.object({
   phoneNumber: z
     .string()
+    .regex(/^8/, {
+      message: "Nomor harus diawali angka 8",
+    })
     .min(10, { message: "Nomor HP minimal 10 digit" })
-    .regex(/^(\+62|62|0)[0-9]{9,12}$/, {
-      message: "Format nomor HP tidak valid (contoh: 08xxxxxxxxxx)",
+    .max(13, { message: "Nomor HP maksimal 13 digit" })
+    .regex(/^[0-9]+$/, {
+      message: "Hanya boleh angka",
     }),
 });
 
@@ -51,10 +62,11 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [selectedRole, setSelectedRole] = useState<
-    "user" | "organizer" | null
-  >(null);
+  const [selectedRole, setSelectedRole] = useState<"user" | "organizer" | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
+  const [displayPhone, setDisplayPhone] = useState("");
 
   const phoneForm = useForm<PhoneFormValues>({
     resolver: zodResolver(phoneSchema),
@@ -71,7 +83,8 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     const isValid = await phoneForm.trigger();
     if (isValid) {
       const phone = phoneForm.getValues("phoneNumber");
-      setPhoneNumber(phone);
+      const formattedPhone = `+62${phone}`;
+      setPhoneNumber(formattedPhone);
       setStep(2);
     }
   };
@@ -86,7 +99,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     setIsLoading(true);
     const isOrganizer = selectedRole === "organizer";
     const toastId = toast.loading(
-      isOrganizer ? "Membuat profil organizer..." : "Melengkapi profil..."
+      isOrganizer ? "Membuat profil organizer..." : "Melengkapi profil...",
     );
 
     try {
@@ -110,18 +123,18 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
 
       // 4. Success & Redirect
       toast.success(
-        isOrganizer ? "Profil organizer berhasil dibuat!" : "Profil berhasil dilengkapi!",
-        { id: toastId }
+        isOrganizer
+          ? "Profil organizer berhasil dibuat!"
+          : "Profil berhasil dilengkapi!",
+        { id: toastId },
       );
       router.push(isOrganizer ? "/organizer/dashboard" : "/user/home");
-
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
-      const errorMessage = axiosError.response?.data?.message || "Terjadi kesalahan saat menyimpan data";
-      toast.error(
-        errorMessage,
-        { id: toastId }
-      );
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Terjadi kesalahan saat menyimpan data";
+      toast.error(errorMessage, { id: toastId });
     } finally {
       setIsLoading(false);
     }
@@ -147,13 +160,13 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
           <div
             className={cn(
               "h-2 w-16 rounded-full transition-colors duration-300",
-              step === 1 ? "bg-primary" : "bg-primary/20"
+              step === 1 ? "bg-primary" : "bg-primary/20",
             )}
           />
           <div
             className={cn(
               "h-2 w-16 rounded-full transition-colors duration-300",
-              step === 2 ? "bg-primary" : "bg-slate-200 dark:bg-slate-800"
+              step === 2 ? "bg-primary" : "bg-slate-200 dark:bg-slate-800",
             )}
           />
         </div>
@@ -164,7 +177,9 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         {step === 1 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-1 text-center">
-              <h2 className="text-xl font-semibold text-foreground">Lengkapi Nomor Telepon</h2>
+              <h2 className="text-xl font-semibold text-foreground">
+                Lengkapi Nomor Telepon
+              </h2>
               <p className="text-sm text-gray-600">
                 Kami memerlukan nomor telepon Anda untuk verifikasi
               </p>
@@ -173,19 +188,44 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="phoneNumber">Nomor WhatsApp</Label>
-                <Input
-                  startIcon={<Phone className="h-4 w-4 text-gray-500" />}
-                  id="phoneNumber"
-                  type="tel"
-                  placeholder="08xxxxxxxxxx"
-                  autoComplete="tel"
-                  {...phoneForm.register("phoneNumber")}
-                  className={
-                    phoneForm.formState.errors.phoneNumber
-                      ? "border-danger"
-                      : ""
-                  }
-                />
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                    <Phone className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700">
+                      +62
+                    </span>
+                    <span className="text-gray-300">|</span>
+                  </div>
+
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="8xxxxxxxxxx"
+                    autoComplete="tel"
+                    {...phoneForm.register("phoneNumber")}
+                    className={cn(
+                      "pl-20",
+                      phoneForm.formState.errors.phoneNumber && "border-danger",
+                    )}
+                    onChange={(e) => {
+                      let value = e.target.value.replace(/\D/g, ""); // Hapus non-digit
+
+                      // Jika user ketik 0 di awal, hapus semua 0 di depan
+                      if (value.startsWith("0")) {
+                        value = value.replace(/^0+/, "");
+                      }
+
+                      // Maksimal 13 digit
+                      if (value.length > 13) {
+                        value = value.slice(0, 13);
+                      }
+
+                      phoneForm.setValue("phoneNumber", value, {
+                        shouldValidate: true,
+                      });
+                    }}
+                  />
+                </div>
                 {phoneForm.formState.errors.phoneNumber && (
                   <p className="text-xs text-danger font-medium">
                     {phoneForm.formState.errors.phoneNumber.message}
@@ -207,7 +247,9 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         {step === 2 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-1 text-center">
-              <h2 className="text-xl font-semibold text-foreground">Pilih Peran Anda</h2>
+              <h2 className="text-xl font-semibold text-foreground">
+                Pilih Peran Anda
+              </h2>
               <p className="text-sm text-gray-600">
                 Bagaimana Anda ingin menggunakan kumpul.in?
               </p>
@@ -220,18 +262,24 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   "relative flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 hover:bg-muted-foreground/10",
                   selectedRole === "user"
                     ? "border-primary bg-primary/5 shadow-sm"
-                    : "border-border"
+                    : "border-border",
                 )}
                 onClick={() => !isLoading && setSelectedRole("user")}
               >
-                <div className={cn(
-                  "h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                  selectedRole === "user" ? "bg-primary text-primary-foreground" : "bg-gray-100 text-gray-600"
-                )}>
+                <div
+                  className={cn(
+                    "h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                    selectedRole === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-gray-100 text-gray-600",
+                  )}
+                >
                   <Users className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">Saya Pengguna</h3>
+                  <h3 className="font-semibold text-foreground">
+                    Saya Pengguna
+                  </h3>
                   <p className="text-sm text-gray-600">
                     Jelajahi dan ikuti berbagai event menarik
                   </p>
@@ -247,7 +295,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   "relative flex flex-col gap-4 p-4 rounded-2xl border-2 transition-all duration-200",
                   selectedRole === "organizer"
                     ? "border-secondary bg-secondary/5 shadow-sm"
-                    : "border-border cursor-pointer hover:bg-muted-foreground/10"
+                    : "border-border cursor-pointer hover:bg-muted-foreground/10",
                 )}
                 onClick={() =>
                   !isLoading &&
@@ -256,11 +304,18 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                 }
               >
                 <div className="flex items-center gap-4">
-                  <div className={cn(
-                    "h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
-                    selectedRole === "organizer" ? "bg-secondary text-secondary-foreground" : "bg-gray-100 text-gray-600"
-                  )}>
-                    <Briefcase className="h-6 w-6" color={selectedRole === "organizer" ? "white" : "black"} />
+                  <div
+                    className={cn(
+                      "h-12 w-12 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                      selectedRole === "organizer"
+                        ? "bg-secondary text-secondary-foreground"
+                        : "bg-gray-100 text-gray-600",
+                    )}
+                  >
+                    <Briefcase
+                      className="h-6 w-6"
+                      color={selectedRole === "organizer" ? "white" : "black"}
+                    />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-foreground">
@@ -284,7 +339,9 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                     <div className="space-y-2">
                       <Label htmlFor="organizerName">Nama Organizer</Label>
                       <Input
-                        startIcon={<Building2 className="h-4 w-4 text-gray-500" />}
+                        startIcon={
+                          <Building2 className="h-4 w-4 text-gray-500" />
+                        }
                         id="organizerName"
                         placeholder="Nama organisasi atau komunitas"
                         autoComplete="organization"
