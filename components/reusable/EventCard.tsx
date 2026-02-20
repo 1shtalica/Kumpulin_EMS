@@ -19,7 +19,7 @@ interface EventCardProps {
   isHot?: boolean;
   isOnline?: boolean;
   isRtPintar?: boolean;
-  quota?: number;
+  ticketSold?: number;
   maxQuota?: number;
   variant?: "vertical" | "horizontal";
 }
@@ -37,7 +37,7 @@ export default function EventCard({
   isHot = false,
   isOnline = false,
   isRtPintar = false,
-  quota = 0,
+  ticketSold = 0,
   maxQuota = 100,
   variant = "vertical",
 }: EventCardProps) {
@@ -47,8 +47,11 @@ export default function EventCard({
   const month = !isNaN(dateObj.getDate())
     ? dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()
     : date.split(" ")[1]?.substring(0, 3).toUpperCase();
+  const year = !isNaN(dateObj.getFullYear())
+    ? dateObj.getFullYear()
+    : date.split(" ")[2] || new Date().getFullYear();
 
-  const isFull = quota >= maxQuota;
+  const isFull = ticketSold >= maxQuota;
 
   return (
     <Link href={`/events/${slug}`} className="group block h-full w-full">
@@ -96,9 +99,10 @@ export default function EventCard({
           <div className="flex gap-4 items-start">
 
             {/* Date Box */}
-            <div className="flex flex-col items-center justify-center w-14 h-14 bg-indigo-50/80 text-indigo-600 rounded-2xl shrink-0 border border-indigo-100/50">
+            <div className="flex flex-col items-center justify-center w-14 py-2 min-h-[68px] bg-indigo-50/80 text-indigo-600 rounded-2xl shrink-0 border border-indigo-100/50">
               <span className="text-xl font-bold leading-none tracking-tight">{day}</span>
-              <span className="text-[10px] font-bold uppercase mt-0.5">{month}</span>
+              <span className="text-[9px] font-bold uppercase mt-1 leading-none">{month}</span>
+              <span className="text-[8px] font-semibold text-indigo-400 mt-0.5 leading-none tracking-wider">{year}</span>
             </div>
 
             {/* Details */}
@@ -114,6 +118,9 @@ export default function EventCard({
               <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
                 <MapPin size={12} className="shrink-0" />
                 <span className="line-clamp-1">{location}</span>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-1">
+                Oleh <span className="font-medium text-slate-600">{organizer}</span>
               </div>
             </div>
           </div>
@@ -136,7 +143,7 @@ export default function EventCard({
             {/* Quota */}
             <div className="flex items-center gap-1.5 text-slate-400 text-xs font-medium">
               <Users size={14} />
-              <span>{quota}</span>
+              <span>{ticketSold}/{maxQuota}</span>
             </div>
           </div>
 

@@ -1,17 +1,16 @@
 import axiosClient from "@/lib/axios-client";
 import { CreateEventFormState } from "@/types/create-event";
-import type { Event, EventsResponse, EventResponse, GetEventsParams } from "@/types/event";
+import type { Event, EventsResponse, EventResponse, GetEventsParams, HomeEventCard } from "@/types/event";
 
 export const EventService = {
 
-  async getEvents(params: GetEventsParams = {}): Promise<Event[]> {
-    const { offset = 0, limit = 100 } = params;
+  async getEvents(params: GetEventsParams = {}): Promise<HomeEventCard[]> {
+    const { offset = 0, limit = 100, type = "" } = params;
 
     try {
-      const response = await axiosClient.get<EventsResponse>("/events", {
-        params: { offset, limit },
-      });
-      return response.data.data;
+      const json = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events?offset=${offset}&limit=${limit}&type=${type}`);
+      const data = await json.json();
+      return data.data;
     } catch (error) {
       console.error("Failed to fetch events:", error);
       throw error;
@@ -28,7 +27,7 @@ export const EventService = {
     }
   },
 
-  async getEventBySlug(slug: string): Promise<Event | null> {
+  async getEventBySlug(slug: string): Promise<HomeEventCard | null> {
     try {
       const events = await this.getEvents({ limit: 1000 });
       return events.find((e) => e.slug === slug) || null;
@@ -96,6 +95,17 @@ export const EventService = {
       return response.data;
     } catch (error) {
       console.error("Failed to create event:", error);
+      throw error;
+    }
+  },
+
+  async getRandomEvents(): Promise<HomeEventCard[]> {
+    try {
+      const json = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/random`);
+      const data = await json.json();
+      return data.data;
+    } catch (error) {
+      console.error("Failed to fetch random events:", error);
       throw error;
     }
   },

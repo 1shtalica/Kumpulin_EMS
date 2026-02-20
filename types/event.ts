@@ -68,10 +68,26 @@ export interface EventResponse {
 export interface GetEventsParams {
   offset?: number;
   limit?: number;
+  type?: string;
   // Future params when backend supports:
   // q?: string;
   // category?: string;
   // location?: string;
   // price_type?: 'gratis' | 'berbayar';
   // sort?: string;
+}
+
+export interface HomeEventCard {
+  id: string;
+  title: string;
+  slug: string;
+  type: string;
+  max_capacity: number;
+  total_sold: number;
+  is_online: boolean;
+  organizer_name: string;
+  address_title: string;
+  image_url: string
+  ticket_price: number;
+  start_date: string;
 }

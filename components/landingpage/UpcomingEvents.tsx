@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventCard from "../reusable/EventCard"; // Sesuaikan path import
+import { EventService } from "@/services/event-service";
 
 // DUMMY DATA: 6 Event yang akan segera dimulai
 const UPCOMING_EVENTS = [
@@ -148,7 +149,18 @@ const UPCOMING_EVENTS = [
   },
 ];
 
-export default function UpcomingEvents() {
+export default async function UpcomingEvents() {
+  let events: Awaited<ReturnType<typeof EventService.getEvents>> = [];
+
+  try {
+    events = await EventService.getEvents();
+  } catch (error) {
+    console.error("Failed to load random events:", error);
+  }
+
+  if (!events || events.length === 0) {
+    return null;
+  }
   return (
     <section className="py-12 md:py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -181,24 +193,24 @@ export default function UpcomingEvents() {
             - Tablet (sm - lg): 2 Kolom
             - Desktop (>= lg): 3 Kolom (Agar 6 item pas jadi 2 baris)
         */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          {UPCOMING_EVENTS.map((event) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          {events.map((event) => (
             <EventCard
               key={event.id}
               title={event.title}
-              category={event.category}
-              date={event.date}
-              location={event.location}
-              price={event.price}
-              originalPrice={event.originalPrice}
-              organizer={event.organizer}
-              image={event.image}
+              category={""}
+              date={event.start_date}
+              location={event.address_title}
+              price={event.ticket_price}
+              originalPrice={event.ticket_price}
+              organizer={event.organizer_name}
+              image={event.image_url}
               slug={event.slug}
-              isHot={event.isHot}
-              isOnline={event.isOnline}
-              isRtPintar={event.isRtPintar}
-              quota={event.quota}
-              maxQuota={event.maxQuota}
+              isHot={false}
+              isOnline={event.is_online}
+              isRtPintar={event.type === "internal"}
+              ticketSold={event.total_sold}
+              maxQuota={event.max_capacity}
             />
           ))}
         </div>
