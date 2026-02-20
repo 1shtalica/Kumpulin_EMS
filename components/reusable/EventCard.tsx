@@ -1,10 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarDays, MapPin, Users, CheckCircle2 } from "lucide-react"; // Tambah icon CheckCircle2 untuk RT Pintar
+import { MapPin, Users, Heart } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { formatCurrency, cn } from "@/lib/utils";
 
 interface EventCardProps {
@@ -22,6 +21,7 @@ interface EventCardProps {
   isRtPintar?: boolean;
   quota?: number;
   maxQuota?: number;
+  variant?: "vertical" | "horizontal";
 }
 
 export default function EventCard({
@@ -39,151 +39,111 @@ export default function EventCard({
   isRtPintar = false,
   quota = 0,
   maxQuota = 100,
+  variant = "vertical",
 }: EventCardProps) {
-  // Logic Diskon
-  const hasDiscount = originalPrice && originalPrice > price;
-
-  // Generate inisial untuk avatar organizer
-  const organizerInitial = organizer.charAt(0).toUpperCase();
+  // Parsing Date for the Box UI
+  const dateObj = new Date(date);
+  const day = !isNaN(dateObj.getDate()) ? dateObj.getDate() : date.split(" ")[0];
+  const month = !isNaN(dateObj.getDate())
+    ? dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()
+    : date.split(" ")[1]?.substring(0, 3).toUpperCase();
 
   const isFull = quota >= maxQuota;
 
   return (
     <Link href={`/events/${slug}`} className="group block h-full w-full">
-      <article className="h-full w-full">
-        <Card className="h-full flex flex-col p-0 gap-0 overflow-hidden transition-all duration-300 hover:-translate-y-1 shadow-xs hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.15)] rounded-2xl bg-white border border-slate-100">
-          {/* === BAGIAN GAMBAR === */}
-          <div className="relative w-full aspect-4/3 overflow-hidden bg-slate-50">
-            <Image
-              src={image}
-              alt={title}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
+      <Card
+        className={cn(
+          "h-full flex overflow-hidden transition-all duration-300 transform hover:-translate-y-2 rounded-3xl bg-white border hover:border-primary/50 shadow-sm hover:shadow-lg",
+          variant === "horizontal" ? "flex-row h-[220px]" : "flex-col"
+        )}
+      >
+        {/* === HEADER IMAGE === */}
+        <div
+          className={cn(
+            "relative overflow-hidden bg-slate-50 shrink-0",
+            variant === "horizontal" ? "w-[260px] h-full" : "w-full aspect-video"
+          )}
+        >
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
 
-            {/* Badge Kiri Atas: HOT */}
-            {isHot && (
-              <div className="absolute top-4 left-4 z-10">
-                <Badge className="bg-linear-to-r from-red-600 to-red-800 text-white font-bold border-none px-3 rounded-full flex gap-1 items-center shadow-sm">
-                  🔥 Hot
-                </Badge>
-              </div>
+          <div className="absolute top-4 left-4 z-10">
+            {isOnline ? (
+              <Badge className="bg-yellow-400 hover:bg-yellow-500 text-white border-none rounded-full px-4 py-1 font-bold shadow-sm text-xs">
+                Online
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm text-slate-700 rounded-full px-3 py-1 shadow-sm text-xs font-semibold">
+                Offline
+              </Badge>
             )}
-
-            {/* Badge Kanan Atas: ONLINE/OFFLINE */}
-            <div className="absolute top-4 right-4 z-10">
-              {isOnline ? (
-                <Badge className="bg-linear-to-r from-blue-600 to-blue-800 text-white font-bold border-none px-3 rounded-full uppercase text-[10px] tracking-wide shadow-sm">
-                  Online
-                </Badge>
-              ) : (
-                <Badge
-                  variant="secondary"
-                  className="bg-muted text-white shadow-sm"
-                >
-                  Offline
-                </Badge>
-              )}
-            </div>
           </div>
 
-          {/* === BAGIAN KONTEN === */}
-          <CardContent className="flex flex-col gap-4 p-5">
-            {/* Row 1: Kategori, RT Pintar & Harga */}
-            <div className="flex items-start justify-between">
-              {/* Kiri: Group Badge (Kategori + RT Pintar) */}
-              <div className="flex flex-wrap items-center gap-2">
-                {/* Badge Kategori */}
-                <Badge variant="brand">{category}</Badge>
+          <button className="absolute top-4 right-4 z-10 bg-white p-2 rounded-full text-slate-400 hover:text-red-500 hover:scale-110 transition-all shadow-sm">
+            <Heart size={18} />
+          </button>
+        </div>
 
-                {/* Badge RT Pintar (Sebelah Kanan Kategori) */}
-                {isRtPintar && (
-                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-200 rounded-full px-2 flex items-center gap-1">
-                    <CheckCircle2
-                      size={12}
-                      className="fill-emerald-600 text-white"
-                    />
-                    <span className="text-[10px] font-bold">RT Pintar</span>
-                  </Badge>
-                )}
-              </div>
+        {/* === CONTENT === */}
+        <CardContent className="flex flex-col p-5 h-full relative">
 
-              {/* Kanan: Harga */}
-              <div className="text-right flex flex-col items-end">
-                {hasDiscount ? (
-                  // Layout Diskon: Harga asli DI BAWAH harga diskon
-                  <div className="flex flex-col items-end">
-                    {/* Harga Sekarang (Besar) */}
-                    <span className="font-bold text-primary text-lg leading-none">
-                      {price === 0 ? "Gratis" : formatCurrency(price)}
-                    </span>
-                    {/* Harga Coret (Kecil di bawah) */}
-                    <span className="text-[11px] text-muted line-through decoration-muted mt-1">
-                      {formatCurrency(originalPrice)}
-                    </span>
-                  </div>
-                ) : (
-                  // Harga Normal
-                  <span className="font-bold text-primary text-lg">
-                    {price === 0 ? "Gratis" : formatCurrency(price)}
-                  </span>
-                )}
-              </div>
+          <div className="flex gap-4 items-start">
+
+            {/* Date Box */}
+            <div className="flex flex-col items-center justify-center w-14 h-14 bg-indigo-50/80 text-indigo-600 rounded-2xl shrink-0 border border-indigo-100/50">
+              <span className="text-xl font-bold leading-none tracking-tight">{day}</span>
+              <span className="text-[10px] font-bold uppercase mt-0.5">{month}</span>
             </div>
 
-            {/* Judul Event */}
-            <h3 className="font-bold text-lg leading-snug text-accent line-clamp-2 group-hover:text-primary transition-colors min-h-14">
-              {title}
-            </h3>
+            {/* Details */}
+            <div className="flex flex-col gap-1 w-full">
+              <span className="text-xs font-semibold text-indigo-500 tracking-wide line-clamp-1">
+                {category}
+              </span>
 
-            {/* Info Tanggal & Lokasi */}
-            <div className="flex flex-col gap-2 text-sm text-muted mt-auto">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 shrink-0" />
-                <span>{date}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 shrink-0" />
+              <h3 className="font-bold text-base leading-snug text-slate-900 line-clamp-2" title={title}>
+                {title}
+              </h3>
+
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                <MapPin size={12} className="shrink-0" />
                 <span className="line-clamp-1">{location}</span>
               </div>
             </div>
-          </CardContent>
+          </div>
 
-          {/* Separator Garis Tipis */}
-          <Separator className="bg-slate-200" />
+          {/* Price & Quota (Footer Area) */}
+          <div className="mt-auto pt-6 flex items-end justify-between">
 
-          {/* === BAGIAN FOOTER (Organizer & Kuota) === */}
-          <CardFooter className="p-4 flex items-center justify-between text-sm ">
-            {/* Kiri: Nama Organizer */}
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-[10px] text-white font-bold ring-2 ring-white">
-                {organizerInitial}
-              </div>
-              <span
-                className="font-medium truncate max-w-28 md:max-w-36 text-accent"
-                title={organizer}
-              >
-                {organizer}
-              </span>
-            </div>
-
-            {/* Kanan: Kuota Peserta */}
-            <div
-              className={cn(
-                "flex items-center gap-1.5",
-
-                isFull ? "text-danger font-bold" : "text-muted"
+            {/* Price */}
+            <div className="flex flex-col">
+              {originalPrice && originalPrice > price && (
+                <span className="text-[10px] text-slate-400 line-through decoration-slate-300">
+                  {formatCurrency(originalPrice)}
+                </span>
               )}
-            >
-              <Users className="w-4 h-4" />
-              <span className="text-xs font-medium">
-                {isFull ? "Penuh" : `${quota}/${maxQuota}`}
+              <span className="font-bold text-slate-900 text-base">
+                {price === 0 ? "Gratis" : formatCurrency(price)}
               </span>
             </div>
-          </CardFooter>
-        </Card>
-      </article>
+
+            {/* Quota */}
+            <div className="flex items-center gap-1.5 text-slate-400 text-xs font-medium">
+              <Users size={14} />
+              <span>{quota}</span>
+            </div>
+          </div>
+
+        </CardContent>
+
+        {/* Removing duplicate Footer Component since design merges it into the main flow nicely */}
+      </Card>
     </Link>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventCard from "../reusable/EventCard";
@@ -97,25 +98,26 @@ export default function UpcomingEvents() {
         </div>
 
         {/* GRID EVENT CARD */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-          {DUMMY_EVENTS.map((event) => (
-            <EventCard
-              key={event.id}
-              title={event.title}
-              category={event.category}
-              date={event.date}
-              location={event.location}
-              price={event.price}
-              originalPrice={event.originalPrice}
-              organizer={event.organizer}
-              image={event.image}
-              slug={event.slug}
-              isHot={event.isHot}
-              isOnline={event.isOnline}
-              isRtPintar={event.isRtPintar}
-              quota={event.quota}
-              maxQuota={event.maxQuota}
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {DUMMY_EVENTS.slice(0, 4).map((event, index) => (
+            <div key={event.id} className={cn(index > 0 && "hidden md:block")}>
+              <EventCard
+                title={event.title}
+                category={event.category}
+                date={event.date}
+                location={event.location}
+                price={event.price}
+                originalPrice={event.originalPrice}
+                organizer={event.organizer}
+                image={event.image}
+                slug={event.slug}
+                isHot={event.isHot}
+                isOnline={event.isOnline}
+                isRtPintar={event.isRtPintar}
+                quota={event.quota}
+                maxQuota={event.maxQuota}
+              />
+            </div>
           ))}
         </div>
       </div>

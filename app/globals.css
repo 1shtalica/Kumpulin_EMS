@@ -49,10 +49,10 @@
   --shadow-xs: 0 1px 10px 1px hsl(0 0% 0% / 0.09);
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   /* customed shadow */
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow: 0 4px 12px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 8px 16px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.08);
+  --shadow-xl: 0 20px 40px -8px rgb(0 0 0 / 0.1);
   --shadow-glow: 0 0 20px rgba(46, 75, 211, 0.3);
   --shadow-2xl: 0 1px 10px 1px hsl(0 0% 0% / 0.45);
   --tracking-normal: 0.025em;
@@ -107,10 +107,10 @@
   --shadow-2xs: 0 1px 10px 1px hsl(0 0% 0% / 0.09);
   --shadow-xs: 0 1px 10px 1px hsl(0 0% 0% / 0.09);
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow: 0 4px 12px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 8px 16px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 40px -8px rgb(0 0 0 / 0.5);
   --shadow-glow: 0 0 20px rgba(46, 75, 211, 0.3);
   --shadow-2xl: 0 1px 10px 1px hsl(0 0% 0% / 0.45);
 }
