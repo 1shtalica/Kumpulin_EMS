@@ -66,6 +66,49 @@ export default function EventInfoStep() {
     return null;
   };
 
+  // Banner image state
+  const bannerImage = watch("bannerImage") as File | null | undefined;
+  const bannerImagePreview = watch("bannerImagePreview") as string | null | undefined;
+  const [bannerDragActive, setBannerDragActive] = useState(false);
+  const [bannerError, setBannerError] = useState("");
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBannerFile = (file: File) => {
+    setBannerError("");
+    const error = handleFileValidation(file);
+    if (error) {
+      setBannerError(error);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setValue("bannerImage", file, { shouldValidate: true });
+      setValue("bannerImagePreview", reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBannerDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBannerDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleBannerFile(file);
+  };
+
+  const handleBannerInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleBannerFile(file);
+  };
+
+  const handleRemoveBanner = () => {
+    setValue("bannerImage", null as any, { shouldValidate: true });
+    setValue("bannerImagePreview", null);
+    setBannerError("");
+    if (bannerInputRef.current) bannerInputRef.current.value = "";
+  };
+
+
   const handleAddFiles = (newFiles: FileList) => {
     setFileError("");
 
@@ -298,14 +341,96 @@ export default function EventInfoStep() {
         />
       </div>
 
-      {/* Image Upload - Multiple */}
+      {/* Banner Image Upload */}
       <div className="space-y-2">
         <Label>
-          Gambar Event <span className="text-danger">*</span>
+          Banner Event <span className="text-danger">*</span>
         </Label>
         <p className="text-xs text-muted">
-          Upload hingga {MAX_FILES} gambar. Format: PNG, JPEG • Maks 5MB per
-          file • Ukuran ideal: 1920x1080 (16:9)
+          1 gambar utama yang tampil di card event. Format: PNG, JPEG • Maks 5MB • Ideal: 16:9
+        </p>
+
+        {!bannerImage ? (
+          <div
+            className={cn(
+              "relative rounded-xl border-2 border-dashed p-6 text-center transition-colors cursor-pointer",
+              bannerDragActive
+                ? "border-primary bg-primary/5"
+                : "border-gray-300 hover:border-gray-400",
+              (bannerError || errors.bannerImage) && "border-danger",
+            )}
+            onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setBannerDragActive(true); }}
+            onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setBannerDragActive(false); }}
+            onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onDrop={handleBannerDrop}
+            onClick={() => bannerInputRef.current?.click()}
+          >
+            <input
+              ref={bannerInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/jpg"
+              onChange={handleBannerInputChange}
+              className="hidden"
+            />
+            <div className="space-y-3">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center">
+                <Upload className="h-6 w-6 text-muted" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-accent">Drag & drop banner di sini, atau</p>
+                <Button
+                  className="my-2 rounded-xl"
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); bannerInputRef.current?.click(); }}
+                >
+                  Pilih File
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video w-full">
+            <img
+              src={bannerImagePreview || ""}
+              alt="Banner Preview"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={handleRemoveBanner}
+              >
+                <X className="mr-1 h-4 w-4" />
+                Hapus Banner
+              </Button>
+            </div>
+            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+              {bannerImage?.name}
+            </div>
+          </div>
+        )}
+
+        {bannerError && <p className="text-sm text-danger">{bannerError}</p>}
+        {errors.bannerImage && (
+          <p className="text-sm text-danger">
+            {typeof errors.bannerImage.message === "string"
+              ? errors.bannerImage.message
+              : "Banner wajib diupload"}
+          </p>
+        )}
+      </div>
+
+      {/* Poster / Gallery Upload */}
+      <div className="space-y-2">
+        <Label>
+          Poster/Galeri Event <span className="text-danger">*</span>
+        </Label>
+        <p className="text-xs text-muted">
+          Upload hingga {MAX_FILES} poster. Format: PNG, JPEG • Maks 5MB per file • Ukuran ideal: 1920x1080 (16:9)
         </p>
 
         {/* Drop Zone - always visible when under limit */}
@@ -422,7 +547,7 @@ export default function EventInfoStep() {
           <p className="text-sm text-danger">
             {typeof errors.images.message === "string"
               ? errors.images.message
-              : "Gambar wajib diupload"}
+              : "Poster wajib diupload"}
           </p>
         )}
       </div>

@@ -23,6 +23,8 @@ export interface CreateEventFormState {
   title: string;
   category: string;
   description: string;
+  bannerImage: File | null;
+  bannerImagePreview: string | null;
   images: File[];
   imagePreviews: string[];
 

@@ -93,14 +93,14 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
           <SectionHeader icon={Info} title="Informasi Utama" />
 
           <div className="space-y-8">
-            {/* Image Gallery */}
-            {formData.imagePreviews && formData.imagePreviews.length > 0 ? (
+            {/* Banner Image (Main) */}
+            {formData.bannerImagePreview ? (
               <div className="space-y-3">
-                {/* Main Image */}
+                {/* Main Banner */}
                 <div className="relative group rounded-2xl overflow-hidden bg-secondary/20 aspect-video w-full border border-border/50">
                   <img
-                    src={formData.imagePreviews[0]}
-                    alt="Main Event Banner"
+                    src={formData.bannerImagePreview}
+                    alt="Banner Event"
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
 
@@ -117,27 +117,29 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                   </div>
                 </div>
 
-                {/* Thumbnails Grid */}
-                {formData.imagePreviews.length > 1 && (
-                  <div className="grid grid-cols-4 gap-3">
-                    {formData.imagePreviews.slice(1, 5).map((img, idx) => (
-                      <div
-                        key={idx}
-                        className="relative aspect-square rounded-lg overflow-hidden border border-border/50 bg-secondary/20 group"
-                      >
-                        <img
-                          src={img}
-                          alt={`Preview ${idx + 2}`}
-                          className="h-full w-full object-cover transition-colors hover:opacity-90"
-                        />
-                        {/* Show +N overlay on the last item if there are more than 5 images total (1 main + 4 thumbs) */}
-                        {idx === 3 && formData.imagePreviews && formData.imagePreviews.length > 5 && (
-                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-sm backdrop-blur-xs">
-                            +{formData.imagePreviews.length - 5}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                {/* Poster Gallery Thumbnails */}
+                {formData.imagePreviews && formData.imagePreviews.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-2">Poster/Galeri</p>
+                    <div className="grid grid-cols-4 gap-3">
+                      {formData.imagePreviews.slice(0, 4).map((img, idx) => (
+                        <div
+                          key={idx}
+                          className="relative aspect-square rounded-lg overflow-hidden border border-border/50 bg-secondary/20 group"
+                        >
+                          <img
+                            src={img}
+                            alt={`Poster ${idx + 1}`}
+                            className="h-full w-full object-cover transition-colors hover:opacity-90"
+                          />
+                          {idx === 3 && formData.imagePreviews && formData.imagePreviews.length > 4 && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-sm backdrop-blur-xs">
+                              +{formData.imagePreviews.length - 4}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

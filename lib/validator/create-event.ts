@@ -38,6 +38,17 @@ export const step2Schema = z.object({
       },
       { message: "Deskripsi event wajib diisi" }
     ),
+  bannerImage: z
+    .custom<File>((v) => v instanceof File, {
+      message: "Banner event wajib diupload",
+    })
+    .refine((file) => file.size <= MAX_FILE_SIZE, {
+      message: "Ukuran banner maksimal 5MB",
+    })
+    .refine((file) => ACCEPTED_IMAGE_FORMATS.includes(file.type), {
+      message: "Format banner harus .jpeg atau .png",
+    }),
+  bannerImagePreview: z.string().nullable().optional(),
   images: z
     .array(
       z
@@ -51,8 +62,8 @@ export const step2Schema = z.object({
           message: "Format file harus .jpeg atau .png",
         })
     )
-    .min(1, "Minimal 1 gambar wajib diupload")
-    .max(5, "Maksimal 5 gambar"),
+    .min(1, "Minimal 1 poster wajib diupload")
+    .max(5, "Maksimal 5 poster"),
   imagePreviews: z.array(z.string()).optional(),
 });
 

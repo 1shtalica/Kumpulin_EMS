@@ -23,7 +23,8 @@ interface CreateEventStore {
   updateTitle: (title: string) => void;
   updateCategory: (category: string) => void;
   updateDescription: (description: string) => void;
-  updateBanner: (files: File[], previews: string[]) => void;
+  updateBannerImage: (file: File | null, preview: string | null) => void;
+  updatePosters: (files: File[], previews: string[]) => void;
 
   // Field updates - Step 3 - DateTime versions
   updateEventDateTime: (data: {
@@ -76,6 +77,8 @@ const initialFormData: CreateEventFormState = {
   title: "",
   category: "",
   description: "",
+  bannerImage: null,
+  bannerImagePreview: "",
   images: [],
   imagePreviews: [],
 
@@ -89,6 +92,7 @@ const initialFormData: CreateEventFormState = {
 
   isOnline: false,
   address: {
+    title: "",
     rawAddress: "",
     city: "",
     province: "",
@@ -162,9 +166,15 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     }));
   },
 
-  updateBanner: (file, preview) => {
+  updateBannerImage: (file, preview) => {
     set((state) => ({
-      formData: { ...state.formData, images: file, imagePreviews: preview },
+      formData: { ...state.formData, bannerImage: file, bannerImagePreview: preview },
+    }));
+  },
+
+  updatePosters: (files, previews) => {
+    set((state) => ({
+      formData: { ...state.formData, images: files, imagePreviews: previews },
     }));
   },
 
