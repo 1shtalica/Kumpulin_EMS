@@ -18,11 +18,9 @@ export default function LandingPage() {
       <LandingNavbar />
       <main>
         <Hero />
-        <div className="px-[8.5rem] md:px-[6rem] lg:px-[8.5rem]">
-          <EventsSuggestion />
-          <PopularCategory />
-          <UpcomingEvents />
-        </div>
+        <EventsSuggestion />
+        <PopularCategory />
+        <UpcomingEvents />
         <CallToAction />
       </main>
       <LandingFooter />

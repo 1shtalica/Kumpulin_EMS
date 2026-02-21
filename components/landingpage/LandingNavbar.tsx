@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/stores/auth-store";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, Home, Compass } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -14,52 +13,23 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-
-// TODO: TEMPORARY - Remove when dashboard is ready
-// These imports are only needed until backend redirects authenticated users to dashboard
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// END TODO
 
 export default function LandingNavbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  // TODO: TEMPORARY - Remove when dashboard redirects authenticated users
-  const { user, logout } = useAuthStore();
-
-  // Hydration fix: ensures component is mounted before rendering user-specific UI
-  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    setIsMounted(true);
-    console.log("LandingNavbar mounted. User:", user);
-    console.log("LandingNavbar cookies:", document.cookie);
-
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 10);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-
   const getNavLinkClass = (path: string) => {
     const isActive = pathname === path;
-
     return cn(
       "rounded-full transition-all duration-300",
       isActive
@@ -68,59 +38,122 @@ export default function LandingNavbar() {
     );
   };
 
-  const getMobileNavLinkClass = (path: string) => {
-    const isActive = pathname === path;
-    return cn(
-      "w-full justify-start text-base font-medium transition-colors",
-      isActive
-        ? "bg-primary-light hover:bg-primary-light text-primary text-md font-bold"
-        : "hover:bg-primary-light text-accent text-md font-semibold",
-    );
-  };
+  return (
+    <nav
+      className={cn(
+        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out py-4",
+        "bg-white backdrop-blur-md border-b border-slate-200/50",
+        isScrolled ? "shadow-md" : "shadow-xs",
+      )}
+    >
+      <div className="container mx-auto px-4 md:px-8 flex flex-row items-center justify-between">
+        {/* LEFT: Burger (mobile) + Logo (desktop-only) */}
+        <div className="flex items-center gap-2">
+          {/* Burger — Mobile Only, slides dari kiri */}
+          <div className="md:hidden">
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Menu">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
 
-  // Prevent hydration mismatch by not rendering auth buttons until mounted
-  if (!isMounted) {
-    return (
-      <nav
-        className={cn(
-          "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out p-4",
-          "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
-          isScrolled ? "shadow-md" : "shadow-xs",
-        )}
-      >
-        <div className="container mx-auto flex flex-row items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-xl md:text-2xl group">
+              <SheetContent
+                side="left"
+                className="w-64 flex flex-col gap-0"
+                aria-describedby={undefined}
+              >
+                <SheetHeader className="h-16 flex flex-row items-center border-b shrink-0 p-0">
+                  <SheetTitle className="flex-1 px-4 font-bold">
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-xl group cursor-pointer focus-visible:outline-none"
+                      onClick={() => { setIsMobileMenuOpen(false); router.refresh(); }}
+                    >
+                      <span className="transition-transform group-hover:rotate-12">🎉</span>
+                      <span className="bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
+                        kumpul.in
+                      </span>
+                    </button>
+                  </SheetTitle>
+                </SheetHeader>
+
+                <div className="flex-1 flex flex-col overflow-hidden p-3 gap-3">
+                  <nav className="flex flex-col gap-2">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start h-10",
+                        pathname === "/"
+                          ? "bg-primary/10 text-primary font-bold hover:bg-primary/20"
+                          : "text-muted font-medium",
+                      )}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Link href="/">
+                        <Home className="h-5 w-5 shrink-0 mr-3" />
+                        <span>Beranda</span>
+                      </Link>
+                    </Button>
+
+                    <Button
+                      asChild
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start h-10",
+                        pathname === "/events"
+                          ? "bg-primary/10 text-primary font-bold hover:bg-primary/20"
+                          : "text-muted font-medium",
+                      )}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Link href="/events">
+                        <Compass className="h-5 w-5 shrink-0 mr-3" />
+                        <span>Jelajah</span>
+                      </Link>
+                    </Button>
+                  </nav>
+
+                  {/* Auth Buttons — Guest only (middleware will redirect logged-in users) */}
+                  <div className="mt-auto flex flex-col gap-3">
+                    <Button
+                      asChild
+                      variant="light"
+                      size="lg"
+                      className="w-full"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Link href="/login">Masuk</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="brand"
+                      size="lg"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Link href="/register">Daftar Sekarang</Link>
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* Logo — Desktop only (hidden on mobile) */}
+          <button
+            type="button"
+            onClick={() => router.refresh()}
+            className="hidden md:flex items-center gap-2 md:text-2xl group cursor-pointer focus-visible:outline-none"
+          >
             <span className="transition-transform group-hover:rotate-12">🎉</span>
             <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
               kumpul.in
             </span>
-          </Link>
-          {/* Skeleton or empty state for buttons during mismatch prevention */}
-          <div className="hidden md:flex items-center gap-2"></div>
+          </button>
         </div>
-      </nav>
-    )
-  }
 
-  return (
-    <nav
-      className={cn(
-        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out p-4",
-        "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
-        isScrolled ? "shadow-md" : "shadow-xs",
-      )}
-    >
-      <div className="container mx-auto flex flex-row items-center justify-between">
-        {/* Logo - Always Left */}
-        <Link href="/" className="flex items-center gap-2 text-xl md:text-2xl group">
-          <span className="transition-transform group-hover:rotate-12">
-            🎉
-          </span>
-          <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
-            kumpul.in
-          </span>
-        </Link>
-        {/* === BAGIAN TENGAH: MENU (Desktop) === */}
+        {/* CENTER: Desktop Nav */}
         <div className="hidden md:flex items-center gap-2">
           <Button
             asChild
@@ -141,167 +174,21 @@ export default function LandingNavbar() {
           </Button>
         </div>
 
-        {/* Burger Menu - Mobile Only (Right Side) */}
-        <div className="md:hidden">
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Menu"
-              >
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-75 sm:w-87.5">
-              <SheetHeader>
-                <SheetTitle className="flex items-center gap-2 text-xl">
-                  <span className="text-2xl">🎉</span>
-                  <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
-                    kumpul.in
-                  </span>
-                </SheetTitle>
-              </SheetHeader>
+        {/* RIGHT: Auth Buttons — Guest only (middleware will redirect logged-in users) */}
+        <div className="hidden md:flex items-center gap-4">
+          <Button variant="light" size="sm" className="rounded-xl font-bold" asChild>
+            <Link href="/login">Masuk</Link>
+          </Button>
 
-              <div className="flex flex-col gap-6 mt-8 px-4">
-                {/* Navigation Links - Text Style */}
-                <nav className="flex flex-col gap-1">
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="lg"
-                    className={getMobileNavLinkClass("/")}
-                  >
-                    <Link href="/">Beranda</Link>
-                  </Button>
-
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="lg"
-                    className={getMobileNavLinkClass("/events")}
-                  >
-                    <Link href="/events">Jelajah</Link>
-                  </Button>
-                </nav>
-
-                <Separator />
-
-                {/* Auth Buttons */}
-                {user ? (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.avatar || ""} />
-                        <AvatarFallback className="bg-primary-light text-primary">
-                          {user.username?.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <p className="text-sm font-semibold">{user.username}</p>
-                        <p className="text-xs text-muted">{user.email}</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="w-full text-red-600 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => {
-                        logout();
-                        setIsMobileMenuOpen(false);
-                      }}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Keluar
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    <Button
-                      asChild
-                      variant="light"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Link href="/login">Masuk</Link>
-                    </Button>
-
-
-                    <Button
-                      asChild
-                      variant="brand"
-                      size="lg"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Link href="/register">Daftar Sekarang</Link>
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
+          <Button
+            variant="brand"
+            size="sm"
+            asChild
+            className="hidden rounded-xl md:inline-flex font-bold"
+          >
+            <Link href="/register">Daftar</Link>
+          </Button>
         </div>
-
-        {/* === BAGIAN KANAN: AUTH === */}
-        {/* TODO: TEMPORARY - Remove entire user section when dashboard is ready */}
-        {/* When backend middleware redirects authenticated users to dashboard, */}
-        {/* this public navbar should only show Login/Register buttons */}
-        {user ? (
-          <div className="hidden md:inline-flex items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="relative h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all hover:scale-105 active:scale-95">
-                  <Avatar className="h-10 w-10 border-2 border-slate-100 shadow-sm">
-                    <AvatarImage src={user.avatar || ""} alt={user.username} className="object-cover" />
-                    <AvatarFallback className="bg-primary-light text-primary font-bold">
-                      {user.username?.substring(0, 2).toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-64 rounded-2xl border-slate-200/60 bg-white/90 backdrop-blur-xl shadow-xl shadow-primary/10 p-2"
-                align="end"
-                forceMount
-              >
-                <DropdownMenuLabel className="font-normal p-2">
-                  <div className="flex flex-col space-y-1.5">
-                    <p className="text-sm font-semibold text-slate-900 leading-none truncate">
-                      {user.username}
-                    </p>
-                    <p className="text-xs leading-none text-slate-500 truncate font-medium">
-                      {user.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-slate-100 my-1" />
-                <DropdownMenuItem
-                  onClick={() => logout()}
-                  className="rounded-xl p-2.5 text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer font-medium transition-colors"
-                >
-                  <LogOut className="mr-2.5 h-4 w-4" />
-                  <span>Keluar</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        ) : (
-          /* END TODO - Keep Login/Register buttons as they're for public access */
-          <div className="hidden md:flex items-center gap-4">
-            <Button variant="light" size="sm" className="rounded-xl font-bold" asChild>
-              <Link href="/login">Masuk</Link>
-            </Button>
-
-            <Button
-              variant="brand"
-              size="sm"
-              asChild
-              className="hidden rounded-xl md:inline-flex font-bold"
-            >
-              <Link href="/register">Daftar</Link>
-            </Button>
-          </div>
-        )}
       </div>
     </nav>
   );

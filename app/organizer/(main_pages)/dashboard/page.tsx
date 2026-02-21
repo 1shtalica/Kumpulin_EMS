@@ -4,11 +4,7 @@ import { UserCard } from "@/components/common/UserCard";
 export default function Dashboard() {
   return (
     <div className="p-8 space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Organizer Dashboard</h1>
-      </div>
 
-      {/* User Profile Card - Client Component */}
       <UserCard />
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

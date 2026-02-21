@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
+import { Skeleton } from "@/components/ui/skeleton";
 import { LogOut } from "lucide-react";
 import {
   DropdownMenu,
@@ -18,7 +20,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function HeaderSection() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { user, logout } = useAuthStore();
+  const { user, logout, isLoading } = useAuthStore();
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,19 +47,25 @@ export default function HeaderSection() {
       <div className="container mx-auto flex flex-row items-center justify-between">
         {/* === BAGIAN KIRI: LOGO === */}
         <div className="flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 text-2xl group">
+          <button
+            type="button"
+            onClick={() => router.refresh()}
+            className="flex items-center gap-2 text-2xl group cursor-pointer focus-visible:outline-none"
+          >
             <span className="text-3xl transition-transform group-hover:rotate-12">
               🎉
             </span>
             <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
               kumpul.in
             </span>
-          </Link>
+          </button>
         </div>
 
         {/* === BAGIAN KANAN: AUTH === */}
         <div className="flex items-center gap-4">
-          {user ? (
+          {isLoading ? (
+            <Skeleton className="h-10 w-10 rounded-full" />
+          ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="relative h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all hover:scale-105 active:scale-95">
@@ -98,7 +107,7 @@ export default function HeaderSection() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <>
+            <div>
               <Button
                 variant="light"
                 size="sm"
@@ -116,7 +125,7 @@ export default function HeaderSection() {
               >
                 <Link href="/register">Daftar</Link>
               </Button>
-            </>
+            </div>
           )}
         </div>
       </div>

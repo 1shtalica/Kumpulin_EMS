@@ -58,18 +58,13 @@ export default function LoginForm() {
 
   const handlePostLoginRedirect = () => {
     const user = useAuthStore.getState().user;
-
-    let targetPath = "/get-started";
-    if (user?.phone_number) {
-      if (user.role === "organizer") {
-        targetPath = "/organizer/dashboard";
-      } else {
-        targetPath = "/";
-      }
-    } else {
-      targetPath = "/get-started";
+    if (!user?.phone_number) {
+      window.location.href = "/get-started";
+      return;
     }
-    window.location.href = targetPath;
+    window.location.href = user.role === "organizer"
+      ? "/organizer/dashboard"
+      : "/user/home";
   };
 
   const onSubmit = async (data: LoginFormValues) => {

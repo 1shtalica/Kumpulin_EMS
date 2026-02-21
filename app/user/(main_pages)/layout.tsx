@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import OrganizerHeader from "@/components/organizer/layout/OrganizerHeader";
-import OrganizerNavBar, {
+import UserHeader from "@/components/user/layout/UserHeader";
+import UserNavBar, {
   NavContent,
-} from "@/components/organizer/layout/OrganizerNavBar";
+} from "@/components/user/layout/UserNavBar";
 import {
   Sheet,
   SheetContent,
@@ -19,25 +19,19 @@ export default function MainPagesLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // State untuk desktop sidebar (collapsed/expanded)
   const [isOpen, setIsOpen] = useState(true);
-
-  // State untuk mobile Sheet (open/close)
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const router = useRouter();
 
   return (
-    // Sheet membungkus seluruh layout agar SheetTrigger di dalam Header
-    // bisa mengakses context Sheet melalui React Context.
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
       <div className="min-h-screen bg-white flex">
-        {/* ── Mobile Sheet (hanya aktif di bawah md breakpoint) ── */}
+        {/* ── Mobile Sheet ── */}
         <SheetContent
           side="left"
           className="w-64 flex flex-col gap-0"
-          aria-describedby={undefined} // ← Fix: suppress "Missing Description" warning
+          aria-describedby={undefined}
         >
-          {/* Logo kumpul.in sebagai SheetTitle (untuk aksesibilitas screen reader) */}
           <SheetHeader
             className="h-16 flex flex-row items-center border-b shrink-0 p-0"
           >
@@ -55,9 +49,7 @@ export default function MainPagesLayout({
             </SheetTitle>
           </SheetHeader>
 
-          {/* Wrapper konten nav — sama seperti desktop sidebar (p-3 gap-3) */}
           <div className="flex-1 flex flex-col overflow-hidden p-3 gap-3">
-            {/* Nav items */}
             <NavContent
               showLabel={true}
               onClose={() => setIsSheetOpen(false)}
@@ -65,8 +57,8 @@ export default function MainPagesLayout({
           </div>
         </SheetContent>
 
-        {/* ── Desktop Sidebar (hidden di mobile, tampil di md ke atas) ── */}
-        <OrganizerNavBar
+        {/* ── Desktop Sidebar ── */}
+        <UserNavBar
           isOpen={isOpen}
           toggleSidebar={() => setIsOpen(!isOpen)}
         />
@@ -80,9 +72,7 @@ export default function MainPagesLayout({
             "pt-16"
           )}
         >
-          {/* OrganizerHeader ada di dalam Sheet context, jadi SheetTrigger
-              di dalamnya bisa berkomunikasi dengan Sheet ini */}
-          <OrganizerHeader
+          <UserHeader
             className={cn(
               "transition-all duration-300 ease-in-out",
               isOpen ? "md:left-64" : "md:left-20"

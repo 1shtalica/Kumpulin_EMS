@@ -15,22 +15,15 @@ const publicRoutes = [
   "/reset-password",
 ];
 
-const authRoutes = [
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/reset-password",
-];
-
 const roleHomePages: Record<string, string> = {
-  organizer: "/dashboard/organizer",
-  user: "/",
+  organizer: "/organizer/dashboard",
+  user: "/user/home",
 };
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const protectedRoute = protectedRoutes.find((route) =>
+  const isProtectedRoute = protectedRoutes.find((route) =>
     pathname.startsWith(route.path),
   );
 
@@ -38,7 +31,7 @@ export async function middleware(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(route + "/"),
   );
 
-  if (!protectedRoute && !isPublicRoute && pathname !== "/get-started") {
+  if (!isProtectedRoute && !isPublicRoute && pathname !== "/get-started") {
     return NextResponse.next();
   }
 
@@ -46,23 +39,21 @@ export async function middleware(request: NextRequest) {
   const refreshToken = request.cookies.get("refresh_token");
 
   if (!refreshToken) {
-    if (protectedRoute || pathname === "/get-started") {
+    if (isProtectedRoute || pathname === "/get-started") {
       return redirect(request, "/login");
     }
     return NextResponse.next();
   }
 
   if (!accessToken) {
-    // No access token but has refresh token.
-    // For public (non-protected) routes, let the client-side interceptor handle token refresh.
-    if (!protectedRoute && pathname !== "/get-started") {
+    if (!isProtectedRoute && pathname !== "/get-started") {
       return NextResponse.next();
     }
-    // For protected routes, fall through to attempt auth check with refresh_token only.
   }
 
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     const cookieParts: string[] = [];
     if (accessToken) cookieParts.push(`access_token=${accessToken.value}`);
     if (refreshToken) cookieParts.push(`refresh_token=${refreshToken.value}`);
@@ -79,14 +70,17 @@ export async function middleware(request: NextRequest) {
     if (res.status === 401) {
       return NextResponse.next();
     }
+    
     if (!res.ok) {
-      if (protectedRoute || pathname === "/get-started") {
+      if (isProtectedRoute || pathname === "/get-started") {
         return redirect(request, "/login");
       }
       return NextResponse.next();
     }
 
     const user = await res.json();
+
+    const homePage = roleHomePages[user.role] || "/";
 
     const isProfileIncomplete = !user.phone_number;
 
@@ -95,26 +89,19 @@ export async function middleware(request: NextRequest) {
     }
 
     if (!isProfileIncomplete && pathname === "/get-started") {
-      const homePage = roleHomePages[user.role] || "/";
       return redirect(request, homePage);
     }
 
     if (isPublicRoute) {
-      const isAuthRoute = authRoutes.some(
-        (route) => pathname === route || pathname.startsWith(route + "/"),
-      );
+      const isEventDetailPage = pathname.startsWith("/events/") && pathname !== "/events/";
+      if (isEventDetailPage) return NextResponse.next();
 
-      if (isAuthRoute) {
-        const homePage = roleHomePages[user.role] || "/";
-        return redirect(request, homePage);
-      }
+      return redirect(request, homePage);
     }
-    if (protectedRoute) {
-      if (protectedRoute.roles.length > 0) {
-        if (!protectedRoute.roles.includes(user.role)) {
-          const homePage = roleHomePages[user.role] || "/";
-          return redirect(request, homePage);
-        }
+
+    if (isProtectedRoute) {
+      if (!isProtectedRoute.roles.includes(user.role)) {
+        return redirect(request, homePage);
       }
     }
 

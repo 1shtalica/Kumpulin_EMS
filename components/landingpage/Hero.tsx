@@ -92,7 +92,7 @@ export default function HeroSection() {
 
       <div className="absolute inset-0 z-10 bg-black/60" />
 
-      <div className="relative z-20 container mx-auto px-4 flex flex-col items-center text-center gap-6">
+      <div className="relative z-20 container mx-auto px-4 md:px-8 flex flex-col items-center text-center gap-6">
         <h1 className="font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white leading-tight">
           TEMUKAN EVENT{" "}
           <span className="bg-linear-to-r from-primary to-secondary text-transparent bg-clip-text font-extrabold">
