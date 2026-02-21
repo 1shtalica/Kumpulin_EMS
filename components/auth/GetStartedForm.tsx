@@ -38,7 +38,7 @@ const phoneSchema = z.object({
     .regex(/^8/, {
       message: "Nomor harus diawali angka 8",
     })
-    .min(10, { message: "Nomor HP minimal 10 digit" })
+    .min(9, { message: "Nomor HP minimal 9 digit" })
     .max(13, { message: "Nomor HP maksimal 13 digit" })
     .regex(/^[0-9]+$/, {
       message: "Hanya boleh angka",
@@ -66,7 +66,6 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     null,
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [displayPhone, setDisplayPhone] = useState("");
 
   const phoneForm = useForm<PhoneFormValues>({
     resolver: zodResolver(phoneSchema),

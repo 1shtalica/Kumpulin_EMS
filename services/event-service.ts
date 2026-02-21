@@ -45,20 +45,19 @@ export const EventService = {
       formData.append("type", data.type || "");
       formData.append("title", data.title);
       formData.append("category", data.category);
-      formData.append("description", data.description);
-      formData.append("isPaid", String(data.isPaid));
+      formData.append("description", JSON.stringify({ content: data.description }));
+      // formData.append("isPaid", String(data.isPaid)); 🌟
       formData.append("maxCapacity", String(data.maxCapacity));
       formData.append("isOnline", String(data.isOnline));
-
+      formData.append("status", "draft");
 
       if (data.maxPurchasePerUser !== undefined) {
-        formData.append("maxPurchasePerUser", String(data.maxPurchasePerUser));
+        formData.append("maxTicketPerUser", String(data.maxPurchasePerUser));
       }
       if (data.meetingUrl) {
         formData.append("meetingUrl", data.meetingUrl);
       }
 
-      // Banner image selalu di index 0, diikuti poster-poster
       if (data.bannerImage) {
         formData.append("images", data.bannerImage);
       }
@@ -84,8 +83,6 @@ export const EventService = {
       formData.append("tickets", JSON.stringify(data.tickets));
       formData.append("rundowns", JSON.stringify(data.rundown));
       formData.append("address", JSON.stringify(data.address));
-
-      console.log("formData", formData);
 
       const response = await axiosClient.post<EventResponse>("/events", formData, {
         headers: {

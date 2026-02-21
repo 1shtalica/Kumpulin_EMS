@@ -397,7 +397,7 @@ export default function EventInfoStep() {
               alt="Banner Preview"
               className="h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <Button
                 type="button"
                 variant="destructive"
@@ -518,7 +518,7 @@ export default function EventInfoStep() {
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute right-1 top-1 h-6 w-6 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+                    className="absolute right-1 top-1 h-6 w-6 rounded-full opacity-100 sm:opacity-0 transition-opacity sm:group-hover:opacity-100"
                     onClick={() => handleRemoveImage(index)}
                   >
                     <X className="h-3 w-3" />
