@@ -38,6 +38,7 @@ export default function CreateEventClient() {
     formData: storeFormData,
     syncFormData,
     setStep,
+    reset,
   } = useCreateEventStore();
 
   const methods = useForm<CreateEventSchema>({
@@ -154,15 +155,17 @@ export default function CreateEventClient() {
     setIsSubmitting(true);
     const toastId = toast.loading("Sedang Membuat Event...");
     try {
-    await EventService.CreateEvent(data as CreateEventFormState);
-    toast.success("Event berhasil dibuat", { id: toastId });
-    router.push("/organizer/my-event");
+      await EventService.CreateEvent(data as CreateEventFormState);
+      toast.success("Event berhasil dibuat", { id: toastId });
+      reset();
+      methods.reset();
+      router.push("/organizer/my-event");
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
         axiosError.response?.data?.message ||
         "Gagal membuat event.";
-      
+
       toast.error(errorMessage, { id: toastId });
     } finally {
       setIsSubmitting(false);
@@ -200,8 +203,8 @@ export default function CreateEventClient() {
   return (
     <div className="mx-auto min-h-screen max-w-4xl px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-accent">Buat Event Baru</h1>
-        <p className="mt-2 text-muted-foreground">
+        <h1 className="text-2xl font-bold text-accent">Buat Event Baru</h1>
+        <p className="mt-2 text-lg text-muted-foreground">
           Lengkapi informasi berikut untuk membuat event Anda
         </p>
       </div>
@@ -229,15 +232,15 @@ export default function CreateEventClient() {
         <div className="flex items-center justify-between">
           {/* Prev Button */}
           <Button
-            variant="ghost"
+            variant="outline"
             onClick={handlePrev}
             disabled={!canGoPrev}
             className={cn(
-              "rounded-lg transition-opacity",
+              "rounded-xl shadow-glow transition-opacity",
               !canGoPrev && "opacity-0 pointer-events-none",
             )}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
             Sebelumnya
           </Button>
 
@@ -246,10 +249,10 @@ export default function CreateEventClient() {
             <Button
               type="button"
               onClick={handleNext}
-              className="min-w-30 rounded-lg"
+              className="min-w-30 rounded-xl shadow-glow"
             >
               Selanjutnya
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (
             <div /> /* Spacer */

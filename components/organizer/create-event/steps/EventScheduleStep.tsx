@@ -107,7 +107,7 @@ export default function EventScheduleStep() {
           Periode Pendaftaran
         </h3>
 
-        <div className="grid gap-4 rounded-xl border border-border bg-card p-6 shadow-sm grid-cols-1">
+        <div className="grid gap-4 rounded-2xl border bg-card p-6 shadow-sm grid-cols-1">
           {/* Start Registration DateTime */}
           <div className="space-y-2">
             <Label>
@@ -180,7 +180,7 @@ export default function EventScheduleStep() {
           Waktu Pelaksanaan Event
         </h3>
 
-        <div className="grid gap-4 rounded-xl border border-border bg-card p-6 shadow-sm grid-cols-1">
+        <div className="grid gap-4 rounded-2xl border bg-card p-6 shadow-sm grid-cols-1">
           {/* Start Event DateTime */}
           <div className="space-y-2">
             <Label>
@@ -458,7 +458,7 @@ export default function EventScheduleStep() {
             type="button"
             variant={!isOnline ? "default" : "outline"}
             onClick={() => setValue("isOnline", false)}
-            className="flex-1"
+            className="flex-1 shadow-glow"
           >
             <MapPin className="mr-2 h-4 w-4" />
             Offline

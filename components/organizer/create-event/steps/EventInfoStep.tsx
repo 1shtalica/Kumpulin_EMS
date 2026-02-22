@@ -236,9 +236,9 @@ export default function EventInfoStep() {
             errors.title && "border-danger focus-visible:ring-danger",
           )}
         />
-        <div className="flex justify-between text-xs">
+        <div className="flex justify-between">
           <p className="text-danger text-xs">{errors.title?.message}</p>
-          <p className="text-muted">{title?.length || 0}/100 karakter</p>
+          <p className="text-muted text-xs">{title?.length || 0}/100 karakter</p>
         </div>
       </div>
 
