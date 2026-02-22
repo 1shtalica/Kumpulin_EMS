@@ -9,11 +9,13 @@ import EmptyState from "@/components/reusable/EmptyState";
 
 async function EventsSuggestionGrid() {
   let events: Awaited<ReturnType<typeof EventService.getRandomEvents>> = [];
+  let fetchError = false;
 
   try {
     events = await EventService.getRandomEvents();
   } catch (error) {
     console.error("Failed to load random events:", error);
+    fetchError = true;
   }
 
   if (!events || events.length === 0) {

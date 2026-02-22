@@ -30,7 +30,7 @@ export default function LandingNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isLoading, checkAuth, logout } = useAuthStore();
+  const { user, isLoading, logout } = useAuthStore();
 
   // Menu items berdasarkan role
   const menuItemsByRole = user?.role === "organizer"

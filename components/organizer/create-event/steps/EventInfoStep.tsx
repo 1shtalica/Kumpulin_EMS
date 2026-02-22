@@ -415,7 +415,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
           Banner Event <span className="text-danger">*</span>
         </Label>
         <p className="text-xs text-muted">
-          1 gambar utama yang tampil di card event. Format: PNG, JPEG • Maks 5MB • Ideal: 16:9
+          1 gambar utama yang tampil di card event. Format: PNG, JPEG • Maks 5MB • Ukuran ideal: 1920x1080 (16:9)
         </p>
 
         {!bannerImage ? (
