@@ -1,9 +1,3 @@
-// import metadata from "next/metadata";
-
-// import { redirect } from "next/navigation";
-// import { cookies } from "next/headers";
-
-
 import LandingNavbar from "@/components/landingpage/LandingNavbar";
 import Hero from "@/components/landingpage/Hero";
 import EventsSuggestion from "@/components/landingpage/EventsSuggestion";

@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "s3.temanbicara.web.id",
+        hostname: "storage.temanbicara.web.id",
         port: "",
         pathname: "/**",
       },

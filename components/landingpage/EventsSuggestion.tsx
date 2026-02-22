@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import EventCard from "../reusable/EventCard";
+import EventCard, { EventCardSkeleton } from "../reusable/EventCard";
 import { EventService } from "@/services/event-service";
 
-export default async function UpcomingEvents() {
+async function EventsSuggestionGrid() {
   let events: Awaited<ReturnType<typeof EventService.getRandomEvents>> = [];
 
   try {
@@ -18,6 +19,30 @@ export default async function UpcomingEvents() {
     return null;
   }
 
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      {events.slice(0, 4).map((event, index) => (
+        <div key={event.id} className={cn(index > 0 && "hidden md:block")}>
+          <EventCard
+            title={event.title}
+            category={event.type}
+            date={event.start_date}
+            location={event.address_title}
+            price={event.ticket_price}
+            organizer={event.organizer_name}
+            image={event.image_url}
+            slug={event.slug}
+            isOnline={event.is_online}
+            ticketSold={event.total_sold}
+            maxQuota={event.max_capacity}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function EventsSuggestion() {
   return (
     <section className="py-16 md:py-24 bg-white">
       <div className="container mx-auto px-4">
@@ -37,26 +62,20 @@ export default async function UpcomingEvents() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {events.slice(0, 4).map((event, index) => (
-            <div key={event.id} className={cn(index > 0 && "hidden md:block")}>
-              <EventCard
-                title={event.title}
-                category={event.type}
-                date={event.start_date}
-                location={event.address_title}
-                price={event.ticket_price}
-                organizer={event.organizer_name}
-                image={event.image_url}
-                slug={event.slug}
-                isOnline={event.is_online}
-                ticketSold={event.total_sold}
-                maxQuota={event.max_capacity}
-              />
-            </div>
-          ))}
-        </div>
+        <Suspense fallback={
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {[1, 2, 3, 4].map((index) => (
+              <div key={index} className={cn(index > 1 && "hidden md:block")}>
+                <EventCardSkeleton />
+              </div>
+            ))}
+          </div>
+        }>
+          <EventsSuggestionGrid />
+        </Suspense>
       </div>
     </section>
   );
 }
+
+
