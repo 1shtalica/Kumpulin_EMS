@@ -4,7 +4,13 @@ import { useState } from "react";
 import UserHeader from "@/components/user/layout/UserHeader";
 import UserNavBar, {
   NavContent,
+  menuItems,
+  accountItems,
 } from "@/components/user/layout/UserNavBar";
+import { useAuthStore } from "@/stores/auth-store";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Home, LogOut } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -22,6 +28,7 @@ export default function MainPagesLayout({
   const [isOpen, setIsOpen] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const router = useRouter();
+  const { logout } = useAuthStore();
 
   return (
     <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -49,11 +56,47 @@ export default function MainPagesLayout({
             </SheetTitle>
           </SheetHeader>
 
-          <div className="flex-1 flex flex-col overflow-hidden p-3 gap-3">
-            <NavContent
-              showLabel={true}
-              onClose={() => setIsSheetOpen(false)}
-            />
+          <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-4 gap-4">
+
+            {/* Section Menu */}
+            <div className="flex flex-col gap-2 overflow-hidden">
+              <h2 className="text-xs font-semibold text-muted px-1">Menu</h2>
+              <NavContent
+                showLabel={true}
+                onClose={() => setIsSheetOpen(false)}
+                items={menuItems}
+              />
+            </div>
+
+            {/* Section Akun */}
+            <div className="flex flex-col gap-2 overflow-hidden">
+              <h2 className="text-xs font-semibold text-muted px-1">Akun</h2>
+              <NavContent
+                showLabel={true}
+                onClose={() => setIsSheetOpen(false)}
+                items={accountItems}
+              />
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-10 whitespace-nowrap overflow-hidden text-danger hover:text-danger hover:bg-danger/10"
+                onClick={() => { setIsSheetOpen(false); logout(); }}
+              >
+                <LogOut className="h-5 w-5 shrink-0 mr-3 text-danger" />
+                <span>Keluar</span>
+              </Button>
+            </div>
+
+            <div className="flex-1" />
+          </div>
+          
+          {/* Tombol Beranda */}
+          <div className="p-4 border-t shrink-0">
+            <Button variant="brand" size="lg" className="w-full whitespace-nowrap" asChild>
+              <Link href="/" onClick={() => setIsSheetOpen(false)}>
+                <Home className="h-5 w-5 shrink-0" />
+                <span>Kembali ke Beranda</span>
+              </Link>
+            </Button>
           </div>
         </SheetContent>
 

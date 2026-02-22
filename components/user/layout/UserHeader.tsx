@@ -6,9 +6,7 @@ import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/auth-store";
-import { useRouter } from "next/navigation";
 
 interface UserHeaderProps {
   className?: string;
@@ -17,8 +15,7 @@ interface UserHeaderProps {
 export default function UserHeader({ className }: UserHeaderProps) {
   const pathname = usePathname();
   const titlepage = pathname.split("/").pop();
-  const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const initials = user?.username?.charAt(0)?.toUpperCase() ?? "?";
 
   const formattedTitle = titlepage
@@ -37,8 +34,7 @@ export default function UserHeader({ className }: UserHeaderProps) {
         className
       )}
     >
-      {/* SheetTrigger asChild — burger button membuka Sheet mobile */}
-      {/* Bekerja karena UserHeader di-render di dalam Sheet context (layout.tsx) */}
+      {/* Burger — membuka Sheet mobile */}
       <SheetTrigger asChild>
         <Button
           variant="ghost"
@@ -53,24 +49,11 @@ export default function UserHeader({ className }: UserHeaderProps) {
       {/* Judul halaman */}
       <h1 className="flex-1 text-xl font-bold">{formattedTitle}</h1>
 
-      {/* Avatar Profile  */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Avatar size="lg" className="cursor-pointer">
-            <AvatarImage src={user?.avatar ?? undefined}/>
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel><div className="flex flex-col gap-1">
-            <p className="font-semibold text-sm">{user?.username}</p>
-            <p className="text-muted-foreground text-xs">{user?.email}</p>
-            </div></DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => router.push("/user/profile")}>Profile</DropdownMenuItem>
-          <DropdownMenuItem variant="destructive" onClick={() => logout()}>Logout</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {/* Avatar — tanpa dropdown, klik ke profile */}
+      <Avatar>
+        <AvatarImage src={user?.avatar ?? undefined} />
+        <AvatarFallback>{initials}</AvatarFallback>
+      </Avatar>
     </header>
   );
 }

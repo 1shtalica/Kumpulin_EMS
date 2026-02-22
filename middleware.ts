@@ -6,18 +6,23 @@ const protectedRoutes = [
   { path: "/user", roles: ["user"] },
 ];
 
-const publicRoutes = [
-  "/",
-  "/events",
+// 🌟 Auth routes: tidak bisa diakses jika sudah login
+const authRoutes = [
   "/login",
   "/register",
   "/forgot-password",
   "/reset-password",
 ];
 
+const publicRoutes = [
+  "/",
+  "/events",
+  ...authRoutes,
+];
+
 const roleHomePages: Record<string, string> = {
   organizer: "/organizer/dashboard",
-  user: "/user/home",
+  user: "/",
 };
 
 export async function middleware(request: NextRequest) {
@@ -28,6 +33,10 @@ export async function middleware(request: NextRequest) {
   );
 
   const isPublicRoute = publicRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + "/"),
+  );
+
+  const isAuthRoute = authRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + "/"),
   );
 
@@ -92,11 +101,13 @@ export async function middleware(request: NextRequest) {
       return redirect(request, homePage);
     }
 
-    if (isPublicRoute) {
-      const isEventDetailPage = pathname.startsWith("/events/") && pathname !== "/events/";
-      if (isEventDetailPage) return NextResponse.next();
-
+    // 🌟 Jika sudah login, tidak boleh akses auth routes
+    if (isAuthRoute) {
       return redirect(request, homePage);
+    }
+
+    if (isPublicRoute) {
+      return NextResponse.next();
     }
 
     if (isProtectedRoute) {

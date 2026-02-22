@@ -3,10 +3,15 @@
 import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+
+
 
 export function UserCard() {
     const { user, logout, isLoading } = useAuthStore();
-
+    const userInitials = user
+    ? (user.first_name?.[0] ?? user.username?.[0] ?? "U").toUpperCase()
+    : "U";
     if (isLoading) {
         return (
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto w-full animate-pulse">
@@ -30,9 +35,12 @@ export function UserCard() {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto w-full">
             <div className="flex items-start gap-6">
-                <div className="h-20 w-20 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
-                    {user?.username?.substring(0, 2).toUpperCase() || "US"}
-                </div>
+                <Avatar className="h-8 w-8 ring-2 ring-primary/30 hover:ring-primary transition-all">
+                    <AvatarImage src={user.avatar ?? undefined} alt={user.username} />
+                    <AvatarFallback className="bg-primary text-white text-xs font-bold">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
                 <div className="space-y-4 flex-1">
                     <div>
                         <h2 className="text-xl font-bold">{user?.username || "Guest"}</h2>
@@ -51,7 +59,7 @@ export function UserCard() {
                         </div>
                         <div>
                             <p className="text-muted-foreground">Phone</p>
-                            <p className="font-medium">{user?.phone_number || "-"}</p>
+                            <p className="font-medium">{user?.phone_number}</p>
                         </div>
                         <div>
                             <p className="text-muted-foreground">Name</p>

@@ -199,7 +199,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   <Input
                     id="phoneNumber"
                     type="tel"
-                    placeholder="8xxxxxxxxxx"
+                    placeholder="800000000"
                     autoComplete="tel"
                     {...phoneForm.register("phoneNumber")}
                     className={cn(
