@@ -64,7 +64,7 @@ export default function LoginForm() {
     }
     window.location.href = user.role === "organizer"
       ? "/organizer/dashboard"
-      : "/user/home";
+      : "/";
   };
 
   const onSubmit = async (data: LoginFormValues) => {

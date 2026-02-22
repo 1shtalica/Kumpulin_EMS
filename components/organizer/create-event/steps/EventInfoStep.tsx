@@ -397,17 +397,15 @@ export default function EventInfoStep() {
               alt="Banner Preview"
               className="h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/40 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={handleRemoveBanner}
-              >
-                <X className="mr-1 h-4 w-4" />
-                Hapus Banner
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="absolute right-2 top-2 h-6 w-6 rounded-full"
+              onClick={handleRemoveBanner}
+            >
+              <X className="h-3 w-3" />
+            </Button>
             <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
               {bannerImage?.name}
             </div>
@@ -513,12 +511,12 @@ export default function EventInfoStep() {
                     alt={`Preview ${index + 1}`}
                     className="h-32 w-full object-cover"
                   />
-
+                  {/* 🌟 */}
                   <Button
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute right-1 top-1 h-6 w-6 rounded-full opacity-100 sm:opacity-0 transition-opacity sm:group-hover:opacity-100"
+                    className="absolute right-1 top-1 h-6 w-6 rounded-full"
                     onClick={() => handleRemoveImage(index)}
                   >
                     <X className="h-3 w-3" />

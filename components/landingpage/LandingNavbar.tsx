@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
-import { Menu, Home, Compass } from "lucide-react";
+import { Menu, Home, Compass, LogOut, User, LayoutDashboard, Calendar, ScanQrCode, Users, Ticket, Heart } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -13,12 +13,45 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuthStore } from "@/stores/auth-store";
 
 export default function LandingNavbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isLoading, checkAuth, logout } = useAuthStore();
+
+  // Menu items berdasarkan role
+  const menuItemsByRole = user?.role === "organizer"
+    ? [
+        { href: "/organizer/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/organizer/my-event", label: "Event Saya", icon: Calendar },
+        { href: "/organizer/check-in", label: "Check In", icon: ScanQrCode },
+        { href: "/organizer/communities", label: "Komunitas", icon: Users },
+      ]
+    : [
+        { href: "/user/my-ticket", label: "Tiket Saya", icon: Ticket },
+        { href: "/user/following", label: "Mengikuti", icon: Heart },
+      ];
+
+  const accountItemsByRole = user?.role === "organizer"
+    ? [{ href: "/organizer/profile", label: "Profile", icon: User }]
+    : [{ href: "/user/profile", label: "Profile", icon: User }];
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,6 +71,10 @@ export default function LandingNavbar() {
     );
   };
 
+  const userInitials = user
+    ? (user.first_name?.[0] ?? user.username?.[0] ?? "U").toUpperCase()
+    : "U";
+
   return (
     <nav
       className={cn(
@@ -46,7 +83,7 @@ export default function LandingNavbar() {
         isScrolled ? "shadow-md" : "shadow-xs",
       )}
     >
-      <div className="container mx-auto px-4 md:px-8 flex flex-row items-center justify-between">
+      <div className="container relative mx-auto px-4 md:px-8 flex flex-row items-center justify-between">
         {/* LEFT: Burger (mobile) + Logo (desktop-only) */}
         <div className="flex items-center gap-2">
           {/* Burger — Mobile Only, slides dari kiri */}
@@ -114,27 +151,6 @@ export default function LandingNavbar() {
                       </Link>
                     </Button>
                   </nav>
-
-                  {/* Auth Buttons — Guest only (middleware will redirect logged-in users) */}
-                  <div className="mt-auto flex flex-col gap-3">
-                    <Button
-                      asChild
-                      variant="light"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Link href="/login">Masuk</Link>
-                    </Button>
-                    <Button
-                      asChild
-                      variant="brand"
-                      size="lg"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <Link href="/register">Daftar Sekarang</Link>
-                    </Button>
-                  </div>
                 </div>
               </SheetContent>
             </Sheet>
@@ -154,7 +170,7 @@ export default function LandingNavbar() {
         </div>
 
         {/* CENTER: Desktop Nav */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-2">
           <Button
             asChild
             variant="ghost"
@@ -174,20 +190,83 @@ export default function LandingNavbar() {
           </Button>
         </div>
 
-        {/* RIGHT: Auth Buttons — Guest only (middleware will redirect logged-in users) */}
-        <div className="hidden md:flex items-center gap-4">
-          <Button variant="light" size="sm" className="rounded-xl font-bold" asChild>
-            <Link href="/login">Masuk</Link>
-          </Button>
+        {/* RIGHT: Auth area */}
+        <div className="flex items-center gap-3">
+          {isLoading ? (
+            // Placeholder kosong selama auth check — cegah flash tombol masuk/daftar
+            <div className="h-8 w-16" />
+          ) : user ? (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <button className="focus-visible:outline-none cursor-pointer">
+                  <Avatar className="h-8 w-8 ring-2 ring-primary/30 hover:ring-primary transition-all">
+                    <AvatarImage src={user.avatar ?? undefined} alt={user.username} />
+                    <AvatarFallback className="bg-primary text-white text-xs font-bold">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {/* Info user */}
+                <div className="px-3 py-2">
+                  <p className="text-sm font-semibold text-accent truncate">{user.username}</p>
+                  <p className="text-xs text-muted truncate">{user.email}</p>
+                </div>
+                <DropdownMenuSeparator />
 
-          <Button
-            variant="brand"
-            size="sm"
-            asChild
-            className="hidden rounded-xl md:inline-flex font-bold"
-          >
-            <Link href="/register">Daftar</Link>
-          </Button>
+                {/* Grup Menu */}
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="text-xs font-semibold text-muted px-2 py-1">Menu</DropdownMenuLabel>
+                  {menuItemsByRole.map(({ href, label, icon: Icon }) => (
+                    <DropdownMenuItem key={href} asChild>
+                      <Link href={href} className="cursor-pointer">
+                        <Icon className="mr-2 h-4 w-4" />
+                        {label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+
+                <DropdownMenuSeparator />
+
+                {/* Grup Akun */}
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="text-xs font-semibold text-muted px-2 py-1">Akun</DropdownMenuLabel>
+                  {accountItemsByRole.map(({ href, label, icon: Icon }) => (
+                    <DropdownMenuItem key={href} asChild>
+                      <Link href={href} className="cursor-pointer">
+                        <Icon className="mr-2 h-4 w-4" />
+                        {label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuItem
+                    className="text-danger focus:text-danger focus:bg-danger/10 cursor-pointer"
+                    onClick={logout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4 text-danger" />
+                    Keluar
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            /* Guest — tombol Masuk (selalu) + Daftar (desktop only) */
+            <>
+              <Button variant="light" size="sm" className="rounded-xl font-bold" asChild>
+                <Link href="/login">Masuk</Link>
+              </Button>
+              <Button
+                variant="brand"
+                size="sm"
+                asChild
+                className="hidden md:inline-flex rounded-xl font-bold"
+              >
+                <Link href="/register">Daftar</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </nav>
