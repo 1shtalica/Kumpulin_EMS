@@ -127,7 +127,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
           : "Profil berhasil dilengkapi!",
         { id: toastId },
       );
-      router.push(isOrganizer ? "/organizer/dashboard" : "/user/home");
+      router.push(isOrganizer ? "/organizer/dashboard" : "/");
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
@@ -199,7 +199,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   <Input
                     id="phoneNumber"
                     type="tel"
-                    placeholder="800000000"
+                    placeholder="8xxxxxxxx"
                     autoComplete="tel"
                     {...phoneForm.register("phoneNumber")}
                     className={cn(
