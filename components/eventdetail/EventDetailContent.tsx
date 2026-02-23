@@ -7,7 +7,7 @@ export default function EventDetailContent() {
   return (
     <div className="pt-18">
       <ImageSection event={DUMMY_EVENT_DETAIL} />
-      <div className="container mx-auto px-4 pb-20 relative z-20">
+      <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl pb-20 relative z-20">
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
           <div className="xl:col-span-8">
             <DetailSection event={DUMMY_EVENT_DETAIL} />

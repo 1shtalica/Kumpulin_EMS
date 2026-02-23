@@ -3,7 +3,7 @@ export default function Loading() {
   return (
     <>
       <main className="min-h-screen bg-white">
-        <div className="container mx-auto px-4 pb-20 pt-24">
+        <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl pb-20 pt-24">
           {/* Skeleton untuk image */}
           <div className="w-full h-96 bg-gray-200 animate-pulse rounded-2xl" />
 

@@ -39,12 +39,12 @@ export default function HeaderSection() {
   return (
     <nav
       className={cn(
-        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out p-4",
+        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out py-4",
         "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
         isScrolled ? "shadow-md" : "shadow-xs",
       )}
     >
-      <div className="container mx-auto flex flex-row items-center justify-between">
+      <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl flex flex-row items-center justify-between">
         {/* === BAGIAN KIRI: LOGO === */}
         <div className="flex items-center gap-4">
           <button

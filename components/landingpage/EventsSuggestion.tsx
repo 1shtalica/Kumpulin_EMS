@@ -20,9 +20,9 @@ async function EventsSuggestionGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
       {events.slice(0, 4).map((event, index) => (
-        <div key={event.id} className={cn(index > 0 && "hidden md:block")}>
+        <div key={event.id} className={cn(index > 0 && "hidden md:block", index === 3 && "lg:hidden xl:block")}>
           <EventCard
             title={event.title}
             category={event.type}
@@ -45,7 +45,7 @@ async function EventsSuggestionGrid() {
 export default function EventsSuggestion() {
   return (
     <section className="py-16 md:py-24 bg-white">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl">
         <div className="flex flex-col gap-2 mb-8 md:mb-12">
           <div className="flex items-center justify-between">
             <h2 className="text-xl md:text-3xl font-bold text-accent">
@@ -63,9 +63,9 @@ export default function EventsSuggestion() {
         </div>
 
         <Suspense fallback={
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {[1, 2, 3, 4].map((index) => (
-              <div key={index} className={cn(index > 1 && "hidden md:block")}>
+              <div key={index} className={cn(index > 1 && "hidden md:block", index === 4 && "lg:hidden xl:block")}>
                 <EventCardSkeleton />
               </div>
             ))}

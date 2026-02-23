@@ -26,9 +26,9 @@ export default function ImageSection({ event }: { event: Event }) {
     event.posters && event.posters.length > 0
       ? event.posters
       : [
-          event.banner_url ||
-            "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2070",
-        ];
+        event.banner_url ||
+        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2070",
+      ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,7 +82,7 @@ export default function ImageSection({ event }: { event: Event }) {
 
       {/* Main Content */}
       <div className="relative z-10 py-8 md:py-12">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-12">
               <Carousel
@@ -100,26 +100,26 @@ export default function ImageSection({ event }: { event: Event }) {
                   {images.map((src, index) => (
                     <CarouselItem key={index}>
                       {/* ⭐ Responsive height dengan max-height */}
-                      
-                        <div
-                          className="relative w-full rounded-2xl overflow-hidden ring-1 ring-black/5 
+
+                      <div
+                        className="relative w-full rounded-2xl overflow-hidden ring-1 ring-black/5 
                                       h-50 
                                       sm:h-75 
                                       md:h-100 
                                       lg:h-112.5 
                                       xl:h-125
                                       max-h-125"
-                        >
-                          <Image
-                            src={src}
-                            alt={`${event.title} - Poster ${index + 1}`}
-                            fill
-                            className="object-cover hover:scale-105 transition-transform duration-700"
-                            priority={index === 0}
-                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 85vw, 1200px"
-                          />
-                        </div>
-                      
+                      >
+                        <Image
+                          src={src}
+                          alt={`${event.title} - Poster ${index + 1}`}
+                          fill
+                          className="object-cover hover:scale-105 transition-transform duration-700"
+                          priority={index === 0}
+                          sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, (max-width: 1024px) 85vw, 1200px"
+                        />
+                      </div>
+
                     </CarouselItem>
                   ))}
                 </CarouselContent>

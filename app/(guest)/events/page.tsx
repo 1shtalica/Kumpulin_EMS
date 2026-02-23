@@ -97,7 +97,7 @@ export default async function ExplorePage(props: {
   return (
     <div className="min-h-screen bg-background">
       <LandingNavbar />
-      <main className="container mx-auto px-4 pb-20">
+      <main className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl pb-20">
         <Suspense fallback={<div className="w-full h-32" />}>
           <SearchBar />
         </Suspense>

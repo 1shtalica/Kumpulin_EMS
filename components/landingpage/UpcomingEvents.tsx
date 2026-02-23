@@ -19,7 +19,7 @@ async function UpcomingEventsGrid() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
       {events.map((event) => (
         <EventCard
           key={event.id}
@@ -46,7 +46,7 @@ async function UpcomingEventsGrid() {
 export default function UpcomingEvents() {
   return (
     <section className="py-12 md:py-16 bg-white">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl">
         {/* HEADER */}
         <div className="flex flex-col gap-3 mb-8">
           {/* Row 1: Title + Button */}
@@ -70,7 +70,7 @@ export default function UpcomingEvents() {
         </div>
 
         <Suspense fallback={
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             <EventCardSkeletonList count={8} />
           </div>
         }>

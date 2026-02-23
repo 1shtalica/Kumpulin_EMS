@@ -35,15 +35,15 @@ export default function LandingNavbar() {
   // Menu items berdasarkan role
   const menuItemsByRole = user?.role === "organizer"
     ? [
-        { href: "/organizer/dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/organizer/my-event", label: "Event Saya", icon: Calendar },
-        { href: "/organizer/check-in", label: "Check In", icon: ScanQrCode },
-        { href: "/organizer/communities", label: "Komunitas", icon: Users },
-      ]
+      { href: "/organizer/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/organizer/my-event", label: "Event Saya", icon: Calendar },
+      { href: "/organizer/check-in", label: "Check In", icon: ScanQrCode },
+      { href: "/organizer/communities", label: "Komunitas", icon: Users },
+    ]
     : [
-        { href: "/user/my-ticket", label: "Tiket Saya", icon: Ticket },
-        { href: "/user/following", label: "Mengikuti", icon: Heart },
-      ];
+      { href: "/user/my-ticket", label: "Tiket Saya", icon: Ticket },
+      { href: "/user/following", label: "Mengikuti", icon: Heart },
+    ];
 
   const accountItemsByRole = user?.role === "organizer"
     ? [{ href: "/organizer/profile", label: "Profile", icon: User }]
@@ -64,10 +64,10 @@ export default function LandingNavbar() {
   const getNavLinkClass = (path: string) => {
     const isActive = pathname === path;
     return cn(
-      "rounded-full transition-all duration-300",
+      "rounded-full px-5 py-2 transition-all duration-300 relative font-semibold text-sm h-9",
       isActive
-        ? "bg-none hover:bg-primary-light text-primary text-md font-bold"
-        : " hover:bg-primary-light text-accent text-md font-semibold",
+        ? "bg-primary/10 text-primary"
+        : "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
     );
   };
 
@@ -78,12 +78,14 @@ export default function LandingNavbar() {
   return (
     <nav
       className={cn(
-        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out py-4",
-        "bg-white backdrop-blur-md border-b border-slate-200/50",
-        isScrolled ? "shadow-md" : "shadow-xs",
+        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out py-3 md:py-4",
+        "border-b backdrop-blur-xl",
+        isScrolled
+          ? "bg-white/85 border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+          : "bg-white/50 border-white/40 shadow-none",
       )}
     >
-      <div className="container relative mx-auto px-4 md:px-8 flex flex-row items-center justify-between">
+      <div className="container relative mx-auto px-4 md:px-8 lg:px-12 flex flex-row items-center justify-between w-full max-w-7xl">
         {/* LEFT: Burger (mobile) + Logo (desktop-only) */}
         <div className="flex items-center gap-2">
           {/* Burger — Mobile Only, slides dari kiri */}
@@ -163,7 +165,7 @@ export default function LandingNavbar() {
             className="hidden md:flex items-center gap-2 md:text-2xl group cursor-pointer focus-visible:outline-none"
           >
             <span className="transition-transform group-hover:rotate-12">🎉</span>
-            <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
+            <span className="font-extrabold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
               kumpul.in
             </span>
           </button>
@@ -254,14 +256,14 @@ export default function LandingNavbar() {
           ) : (
             /* Guest — tombol Masuk (selalu) + Daftar (desktop only) */
             <>
-              <Button variant="light" size="sm" className="rounded-xl font-bold" asChild>
+              <Button variant="ghost" size="sm" className="rounded-full font-bold h-9 bg-white hover:bg-slate-100 border border-slate-200 shadow-sm" asChild>
                 <Link href="/login">Masuk</Link>
               </Button>
               <Button
                 variant="brand"
                 size="sm"
                 asChild
-                className="hidden md:inline-flex rounded-xl font-bold"
+                className="hidden md:inline-flex rounded-full font-bold h-9 shadow-[0_4px_14px_0_rgb(0,44,238,0.39)] hover:shadow-[0_6px_20px_rgba(0,44,238,0.23)] hover:-translate-y-0.5 transition-all"
               >
                 <Link href="/register">Daftar</Link>
               </Button>

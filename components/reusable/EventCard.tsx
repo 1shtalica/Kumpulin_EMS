@@ -1,6 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Users, Heart } from "lucide-react";
+import { MapPin, Users, Heart, ImageOff } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -42,6 +45,8 @@ export default function EventCard({
   maxQuota = 100,
   variant = "vertical",
 }: EventCardProps) {
+  const [imgError, setImgError] = useState(false);
+
   // Parsing Date for the Box UI
   const dateObj = new Date(date);
   const day = !isNaN(dateObj.getDate()) ? dateObj.getDate() : date.split(" ")[0];
@@ -69,13 +74,21 @@ export default function EventCard({
             variant === "horizontal" ? "w-[260px] h-full" : "w-full aspect-video"
           )}
         >
-          <Image
-            src={image}
-            alt={title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+          {imgError ? (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400">
+              <ImageOff size={32} className="mb-2 opacity-50" />
+              <span className="text-xs font-medium">Image not available</span>
+            </div>
+          ) : (
+            <Image
+              src={image}
+              alt={title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={() => setImgError(true)}
+            />
+          )}
 
           <div className="absolute top-4 left-4 z-10">
             {isOnline ? (
@@ -95,7 +108,7 @@ export default function EventCard({
         </div>
 
         {/* === CONTENT === */}
-        <CardContent className="flex flex-col p-5 h-full relative">
+        <CardContent className="flex flex-col p-4 sm:p-5 h-full relative">
 
           <div className="flex gap-4 items-start">
 
@@ -175,7 +188,7 @@ export function EventCardSkeleton({
         )}
       />
 
-      <CardContent className="flex flex-col p-5 h-full relative">
+      <CardContent className="flex flex-col p-4 sm:p-5 h-full relative">
         <div className="flex gap-4 items-start">
           <Skeleton className="w-14 h-[68px] rounded-2xl shrink-0" />
           <div className="flex flex-col gap-2 w-full pt-1">
