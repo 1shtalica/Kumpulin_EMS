@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -21,24 +21,32 @@ import { Check, ChevronsUpDown } from "lucide-react";
 import { useFormContext, Controller } from "react-hook-form";
 import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
 import Tiptap from "@/components/reusable/TipTap";
+import { EventService } from "@/services/event-service";
 
-const categories = [
-  "Music",
-  "Sports",
-  "Education",
-  "Technology",
-  "Business",
-  "Health",
-  "Art & Culture",
-  "Food & Drink",
-  "Community",
-];
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_FILES = 5;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 
 export default function EventInfoStep() {
+  const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
+  const [openCategory, setOpenCategory] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const fetched = await EventService.getEventCategories();
+        if (fetched && fetched.length > 0) {
+          setDynamicCategories(fetched);
+        }
+      } catch (error) {
+        console.error("Failed to load event categories:", error);
+      }
+    };
+    loadCategories();
+  }, []);
+
   const {
     register,
     control,
@@ -210,6 +218,16 @@ export default function EventInfoStep() {
     }
   };
 
+  const handleAddCategory = (currentValue: string) => {
+    const newCat = currentValue.trim();
+    if (!dynamicCategories.includes(newCat)) {
+      setDynamicCategories(prev => [...prev, newCat]);
+    }
+    setValue("category", newCat, { shouldValidate: true });
+    setSearchQuery("");
+    setOpenCategory(false);
+  };
+
   const currentImages = images as File[];
   const currentPreviews = imagePreviews as string[];
   const hasImages = currentImages.length > 0;
@@ -252,7 +270,7 @@ export default function EventInfoStep() {
           control={control}
           name="category"
           render={({ field }) => (
-            <Popover>
+            <Popover open={openCategory} onOpenChange={setOpenCategory}>
               <PopoverTrigger asChild>
                 <Button
                   size="lg"
@@ -265,7 +283,7 @@ export default function EventInfoStep() {
                   )}
                 >
                   {field.value
-                    ? categories.find((cat) => cat === field.value)
+                    ? (dynamicCategories.find((cat) => cat === field.value) || field.value)
                     : "Pilih kategori event"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -275,21 +293,21 @@ export default function EventInfoStep() {
                 align="start"
               >
                 <Command className="rounded-xl">
-                  <CommandInput placeholder="Cari kategori..." />
+                  <CommandInput
+                    placeholder="Cari atau tambah kategori baru..."
+                    value={searchQuery}
+                    onValueChange={setSearchQuery}
+                  />
                   <CommandList>
                     <CommandEmpty>Kategori tidak ditemukan.</CommandEmpty>
                     <CommandGroup>
-                      {categories.map((cat) => (
+                      {dynamicCategories.map((cat) => (
                         <CommandItem
                           className="rounded-lg"
                           key={cat}
                           value={cat}
                           onSelect={(currentValue) => {
-                            const original = categories.find(
-                              (c) =>
-                                c.toLowerCase() === currentValue.toLowerCase(),
-                            );
-                            field.onChange(original || currentValue);
+                            handleAddCategory(currentValue)
                           }}
                         >
                           <Check
@@ -302,6 +320,26 @@ export default function EventInfoStep() {
                         </CommandItem>
                       ))}
                     </CommandGroup>
+                    {searchQuery.trim() !== "" && !dynamicCategories.some(c => c.toLowerCase() === searchQuery.trim().toLowerCase()) && (
+                      <CommandGroup>
+                        <CommandItem
+                          className="rounded-lg"
+                          value={searchQuery}
+                          onSelect={() => {
+                            const newCat = searchQuery.trim();
+                            if (!dynamicCategories.includes(newCat)) {
+                              setDynamicCategories(prev => [...prev, newCat]);
+                            }
+                            field.onChange(newCat);
+                            setSearchQuery("");
+                            setOpenCategory(false);
+                          }}
+                        >
+                          <Check className="mr-2 h-4 w-4 opacity-0" />
+                          Tambah <b>&quot;{searchQuery}&quot;</b>
+                        </CommandItem>
+                      </CommandGroup>
+                    )}
                   </CommandList>
                 </Command>
               </PopoverContent>

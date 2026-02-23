@@ -51,8 +51,8 @@ export default function EventCard({
   const dateObj = new Date(date);
   const day = !isNaN(dateObj.getDate()) ? dateObj.getDate() : date.split(" ")[0];
   const month = !isNaN(dateObj.getDate())
-    ? dateObj.toLocaleString('default', { month: 'short' }).toUpperCase()
-    : date.split(" ")[1]?.substring(0, 3).toUpperCase();
+    ? dateObj.toLocaleString('default', { month: 'short' })
+    : date.split(" ")[1]?.substring(0, 3);
   const year = !isNaN(dateObj.getFullYear())
     ? dateObj.getFullYear()
     : date.split(" ")[2] || new Date().getFullYear();
@@ -115,7 +115,7 @@ export default function EventCard({
             {/* Date Box */}
             <div className="flex flex-col items-center justify-center w-14 py-2 min-h-[68px] bg-indigo-50/80 text-indigo-600 rounded-2xl shrink-0 border border-indigo-100/50">
               <span className="text-xl font-bold leading-none tracking-tight">{day}</span>
-              <span className="text-[9px] font-bold uppercase mt-1 leading-none">{month}</span>
+              <span className="text-[9px] font-semibold mt-1 leading-none">{month}</span>
               <span className="text-[8px] font-semibold text-indigo-400 mt-0.5 leading-none tracking-wider">{year}</span>
             </div>
 

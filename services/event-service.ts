@@ -106,4 +106,23 @@ export const EventService = {
       throw error;
     }
   },
+
+  async getEventCategories(): Promise<string[]> {
+    try {
+      const response = await axiosClient.get<{ data: string[] }>("/categories");
+      return response.data.data;
+    } catch (error) {
+      console.error("Failed to fetch event categories:", error);
+      throw error;
+    }
+  },
+
+  async createEventCategory(name: string): Promise<void> {
+    try {
+      await axiosClient.post("/categories", { name });
+    } catch (error) {
+      console.error("Failed to create event category:", error);
+      throw error;
+    }
+  }
 };

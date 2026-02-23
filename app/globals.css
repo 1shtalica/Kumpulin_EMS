@@ -210,6 +210,12 @@
   --color-info-light: oklch(93.1% 0.063 210);
 
   --color-custom-gray: var(--gray);
+
+  /* Font Weight */
+  --font-weight-normal: 300;
+  --font-weight-medium: 400;
+  --font-weight-semibold: 500;
+  --font-weight-bold: 600;
 }
 
 
