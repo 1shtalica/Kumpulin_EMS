@@ -6,7 +6,6 @@ const protectedRoutes = [
   { path: "/user", roles: ["user"] },
 ];
 
-// 🌟 Auth routes: tidak bisa diakses jika sudah login
 const authRoutes = [
   "/login",
   "/register",
@@ -43,8 +42,8 @@ function decodeJwt(token: string) {
   }
 }
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export default async function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
   const isProtectedRoute = protectedRoutes.find((route) =>
     pathname.startsWith(route.path),
@@ -69,13 +68,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const accessToken = request.cookies.get("access_token");
-  const refreshToken = request.cookies.get("refresh_token");
+  const accessToken = req.cookies.get("access_token");
+  const refreshToken = req.cookies.get("refresh_token");
 
   // If no refresh token, user is not logged in. Redirect if accessing protected/get-started.
   if (!refreshToken) {
     if (isProtectedRoute || pathname === "/get-started") {
-      return redirect(request, "/login");
+      return NextResponse.redirect(new URL("/login", req.nextUrl));
     }
     return NextResponse.next();
   }
@@ -103,20 +102,20 @@ export async function middleware(request: NextRequest) {
     if (user.hasOwnProperty('phone_number')) {
       const isProfileIncomplete = !user.phone_number;
       if (isProfileIncomplete && pathname !== "/get-started") {
-        return redirect(request, "/get-started");
+        return NextResponse.redirect(new URL("/get-started", req.nextUrl));
       }
       if (!isProfileIncomplete && pathname === "/get-started") {
-        return redirect(request, homePage);
+        return NextResponse.redirect(new URL(homePage, req.nextUrl));
       }
     }
 
     if (isAuthRoute) {
-      return redirect(request, homePage);
+      return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
     if (isProtectedRoute) {
       if (!isProtectedRoute.roles.includes(userRole)) {
-        return redirect(request, homePage);
+        return NextResponse.redirect(new URL(homePage, req.nextUrl));
       }
     }
 
@@ -152,7 +151,7 @@ export async function middleware(request: NextRequest) {
 
     if (!res.ok) {
       if (isProtectedRoute || pathname === "/get-started") {
-        return redirect(request, "/login");
+        return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
       return NextResponse.next();
     }
@@ -162,20 +161,20 @@ export async function middleware(request: NextRequest) {
     const isProfileIncomplete = !freshUser.phone_number;
 
     if (isProfileIncomplete && pathname !== "/get-started") {
-      return redirect(request, "/get-started");
+      return NextResponse.redirect(new URL("/get-started", req.nextUrl));
     }
 
     if (!isProfileIncomplete && pathname === "/get-started") {
-      return redirect(request, homePage);
+      return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
     if (isAuthRoute) {
-      return redirect(request, homePage);
+      return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
     if (isProtectedRoute) {
       if (!isProtectedRoute.roles.includes(freshUser.role)) {
-        return redirect(request, homePage);
+        return NextResponse.redirect(new URL(homePage, req.nextUrl));
       }
     }
 
@@ -186,12 +185,7 @@ export async function middleware(request: NextRequest) {
   }
 }
 
-function redirect(request: NextRequest, path: string) {
-  const url = request.nextUrl.clone();
-  url.pathname = path;
-  return NextResponse.redirect(url);
-}
-
+// Routes Proxy should not run on
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
 };
