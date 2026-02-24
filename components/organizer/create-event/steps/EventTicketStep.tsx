@@ -36,7 +36,12 @@ export default function EventTicketStep() {
   const handlePaidChange = (paid: boolean) => {
     setValue("isPaid", paid, { shouldValidate: true });
     if (!paid) {
-      setValue("tickets", []);
+      setValue("tickets", [{
+        name: "Gratis",
+        price: 0,
+        quota: 999,
+        description: "tiket gratis"
+      }]);
     } else {
       if (fields.length === 0) {
         append({ name: "", price: 0, quota: 0, description: "" });

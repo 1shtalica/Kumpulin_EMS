@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import OrganizerEventsList from "@/components/organizer/my-event/OrganizerEventsList";
 
 export default function MyEvent() {
   return (
@@ -15,9 +16,7 @@ export default function MyEvent() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center text-muted-foreground">
-        <p>You haven't created any events yet.</p>
-      </div>
+      <OrganizerEventsList />
     </div>
   );
 }

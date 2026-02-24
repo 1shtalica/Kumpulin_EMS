@@ -263,8 +263,8 @@ export default function EventScheduleStep() {
             onClick={() =>
               append({
                 title: "",
-                startTime: "",
-                endTime: "",
+                start_time: "",
+                end_time: "",
                 description: "",
                 location: "",
               })
@@ -308,8 +308,8 @@ export default function EventScheduleStep() {
               className={cn(
                 "rounded-2xl border bg-card p-6 shadow-sm",
                 (errors.rundown?.[index]?.title ||
-                  errors.rundown?.[index]?.startTime ||
-                  errors.rundown?.[index]?.endTime) &&
+                  errors.rundown?.[index]?.start_time ||
+                  errors.rundown?.[index]?.end_time) &&
                 "border-danger ring-1 ring-danger",
               )}
             >
@@ -343,7 +343,7 @@ export default function EventScheduleStep() {
                     <div className="flex-1 min-w-0">
                       <Controller
                         control={control}
-                        name={`rundown.${index}.startTime`}
+                        name={`rundown.${index}.start_time`}
                         render={({ field }) => (
                           <TimePicker
                             value={field.value}
@@ -351,7 +351,7 @@ export default function EventScheduleStep() {
                             placeholder="Mulai"
                             className={cn(
                               "h-9 text-sm w-full shadow-none",
-                              errors.rundown?.[index]?.startTime &&
+                              errors.rundown?.[index]?.start_time &&
                               "border-danger",
                             )}
                           />
@@ -362,7 +362,7 @@ export default function EventScheduleStep() {
                     <div className="flex-1 min-w-0">
                       <Controller
                         control={control}
-                        name={`rundown.${index}.endTime`}
+                        name={`rundown.${index}.end_time`}
                         render={({ field }) => (
                           <TimePicker
                             value={field.value}
@@ -370,7 +370,7 @@ export default function EventScheduleStep() {
                             placeholder="Selesai"
                             className={cn(
                               "h-9 text-sm w-full shadow-none",
-                              errors.rundown?.[index]?.endTime &&
+                              errors.rundown?.[index]?.end_time &&
                               "border-danger",
                             )}
                           />
@@ -378,11 +378,11 @@ export default function EventScheduleStep() {
                       />
                     </div>
                   </div>
-                  {(errors.rundown?.[index]?.startTime ||
-                    errors.rundown?.[index]?.endTime) && (
+                  {(errors.rundown?.[index]?.start_time ||
+                    errors.rundown?.[index]?.end_time) && (
                       <p className="text-xs text-danger">
-                        {errors.rundown?.[index]?.startTime?.message ||
-                          errors.rundown?.[index]?.endTime?.message}
+                        {errors.rundown?.[index]?.start_time?.message ||
+                          errors.rundown?.[index]?.end_time?.message}
                       </p>
                     )}
                 </div>

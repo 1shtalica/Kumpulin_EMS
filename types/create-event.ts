@@ -10,8 +10,8 @@ export interface TicketRequest {
 export interface RundownRequest {
   title: string;
   description: string;
-  startTime: string;
-  endTime: string;
+  start_time: string;
+  end_time: string;
   location?: string;
 }
 

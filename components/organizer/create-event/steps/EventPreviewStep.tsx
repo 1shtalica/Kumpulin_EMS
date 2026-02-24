@@ -277,7 +277,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                     <div className="flex items-center gap-2 text-sm font-bold text-primary bg-white border border-primary/10 px-3 py-1.5 rounded-xl w-fit">
                       <Clock size={14} className="md:w-5 md:h-5" />
                       <span>
-                        {item.startTime} - {item.endTime}
+                        {item.start_time} - {item.end_time}
                       </span>
                     </div>
                   </div>

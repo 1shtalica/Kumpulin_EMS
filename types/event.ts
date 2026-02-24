@@ -94,8 +94,8 @@ export interface BEEventResponse {
     id?: string;
     title?: string;
     description?: string;
-    start_time: string;
-    end_time: string;
+    start_time?: string;
+    end_time?: string;
     location?: string;
   }[];
   ticket_categories?: {
@@ -149,4 +149,19 @@ export interface HomeEventCard {
   image_url: string;
   ticket_price: number;
   start_date: string;
+}
+
+export interface OrganizerEventCard {
+  id: string;
+  title: string;
+  slug: string;
+  type: string;
+  max_capacity: number;
+  total_sold: number;
+  is_online: boolean;
+  organizer_name: string;
+  address_title: string;
+  image_url: string;
+  start_date: string;
+  status: string;
 }

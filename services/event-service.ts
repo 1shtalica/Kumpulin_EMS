@@ -1,6 +1,6 @@
 import axiosClient from "@/lib/axios-client";
 import { CreateEventFormState } from "@/types/create-event";
-import type { Event, EventsResponse, EventResponse, GetEventsParams, HomeEventCard } from "@/types/event";
+import type { Event, EventsResponse, EventResponse, GetEventsParams, HomeEventCard, OrganizerEventCard } from "@/types/event";
 
 export const EventService = {
 
@@ -37,8 +37,19 @@ export const EventService = {
     }
   },
 
+  async getEventByIdFull(id: string): Promise<import('@/types/event').BEEventResponse | null> {
+    try {
+      const response = await axiosClient.get<{ data: import('@/types/event').BEEventResponse }>(`/events/${id}`);
+      return response.data.data;
+    } catch (error) {
+      console.error(`Failed to fetch full event details for ${id}:`, error);
+      return null;
+    }
+  },
+
   async CreateEvent(data: CreateEventFormState): Promise<EventResponse> {
     try {
+      console.log("data -> ", data)
       const formData = new FormData();
 
       // Add scalar fields
@@ -131,6 +142,15 @@ export const EventService = {
       await axiosClient.delete(`/categories?name=${name}`);
     } catch (error) {
       console.error("Failed to delete event category:", error);
+      throw error;
+    }
+  },
+  async getOrganizerEvents(): Promise<OrganizerEventCard[]> {
+    try {
+      const response = await axiosClient.get<{ data: OrganizerEventCard[] }>("/organizer/events");
+      return response.data.data;
+    } catch (error) {
+      console.error("Failed to fetch organizer events:", error);
       throw error;
     }
   }

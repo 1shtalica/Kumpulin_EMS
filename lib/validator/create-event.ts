@@ -71,8 +71,8 @@ export const step2Schema = z.object({
 const rundownSchema = z
   .object({
     title: z.string(),
-    startTime: z.string(),
-    endTime: z.string(),
+    start_time: z.string(),
+    end_time: z.string(),
     description: z.string().optional(),
     location: z.string().optional(),
   })
@@ -85,28 +85,28 @@ const rundownSchema = z
       });
     }
 
-    if (!data.startTime || data.startTime.length === 0) {
+    if (!data.start_time || data.start_time.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Jam mulai wajib diisi",
-        path: ["startTime"],
+        path: ["start_time"],
       });
     }
 
-    if (!data.endTime || data.endTime.length === 0) {
+    if (!data.end_time || data.end_time.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Jam selesai wajib diisi",
-        path: ["endTime"],
+        path: ["end_time"],
       });
     }
 
     // Same-day time validation: end time must be after start time
-    if (data.startTime && data.endTime && data.endTime <= data.startTime) {
+    if (data.start_time && data.end_time && data.end_time <= data.start_time) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Jam selesai harus setelah jam mulai",
-        path: ["endTime"],
+        path: ["end_time"],
       });
     }
   });
