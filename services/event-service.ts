@@ -124,5 +124,14 @@ export const EventService = {
       console.error("Failed to create event category:", error);
       throw error;
     }
+  },
+
+  async deleteEventCategory(name: string): Promise<void> {
+    try {
+      await axiosClient.delete(`/categories?name=${name}`);
+    } catch (error) {
+      console.error("Failed to delete event category:", error);
+      throw error;
+    }
   }
 };

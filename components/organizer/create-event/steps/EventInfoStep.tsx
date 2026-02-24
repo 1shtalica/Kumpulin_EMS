@@ -218,14 +218,39 @@ export default function EventInfoStep() {
     }
   };
 
-  const handleAddCategory = (currentValue: string) => {
-    const newCat = currentValue.trim();
-    if (!dynamicCategories.includes(newCat)) {
-      setDynamicCategories(prev => [...prev, newCat]);
-    }
-    setValue("category", newCat, { shouldValidate: true });
+  const handleSelectCategory = (currentValue: string) => {
+    setValue("category", currentValue, { shouldValidate: true });
     setSearchQuery("");
     setOpenCategory(false);
+  };
+
+  const handleAddCategory = async (currentValue: string) => {
+    const newCat = currentValue.trim();
+    if (!dynamicCategories.includes(newCat)) {
+      try {
+        await EventService.createEventCategory(newCat);
+        setDynamicCategories(prev => [...prev, newCat]);
+        handleSelectCategory(newCat);
+      } catch (error) {
+        console.error("Failed to create event category:", error);
+      }
+    } else {
+      handleSelectCategory(newCat);
+    }
+  };
+
+  const handleDeleteCategory = async (e: React.MouseEvent, categoryName: string) => {
+    e.stopPropagation();
+    try {
+      await EventService.deleteEventCategory(categoryName);
+      setDynamicCategories(prev => prev.filter(cat => cat !== categoryName));
+      const currentCategory = control._formValues.category;
+      if (currentCategory === categoryName) {
+        setValue("category", "", { shouldValidate: true });
+      }
+    } catch (error) {
+      console.error("Failed to delete event category:", error);
+    }
   };
 
   const currentImages = images as File[];
@@ -303,20 +328,29 @@ export default function EventInfoStep() {
                     <CommandGroup>
                       {dynamicCategories.map((cat) => (
                         <CommandItem
-                          className="rounded-lg"
+                          className="rounded-lg group flex items-center pr-2"
                           key={cat}
                           value={cat}
                           onSelect={(currentValue) => {
-                            handleAddCategory(currentValue)
+                            handleSelectCategory(currentValue);
                           }}
                         >
                           <Check
                             className={cn(
-                              "mr-2 h-4 w-4",
+                              "mr-2 h-4 w-4 shrink-0",
                               field.value === cat ? "opacity-100" : "opacity-0",
                             )}
                           />
-                          {cat}
+                          <span className="flex-1 truncate">{cat}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:bg-danger/10 hover:text-danger rounded-full transition-opacity ml-2 shrink-0"
+                            onClick={(e) => handleDeleteCategory(e, cat)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -326,13 +360,7 @@ export default function EventInfoStep() {
                           className="rounded-lg"
                           value={searchQuery}
                           onSelect={() => {
-                            const newCat = searchQuery.trim();
-                            if (!dynamicCategories.includes(newCat)) {
-                              setDynamicCategories(prev => [...prev, newCat]);
-                            }
-                            field.onChange(newCat);
-                            setSearchQuery("");
-                            setOpenCategory(false);
+                            handleAddCategory(searchQuery);
                           }}
                         >
                           <Check className="mr-2 h-4 w-4 opacity-0" />

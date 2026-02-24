@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CalendarX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventCard, { EventCardSkeletonList } from "@/components/reusable/EventCard";
 import { EventService } from "@/services/event-service";
+import EmptyState from "../reusable/EmptyState";
 
 async function UpcomingEventsGrid() {
   let events: Awaited<ReturnType<typeof EventService.getEvents>> = [];
@@ -15,7 +16,11 @@ async function UpcomingEventsGrid() {
   }
 
   if (!events || events.length === 0) {
-    return null;
+    return <EmptyState
+      icon={<CalendarX className="h-10 w-10 text-primary drop-shadow-sm" strokeWidth={1.5} />}
+      title="Belum Ada Event"
+      description="Saat ini belum ada event yang tersedia"
+    />;
   }
 
   return (

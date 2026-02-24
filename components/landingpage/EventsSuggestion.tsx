@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { cn } from "@/lib/utils";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CalendarX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import EventCard, { EventCardSkeleton } from "../reusable/EventCard";
 import { EventService } from "@/services/event-service";
+import EmptyState from "@/components/reusable/EmptyState";
 
 async function EventsSuggestionGrid() {
   let events: Awaited<ReturnType<typeof EventService.getRandomEvents>> = [];
@@ -16,7 +17,13 @@ async function EventsSuggestionGrid() {
   }
 
   if (!events || events.length === 0) {
-    return null;
+    return (
+      <EmptyState
+        icon={<CalendarX className="h-10 w-10 text-primary drop-shadow-sm" strokeWidth={1.5} />}
+        title="Belum Ada Event Pilihan"
+        description="Saat ini belum ada event yang tersedia"
+      />
+    );
   }
 
   return (
