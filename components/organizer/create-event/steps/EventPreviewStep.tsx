@@ -56,7 +56,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
       <div className="text-center space-y-2 mb-8">
-        <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground">
+        <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground">
           Preview Event
         </h2>
         <p className="text-muted-foreground max-w-lg mx-auto text-sm lg:text-base leading-relaxed">
@@ -393,9 +393,9 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-center pt-8 pb-4">
+      <div className="flex justify-center py-4">
         <Button
-          size="xl"
+          size="lg"
           onClick={onSubmit}
           disabled={isSubmitting}
           className="w-full sm:w-auto min-w-60 shadow-lg shadow-primary/20 text-base"

@@ -50,10 +50,6 @@ export default function LandingNavbar() {
     : [{ href: "/user/profile", label: "Profile", icon: User }];
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };

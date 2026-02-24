@@ -9,12 +9,12 @@ export default function MyEvent() {
       <div className="flex items-center justify-end">
         <Button asChild>
           <Link href="/organizer/create-event">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Event
+            <Plus className="h-3 w-3" />
+            <p className="font-medium text-sm" >Create Event</p>
           </Link>
         </Button>
       </div>
-      
+
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center text-muted-foreground">
         <p>You haven't created any events yet.</p>
       </div>
