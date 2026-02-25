@@ -46,7 +46,7 @@ export default async function ExplorePage(props: {
   }
 
   // Client-side filtering (temporary until backend supports query params)
-  let filteredEvents = events.filter((event) => {
+  const filteredEvents = events.filter((event) => {
     // Search filter - with null safety
     if (query) {
       const eventTitle = event.title?.toLowerCase() || "";

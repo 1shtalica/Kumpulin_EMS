@@ -9,7 +9,13 @@ import { cn } from "@/lib/utils";
 import { useFormContext, useFieldArray } from "react-hook-form";
 import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
 
-export default function EventTicketStep() {
+export default function EventTicketStep({
+  hideHeader,
+  sectionOnly
+}: {
+  hideHeader?: boolean;
+  sectionOnly?: 'capacity' | 'tickets';
+}) {
   const {
     control,
     register,
@@ -52,62 +58,66 @@ export default function EventTicketStep() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-foreground">Pengaturan Tiket</h2>
-        <p className="mt-2 text-muted-foreground">
-          Atur kapasitas, batas waktu pendaftaran, dan jenis tiket
-        </p>
-      </div>
+      {!hideHeader && (
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-foreground">Pengaturan Tiket</h2>
+          <p className="mt-2 text-muted-foreground">
+            Atur kapasitas, batas waktu pendaftaran, dan jenis tiket
+          </p>
+        </div>
+      )}
 
       {/* Free/Paid Toggle */}
-      <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-          <TicketIcon className="h-5 w-5 text-primary" />
-          Jenis Tiket
-        </h3>
+      {(!sectionOnly || sectionOnly === 'tickets') && (
+        <div className="space-y-4">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <TicketIcon className="h-5 w-5 text-primary" />
+            Jenis Tiket
+          </h3>
 
-        <div className="space-y-3">
-          <Label>Apakah event ini berbayar?</Label>
-          <div className="grid gap-3 md:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => handlePaidChange(false)}
-              className={cn(
-                "rounded-xl border p-4 text-left transition-all",
-                "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                !isPaid
-                  ? "border-primary bg-primary-light shadow-xs"
-                  : "border-gray-200 bg-white hover:border-gray-300",
-              )}
-            >
-              <div className="font-semibold text-foreground">Gratis</div>
-              <div className="text-sm text-muted-foreground">
-                Event dapat diakses tanpa biaya
-              </div>
-            </button>
+          <div className="space-y-3">
+            <Label>Apakah event ini berbayar?</Label>
+            <div className="grid gap-3 md:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => handlePaidChange(false)}
+                className={cn(
+                  "rounded-xl border p-4 text-left transition-all",
+                  "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                  !isPaid
+                    ? "border-primary bg-primary-light shadow-xs"
+                    : "border-gray-200 bg-white hover:border-gray-300",
+                )}
+              >
+                <div className="font-semibold text-foreground">Gratis</div>
+                <div className="text-sm text-muted-foreground">
+                  Event dapat diakses tanpa biaya
+                </div>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => handlePaidChange(true)}
-              className={cn(
-                "rounded-xl border p-4 text-left transition-all",
-                "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                isPaid
-                  ? "border-primary bg-primary-light shadow-xs"
-                  : "border-gray-200 bg-white hover:border-gray-300",
-              )}
-            >
-              <div className="font-semibold text-foreground">Berbayar</div>
-              <div className="text-sm text-muted-foreground">
-                Event memerlukan pembelian tiket
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => handlePaidChange(true)}
+                className={cn(
+                  "rounded-xl border p-4 text-left transition-all",
+                  "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                  isPaid
+                    ? "border-primary bg-primary-light shadow-xs"
+                    : "border-gray-200 bg-white hover:border-gray-300",
+                )}
+              >
+                <div className="font-semibold text-foreground">Berbayar</div>
+                <div className="text-sm text-muted-foreground">
+                  Event memerlukan pembelian tiket
+                </div>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Max Purchase Per User - ONLY FOR PAID EVENTS */}
-      {isPaid && (
+      {(!sectionOnly || sectionOnly === 'tickets') && isPaid && (
         <div className="space-y-3 rounded-xl border border-primary/20 bg-primary-light/30 p-4">
           <Label htmlFor="maxPurchasePerUser" className="text-foreground">
             Batas Pembelian Per User <span className="text-danger">*</span>
@@ -147,91 +157,93 @@ export default function EventTicketStep() {
         </div>
       )}
 
-      <hr className="border-gray-200" />
+      {!sectionOnly && <hr className="border-gray-200" />}
 
       {/* Capacity Settings - ONLY FOR FREE EVENTS OR DISPLAY FOR PAID */}
-      <div className="space-y-4">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-          <Users className="h-5 w-5 text-primary" />
-          Kapasitas Peserta
-        </h3>
+      {(!sectionOnly || sectionOnly === 'capacity') && (
+        <div className="space-y-4">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+            <Users className="h-5 w-5 text-primary" />
+            Kapasitas Peserta
+          </h3>
 
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          {/* Custom Capacity for Free Events */}
-          {!isPaid ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>Batasi Jumlah Peserta?</Label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="unlimitedCapacity"
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    checked={maxCapacity === 0}
-                    onChange={(e) =>
-                      setValue("maxCapacity", e.target.checked ? 0 : 50, {
-                        shouldValidate: true,
-                      })
-                    }
-                  />
-                  <Label
-                    htmlFor="unlimitedCapacity"
-                    className="font-normal text-muted-foreground"
-                  >
-                    Tanpa Batas
-                  </Label>
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            {/* Custom Capacity for Free Events */}
+            {!isPaid ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Batasi Jumlah Peserta?</Label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="unlimitedCapacity"
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      checked={maxCapacity === 0}
+                      onChange={(e) =>
+                        setValue("maxCapacity", e.target.checked ? 0 : 50, {
+                          shouldValidate: true,
+                        })
+                      }
+                    />
+                    <Label
+                      htmlFor="unlimitedCapacity"
+                      className="font-normal text-muted-foreground"
+                    >
+                      Tanpa Batas
+                    </Label>
+                  </div>
                 </div>
-              </div>
 
-              {maxCapacity > 0 && (
-                <div className="space-y-2">
-                  <Label>Jumlah Kapasitas Maksimal</Label>
-                  <Input
-                    type="text"
-                    placeholder="Contoh: 100"
-                    {...register("maxCapacity")}
-                    onChange={(e) => {
-                      const value = parseInt(e.target.value) || 0;
-                      setValue("maxCapacity", value, { shouldValidate: true });
-                    }}
-                    className={cn(
-                      errors.maxCapacity &&
-                      "border-danger focus-visible:ring-danger",
+                {maxCapacity > 0 && (
+                  <div className="space-y-2">
+                    <Label>Jumlah Kapasitas Maksimal</Label>
+                    <Input
+                      type="text"
+                      placeholder="Contoh: 100"
+                      {...register("maxCapacity")}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value) || 0;
+                        setValue("maxCapacity", value, { shouldValidate: true });
+                      }}
+                      className={cn(
+                        errors.maxCapacity &&
+                        "border-danger focus-visible:ring-danger",
+                      )}
+                    />
+                    {errors.maxCapacity && (
+                      <p className="text-xs text-danger">
+                        {errors.maxCapacity.message}
+                      </p>
                     )}
-                  />
-                  {errors.maxCapacity && (
-                    <p className="text-xs text-danger">
-                      {errors.maxCapacity.message}
-                    </p>
-                  )}
-                </div>
-              )}
-              {maxCapacity === 0 && (
-                <div className="rounded-xl bg-green-50 p-3 text-sm text-green-700 border border-green-200">
-                  Event gratis ini terbuka untuk umum tanpa batasan kuota.
-                </div>
-              )}
-            </div>
-          ) : (
-            // Display Capacity for Paid Events
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Total Kapasitas Tiket</Label>
-                <span className="text-lg font-bold text-primary">
-                  {totalTicketQuota} Peserta
-                </span>
+                  </div>
+                )}
+                {maxCapacity === 0 && (
+                  <div className="rounded-xl bg-green-50 p-3 text-sm text-green-700 border border-green-200">
+                    Event gratis ini terbuka untuk umum tanpa batasan kuota.
+                  </div>
+                )}
               </div>
-              <p className="text-sm text-muted-foreground">
-                Kapasitas dihitung otomatis dari total kuota semua tiket yang
-                dibuat.
-              </p>
-            </div>
-          )}
+            ) : (
+              // Display Capacity for Paid Events
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Total Kapasitas Tiket</Label>
+                  <span className="text-lg font-bold text-primary">
+                    {totalTicketQuota} Peserta
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Kapasitas dihitung otomatis dari total kuota semua tiket yang
+                  dibuat.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Tickets List - Only Show for Paid Events */}
-      {isPaid && (
+      {(!sectionOnly || sectionOnly === 'tickets') && isPaid && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <Label className="text-base font-bold text-foreground">

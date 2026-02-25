@@ -28,7 +28,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_FILES = 5;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 
-export default function EventInfoStep() {
+export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) {
   const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
   const [openCategory, setOpenCategory] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -260,10 +260,12 @@ export default function EventInfoStep() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-accent">Informasi Event</h2>
-        <p className="mt-2 text-muted">Lengkapi Informasi tentang event Anda</p>
-      </div>
+      {!hideHeader && (
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-accent">Informasi Event</h2>
+          <p className="mt-2 text-muted">Lengkapi Informasi tentang event Anda</p>
+        </div>
+      )}
 
       {/* Title */}
       <div className="space-y-2">
@@ -481,7 +483,7 @@ export default function EventInfoStep() {
         {bannerError && <p className="text-sm text-danger">{bannerError}</p>}
         {errors.bannerImage && (
           <p className="text-sm text-danger">
-            {typeof errors.bannerImage.message === "string"
+            {typeof errors.bannerImage?.message === "string"
               ? errors.bannerImage.message
               : "Banner wajib diupload"}
           </p>
@@ -588,16 +590,15 @@ export default function EventInfoStep() {
                     <X className="h-3 w-3" />
                   </Button>
 
-                  <div className="bg-gray-50 px-2 py-1.5">
+                  <div className="bg-gray-50 px-2 py-1.5 flex flex-col justify-center h-full">
                     <p className="truncate text-xs font-medium text-accent">
-                      {currentImages[index]?.name}
+                      {currentImages[index]?.name || "Existing Image"}
                     </p>
-                    <p className="text-xs text-muted">
-                      {currentImages[index]?.size
-                        ? (currentImages[index].size / 1024 / 1024).toFixed(2)
-                        : 0}{" "}
-                      MB
-                    </p>
+                    {currentImages[index]?.size ? (
+                      <p className="text-xs text-muted">
+                        {(currentImages[index].size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               ))}

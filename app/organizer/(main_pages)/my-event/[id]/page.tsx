@@ -10,6 +10,7 @@ import {
 import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 import { notFound } from "next/navigation";
+import { EditSectionModal } from "@/components/organizer/my-event/EditSectionModal";
 
 function formatDate(isoString: string | undefined) {
     if (!isoString) return "TBA";
@@ -74,12 +75,6 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                     </Button>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground">Detail Management</h1>
                 </div>
-                <Button asChild className="rounded-full bg-primary hover:bg-primary-hover shadow-md gap-2 px-6">
-                    <Link href={`/organizer/my-event/${event.event_id}/edit`}>
-                        <Pencil className="w-4 h-4" />
-                        Edit Event
-                    </Link>
-                </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -99,13 +94,16 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                         </div>
 
                         <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <Badge className={isPublished ? "bg-success text-white" : "bg-muted-foreground text-white"}>
-                                    {event.status || 'Draft'}
-                                </Badge>
-                                <Badge variant="secondary" className="bg-primary/10 text-primary">
-                                    {event.type}
-                                </Badge>
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Badge className={isPublished ? "bg-success text-white" : "bg-muted-foreground text-white"}>
+                                        {event.status || 'Draft'}
+                                    </Badge>
+                                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                                        {event.type}
+                                    </Badge>
+                                </div>
+                                <EditSectionModal event={event} section="core" />
                             </div>
 
                             <h2 className="text-3xl font-bold tracking-tight text-foreground">{event.title}</h2>
@@ -118,10 +116,13 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
 
                     {/* Address / Location Section */}
                     <div className="bg-card border border-border shadow-sm rounded-3xl p-6 sm:p-8">
-                        <h3 className="text-xl font-bold flex items-center gap-2 mb-6">
-                            <MapPin className="w-5 h-5 text-primary" />
-                            Location Details
-                        </h3>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-primary" />
+                                Location Details
+                            </h3>
+                            <EditSectionModal event={event} section="location" />
+                        </div>
 
                         {event.is_online ? (
                             <div className="flex items-start gap-4 p-5 bg-primary/5 rounded-2xl border border-primary/10">
@@ -159,10 +160,13 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
 
                     {/* Rundown Section */}
                     <div className="bg-card border border-border shadow-sm rounded-3xl p-6 sm:p-8">
-                        <h3 className="text-xl font-bold flex items-center gap-2 mb-6">
-                            <List className="w-5 h-5 text-primary" />
-                            Event Rundowns
-                        </h3>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <List className="w-5 h-5 text-primary" />
+                                Event Rundowns
+                            </h3>
+                            <EditSectionModal event={event} section="rundown" />
+                        </div>
 
                         {event.rundowns && event.rundowns.length > 0 ? (
                             <div className="space-y-4">
@@ -191,10 +195,13 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                 {/* Sidebar / Tickets Column */}
                 <div className="space-y-8">
                     <div className="bg-card border border-border shadow-sm rounded-3xl p-6">
-                        <h3 className="text-lg font-bold flex items-center gap-2 mb-5">
-                            <Calendar className="w-5 h-5 text-primary" />
-                            Time constraints
-                        </h3>
+                        <div className="flex items-center justify-between mb-5">
+                            <h3 className="text-lg font-bold flex items-center gap-2">
+                                <Calendar className="w-5 h-5 text-primary" />
+                                Time constraints
+                            </h3>
+                            <EditSectionModal event={event} section="datetime" />
+                        </div>
                         <div className="space-y-5">
                             <div>
                                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Event Start</p>
@@ -217,10 +224,13 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                     </div>
 
                     <div className="bg-card border border-border shadow-sm rounded-3xl p-6">
-                        <h3 className="text-lg font-bold flex items-center gap-2 mb-5">
-                            <Users className="w-5 h-5 text-primary" />
-                            Capacity & Load
-                        </h3>
+                        <div className="flex items-center justify-between mb-5">
+                            <h3 className="text-lg font-bold flex items-center gap-2">
+                                <Users className="w-5 h-5 text-primary" />
+                                Capacity & Load
+                            </h3>
+                            <EditSectionModal event={event} section="capacity" />
+                        </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
@@ -235,10 +245,13 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                     </div>
 
                     <div className="bg-card border border-border shadow-sm rounded-3xl p-6">
-                        <h3 className="text-lg font-bold flex items-center gap-2 mb-6">
-                            <Ticket className="w-5 h-5 text-primary" />
-                            Ticket Categories
-                        </h3>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-bold flex items-center gap-2">
+                                <Ticket className="w-5 h-5 text-primary" />
+                                Ticket Categories
+                            </h3>
+                            <EditSectionModal event={event} section="tickets" />
+                        </div>
 
                         {event.ticket_categories && event.ticket_categories.length > 0 ? (
                             <div className="space-y-4">
