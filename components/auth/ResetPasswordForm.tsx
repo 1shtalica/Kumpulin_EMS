@@ -20,21 +20,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { AuthService } from "@/services/auth-service";
-
-const resetPasswordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, { message: "Password minimal 8 karakter" })
-      .regex(/[A-Z]/, { message: "Password harus mengandung huruf besar" })
-      .regex(/[a-z]/, { message: "Password harus mengandung huruf kecil" })
-      .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Password tidak cocok",
-  });
+import { resetPasswordSchema } from "@/lib/validator/auth";
 
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 

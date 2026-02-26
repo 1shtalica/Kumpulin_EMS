@@ -276,14 +276,14 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
           id="title"
           placeholder="Contoh: Festival Musik Jazz Jakarta 2026"
           {...register("title")}
-          maxLength={100}
+          maxLength={50}
           className={cn(
             errors.title && "border-danger focus-visible:ring-danger",
           )}
         />
         <div className="flex justify-between">
           <p className="text-danger text-xs">{errors.title?.message}</p>
-          <p className="text-muted text-xs">{title?.length || 0}/100 karakter</p>
+          <p className="text-muted text-xs">{title?.length || 0}/50 karakter</p>
         </div>
       </div>
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SheetTrigger } from "@/components/ui/sheet";
@@ -13,18 +12,8 @@ interface OrganizerHeaderProps {
 }
 
 export default function OrganizerHeader({ className }: OrganizerHeaderProps) {
-  const pathname = usePathname();
-  const titlepage = pathname.split("/").pop();
   const { user } = useAuthStore();
   const initials = user?.username?.charAt(0)?.toUpperCase() ?? "?";
-
-  const formattedTitle = titlepage
-    ? titlepage
-        .replace(/-/g, " ")
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ")
-    : "";
 
   return (
     <header
@@ -46,13 +35,13 @@ export default function OrganizerHeader({ className }: OrganizerHeaderProps) {
         </Button>
       </SheetTrigger>
 
-      {/* Judul halaman */}
-      <h1 className="flex-1 text-xl font-bold">{formattedTitle}</h1>
+      {/* Spacer */}
+      <div className="flex-1" />
 
-      {/* Avatar — tanpa dropdown, fungsi di sidebar */}
+      {/* Avatar */}
       <Avatar>
         <AvatarImage src={user?.avatar ?? undefined} />
-        <AvatarFallback>{initials}</AvatarFallback>
+        <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
       </Avatar>
     </header>
   );

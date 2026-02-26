@@ -30,26 +30,7 @@ import { AuthService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
 import { User } from "@/types/user";
 import { generateSlug } from "@/lib/utils";
-
-// --- Validation Schemas ---
-const phoneSchema = z.object({
-  phoneNumber: z
-    .string()
-    .regex(/^8/, {
-      message: "Nomor harus diawali angka 8",
-    })
-    .min(9, { message: "Nomor HP minimal 9 digit" })
-    .max(13, { message: "Nomor HP maksimal 13 digit" })
-    .regex(/^[0-9]+$/, {
-      message: "Hanya boleh angka",
-    }),
-});
-
-const organizerSchema = z.object({
-  organizerName: z
-    .string()
-    .min(3, { message: "Nama organizer minimal 3 karakter" }),
-});
+import { phoneSchema, organizerSchema } from "@/lib/validator/auth";
 
 type PhoneFormValues = z.infer<typeof phoneSchema>;
 type OrganizerFormValues = z.infer<typeof organizerSchema>;
@@ -276,7 +257,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   <Users className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">
+                  <h3 className="text-foreground">
                     Saya Pengguna
                   </h3>
                   <p className="text-sm text-gray-600">
@@ -317,7 +298,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                     />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">
+                    <h3 className="text-foreground">
                       Saya Organizer
                     </h3>
                     <p className="text-sm text-gray-600">

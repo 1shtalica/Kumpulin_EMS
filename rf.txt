@@ -1,0 +1,5 @@
+4c49a3a HEAD@{0}: rebase (continue): merge branch dev 01
+55d1e1e HEAD@{1}: pull (pick): minor fix get-started
+d5f9bad HEAD@{2}: pull (start): checkout d5f9bad8d35eab7cfac81421ce027861e29d32db
+efbf0b5 HEAD@{3}: commit: merge origin/dev 2
+edfc4f7 HEAD@{4}: rebase (finish): returning to refs/heads/dev

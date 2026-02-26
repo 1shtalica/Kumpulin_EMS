@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,18 +12,8 @@ interface UserHeaderProps {
 }
 
 export default function UserHeader({ className }: UserHeaderProps) {
-  const pathname = usePathname();
-  const titlepage = pathname.split("/").pop();
   const { user } = useAuthStore();
   const initials = user?.username?.charAt(0)?.toUpperCase() ?? "?";
-
-  const formattedTitle = titlepage
-    ? titlepage
-        .replace(/-/g, " ")
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ")
-    : "";
 
   return (
     <header
@@ -46,13 +35,13 @@ export default function UserHeader({ className }: UserHeaderProps) {
         </Button>
       </SheetTrigger>
 
-      {/* Judul halaman */}
-      <h1 className="flex-1 text-xl font-bold">{formattedTitle}</h1>
+      {/* Spacer */}
+      <div className="flex-1" />
 
       {/* Avatar — tanpa dropdown, klik ke profile */}
       <Avatar>
         <AvatarImage src={user?.avatar ?? undefined} />
-        <AvatarFallback>{initials}</AvatarFallback>
+        <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
       </Avatar>
     </header>
   );

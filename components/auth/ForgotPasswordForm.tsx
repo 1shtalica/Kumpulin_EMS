@@ -13,13 +13,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { AuthService } from "@/services/auth-service";
-
-const forgotPasswordSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: "Email wajib diisi" })
-    .email({ message: "Format email tidak valid" }),
-});
+import { forgotPasswordSchema } from "@/lib/validator/auth";
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 

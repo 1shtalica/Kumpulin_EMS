@@ -6,12 +6,14 @@ import Image from "next/image";
 import { MapPin, Users, Heart, ImageOff } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, cn } from "@/lib/utils";
 
 interface EventCardProps {
+  key: string;
   title: string;
+  slug: string;
   category: string;
   date: string;
   location: string;
@@ -19,7 +21,6 @@ interface EventCardProps {
   originalPrice?: number;
   organizer: string;
   image: string;
-  slug: string;
   isHot?: boolean;
   isOnline?: boolean;
   isRtPintar?: boolean;
@@ -56,8 +57,6 @@ export default function EventCard({
   const year = !isNaN(dateObj.getFullYear())
     ? dateObj.getFullYear()
     : date.split(" ")[2] || new Date().getFullYear();
-
-  const isFull = ticketSold >= maxQuota;
 
   return (
     <Link href={`/events/${slug}`} className="group block h-full w-full">
@@ -144,7 +143,7 @@ export default function EventCard({
 
             {/* Price */}
             <div className="flex flex-col">
-              {originalPrice && originalPrice > price && (
+              {!!originalPrice && Number(originalPrice) > 0 && Number(originalPrice) > price && (
                 <span className="text-[10px] text-slate-400 line-through decoration-slate-300">
                   {formatCurrency(originalPrice)}
                 </span>
@@ -162,8 +161,6 @@ export default function EventCard({
           </div>
 
         </CardContent>
-
-        {/* Removing duplicate Footer Component since design merges it into the main flow nicely */}
       </Card>
     </Link>
   );

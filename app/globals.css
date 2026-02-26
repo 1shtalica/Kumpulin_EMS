@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "tw-animate-css"; 
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -58,9 +58,8 @@
   --shadow-2xl: 0 1px 10px 1px hsl(0 0% 0% / 0.45);
   --tracking-normal: 0.025em;
   --spacing: 0.25rem;
-  --gray: #E5E7EB;
+  --gray: #e5e7eb;
 }
-
 
 .dark {
   --background: #0a0a0a;
@@ -218,12 +217,10 @@
   --font-weight-bold: 600;
 }
 
-
 body {
   letter-spacing: var(--tracking-normal);
 }
 
-/* Hide scrollbar for horizontal scroll */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -240,16 +237,16 @@ body {
     @apply bg-background text-foreground;
   }
   h1 {
-    @apply text-2xl font-bold;
+    @apply text-2xl md:text-3xl lg:text-4xl font-bold;
   }
   h2 {
-    @apply text-xl font-bold;
+    @apply text-xl md:text-2xl lg:text-3xl font-bold;
   }
   h3 {
-    @apply text-lg font-bold;
+    @apply text-lg md:text-xl lg:text-2xl font-semibold;
   }
   p {
-    @apply text-base;
+    @apply text-sm md:text-base;
   }
 }
 

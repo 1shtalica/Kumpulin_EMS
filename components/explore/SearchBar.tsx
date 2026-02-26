@@ -62,9 +62,7 @@ export default function SearchBar() {
               type="text"
               placeholder="Cari konser, workshop, atau seminar..."
               className="w-full pl-12 h-12 bg-white rounded-full border-border shadow-sm focus-visible:ring-primary text-base"
-              // Default value dari URL
               defaultValue={searchParams.get("q")?.toString()}
-              // Event Listener Hybrid
               onChange={(e) => debouncedSearch(e.target.value)}
               onKeyDown={handleKeyDown}
             />

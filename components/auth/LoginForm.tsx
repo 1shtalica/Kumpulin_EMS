@@ -22,18 +22,10 @@ import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/stores/auth-store";
 import { AxiosError } from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
-import { AuthService } from "@/services/auth-service";
 import { toast } from "sonner"
 import { Lock } from "lucide-react";
+import { loginSchema } from "@/lib/validator/auth";
 
-
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: "Email Wajib diisi" })
-    .email({ message: "Format email tidak valid" }),
-  password: z.string().min(8, { message: "Password minimal 8 karakter" }),
-});
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {

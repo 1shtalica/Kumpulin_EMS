@@ -27,43 +27,7 @@ import { AxiosError } from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
 import { splitFullName } from "@/lib/utils";
-
-// ⭐ 2 skema register
-const registerSchema = z
-  .object({
-    userName: z
-      .string()
-      .min(3, { message: "Username minimal 3 karakter" })
-      .max(20, { message: "Username maksimal 20 karakter" })
-      .regex(/^[a-zA-Z0-9]+$/, {
-        message: "Username hanya boleh huruf, angka, dan tanpa spasi",
-      }),
-    email: z
-      .string()
-      .min(1, { message: "Email wajib diisi" })
-      .email({ message: "Format email tidak valid" }),
-    password: z
-      .string()
-      .min(8, { message: "Password minimal 8 karakter" })
-      .regex(/[A-Z]/, { message: "Password harus mengandung huruf besar" })
-      .regex(/[a-z]/, { message: "Password harus mengandung huruf kecil" })
-      .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
-    confirmPassword: z
-      .string()
-      .min(1, { message: "Konfirmasi password wajib diisi" }),
-    agreeToTerms: z.boolean().refine((val) => val === true, {
-      message: "Anda harus menyetujui syarat dan ketentuan",
-    }),
-  })
-  .superRefine((data, ctx) => {
-    if (data.password !== data.confirmPassword) {
-      ctx.addIssue({
-        path: ["confirmPassword"],
-        message: "Password tidak cocok",
-        code: z.ZodIssueCode.custom,
-      });
-    }
-  });
+import { registerSchema } from "@/lib/validator/auth";
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 

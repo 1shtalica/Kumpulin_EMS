@@ -15,7 +15,7 @@ export const step2Schema = z.object({
   title: z
     .string()
     .min(1, "Judul event wajib diisi")
-    .max(100, "Judul event maksimal 100 karakter"),
+    .max(50, "Judul event maksimal 50 karakter"),
   category: z.string().min(1, "Kategori event wajib diisi"),
   description: z
     .string()

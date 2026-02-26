@@ -10,7 +10,7 @@ export const EventService = {
     try {
       const json = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events?offset=${offset}&limit=${limit}&type=${type}`);
       const data = await json.json();
-      return data.data;
+      return data.data || [];
     } catch (error) {
       console.error("Failed to fetch events:", error);
       throw error;
@@ -111,7 +111,7 @@ export const EventService = {
     try {
       const json = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/random`);
       const data = await json.json();
-      return data.data;
+      return data.data || [];
     } catch (error) {
       console.error("Failed to fetch random events:", error);
       throw error;

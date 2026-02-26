@@ -1,0 +1,59 @@
+commit 4c49a3a8b8bd9e9bb1e4f435575eb81960bb3612
+Author: 1shtalica <adibfaizulhaq05@gmail.com>
+Date:   Sun Feb 22 21:22:23 2026 +0700
+
+    merge branch dev 01
+
+commit 55d1e1e2d839936c445b2f7f6297d353e6d2f315
+Author: 1shtalica <adibfaizulhaq05@gmail.com>
+Date:   Sun Feb 22 20:06:18 2026 +0700
+
+    minor fix get-started
+
+commit d5f9bad8d35eab7cfac81421ce027861e29d32db
+Author: Fehehehe <febryt22@gmail.com>
+Date:   Wed Feb 25 13:43:42 2026 +0700
+
+    feat: add edit event modal
+
+commit d669894569e2f2c9b612758234e74b30702c4203
+Author: Fehehehe <febryt22@gmail.com>
+Date:   Tue Feb 24 18:10:52 2026 +0700
+
+    feat: Introduce organizer event management with event listing, detailed views, and a multi-step creation process.
+
+commit c6d0ea9f806c91dd1ed97eb633aa79d08da31142
+Author: Fehehehe <febryt22@gmail.com>
+Date:   Tue Feb 24 13:17:05 2026 +0700
+
+    update: adjust middleware to proxy
+
+commit 337cbde5411642707b91929a8ca352155133f50a
+Author: Fehehehe <febryt22@gmail.com>
+Date:   Tue Feb 24 13:11:48 2026 +0700
+
+    feat: Introduce event preview step, organizer event listing, and foundational authentication components, services, and middleware updates.
+
+commit f66e3bb89055b9a2d8727f9f856c3fc0e7f94912
+Author: Fehehehe <febryt22@gmail.com>
+Date:   Tue Feb 24 08:34:32 2026 +0700
+
+    feat: Introduce event suggestion and upcoming event displays, an event information creation step, and a dedicated event service.
+
+commit 9245b54c6d07c58822aee5272570b0bd59e43557
+Author: Fehehehe <febryt22@gmail.com>
+Date:   Mon Feb 23 14:42:24 2026 +0700
+
+    feat: add input inside category dropdown
+
+commit 9c681cc1b42ffb7f2a30909d0936f1f2ee10b784
+Author: Fehehehe <febryt22@gmail.com>
+Date:   Mon Feb 23 08:58:58 2026 +0700
+
+    feat: Implement initial guest-facing event browsing experience including landing page, event listing, and event detail views.
+
+commit 29f11a8edcffc2babe1f1a31eb08c5be2258ac7a
+Author: Fehehehe <febryt22@gmail.com>
+Date:   Sun Feb 22 20:48:05 2026 +0700
+
+    feat: add skeleton for event suggestion and upcoming

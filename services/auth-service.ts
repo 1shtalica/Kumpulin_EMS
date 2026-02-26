@@ -1,7 +1,6 @@
 import axiosClient from "@/lib/axios-client";
 import { RegisterOrganizerPayload, RegisterPayload } from "@/types/auth";
 
-// Define Types for Auth
 export interface LoginPayload {
     email: string;
     password: string;
