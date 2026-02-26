@@ -1,9 +1,0 @@
-4c49a3a merge branch dev 01
-55d1e1e minor fix get-started
-d5f9bad feat: add edit event modal
-d669894 feat: Introduce organizer event management with event listing, detailed views, and a multi-step creation process.
-c6d0ea9 update: adjust middleware to proxy
-337cbde feat: Introduce event preview step, organizer event listing, and foundational authentication components, services, and middleware updates.
-f66e3bb feat: Introduce event suggestion and upcoming event displays, an event information creation step, and a dedicated event service.
-9245b54 feat: add input inside category dropdown
-9c681cc feat: Implement initial guest-facing event browsing experience including landing page, event listing, and event detail views.

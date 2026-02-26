@@ -37,7 +37,7 @@ export default async function ExplorePage(props: {
 
   try {
     events = await EventService.getEvents({
-      limit: 100, // Fetch more events for client-side filtering
+      limit: 10, // Fetch more events for client-side filtering
       offset: 0,
     });
   } catch (err) {

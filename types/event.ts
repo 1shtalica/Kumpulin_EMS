@@ -131,11 +131,6 @@ export interface GetEventsParams {
   // price_type?: 'gratis' | 'berbayar';
   // sort?: string;
 }
-
-// ============================================================
-// Type untuk card event di landing page / explore
-// Sesuai dengan HomeEventResponse di BE
-// ============================================================
 export interface HomeEventCard {
   id: string;
   title: string;
@@ -149,6 +144,13 @@ export interface HomeEventCard {
   image_url: string;
   ticket_price: number;
   start_date: string;
+}
+
+export interface GetOrganizerEventsParams {
+  q?: string;      // search by title
+  status?: string; // draft | published | ongoing | finished | archived | cancelled
+  limit?: number;
+  offset?: number;
 }
 
 export interface OrganizerEventCard {

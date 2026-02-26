@@ -204,10 +204,7 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
           <Button
             variant="brand"
             size="lg"
-            className={cn(
-              "w-full whitespace-nowrap",
-              isOpen && "ml-auto",
-            )}
+            className={cn("w-full whitespace-nowrap overflow-hidden transition-all duration-300", isOpen && "ml-auto")}
             asChild
           >
             <Link href="/">

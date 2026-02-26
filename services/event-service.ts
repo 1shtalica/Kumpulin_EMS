@@ -1,6 +1,6 @@
 import axiosClient from "@/lib/axios-client";
 import { CreateEventFormState } from "@/types/create-event";
-import type { Event, EventsResponse, EventResponse, GetEventsParams, HomeEventCard, OrganizerEventCard } from "@/types/event";
+import type { Event, EventsResponse, EventResponse, GetEventsParams, GetOrganizerEventsParams, HomeEventCard, OrganizerEventCard } from "@/types/event";
 
 export const EventService = {
 
@@ -145,10 +145,22 @@ export const EventService = {
       throw error;
     }
   },
-  async getOrganizerEvents(): Promise<OrganizerEventCard[]> {
+  async getOrganizerEvents(params: GetOrganizerEventsParams = {}): Promise<{ data: OrganizerEventCard[]; total: number }> {
     try {
-      const response = await axiosClient.get<{ data: OrganizerEventCard[] }>("/organizer/events");
-      return response.data.data;
+      const searchParams = new URLSearchParams();
+      if (params.q) searchParams.set("q", params.q);
+      if (params.status && params.status !== "all") searchParams.set("status", params.status);
+      if (params.limit !== undefined) searchParams.set("limit", String(params.limit));
+      if (params.offset !== undefined) searchParams.set("offset", String(params.offset));
+
+      const queryString = searchParams.toString();
+      const url = queryString ? `/organizer/events?${queryString}` : "/organizer/events";
+
+      const response = await axiosClient.get<{ data: OrganizerEventCard[]; total: number }>(url);
+      return {
+        data: response.data.data ?? [],
+        total: response.data.total ?? 0,
+      };
     } catch (error) {
       console.error("Failed to fetch organizer events:", error);
       throw error;

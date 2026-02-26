@@ -33,6 +33,7 @@ async function EventsSuggestionGrid() {
       {events.slice(0, 4).map((event, index) => (
         <div key={event.id} className={cn(index > 0 && "hidden md:block", index === 3 && "lg:hidden xl:block")}>
           <EventCard
+            key={event.id}
             title={event.title}
             category={event.type}
             date={event.start_date}
