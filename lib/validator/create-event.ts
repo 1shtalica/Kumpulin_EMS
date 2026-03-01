@@ -3,7 +3,7 @@ import z from "zod";
 // 🌟 Step 1
 export const step1Schema = z.object({
   type: z.enum(["external", "internal"], {
-    message: "Tipe event wajib dipilih",
+    error: "Tipe event wajib dipilih",
   }),
 });
 
@@ -14,56 +14,57 @@ const ACCEPTED_IMAGE_FORMATS = ["image/jpeg", "image/png"];
 export const step2Schema = z.object({
   title: z
     .string()
-    .min(1, "Judul event wajib diisi")
-    .max(50, "Judul event maksimal 50 karakter"),
-  category: z.string().min(1, "Kategori event wajib diisi"),
+    .min(1, { error: "Judul event wajib diisi" })
+    .max(50, { error: "Judul event maksimal 50 karakter" }),
+  category: z.string().min(1, { error: "Kategori event wajib diisi" }),
   description: z
     .string()
-    .min(1, "Deskripsi event wajib diisi")
-    .max(2000, "Deskripsi event terlalu panjang")
+    .min(1, { error: "Deskripsi event wajib diisi" })
+    .max(2000, { error: "Deskripsi event terlalu panjang" })
     .refine(
       (html) => {
-        const tempDiv = typeof document !== 'undefined'
-          ? document.createElement('div')
-          : null;
+        const tempDiv =
+          typeof document !== "undefined"
+            ? document.createElement("div")
+            : null;
 
         if (tempDiv) {
           tempDiv.innerHTML = html;
-          const textContent = tempDiv.textContent || tempDiv.innerText || '';
+          const textContent = tempDiv.textContent || tempDiv.innerText || "";
           return textContent.trim().length > 0;
         }
 
-        const stripped = html.replace(/<[^>]*>/g, '').trim();
+        const stripped = html.replace(/<[^>]*>/g, "").trim();
         return stripped.length > 0;
       },
-      { message: "Deskripsi event wajib diisi" }
+      { error: "Deskripsi event wajib diisi" },
     ),
   bannerImage: z
     .custom<File>((v) => v instanceof File, {
-      message: "Banner event wajib diupload",
+      error: "Banner event wajib diupload",
     })
     .refine((file) => file.size <= MAX_FILE_SIZE, {
-      message: "Ukuran banner maksimal 5MB",
+      error: "Ukuran banner maksimal 5MB",
     })
     .refine((file) => ACCEPTED_IMAGE_FORMATS.includes(file.type), {
-      message: "Format banner harus .jpeg atau .png",
+      error: "Format banner harus .jpeg atau .png",
     }),
   bannerImagePreview: z.string().nullable().optional(),
   images: z
     .array(
       z
         .custom<File>((v) => v instanceof File, {
-          message: "File tidak valid",
+          error: "File tidak valid",
         })
         .refine((file) => file.size <= MAX_FILE_SIZE, {
-          message: "Ukuran file maksimal 5MB",
+          error: "Ukuran file maksimal 5MB",
         })
         .refine((file) => ACCEPTED_IMAGE_FORMATS.includes(file.type), {
-          message: "Format file harus .jpeg atau .png",
-        })
+          error: "Format file harus .jpeg atau .png",
+        }),
     )
-    .min(1, "Minimal 1 poster wajib diupload")
-    .max(5, "Maksimal 5 poster"),
+    .min(1, { error: "Minimal 1 poster wajib diupload" })
+    .max(5, { error: "Maksimal 5 poster" }),
   imagePreviews: z.array(z.string()).optional(),
 });
 
@@ -71,42 +72,46 @@ export const step2Schema = z.object({
 const rundownSchema = z
   .object({
     title: z.string(),
-    start_time: z.string(),
-    end_time: z.string(),
+    startTime: z.string(),
+    endTime: z.string(),
     description: z.string().optional(),
     location: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.title || data.title.length === 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data,
         message: "Judul sesi wajib diisi",
         path: ["title"],
       });
     }
 
-    if (!data.start_time || data.start_time.length === 0) {
+    if (!data.startTime || data.startTime.length === 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data,
         message: "Jam mulai wajib diisi",
-        path: ["start_time"],
+        path: ["startTime"],
       });
     }
 
-    if (!data.end_time || data.end_time.length === 0) {
+    if (!data.endTime || data.endTime.length === 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data,
         message: "Jam selesai wajib diisi",
-        path: ["end_time"],
+        path: ["endTime"],
       });
     }
 
     // Same-day time validation: end time must be after start time
-    if (data.start_time && data.end_time && data.end_time <= data.start_time) {
+    if (data.startTime && data.endTime && data.endTime <= data.startTime) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data,
         message: "Jam selesai harus setelah jam mulai",
-        path: ["end_time"],
+        path: ["endTime"],
       });
     }
   });
@@ -115,28 +120,26 @@ export const step3Schema = z
   .object({
     // Combined DateTime fields
     startEventDateTime: z.date({
-      message: "Tanggal mulai event wajib diisi",
+      error: "Tanggal mulai event wajib diisi",
     }),
     endEventDateTime: z.date({
-      message: "Tanggal selesai event wajib diisi",
+      error: "Tanggal selesai event wajib diisi",
     }),
     startRegistrationDateTime: z.date({
-      message: "Tanggal mulai pendaftaran wajib diisi",
+      error: "Tanggal mulai pendaftaran wajib diisi",
     }),
     endRegistrationDateTime: z.date({
-      message: "Tanggal selesai pendaftaran wajib diisi",
+      error: "Tanggal selesai pendaftaran wajib diisi",
     }),
 
     // Rundown (Minimal 1)
-    rundown: z.array(rundownSchema).min(1, "Sesi Rundown harus diisi"),
+    rundown: z
+      .array(rundownSchema)
+      .min(1, { error: "Sesi Rundown harus diisi" }),
 
     // Lokasi (Online vs Offline Logic)
     isOnline: z.boolean(),
-    meetingUrl: z
-      .string()
-      .url("URL meeting tidak valid")
-      .optional()
-      .or(z.literal("")),
+    meetingUrl: z.union([z.url({ error: "URL meeting tidak valid" }), z.literal("")]).optional(),
     address: z.object({
       title: z.string(),
       province: z.string(),
@@ -151,7 +154,8 @@ export const step3Schema = z
 
     if (data.startEventDateTime < now) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data,
         message: "Waktu mulai event tidak boleh di masa lalu",
         path: ["startEventDateTime"],
       });
@@ -159,7 +163,8 @@ export const step3Schema = z
 
     if (data.startRegistrationDateTime < now) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data,
         message: "Waktu buka pendaftaran tidak boleh di masa lalu",
         path: ["startRegistrationDateTime"],
       });
@@ -168,7 +173,8 @@ export const step3Schema = z
     // Event end must be after start
     if (data.endEventDateTime <= data.startEventDateTime) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data,
         message: "Waktu selesai event harus setelah waktu mulai",
         path: ["endEventDateTime"],
       });
@@ -176,7 +182,8 @@ export const step3Schema = z
 
     // SAME DAY time validation for event
     const isSameEventDay =
-      data.startEventDateTime.toDateString() === data.endEventDateTime.toDateString();
+      data.startEventDateTime.toDateString() ===
+      data.endEventDateTime.toDateString();
 
     if (isSameEventDay) {
       const startEventTime = data.startEventDateTime.getTime();
@@ -184,7 +191,8 @@ export const step3Schema = z
 
       if (endEventTime <= startEventTime) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
+          input: data,
           message: "Waktu selesai event harus setelah waktu mulai",
           path: ["endEventDateTime"],
         });
@@ -194,7 +202,8 @@ export const step3Schema = z
     // Registration end must be before event start
     if (data.endRegistrationDateTime >= data.startEventDateTime) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data,
         message: "Waktu tutup pendaftaran harus sebelum waktu mulai event",
         path: ["endRegistrationDateTime"],
       });
@@ -203,7 +212,8 @@ export const step3Schema = z
     // Registration end must be after registration start
     if (data.endRegistrationDateTime <= data.startRegistrationDateTime) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data,
         message: "Waktu tutup pendaftaran harus setelah waktu buka pendaftaran",
         path: ["endRegistrationDateTime"],
       });
@@ -211,7 +221,8 @@ export const step3Schema = z
 
     // SAME DAY time validation for registration
     const isSameRegistrationDay =
-      data.startRegistrationDateTime.toDateString() === data.endRegistrationDateTime.toDateString();
+      data.startRegistrationDateTime.toDateString() ===
+      data.endRegistrationDateTime.toDateString();
 
     if (isSameRegistrationDay) {
       const startRegisTime = data.startRegistrationDateTime.getTime();
@@ -219,8 +230,10 @@ export const step3Schema = z
 
       if (endRegisTime <= startRegisTime) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Waktu tutup pendaftaran harus setelah waktu buka pendaftaran",
+          code: "custom",
+          input: data,
+          message:
+            "Waktu tutup pendaftaran harus setelah waktu buka pendaftaran",
           path: ["endRegistrationDateTime"],
         });
       }
@@ -234,12 +247,15 @@ export const step3Schema = z
     const startEventDate = new Date(data.startEventDateTime);
     startEventDate.setHours(0, 0, 0, 0);
 
-    const daysDiff = (startEventDate.getTime() - endRegistrationDate.getTime()) / oneDayInMs;
+    const daysDiff =
+      (startEventDate.getTime() - endRegistrationDate.getTime()) / oneDayInMs;
 
     if (daysDiff < 1) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Event harus dimulai minimal 1 hari setelah pendaftaran ditutup",
+        code: "custom",
+        input: data,
+        message:
+          "Event harus dimulai minimal 1 hari setelah pendaftaran ditutup",
         path: ["startEventDateTime"],
       });
     }
@@ -248,7 +264,8 @@ export const step3Schema = z
     if (data.isOnline) {
       if (!data.meetingUrl || data.meetingUrl.length < 5) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
+          input: data,
           message: "Link meeting wajib diisi untuk event online",
           path: ["meetingUrl"],
         });
@@ -256,21 +273,24 @@ export const step3Schema = z
     } else {
       if (!data.address.province) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
+          input: data,
           message: "Provinsi wajib dipilih",
           path: ["address", "province"],
         });
       }
       if (!data.address.city) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
+          input: data,
           message: "Kota wajib dipilih",
           path: ["address", "city"],
         });
       }
       if (!data.address.rawAddress || data.address.rawAddress.length < 5) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
+          input: data,
           message: "Alamat lengkap wajib diisi",
           path: ["address", "rawAddress"],
         });
@@ -279,43 +299,79 @@ export const step3Schema = z
   });
 
 // 🌟 Step 4: Tiket & Kapasitas
-const ticketSchema = z.object({
-  name: z.string().min(1, "Nama tiket wajib diisi"),
-  price: z.coerce.number().min(1, "Harga tiket harus lebih dari 0"),
-  quota: z.coerce.number().min(1, "Kuota tiket minimal 1"),
+export const ticketSchema = z.object({
+  name: z.string().min(1, { error: "Nama tiket wajib diisi" }),
+  price: z.coerce.number().min(0, { error: "Harga tiket tidak boleh negatif" }),
+  quota: z.coerce.number().min(1, { error: "Kuota tiket minimal 1" }),
   description: z.string().optional(),
+  start_date_time: z.date({
+      error: "Tanggal buka penjualan tiket wajib diisi",
+    }),
+    end_date_time: z.date({
+      error: "Tanggal tutup penjualan tiket wajib diisi",
+    }),
+    type: z.enum(["free", "paid"]),
+}).superRefine((data, ctx) => {
+  if (data.type === "free" && data.price !== 0 ){
+    ctx.addIssue({
+      code: "custom",
+      input: data,
+      message: "Harga tiket tidak boleh lebih dari 0 untuk event gratis",
+      path: ["price"],
+    });
+  }
+
+  if (data.type === "paid" && data.price <= 0 ){
+    ctx.addIssue({
+      code: "custom",
+      input: data,
+      message: "Harga tiket harus lebih dari 0 untuk event berbayar",
+      path: ["price"],
+    });
+  }
+
+  if (data.end_date_time <= data.start_date_time){
+    ctx.addIssue({
+      code: "custom",
+      input: data,
+      message: "Waktu selesai tiket harus setelah waktu mulai tiket",
+      path: ["end_date_time"],
+    });
+  }
 });
 
 export const step4Schema = z
   .object({
-    isPaid: z.boolean(),
-    maxCapacity: z.coerce.number().min(0, "Kapasitas tidak boleh negatif"),
+    maxCapacity: z.coerce
+      .number()
+      .min(1, { error: "Kapasitas event wajib diisi" })
+      .max(1000, { error: "Batas maksimal event adalah 1000 peserta" }),
     tickets: z.array(ticketSchema),
     maxPurchasePerUser: z.coerce
       .number()
-      .min(0, "Batas pembelian tidak boleh negatif")
-      .optional(),
+      .min(0, { error: "Batas pembelian tidak boleh negatif" })
   })
   .superRefine((data, ctx) => {
-    if (data.isPaid) {
-      if (data.tickets.length === 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Event berbayar wajib memiliki minimal 1 tiket",
-          path: ["tickets"],
-        });
-      }
+    if (data.tickets.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        input: data,
+        message: "Minimal 1 tiket wajib ditambahkan",
+        path: ["tickets"],
+      });
+    }
 
-      // Validate maxPurchasePerUser for paid events - must be defined but can be 0
-      if (
-        data.maxPurchasePerUser === undefined ||
-        data.maxPurchasePerUser === null
-      ) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Batas pembelian per user wajib diisi untuk event berbayar",
-          path: ["maxPurchasePerUser"],
-        });
-      }
+    const totalQuota = data.tickets.reduce(
+      (sum, ticket) => sum + ticket.quota,
+      0
+    );
+
+    if (totalQuota > data.maxCapacity) {
+      ctx.addIssue({
+        code: "custom",
+        input: data,
+        message: `Total kuota tiket (${totalQuota}) tidak boleh melebihi kapasitas event (${data.maxCapacity})`,
+        path: ["tickets"],
+      });
     }
   });

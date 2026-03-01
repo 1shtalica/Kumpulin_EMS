@@ -1,17 +1,21 @@
 export type EventType = "external" | "internal" | undefined;
+export type TicketType = "free" | "paid";
 
 export interface TicketRequest {
   name: string;
   price: number;
   quota: number;
   description: string;
+  start_date_time: Date | undefined;
+  end_date_time: Date | undefined;
+  type: TicketType;
 }
 
 export interface RundownRequest {
   title: string;
   description: string;
-  start_time: string;
-  end_time: string;
+  startTime: string;
+  endTime: string;
   location?: string;
 }
 
@@ -45,8 +49,7 @@ export interface CreateEventFormState {
   meetingUrl: string;
 
   // 📌 Step 4: Tickets
-  isPaid: boolean;
-  maxCapacity: number;
+  maxCapacity?: number;
   maxPurchasePerUser?: number;
   tickets: TicketRequest[];
 

@@ -29,6 +29,7 @@ export default function ForgotPasswordForm() {
     setError,
     formState: { errors },
   } = useForm<ForgotPasswordFormValues>({
+    // migrated to zod v4
     resolver: zodResolver(forgotPasswordSchema),
   });
 

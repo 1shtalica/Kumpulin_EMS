@@ -52,11 +52,11 @@ interface CreateEventStore {
   updateMeetingUrl: (url: string) => void;
 
   // Field updates - Step 4
-  updateIsPaid: (isPaid: boolean) => void;
   updateMaxCapacity: (capacity: number) => void;
 
   updateTickets: (tickets: TicketRequest[]) => void;
-  addTicket: () => void;
+  addFreeTicket: () => void;
+  addPaidTicket: () => void;
   removeTicket: (index: number) => void;
   updateTicket: (
     index: number,
@@ -100,9 +100,8 @@ const initialFormData: CreateEventFormState = {
   },
   meetingUrl: "",
 
-  isPaid: false,
-  maxCapacity: 0,
-  maxPurchasePerUser: undefined,
+  maxCapacity: 1,
+  maxPurchasePerUser: 0,
 
   tickets: [],
   step: 1,
@@ -250,16 +249,6 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
   },
 
   // Step 4 updates
-  updateIsPaid: (isPaid) => {
-    set((state) => {
-      // 🌟 FIX: Reset tickets when switching modes
-      // If switching to FREE, we DO NOT create a placeholder ticket anymore (User request)
-      // If switching to PAID, we start with empty tickets
-      return {
-        formData: { ...state.formData, isPaid, tickets: [] },
-      };
-    });
-  },
 
   updateMaxCapacity: (maxCapacity) => {
     set((state) => ({
@@ -273,13 +262,25 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     }));
   },
 
-  addTicket: () => {
+  addFreeTicket: () => {
     set((state) => ({
       formData: {
         ...state.formData,
         tickets: [
           ...state.formData.tickets,
-          { name: "", price: 0, quota: 0, description: "" },
+          { name: "Tiket Gratis", price: 0, quota: 0, description: "", type: "free", start_date_time: undefined, end_date_time: undefined },
+        ],
+      },
+    }));
+  },
+
+  addPaidTicket: () => {
+    set((state) => ({
+      formData: {
+        ...state.formData,
+        tickets: [
+          ...state.formData.tickets,
+          { name: "Tiket Berbayar", price: 1000, quota: 0, description: "", type: "paid", start_date_time: undefined, end_date_time: undefined },
         ],
       },
     }));

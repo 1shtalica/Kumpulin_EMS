@@ -1,88 +1,95 @@
 import z from "zod";
 
+const email_schema = z
+  .email({ error: "Format email tidak valid" })
+  .trim()
+  .toLowerCase()
+  .min(1, { error: "Email wajib diisi" })
+  .max(254, { error: "Email maksimal 254 karakter" });
+
+const password_schema = z
+  .string()
+  .min(8, { error: "Password minimal 8 karakter" })
+  .max(72, { error: "Password maksimal 72 karakter" })
+  .regex(/[A-Z]/, { error: "Password harus mengandung huruf besar" })
+  .regex(/[a-z]/, { error: "Password harus mengandung huruf kecil" })
+  .regex(/[0-9]/, { error: "Password harus mengandung angka" });
+
 export const registerSchema = z
   .object({
-    userName: z
+    username: z
       .string()
-      .min(3, { message: "Username minimal 3 karakter" })
-      .max(30, { message: "Username maksimal 30 karakter" })
+      .trim()
+      .min(3, { error: "Username minimal 3 karakter" })
+      .max(30, { error: "Username maksimal 30 karakter" })
       .regex(/^[a-zA-Z0-9]+$/, {
-        message: "Username hanya boleh huruf, angka, dan tanpa spasi",
+        error: "Username hanya boleh huruf, angka, dan tanpa spasi",
       }),
-    email: z
+    email: email_schema,
+    password: password_schema,
+    confirm_password: z
       .string()
-      .min(1, { message: "Email wajib diisi" })
-      .email({ message: "Format email tidak valid" }),
-    password: z
-      .string()
-      .min(8, { message: "Password minimal 8 karakter" })
-      .regex(/[A-Z]/, { message: "Password harus mengandung huruf besar" })
-      .regex(/[a-z]/, { message: "Password harus mengandung huruf kecil" })
-      .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
-    confirmPassword: z
-      .string()
-      .min(1, { message: "Konfirmasi password wajib diisi" }),
-    agreeToTerms: z.boolean().refine((val) => val === true, {
-      message: "Anda harus menyetujui syarat dan ketentuan",
+      .min(1, { error: "Konfirmasi password wajib diisi" })
+      .max(72, { error: "Konfirmasi password maksimal 72 karakter" }),
+    agree_to_terms: z.boolean().refine((val) => val === true, {
+      error: "Anda harus menyetujui syarat dan ketentuan",
     }),
   })
   .superRefine((data, ctx) => {
-    if (data.password !== data.confirmPassword) {
+    if (data.password !== data.confirm_password) {
       ctx.addIssue({
-        path: ["confirmPassword"],
+        path: ["confirm_password"],
         message: "Password tidak cocok",
-        code: z.ZodIssueCode.custom,
+        code: "custom",
+        input: data.confirm_password,
       });
     }
   });
 
 export const loginSchema = z.object({
-  email: z
+  email: email_schema,
+  password: z
     .string()
-    .min(1, { message: "Email Wajib diisi" })
-    .email({ message: "Format email tidak valid" }),
-  password: z.string().min(8, { message: "Password minimal 8 karakter" }),
+    .min(1, { error: "Password wajib diisi" })
+    .max(72, { error: "Password maksimal 72 karakter" }),
 });
 
 export const resetPasswordSchema = z
   .object({
-    password: z
+    password: password_schema,
+    confirm_password: z
       .string()
-      .min(8, { message: "Password minimal 8 karakter" })
-      .regex(/[A-Z]/, { message: "Password harus mengandung huruf besar" })
-      .regex(/[a-z]/, { message: "Password harus mengandung huruf kecil" })
-      .regex(/[0-9]/, { message: "Password harus mengandung angka" }),
-    confirmPassword: z.string(),
+      .min(1, { error: "Konfirmasi password wajib diisi" })
+      .max(72, { error: "Konfirmasi password maksimal 72 karakter" }),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    path: ["confirmPassword"],
-    message: "Password tidak cocok",
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirm_password) {
+      ctx.addIssue({
+        path: ["confirm_password"],
+        message: "Password tidak cocok",
+        code: "custom",
+        input: data.confirm_password,
+      });
+    }
   });
 
 export const forgotPasswordSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: "Email wajib diisi" })
-    .email({ message: "Format email tidak valid" }),
+  email: email_schema,
 });
 
 export const phoneSchema = z.object({
-  phoneNumber: z
+  phone_number: z
     .string()
-    .regex(/^8/, {
-      message: "Nomor harus diawali angka 8",
-    })
-    .min(9, { message: "Nomor HP minimal 9 digit" })
-    .max(13, { message: "Nomor HP maksimal 13 digit" })
-    .regex(/^[0-9]+$/, {
-      message: "Hanya boleh angka",
-    }),
+    .trim()
+    .regex(/^8[0-9]+$/, { error: "Nomor harus diawali angka 8 dan hanya boleh angka" })
+    .min(9, { error: "Nomor HP minimal 9 digit" })
+    .max(13, { error: "Nomor HP maksimal 13 digit" }),
 });
 
 export const organizerSchema = z.object({
-  organizerName: z
+  organizer_name: z
     .string()
-    .min(3, { message: "Nama organizer minimal 3 karakter" })
-    .max(30, { message: "Nama organizer maksimal 30 karakter" }),
+    .trim()
+    .min(3, { error: "Nama organizer minimal 3 karakter" })
+    .max(50, { error: "Nama organizer maksimal 50 karakter" }),
 });
-

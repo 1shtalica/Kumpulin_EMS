@@ -661,7 +661,7 @@ export default function EventScheduleStep({
               {/* Postal Code (Optional) */}
               <div className="flex justify-evenly gap-3">
                 <div className="space-y-2 w-full">
-                  <Label>Nama Alamat</Label>
+                  <Label>Nama Lokasi</Label>
                   <Input
                     placeholder="Contoh. Gedung A"
                     type="text"

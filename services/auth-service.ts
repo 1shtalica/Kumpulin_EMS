@@ -77,18 +77,18 @@ export const AuthService = {
         try {
             const response = await axiosClient.post("/auth/send-code", {
                 email,
-                type: "forgot-password",
+                type: "password_reset",
             });
             return response.data;
         } catch (error) {
             throw error;
         }
     },
-    async resetPassword(payload: { token: string; newPassword: string }) {
+    async resetPassword(payload: { token: string; new_password: string }) {
         try {
             const response = await axiosClient.post("/auth/forgot-password", {
                 token: payload.token,
-                new_password: payload.newPassword,
+                new_password: payload.new_password,
             });
             return response.data;
         } catch (error) {

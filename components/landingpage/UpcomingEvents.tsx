@@ -7,10 +7,11 @@ import { EventService } from "@/services/event-service";
 import EmptyState from "../reusable/EmptyState";
 
 async function UpcomingEventsGrid() {
-  let events: Awaited<ReturnType<typeof EventService.getEvents>> = [];
+  let events: Awaited<ReturnType<typeof EventService.getEvents>>["data"] = [];
 
   try {
-    events = await EventService.getEvents();
+    const { data } = await EventService.getEvents({ limit: 8 });
+    events = data;
   } catch (error) {
     console.error("Failed to load random events:", error);
   }
@@ -29,19 +30,19 @@ async function UpcomingEventsGrid() {
         <EventCard
           key={event.id}
           title={event.title}
-          category={""}
-          date={event.start_date}
-          location={event.address_title}
-          price={event.ticket_price}
-          originalPrice={event.ticket_price}
-          organizer={event.organizer_name}
-          image={event.image_url}
+          category={event.type || ""}
+          date={event.start_date || ""}
+          location={event.is_online ? "Online" : event.address_title || ""}
+          price={event.ticket_price || 0}
+          originalPrice={event.ticket_price || 0}
+          organizer={event.organizer_name || ""}
+          image={event.image_url || "/placeholder-event.jpg"}
           slug={event.slug}
           isHot={false}
           isOnline={event.is_online}
           isRtPintar={event.type === "internal"}
-          ticketSold={event.total_sold}
-          maxQuota={event.max_capacity}
+          ticketSold={event.total_sold || 0}
+          maxQuota={event.max_capacity || 0}
         />
       ))}
     </div>

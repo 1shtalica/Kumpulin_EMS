@@ -49,20 +49,22 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const phoneForm = useForm<PhoneFormValues>({
+    // migrated to zod v4
     resolver: zodResolver(phoneSchema),
-    defaultValues: { phoneNumber: "" },
+    defaultValues: { phone_number: "" },
   });
 
   const organizerForm = useForm<OrganizerFormValues>({
+    // migrated to zod v4
     resolver: zodResolver(organizerSchema),
-    defaultValues: { organizerName: "" },
+    defaultValues: { organizer_name: "" },
   });
 
   // Step 1: Validate phone and move to step 2 (NO API CALL)
   const handleNextStep = async () => {
     const isValid = await phoneForm.trigger();
     if (isValid) {
-      const phone = phoneForm.getValues("phoneNumber");
+      const phone = phoneForm.getValues("phone_number");
       const formattedPhone = `+62${phone}`;
       setPhoneNumber(formattedPhone);
       setStep(2);
@@ -91,9 +93,9 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
 
       // 2. If Organizer, create organizer entity
       if (isOrganizer && organizerData) {
-        const slug = generateSlug(organizerData.organizerName);
+        const slug = generateSlug(organizerData.organizer_name);
         await AuthService.createOrganizer({
-          name: organizerData.organizerName,
+          name: organizerData.organizer_name,
           slug: slug,
         });
       }
@@ -126,7 +128,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         <div className="space-y-2">
           <h1 className="font-bold text-3xl">
             🎉
-            <span className="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text ml-2">
+            <span className="bg-linear-to-r from-primary to-secondary text-transparent bg-clip-text ml-2">
               Selamat Datang!
             </span>
           </h1>
@@ -167,7 +169,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Nomor WhatsApp</Label>
+                <Label htmlFor="phone_number">Nomor WhatsApp</Label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
                     <Phone className="h-4 w-4 text-gray-500" />
@@ -178,14 +180,14 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   </div>
 
                   <Input
-                    id="phoneNumber"
+                    id="phone_number"
                     type="tel"
                     placeholder="8xxxxxxxx"
                     autoComplete="tel"
-                    {...phoneForm.register("phoneNumber")}
+                    {...phoneForm.register("phone_number")}
                     className={cn(
                       "pl-20",
-                      phoneForm.formState.errors.phoneNumber && "border-danger",
+                      phoneForm.formState.errors.phone_number && "border-danger",
                     )}
                     onChange={(e) => {
                       let value = e.target.value.replace(/\D/g, ""); // Hapus non-digit
@@ -200,22 +202,22 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                         value = value.slice(0, 13);
                       }
 
-                      phoneForm.setValue("phoneNumber", value, {
+                      phoneForm.setValue("phone_number", value, {
                         shouldValidate: true,
                       });
                     }}
                   />
                 </div>
-                {phoneForm.formState.errors.phoneNumber && (
+                {phoneForm.formState.errors.phone_number && (
                   <p className="text-xs text-danger font-medium">
-                    {phoneForm.formState.errors.phoneNumber.message}
+                    {phoneForm.formState.errors.phone_number.message}
                   </p>
                 )}
               </div>
 
               <Button
                 onClick={handleNextStep}
-                className="w-full py-6 bg-gradient-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
+                className="w-full py-6 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
               >
                 Lanjutkan
               </Button>
@@ -317,24 +319,24 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="space-y-2">
-                      <Label htmlFor="organizerName">Nama Organizer</Label>
+                      <Label htmlFor="organizer_name">Nama Organizer</Label>
                       <Input
                         startIcon={
                           <Building2 className="h-4 w-4 text-gray-500" />
                         }
-                        id="organizerName"
+                        id="organizer_name"
                         placeholder="Nama organisasi atau komunitas"
                         autoComplete="organization"
-                        {...organizerForm.register("organizerName")}
+                        {...organizerForm.register("organizer_name")}
                         className={
-                          organizerForm.formState.errors.organizerName
+                          organizerForm.formState.errors.organizer_name
                             ? "border-danger"
                             : ""
                         }
                       />
-                      {organizerForm.formState.errors.organizerName && (
+                      {organizerForm.formState.errors.organizer_name && (
                         <p className="text-xs text-danger font-medium">
-                          {organizerForm.formState.errors.organizerName.message}
+                          {organizerForm.formState.errors.organizer_name.message}
                         </p>
                       )}
                     </div>
@@ -368,7 +370,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   }
                 }}
                 disabled={isLoading || !selectedRole}
-                className="flex-[2] py-6 bg-gradient-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
+                className="flex-2 py-6 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
               >
                 {isLoading ? (
                   <>

@@ -78,7 +78,7 @@ export default function LandingNavbar() {
         "border-b backdrop-blur-xl",
         isScrolled
           ? "bg-white/85 border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
-          : "bg-white/50 border-white/40 shadow-none",
+          : "bg-white border-white/40 shadow-none",
       )}
     >
       <div className="container relative mx-auto px-4 md:px-8 lg:px-12 flex flex-row items-center justify-between w-full max-w-7xl">
@@ -99,14 +99,14 @@ export default function LandingNavbar() {
                 aria-describedby={undefined}
               >
                 <SheetHeader className="h-16 flex flex-row items-center border-b shrink-0 p-0">
-                  <SheetTitle className="flex-1 px-4 font-bold">
+                  <SheetTitle className="flex-1 px-4">
                     <button
                       type="button"
                       className="flex items-center gap-2 text-xl group cursor-pointer focus-visible:outline-none"
                       onClick={() => { setIsMobileMenuOpen(false); router.refresh(); }}
                     >
                       <span className="transition-transform group-hover:rotate-12">🎉</span>
-                      <span className="bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
+                      <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
                         kumpul.in
                       </span>
                     </button>
@@ -161,7 +161,7 @@ export default function LandingNavbar() {
             className="hidden md:flex items-center gap-2 md:text-2xl group cursor-pointer focus-visible:outline-none"
           >
             <span className="transition-transform group-hover:rotate-12">🎉</span>
-            <span className="font-extrabold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
+            <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
               kumpul.in
             </span>
           </button>

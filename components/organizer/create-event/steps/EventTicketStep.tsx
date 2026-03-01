@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Trash2, Ticket as TicketIcon, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,17 @@ export default function EventTicketStep({
   const isPaid = watch("isPaid");
   const maxCapacity = watch("maxCapacity");
   const tickets = watch("tickets"); // Watch tickets to calculate total quota
+
+  const [capacityInput, setCapacityInput] = useState<string>(
+    maxCapacity > 0 ? maxCapacity.toString() : "50"
+  );
+
+  useEffect(() => {
+    if (maxCapacity > 0 && maxCapacity.toString() !== capacityInput) {
+      setCapacityInput(maxCapacity.toString());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maxCapacity]);
 
   // Calculate total quota for Paid events
   const totalTicketQuota = (tickets || []).reduce(
@@ -179,11 +190,19 @@ export default function EventTicketStep({
                       id="unlimitedCapacity"
                       className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       checked={maxCapacity === 0}
-                      onChange={(e) =>
-                        setValue("maxCapacity", e.target.checked ? 0 : 50, {
-                          shouldValidate: true,
-                        })
-                      }
+                      onChange={(e) => {
+                        const isUnlimited = e.target.checked;
+                        if (isUnlimited) {
+                          setValue("maxCapacity", 0, {
+                            shouldValidate: true,
+                          });
+                        } else {
+                          setCapacityInput("50");
+                          setValue("maxCapacity", 50, {
+                            shouldValidate: true,
+                          });
+                        }
+                      }}
                     />
                     <Label
                       htmlFor="unlimitedCapacity"
@@ -200,10 +219,20 @@ export default function EventTicketStep({
                     <Input
                       type="text"
                       placeholder="Contoh: 100"
-                      {...register("maxCapacity")}
+                      value={capacityInput}
                       onChange={(e) => {
-                        const value = parseInt(e.target.value) || 0;
-                        setValue("maxCapacity", value, { shouldValidate: true });
+                        const value = e.target.value.replace(/\D/g, "");
+                        setCapacityInput(value);
+                        if (value !== "" && value !== "0") {
+                          setValue("maxCapacity", parseInt(value), { shouldValidate: true });
+                        }
+                      }}
+                      onBlur={() => {
+                        if (capacityInput === "" || capacityInput === "0") {
+                          const lastValid = maxCapacity > 0 ? maxCapacity.toString() : "50";
+                          setCapacityInput(lastValid);
+                          setValue("maxCapacity", parseInt(lastValid), { shouldValidate: true });
+                        }
                       }}
                       className={cn(
                         errors.maxCapacity &&

@@ -44,7 +44,6 @@ export default function TimePicker({
   const handleTimeSelect = (newHour: string, newMinute: string) => {
     const time = `${newHour}:${newMinute}`;
     onChange?.(time);
-    setOpen(false);
   };
 
   return (

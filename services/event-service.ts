@@ -4,13 +4,32 @@ import type { Event, EventsResponse, EventResponse, GetEventsParams, GetOrganize
 
 export const EventService = {
 
-  async getEvents(params: GetEventsParams = {}): Promise<HomeEventCard[]> {
-    const { offset = 0, limit = 100, type = "" } = params;
+  async getEvents(params: GetEventsParams = {}): Promise<{ data: HomeEventCard[]; total: number }> {
+    const { offset = 0, limit = 12, type = "", q = "" } = params;
 
     try {
-      const json = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events?offset=${offset}&limit=${limit}&type=${type}`);
-      const data = await json.json();
-      return data.data || [];
+      const urlParams = new URLSearchParams({
+        offset: String(offset),
+        limit: String(limit),
+      });
+
+      if (type) urlParams.append("type", type);
+      if (q) urlParams.append("search", q); // BE nerima label "search", bukan "q"
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/events?${urlParams.toString()}`,
+        { cache: 'no-store' } 
+      );
+
+      const json = await response.json();
+      
+      const data = json.data || [];
+      const estimatedTotal = data.length === limit ? offset + limit + 1 : offset + data.length;
+
+      return {
+        data: data,
+        total: estimatedTotal,
+      };
     } catch (error) {
       console.error("Failed to fetch events:", error);
       throw error;
@@ -29,8 +48,8 @@ export const EventService = {
 
   async getEventBySlug(slug: string): Promise<HomeEventCard | null> {
     try {
-      const events = await this.getEvents({ limit: 1000 });
-      return events.find((e) => e.slug === slug) || null;
+      const { data } = await this.getEvents({ limit: 1000 });
+      return data.find((e) => e.slug === slug) || null;
     } catch (error) {
       console.error(`Failed to fetch event by slug ${slug}:`, error);
       throw error;
