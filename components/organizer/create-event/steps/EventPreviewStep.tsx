@@ -14,6 +14,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { CreateEventFormState } from "@/types/create-event";
 import TipTapViewer from "@/components/reusable/TipTapViewer";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 interface EventPreviewStepProps {
   formData: CreateEventFormState;
@@ -23,6 +31,14 @@ interface EventPreviewStepProps {
 
 export default function EventPreviewStep(props: EventPreviewStepProps) {
   const { formData, onSubmit, isSubmitting = false } = props;
+
+  const isPaid = formData.tickets.some(t => t.type === 'paid');
+
+  // Gather all images (Banner + Posters) for Carousel
+  const previewImages = [
+    ...(formData.banner_image_preview ? [formData.banner_image_preview] : []),
+    ...(formData.image_previews || [])
+  ];
 
   const formatDate = (date?: Date) => {
     if (!date) return "-";
@@ -94,55 +110,60 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
 
           <div className="space-y-8">
             {/* Banner Image (Main) */}
-            {formData.bannerImagePreview ? (
-              <div className="space-y-3">
-                {/* Main Banner */}
-                <div className="relative group rounded-2xl overflow-hidden bg-secondary/20 aspect-video w-full border border-border/50">
-                  <img
-                    src={formData.bannerImagePreview}
-                    alt="Banner Event"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
+            {previewImages.length > 0 ? (
+              <Carousel
+                className="w-full relative group/carousel"
+                plugins={[
+                  Autoplay({
+                    delay: 4000,
+                  }),
+                ]}
+                opts={{
+                  loop: true,
+                }}
+              >
+                <CarouselContent>
+                  {previewImages.map((src, idx) => (
+                    <CarouselItem key={idx}>
+                      <div className="relative group rounded-2xl overflow-hidden bg-secondary/20 aspect-video w-full border border-border/50">
+                        <img
+                          src={src}
+                          alt={`Preview Gallery ${idx + 1}`}
+                          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
 
-                  {/* Overlay Gradient for Text Readability */}
-                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+                        {/* Overlay Gradient for Text Readability */}
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-80" />
 
-                  <div className="absolute bottom-4 left-4 right-4 text-white z-10">
-                    <div className="inline-flex items-center rounded-md bg-white/20 backdrop-blur-md px-2.5 py-1 text-xs font-medium text-white ring-1 ring-white/30 mb-2">
-                      {formData.category}
-                    </div>
-                    <h4 className="text-xl lg:text-3xl font-bold leading-tight shadow-black/10 drop-shadow-sm line-clamp-2">
-                      {formData.title}
-                    </h4>
-                  </div>
-                </div>
-
-                {/* Poster Gallery Thumbnails */}
-                {formData.imagePreviews && formData.imagePreviews.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-2">Poster/Galeri</p>
-                    <div className="grid grid-cols-4 gap-3">
-                      {formData.imagePreviews.slice(0, 4).map((img, idx) => (
-                        <div
-                          key={idx}
-                          className="relative aspect-square rounded-lg overflow-hidden border border-border/50 bg-secondary/20 group"
-                        >
-                          <img
-                            src={img}
-                            alt={`Poster ${idx + 1}`}
-                            className="h-full w-full object-cover transition-colors hover:opacity-90"
-                          />
-                          {idx === 3 && formData.imagePreviews && formData.imagePreviews.length > 4 && (
-                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-sm backdrop-blur-xs">
-                              +{formData.imagePreviews.length - 4}
+                        {idx === 0 && (
+                          <div className="absolute bottom-4 left-4 right-4 text-white z-10">
+                            <div className="inline-flex items-center rounded-md bg-white/20 backdrop-blur-md px-2.5 py-1 text-xs font-medium text-white ring-1 ring-white/30 mb-2">
+                              {formData.category}
                             </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                            <h4 className="text-xl lg:text-3xl font-bold leading-tight shadow-black/10 drop-shadow-sm line-clamp-2">
+                              {formData.title}
+                            </h4>
+                          </div>
+                        )}
+                        {idx !== 0 && (
+                          <div className="absolute top-4 right-4 text-white z-10">
+                             <div className="inline-flex items-center rounded-full bg-black/40 backdrop-blur-md px-3 py-1 text-xs font-medium text-white ring-1 ring-white/20">
+                              Poster {idx}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                
+                {previewImages.length > 1 && (
+                  <>
+                    <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity bg-white/20 hover:bg-white/40 text-white border-0 backdrop-blur-md" />
+                    <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity bg-white/20 hover:bg-white/40 text-white border-0 backdrop-blur-md" />
+                  </>
                 )}
-              </div>
+              </Carousel>
             ) : (
               <div className="bg-secondary/10 rounded-2xl p-8 text-center border border-dashed border-border/60">
                 <div className="mx-auto h-12 w-12 text-muted-foreground/50 mb-3">
@@ -183,12 +204,12 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                 <div className="relative">
                   <div className="absolute -left-7.75 top-1.5 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Dibuka</p>
-                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.startRegistrationDateTime)}</p>
+                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.start_registration_date)}</p>
                 </div>
                 <div className="relative">
                   <div className="absolute -left-7.75 top-1.5 h-3 w-3 rounded-full border-2 border-background bg-red-500" />
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Ditutup</p>
-                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.endRegistrationDateTime)}</p>
+                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.end_registration_date)}</p>
                 </div>
               </div>
             </div>
@@ -203,12 +224,12 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                 <div className="relative">
                   <div className="absolute -left-7.75 top-1.5 h-3 w-3 rounded-full border-2 border-background bg-primary" />
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Mulai</p>
-                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.startEventDateTime)}</p>
+                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.event_start_date)}</p>
                 </div>
                 <div className="relative">
                   <div className="absolute -left-7.75 top-1.5 h-3 w-3 rounded-full border-2 border-background bg-primary-light" />
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Selesai</p>
-                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.endEventDateTime)}</p>
+                  <p className="text-sm font-medium text-foreground mt-0.5">{formatDate(formData.event_end_date)}</p>
                 </div>
               </div>
             </div>
@@ -216,12 +237,12 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
             {/* Location (Full Width) */}
             <div className="md:col-span-2 pt-4 border-t border-border/50 mt-2">
               <div className="flex items-center gap-2 text-foreground font-semibold mb-3">
-                {!formData.isOnline ? <MapPin className="h-4.5 w-4.5 text-primary" /> : <Video className="h-4.5 w-4.5 text-primary" />}
-                <span>Lokasi - {!formData.isOnline ? "Offline" : "Online"}</span>
+                {!formData.is_online ? <MapPin className="h-4.5 w-4.5 text-primary" /> : <Video className="h-4.5 w-4.5 text-primary" />}
+                <span>Lokasi - {!formData.is_online ? "Offline" : "Online"}</span>
               </div>
 
               <div className="bg-primary-light rounded-xl p-5 border border-border/40">
-                {!formData.isOnline ? (
+                {!formData.is_online ? (
                   <div className="flex flex-col gap-1">
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">
                       Detail Lokasi
@@ -232,28 +253,38 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                       </p>
                     )}
                     <p className={cn("text-base", formData.address.title ? "text-muted-foreground" : "font-semibold text-foreground text-lg")}>
-                      {formData.address.rawAddress || "Alamat belum diatur"}
+                      {formData.address.raw_address || "Alamat belum diatur"}
                     </p>
                     <p className="text-muted-foreground text-sm">
-                      {[formData.address.city, formData.address.province, formData.address.postalCode].filter(Boolean).join(", ")}
+                      {[formData.address.city, formData.address.province, formData.address.postal_code].filter(Boolean).join(", ")}
                     </p>
+                    {formData.address.location_url && (
+                      <a href={formData.address.location_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline mt-1 block">
+                        Lihat di Peta
+                      </a>
+                    )}
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">Meeting Link</p>
                       <a
-                        href={formData.meetingUrl}
+                        href={formData.meeting_url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-medium text-primary hover:underline truncate block max-w-md"
                       >
-                        {formData.meetingUrl}
+                        {formData.meeting_url || "Belum ada link"}
                       </a>
+                      {formData.hide_meeting_url && (
+                        <p className="text-xs text-warning block mt-1">⚠️ Disembunyikan sampai acara dimulai</p>
+                      )}
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={formData.meetingUrl} target="_blank" rel="noopener noreferrer">Buka Link</a>
-                    </Button>
+                    {formData.meeting_url && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={formData.meeting_url} target="_blank" rel="noopener noreferrer">Buka Link</a>
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
@@ -265,9 +296,9 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
         <div className="rounded-xl border border-border/60 bg-card p-6 lg:p-8 shadow-sm transition-all hover:shadow-md">
           <SectionHeader icon={Clock} title="Susunan Acara" />
 
-          {formData.rundown.length > 0 ? (
+          {formData.rundowns.length > 0 ? (
             <div className="flex flex-col gap-4">
-              {formData.rundown.map((item, index) => (
+              {formData.rundowns.map((item, index) => (
                 <div
                   key={index}
                   className="group flex flex-col md:flex-row gap-3 md:gap-6 p-5 rounded-3xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 transition-all duration-300"
@@ -326,12 +357,12 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
             <span
               className={cn(
                 "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider",
-                formData.isPaid
+                isPaid
                   ? "bg-blue-50 text-blue-700 ring-1 ring-blue-700/10"
                   : "bg-green-50 text-green-700 ring-1 ring-green-700/10",
               )}
             >
-              {formData.isPaid ? "Event Berbayar" : "Event Gratis"}
+              {isPaid ? "Event Berbayar" : "Event Gratis"}
             </span>
           </div>
 
@@ -341,15 +372,15 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
             </div>
             <div className="text-sm">
               <span className="block text-xs font-bold uppercase tracking-wider text-primary/70 mb-0.5">
-                {formData.isPaid ? "Total Kapasitas (Akumulasi)" : "Kapasitas Maksimal"}
+                {isPaid ? "Total Kapasitas (Akumulasi)" : "Kapasitas Maksimal"}
               </span>
               <span className="font-bold text-lg text-foreground">
-                {formData.isPaid ? (
+                {isPaid ? (
                   formData.tickets.reduce((sum, t) => sum + Number(t.quota || 0), 0)
                 ) : (
-                  formData.maxCapacity > 0 ? formData.maxCapacity : "Tidak Terbatas"
+                  (formData.max_capacity ?? 0) > 0 ? formData.max_capacity : "Tidak Terbatas"
                 )}
-                <span className="text-sm font-normal text-muted-foreground ml-1">{formData.maxCapacity > 0 ? "Peserta" : ""}</span>
+                <span className="text-sm font-normal text-muted-foreground ml-1">{(formData.max_capacity ?? 0) > 0 ? "Peserta" : ""}</span>
               </span>
             </div>
           </div>

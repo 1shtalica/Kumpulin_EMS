@@ -19,6 +19,7 @@ interface DateTimePickerProps {
   placeholder?: string;
   disabled?: boolean;
   minDate?: Date;
+  maxDate?: Date;
   className?: string;
 }
 
@@ -47,6 +48,7 @@ export default function DateTimePicker({
   placeholder = "Pilih tanggal & waktu",
   disabled = false,
   minDate,
+  maxDate,
   className,
 }: DateTimePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -116,18 +118,26 @@ export default function DateTimePicker({
             selected={value}
             onSelect={handleDateSelect}
             disabled={(date: Date) => {
+              const compareDate = new Date(date);
+              compareDate.setHours(0, 0, 0, 0);
+
               if (minDate) {
-                const compareDate = new Date(date);
-                compareDate.setHours(0, 0, 0, 0);
                 const minCompare = new Date(minDate);
                 minCompare.setHours(0, 0, 0, 0);
-                return compareDate < minCompare;
+                if (compareDate < minCompare) return true;
               }
+
+              if (maxDate) {
+                const maxCompare = new Date(maxDate);
+                maxCompare.setHours(0, 0, 0, 0);
+                if (compareDate > maxCompare) return true;
+              }
+
               return false;
             }}
             initialFocus
           />
-          <div className="flex flex-col sm:flex-row sm:h-[300px] divide-y sm:divide-y-0 sm:divide-x">
+          <div className="flex flex-col sm:flex-row sm:h-75 divide-y sm:divide-y-0 sm:divide-x">
             {/* Hours */}
             <ScrollArea className="w-64 sm:w-auto">
               <div className="flex sm:flex-col p-2">

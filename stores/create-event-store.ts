@@ -28,13 +28,13 @@ interface CreateEventStore {
 
   // Field updates - Step 3 - DateTime versions
   updateEventDateTime: (data: {
-    startEventDateTime?: Date;
-    endEventDateTime?: Date;
+    event_start_date?: Date;
+    event_end_date?: Date;
   }) => void;
 
   updateRegistrationDateTime: (data: {
-    startRegistrationDateTime?: Date;
-    endRegistrationDateTime?: Date;
+    start_registration_date?: Date;
+    end_registration_date?: Date;
   }) => void;
 
   // Rundown Actions
@@ -49,7 +49,8 @@ interface CreateEventStore {
   // Location Actions
   updateIsOnline: (isOnline: boolean) => void;
   updateAddress: (address: Partial<CreateEventFormState["address"]>) => void;
-  updateMeetingUrl: (url: string) => void;
+  updateMeetingUrl: (meeting_url: string) => void;
+  updateHideMeetingUrl: (hide_meeting_url: boolean) => void;
 
   // Field updates - Step 4
   updateMaxCapacity: (capacity: number) => void;
@@ -77,31 +78,33 @@ const initialFormData: CreateEventFormState = {
   title: "",
   category: "",
   description: "",
-  bannerImage: null,
-  bannerImagePreview: "",
+  banner_image: null,
+  banner_image_preview: "",
   images: [],
-  imagePreviews: [],
+  image_previews: [],
 
-  startEventDateTime: undefined,
-  endEventDateTime: undefined,
+  event_start_date: undefined,
+  event_end_date: undefined,
 
-  startRegistrationDateTime: undefined,
-  endRegistrationDateTime: undefined,
+  start_registration_date: undefined,
+  end_registration_date: undefined,
 
-  rundown: [],
+  rundowns: [],
 
-  isOnline: false,
+  is_online: false,
   address: {
     title: "",
-    rawAddress: "",
+    raw_address: "",
     city: "",
     province: "",
-    postalCode: "",
+    postal_code: "",
+    location_url: "",
   },
-  meetingUrl: "",
+  meeting_url: "",
+  hide_meeting_url: false,
 
-  maxCapacity: 1,
-  maxPurchasePerUser: 0,
+  max_capacity: 1,
+  max_ticket_per_user: 0,
 
   tickets: [],
   step: 1,
@@ -167,24 +170,24 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
 
   updateBannerImage: (file, preview) => {
     set((state) => ({
-      formData: { ...state.formData, bannerImage: file, bannerImagePreview: preview },
+      formData: { ...state.formData, banner_image: file, banner_image_preview: preview },
     }));
   },
 
   updatePosters: (files, previews) => {
     set((state) => ({
-      formData: { ...state.formData, images: files, imagePreviews: previews },
+      formData: { ...state.formData, images: files, image_previews: previews },
     }));
   },
 
   // Step 3 updates - DateTime
-  updateEventDateTime: (data: { startEventDateTime?: Date; endEventDateTime?: Date }) => {
+  updateEventDateTime: (data: { event_start_date?: Date; event_end_date?: Date }) => {
     set((state) => ({
       formData: { ...state.formData, ...data },
     }));
   },
 
-  updateRegistrationDateTime: (data: { startRegistrationDateTime?: Date; endRegistrationDateTime?: Date }) => {
+  updateRegistrationDateTime: (data: { start_registration_date?: Date; end_registration_date?: Date }) => {
     set((state) => ({
       formData: { ...state.formData, ...data },
     }));
@@ -194,13 +197,13 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     set((state) => ({
       formData: {
         ...state.formData,
-        rundown: [
-          ...state.formData.rundown,
+        rundowns: [
+          ...state.formData.rundowns,
           {
             title: "",
             description: "",
-            startTime: "",
-            endTime: "",
+            start_time: "",
+            end_time: "",
           },
         ],
       },
@@ -211,7 +214,7 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     set((state) => ({
       formData: {
         ...state.formData,
-        rundown: state.formData.rundown.filter((_, i) => i !== index),
+        rundowns: state.formData.rundowns.filter((_, i) => i !== index),
       },
     }));
   },
@@ -220,16 +223,16 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     set((state) => ({
       formData: {
         ...state.formData,
-        rundown: state.formData.rundown.map((item, i) =>
+        rundowns: state.formData.rundowns.map((item, i) =>
           i === index ? { ...item, [field]: value } : item
         ),
       },
     }));
   },
 
-  updateIsOnline: (isOnline) => {
+  updateIsOnline: (is_online) => {
     set((state) => ({
-      formData: { ...state.formData, isOnline },
+      formData: { ...state.formData, is_online },
     }));
   },
 
@@ -242,17 +245,23 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     }));
   },
 
-  updateMeetingUrl: (url) => {
+  updateMeetingUrl: (meeting_url) => {
     set((state) => ({
-      formData: { ...state.formData, meetingUrl: url },
+      formData: { ...state.formData, meeting_url },
+    }));
+  },
+
+  updateHideMeetingUrl: (hide_meeting_url) => {
+    set((state) => ({
+      formData: { ...state.formData, hide_meeting_url },
     }));
   },
 
   // Step 4 updates
 
-  updateMaxCapacity: (maxCapacity) => {
+  updateMaxCapacity: (max_capacity) => {
     set((state) => ({
-      formData: { ...state.formData, maxCapacity },
+      formData: { ...state.formData, max_capacity },
     }));
   },
 

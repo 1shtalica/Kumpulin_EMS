@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Ticket as TicketIcon, Users } from "lucide-react";
+import { Plus, Trash2, Ticket as TicketIcon, Users, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useFormContext, useFieldArray, Controller } from "react-hook-form";
+import DateTimePicker from "@/components/reusable/DateTimePicker";
 import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
 
 export default function EventTicketStep({
@@ -21,6 +22,7 @@ export default function EventTicketStep({
     register,
     watch,
     setValue,
+    trigger,
     formState: { errors },
   } = useFormContext<CreateEventSchema>();
 
@@ -29,42 +31,34 @@ export default function EventTicketStep({
     name: "tickets",
   });
 
-  const isPaid = watch("isPaid");
-  const maxCapacity = watch("maxCapacity");
-  const tickets = watch("tickets"); // Watch tickets to calculate total quota
+  const max_capacity = watch("max_capacity");
+  const tickets = watch("tickets");
 
   const [capacityInput, setCapacityInput] = useState<string>(
-    maxCapacity > 0 ? maxCapacity.toString() : "50"
+    max_capacity > 0 ? max_capacity.toString() : "50"
   );
 
   useEffect(() => {
-    if (maxCapacity > 0 && maxCapacity.toString() !== capacityInput) {
-      setCapacityInput(maxCapacity.toString());
+    if (max_capacity > 0 && max_capacity.toString() !== capacityInput) {
+      setCapacityInput(max_capacity.toString());
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [maxCapacity]);
+  }, [max_capacity]);
 
-  // Calculate total quota for Paid events
+  const start_registration_date = watch("start_registration_date");
+  const end_registration_date = watch("end_registration_date");
+
   const totalTicketQuota = (tickets || []).reduce(
     (sum, ticket) => sum + (Number(ticket.quota) || 0),
     0,
   );
 
-  const handlePaidChange = (paid: boolean) => {
-    setValue("isPaid", paid, { shouldValidate: true });
-    if (!paid) {
-      setValue("tickets", [{
-        name: "Gratis",
-        price: 0,
-        quota: 999,
-        description: "tiket gratis"
-      }]);
-    } else {
-      if (fields.length === 0) {
-        append({ name: "", price: 0, quota: 0, description: "" });
-      }
+  useEffect(() => {
+    if (tickets && tickets.length > 0) {
+      trigger("tickets");
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalTicketQuota, max_capacity]);
 
   return (
     <div className="space-y-8">
@@ -73,228 +67,151 @@ export default function EventTicketStep({
         <div className="text-center">
           <h2 className="text-2xl font-bold text-foreground">Pengaturan Tiket</h2>
           <p className="mt-2 text-muted-foreground">
-            Atur kapasitas, batas waktu pendaftaran, dan jenis tiket
+            Atur kapasitas event, batas pembelian, dan jenis tiket
           </p>
         </div>
       )}
 
-      {/* Free/Paid Toggle */}
+      {/* Max Purchase Per User */}
       {(!sectionOnly || sectionOnly === 'tickets') && (
         <div className="space-y-4">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <TicketIcon className="h-5 w-5 text-primary" />
-            Jenis Tiket
+            <ShoppingCart className="h-5 w-5 text-primary" />
+            Batas Pembelian
           </h3>
-
-          <div className="space-y-3">
-            <Label>Apakah event ini berbayar?</Label>
-            <div className="grid gap-3 md:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => handlePaidChange(false)}
-                className={cn(
-                  "rounded-xl border p-4 text-left transition-all",
-                  "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                  !isPaid
-                    ? "border-primary bg-primary-light shadow-xs"
-                    : "border-gray-200 bg-white hover:border-gray-300",
-                )}
-              >
-                <div className="font-semibold text-foreground">Gratis</div>
-                <div className="text-sm text-muted-foreground">
-                  Event dapat diakses tanpa biaya
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handlePaidChange(true)}
-                className={cn(
-                  "rounded-xl border p-4 text-left transition-all",
-                  "hover:shadow-xs focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                  isPaid
-                    ? "border-primary bg-primary-light shadow-xs"
-                    : "border-gray-200 bg-white hover:border-gray-300",
-                )}
-              >
-                <div className="font-semibold text-foreground">Berbayar</div>
-                <div className="text-sm text-muted-foreground">
-                  Event memerlukan pembelian tiket
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Max Purchase Per User - ONLY FOR PAID EVENTS */}
-      {(!sectionOnly || sectionOnly === 'tickets') && isPaid && (
-        <div className="space-y-3 rounded-xl border border-primary/20 bg-primary-light/30 p-4">
-          <Label htmlFor="maxPurchasePerUser" className="text-foreground">
-            Batas Pembelian Per User <span className="text-danger">*</span>
-          </Label>
-          <Input
-            id="maxPurchasePerUser"
+          <div className="space-y-3 rounded-xl border border-primary/20 bg-primary-light/30 p-4">
+            <Label htmlFor="max_ticket_per_user" className="text-foreground">
+              Batas Pembelian Per User <span className="text-danger">*</span>
+            </Label>
+            <Input
+            id="max_ticket_per_user"
             type="number"
             min={0}
             placeholder="0"
             defaultValue={0}
-            {...register("maxPurchasePerUser")}
+            {...register("max_ticket_per_user")}
             onChange={(e) => {
               const value = e.target.value;
               setValue(
-                "maxPurchasePerUser",
+                "max_ticket_per_user",
                 value === "" ? 0 : parseInt(value),
                 { shouldValidate: true },
               );
             }}
             className={cn(
               "shadow-none bg-white",
-              errors.maxPurchasePerUser &&
+              errors.max_ticket_per_user &&
               "border-danger focus-visible:ring-danger",
             )}
           />
           <p className="text-xs text-muted-foreground">
-            💡 Batas total tiket yang dapat dibeli oleh 1 user (mencegah
-            scalping). <br />• Contoh: Jika batas 3, user hanya bisa membeli
+            💡 Batas total tiket yang dapat dibeli oleh 1 user. <br />• Contoh: Jika batas 3, user hanya bisa membeli
             maksimal 3 tiket. <br />• Isi <strong>0</strong> untuk{" "}
             <strong>tanpa batas pembelian</strong>.
           </p>
-          {errors.maxPurchasePerUser && (
+          {errors.max_ticket_per_user && (
             <p className="text-xs text-danger">
-              {errors.maxPurchasePerUser.message}
+              {errors.max_ticket_per_user.message}
             </p>
           )}
+          </div>
         </div>
       )}
 
       {!sectionOnly && <hr className="border-gray-200" />}
 
-      {/* Capacity Settings - ONLY FOR FREE EVENTS OR DISPLAY FOR PAID */}
+      {/* Capacity Settings */}
       {(!sectionOnly || sectionOnly === 'capacity') && (
         <div className="space-y-4">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
             <Users className="h-5 w-5 text-primary" />
-            Kapasitas Peserta
+            Kapasitas Event
           </h3>
 
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            {/* Custom Capacity for Free Events */}
-            {!isPaid ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label>Batasi Jumlah Peserta?</Label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="unlimitedCapacity"
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                      checked={maxCapacity === 0}
-                      onChange={(e) => {
-                        const isUnlimited = e.target.checked;
-                        if (isUnlimited) {
-                          setValue("maxCapacity", 0, {
-                            shouldValidate: true,
-                          });
-                        } else {
-                          setCapacityInput("50");
-                          setValue("maxCapacity", 50, {
-                            shouldValidate: true,
-                          });
-                        }
-                      }}
-                    />
-                    <Label
-                      htmlFor="unlimitedCapacity"
-                      className="font-normal text-muted-foreground"
-                    >
-                      Tanpa Batas
-                    </Label>
-                  </div>
-                </div>
-
-                {maxCapacity > 0 && (
-                  <div className="space-y-2">
-                    <Label>Jumlah Kapasitas Maksimal</Label>
-                    <Input
-                      type="text"
-                      placeholder="Contoh: 100"
-                      value={capacityInput}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "");
-                        setCapacityInput(value);
-                        if (value !== "" && value !== "0") {
-                          setValue("maxCapacity", parseInt(value), { shouldValidate: true });
-                        }
-                      }}
-                      onBlur={() => {
-                        if (capacityInput === "" || capacityInput === "0") {
-                          const lastValid = maxCapacity > 0 ? maxCapacity.toString() : "50";
-                          setCapacityInput(lastValid);
-                          setValue("maxCapacity", parseInt(lastValid), { shouldValidate: true });
-                        }
-                      }}
-                      className={cn(
-                        errors.maxCapacity &&
-                        "border-danger focus-visible:ring-danger",
-                      )}
-                    />
-                    {errors.maxCapacity && (
-                      <p className="text-xs text-danger">
-                        {errors.maxCapacity.message}
-                      </p>
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-6">
+            <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Jumlah Kapasitas Maksimal Event</Label>
+                  <Input
+                    type="text"
+                    placeholder="Contoh: 100"
+                    value={capacityInput}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      setCapacityInput(value);
+                      if (value !== "" && value !== "0") {
+                        setValue("max_capacity", parseInt(value), { shouldValidate: true });
+                      }
+                    }}
+                    onBlur={() => {
+                      if (capacityInput === "" || capacityInput === "0") {
+                        const lastValid = max_capacity > 0 ? max_capacity.toString() : "50";
+                        setCapacityInput(lastValid);
+                        setValue("max_capacity", parseInt(lastValid), { shouldValidate: true });
+                      }
+                    }}
+                    className={cn(
+                      errors.max_capacity &&
+                      "border-danger focus-visible:ring-danger",
                     )}
-                  </div>
-                )}
-                {maxCapacity === 0 && (
-                  <div className="rounded-xl bg-green-50 p-3 text-sm text-green-700 border border-green-200">
-                    Event gratis ini terbuka untuk umum tanpa batasan kuota.
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Display Capacity for Paid Events
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Total Kapasitas Tiket</Label>
-                  <span className="text-lg font-bold text-primary">
-                    {totalTicketQuota} Peserta
-                  </span>
+                  />
+                  {errors.max_capacity && (
+                    <p className="text-xs text-danger">
+                      {errors.max_capacity.message}
+                    </p>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Kapasitas dihitung otomatis dari total kuota semua tiket yang
-                  dibuat.
-                </p>
-              </div>
+            </div>
+
+            <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                <Label className="text-muted-foreground">Total Kuota Tiket yang Telah Dibuat:</Label>
+                <span className={cn("text-lg font-bold", max_capacity > 0 && totalTicketQuota > max_capacity ? "text-danger" : "text-primary")}>
+                  {totalTicketQuota} Tiket
+                </span>
+            </div>
+            {max_capacity > 0 && totalTicketQuota > max_capacity && (
+              <p className="text-xs text-danger">⚠️ Total kuota tiket ({totalTicketQuota}) melebihi Kapasitas Event ({max_capacity}).</p>
             )}
           </div>
         </div>
       )}
 
-      {/* Tickets List - Only Show for Paid Events */}
-      {(!sectionOnly || sectionOnly === 'tickets') && isPaid && (
+      {/* Tickets List */}
+      {(!sectionOnly || sectionOnly === 'tickets') && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label className="text-base font-bold text-foreground">
-              Daftar Tiket
-            </Label>
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+               <TicketIcon className="h-5 w-5 text-primary" />
+               Daftar Tiket
+            </h3>
             {fields.length < 5 && (
-              <Button
-                className="shadow-glow"
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={() =>
-                  append({ name: "", price: 0, quota: 0, description: "" })
-                }
-              >
-                <Plus className="h-4 w-4" />
-                Tambah Tiket
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  className="shadow-glow"
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "free" })
+                  }
+                >
+                  <Plus className="mr-1 h-4 w-4" />
+                  Tambah Tiket Gratis
+                </Button>
+                <Button
+                  className="shadow-glow"
+                  type="button"
+                  size="sm"
+                  onClick={() =>
+                    append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "paid" })
+                  }
+                >
+                  <Plus className="mr-1 h-4 w-4" />
+                  Tambah Tiket Berbayar
+                </Button>
+              </div>
             )}
           </div>
-
-
 
           {fields.length === 0 && (
             <div
@@ -318,6 +235,12 @@ export default function EventTicketStep({
             </div>
           )}
 
+          {typeof errors.tickets?.message === 'string' && (
+              <p className="text-xs text-danger text-center">
+                 {errors.tickets.message}
+              </p>
+          )}
+
           <div className="space-y-4">
             {fields.map((ticket, index) => (
               <div
@@ -334,7 +257,7 @@ export default function EventTicketStep({
               >
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-sm font-medium text-accent">
-                    Tiket #{index + 1}
+                    Tiket #{index + 1} ({(tickets?.[index]?.type || ticket.type) === "free" ? "Gratis" : "Berbayar"})
                   </span>
                   <Button
                     type="button"
@@ -356,7 +279,7 @@ export default function EventTicketStep({
                     </Label>
                     <Input
                       id={`ticket-name-${index}`}
-                      placeholder="Contoh: VIP, Regular"
+                      placeholder="Contoh: VIP, Regular, atau Gratis"
                       {...register(`tickets.${index}.name`)}
                       className={cn(
                         "bg-white",
@@ -372,34 +295,45 @@ export default function EventTicketStep({
                   </div>
 
                   {/* Ticket Price */}
-                  <div className="space-y-2">
-                    <Label htmlFor={`ticket-price-${index}`}>
-                      Harga (Rp) <span className="text-danger">*</span>
-                    </Label>
-                    <Input
-                      id={`ticket-price-${index}`}
-                      type="text"
-                      placeholder="0"
-                      {...register(`tickets.${index}.price`)}
-                      onChange={(e) => {
-                        const value =
-                          parseInt(e.target.value.replace(/\D/g, "")) || 0;
-                        setValue(`tickets.${index}.price`, value, {
-                          shouldValidate: true,
-                        });
-                      }}
-                      className={cn(
-                        "bg-white",
-                        errors.tickets?.[index]?.price &&
-                        "border-danger focus-visible:ring-danger",
+                  {(tickets?.[index]?.type || ticket.type) === "paid" ? (
+                    <div className="space-y-2">
+                      <Label htmlFor={`ticket-price-${index}`}>
+                        Harga (Rp) <span className="text-danger">*</span>
+                      </Label>
+                      <Input
+                        id={`ticket-price-${index}`}
+                        type="text"
+                        placeholder="10000"
+                        {...register(`tickets.${index}.price`)}
+                        onChange={(e) => {
+                          const value =
+                            parseInt(e.target.value.replace(/\D/g, "")) || 0;
+                          setValue(`tickets.${index}.price`, value, {
+                            shouldValidate: true,
+                          });
+                        }}
+                        className={cn(
+                          "bg-white",
+                          errors.tickets?.[index]?.price &&
+                          "border-danger focus-visible:ring-danger",
+                        )}
+                      />
+                      {errors.tickets?.[index]?.price && (
+                        <p className="text-xs text-danger">
+                          {errors.tickets[index].price.message}
+                        </p>
                       )}
-                    />
-                    {errors.tickets?.[index]?.price && (
-                      <p className="text-xs text-danger">
-                        {errors.tickets[index].price.message}
-                      </p>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label>
+                        Harga (Rp) <span className="text-danger">*</span>
+                      </Label>
+                      <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-sm text-muted-foreground ring-offset-background disabled:cursor-not-allowed disabled:opacity-50">
+                        Gratis (Rp 0)
+                      </div>
+                    </div>
+                  )}
 
                   {/* Ticket Quota */}
                   <div className="space-y-2">
@@ -452,13 +386,77 @@ export default function EventTicketStep({
                       </p>
                     )}
                   </div>
+
+                  {/* Ticket Start Date */}
+                  <div className="space-y-2">
+                    <Label>
+                      Waktu Mulai Penjualan <span className="text-danger">*</span>
+                    </Label>
+                    <Controller
+                      control={control}
+                      name={`tickets.${index}.start_date_time`}
+                      render={({ field }) => (
+                        <DateTimePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Pilih waktu mulai"
+                          minDate={start_registration_date || new Date()}
+                          maxDate={end_registration_date || undefined}
+                          className={cn(
+                            "shadow-none bg-white",
+                            errors.tickets?.[index]?.start_date_time && "border-danger"
+                          )}
+                        />
+                      )}
+                    />
+                    {errors.tickets?.[index]?.start_date_time && (
+                      <p className="text-xs text-danger">
+                        {errors.tickets[index].start_date_time.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Ticket End Date */}
+                  <div className="space-y-2">
+                    <Label>
+                      Waktu Selesai Penjualan <span className="text-danger">*</span>
+                    </Label>
+                    <Controller
+                      control={control}
+                      name={`tickets.${index}.end_date_time`}
+                      render={({ field }) => (
+                        <DateTimePicker
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Pilih waktu selesai"
+                          minDate={tickets[index]?.start_date_time || start_registration_date || new Date()}
+                          maxDate={end_registration_date || undefined}
+                          disabled={!tickets[index]?.start_date_time}
+                          className={cn(
+                            "shadow-none bg-white",
+                            errors.tickets?.[index]?.end_date_time && "border-danger"
+                          )}
+                        />
+                      )}
+                    />
+                    {errors.tickets?.[index]?.end_date_time && (
+                      <p className="text-xs text-danger">
+                        {errors.tickets[index].end_date_time.message}
+                      </p>
+                    )}
+                    {!tickets[index]?.start_date_time && (
+                      <p className="text-xs text-muted">
+                        Pilih waktu mulai penjualan terlebih dahulu
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
           {fields.length >= 5 && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground flex justify-end">
               Maksimal 5 jenis tiket per event
             </p>
           )}
