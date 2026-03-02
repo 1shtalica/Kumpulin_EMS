@@ -106,6 +106,7 @@ export interface BEEventResponse {
     description: string;
   }[];
   images?: {
+    id: number;
     image_url: string;
   }[];
 }

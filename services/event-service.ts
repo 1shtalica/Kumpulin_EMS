@@ -128,6 +128,26 @@ export const EventService = {
     }
   },
 
+  async updateEventTickets(id: string, data: Partial<CreateEventFormState>): Promise<void> {
+    try {
+      await axiosClient.patch(`/events/${id}/tickets`, {
+        tickets: data.tickets
+      });
+    } catch (error) {
+      console.error("Failed to update event tickets:", error);
+      throw error;
+    }
+  },
+
+  async deleteEventImage(imageId: number): Promise<void> {
+    try {
+      await axiosClient.delete(`/events/images/${imageId}`);
+    } catch (error) {
+      console.error("Failed to delete event image:", error);
+      throw error;
+    }
+  },
+
   async createEventCategory(name: string): Promise<void> {
     try {
       await axiosClient.post("/categories", { name });

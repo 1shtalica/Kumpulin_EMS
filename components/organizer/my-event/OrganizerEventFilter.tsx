@@ -36,9 +36,9 @@ export default function MyEventFilter() {
   const handleURL = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value && value !== "all") {
-      params.set(key, value);    
+      params.set(key, value);
     } else {
-      params.delete(key);        
+      params.delete(key);
     }
     params.delete("offset");
     replace(`${pathname}?${params.toString()}`, { scroll: false });
@@ -52,7 +52,7 @@ export default function MyEventFilter() {
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h1 className="text-accent">Event Saya</h1>
+          <h2 className="text-accent">Event Saya</h2 >
           <p className="text-muted">Atur eventmu dengan mudah</p>
         </div>
 
@@ -62,20 +62,20 @@ export default function MyEventFilter() {
       </div>
 
       <div className="relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted h-5 w-5" />
-          <Input
-            type="text"
-            className="w-full pl-12 h-12 bg-white rounded-full border-border text-base"
-            defaultValue={query}
-            onChange={(e) => debounceSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                debounceSearch.cancel();
-                handleURL("q", e.currentTarget.value);
-              }
-            }}
-          />
-        </div>
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted h-5 w-5" />
+        <Input
+          type="text"
+          className="w-full pl-12 h-12 bg-white rounded-full border-border text-base"
+          defaultValue={query}
+          onChange={(e) => debounceSearch(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              debounceSearch.cancel();
+              handleURL("q", e.currentTarget.value);
+            }
+          }}
+        />
+      </div>
 
       <div className="w-full bg-primary-light rounded-3xl flex flex-wrap justify-center md:justify-start items-center gap-2 p-4">
         {statusFilter.map((filter) => (

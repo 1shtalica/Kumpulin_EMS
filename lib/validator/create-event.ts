@@ -62,9 +62,12 @@ export const step2Schema = z.object({
           message: "Format file harus .jpeg atau .png",
         })
     )
-    .min(1, "Minimal 1 poster wajib diupload")
     .max(5, "Maksimal 5 poster"),
   imagePreviews: z.array(z.string()).optional(),
+  existingImages: z.array(z.object({
+    id: z.number(),
+    url: z.string(),
+  })).optional(),
 });
 
 // 🌟 Step 3: Jadwal & Lokasi

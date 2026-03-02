@@ -3,7 +3,7 @@ import OrganizerEventFilter from "@/components/organizer/my-event/OrganizerEvent
 
 export default function MyEvent() {
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-8 px-6">
       <OrganizerEventFilter />
       <OrganizerEventsList />
     </div>
