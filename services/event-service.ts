@@ -4,13 +4,32 @@ import type { Event, EventsResponse, EventResponse, GetEventsParams, GetOrganize
 
 export const EventService = {
 
-  async getEvents(params: GetEventsParams = {}): Promise<HomeEventCard[]> {
-    const { offset = 0, limit = 100, type = "" } = params;
+  async getEvents(params: GetEventsParams = {}): Promise<{ data: HomeEventCard[]; total: number }> {
+    const { offset = 0, limit = 12, type = "", q = "" } = params;
 
     try {
-      const json = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events?offset=${offset}&limit=${limit}&type=${type}`);
-      const data = await json.json();
-      return data.data || [];
+      const urlParams = new URLSearchParams({
+        offset: String(offset),
+        limit: String(limit),
+      });
+
+      if (type) urlParams.append("type", type);
+      if (q) urlParams.append("search", q); // BE nerima label "search", bukan "q"
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/events?${urlParams.toString()}`,
+        { cache: 'no-store' } 
+      );
+
+      const json = await response.json();
+      
+      const data = json.data || [];
+      const estimatedTotal = data.length === limit ? offset + limit + 1 : offset + data.length;
+
+      return {
+        data: data,
+        total: estimatedTotal,
+      };
     } catch (error) {
       console.error("Failed to fetch events:", error);
       throw error;
@@ -29,8 +48,8 @@ export const EventService = {
 
   async getEventBySlug(slug: string): Promise<HomeEventCard | null> {
     try {
-      const events = await this.getEvents({ limit: 1000 });
-      return events.find((e) => e.slug === slug) || null;
+      const { data } = await this.getEvents({ limit: 1000 });
+      return data.find((e) => e.slug === slug) || null;
     } catch (error) {
       console.error(`Failed to fetch event by slug ${slug}:`, error);
       throw error;
@@ -57,20 +76,20 @@ export const EventService = {
       formData.append("title", data.title);
       formData.append("category", data.category);
       formData.append("description", JSON.stringify({ content: data.description }));
-      // formData.append("isPaid", String(data.isPaid)); 🌟
-      formData.append("maxCapacity", String(data.maxCapacity));
-      formData.append("isOnline", String(data.isOnline));
+      formData.append("max_capacity", String(data.max_capacity));
+      formData.append("is_online", String(data.is_online));
       formData.append("status", "draft");
 
-      if (data.maxPurchasePerUser !== undefined) {
-        formData.append("maxTicketPerUser", String(data.maxPurchasePerUser));
+      if (data.max_ticket_per_user !== undefined) {
+        formData.append("max_ticket_per_user", String(data.max_ticket_per_user));
       }
-      if (data.meetingUrl) {
-        formData.append("meetingUrl", data.meetingUrl);
+      if (data.meeting_url) {
+        formData.append("meeting_url", data.meeting_url);
+        formData.append("hide_meeting_url", String(data.hide_meeting_url));
       }
 
-      if (data.bannerImage) {
-        formData.append("images", data.bannerImage);
+      if (data.banner_image) {
+        formData.append("images", data.banner_image);
       }
       if (data.images && data.images.length > 0) {
         data.images.forEach((file) => {
@@ -78,21 +97,21 @@ export const EventService = {
         });
       }
 
-      if (data.startEventDateTime) {
-        formData.append("startEventDateTime", data.startEventDateTime.toISOString());
+      if (data.event_start_date) {
+        formData.append("event_start_date", data.event_start_date.toISOString());
       }
-      if (data.endEventDateTime) {
-        formData.append("endEventDateTime", data.endEventDateTime.toISOString());
+      if (data.event_end_date) {
+        formData.append("event_end_date", data.event_end_date.toISOString());
       }
-      if (data.startRegistrationDateTime) {
-        formData.append("startRegistrationDateTime", data.startRegistrationDateTime.toISOString());
+      if (data.start_registration_date) {
+        formData.append("start_registration_date", data.start_registration_date.toISOString());
       }
-      if (data.endRegistrationDateTime) {
-        formData.append("endRegistrationDateTime", data.endRegistrationDateTime.toISOString());
+      if (data.end_registration_date) {
+        formData.append("end_registration_date", data.end_registration_date.toISOString());
       }
 
       formData.append("tickets", JSON.stringify(data.tickets));
-      formData.append("rundowns", JSON.stringify(data.rundown));
+      formData.append("rundowns", JSON.stringify(data.rundowns));
       formData.append("address", JSON.stringify(data.address));
 
       const response = await axiosClient.post<EventResponse>("/events", formData, {

@@ -1,15 +1,19 @@
-export type EventType = "external" | "internal" | undefined;
+export type EventType = "external" | "internal";
+export type TicketType = "free" | "paid";
 
 export interface TicketRequest {
   name: string;
   price: number;
   quota: number;
-  description: string;
+  description?: string;
+  start_date_time: Date | undefined;
+  end_date_time: Date | undefined;
+  type: TicketType;
 }
 
 export interface RundownRequest {
   title: string;
-  description: string;
+  description?: string;
   start_time: string;
   end_time: string;
   location?: string;
@@ -17,37 +21,38 @@ export interface RundownRequest {
 
 export interface CreateEventFormState {
   // 📌 Step 1: Type (pilih publik atau eksternal)
-  type: EventType;
+  type: EventType | undefined;
 
   // 📌 Step 2: Basic Info
   title: string;
   category: string;
   description: string;
-  bannerImage: File | null;
-  bannerImagePreview: string | null;
+  banner_image: File | null;
+  banner_image_preview: string | null;
   images: File[];
-  imagePreviews: string[];
+  image_previews: string[];
 
   // 📌 Step 3: Combined DateTime fields (instead of separate date + time)
-  startEventDateTime: Date | undefined;
-  endEventDateTime: Date | undefined;
-  startRegistrationDateTime: Date | undefined;
-  endRegistrationDateTime: Date | undefined;
-  rundown: RundownRequest[];
-  isOnline: boolean;
+  event_start_date: Date | undefined;
+  event_end_date: Date | undefined;
+  start_registration_date: Date | undefined;
+  end_registration_date: Date | undefined;
+  rundowns: RundownRequest[];
+  is_online: boolean;
   address: {
     title: string;
-    rawAddress: string;
+    raw_address: string;
     city: string;
     province: string;
-    postalCode?: string;
+    postal_code?: string;
+    location_url: string;
   };
-  meetingUrl: string;
+  meeting_url: string;
+  hide_meeting_url: boolean;
 
   // 📌 Step 4: Tickets
-  isPaid: boolean;
-  maxCapacity: number;
-  maxPurchasePerUser?: number;
+  max_capacity?: number;
+  max_ticket_per_user?: number;
   tickets: TicketRequest[];
 
   step: number;

@@ -45,17 +45,18 @@ export default function RegisterForm() {
     setError,
     formState: { errors },
   } = useForm<RegisterFormValues>({
+    // migrated to zod v4
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      userName: "",
+      username: "",
       email: "",
       password: "",
-      confirmPassword: "",
-      agreeToTerms: false,
+      confirm_password: "",
+      agree_to_terms: false,
     } as Partial<RegisterFormValues>,
   });
 
-  const { firstName, lastName } = splitFullName(watch("userName"));
+  const { firstName, lastName } = splitFullName(watch("username"));
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
@@ -64,7 +65,7 @@ export default function RegisterForm() {
       await AuthService.registerUser({
         email: data.email,
         password: data.password,
-        username: data.userName,
+        username: data.username,
         first_name: firstName,
         last_name: lastName,
       });
@@ -139,20 +140,20 @@ export default function RegisterForm() {
 
           {/* Input userName  */}
           <div className="grid gap-2">
-            <Label htmlFor="userName">Username</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
               startIcon={<User className="h-4 w-4 text-muted-foreground" />}
-              id="userName"
+              id="username"
               type="text"
               placeholder="Masukkan username"
               disabled={isLoading}
               autoComplete="username"
-              {...register("userName")}
-              className={errors.userName ? "border-danger" : ""}
+              {...register("username")}
+              className={errors.username ? "border-danger" : ""}
             />
-            {errors.userName && (
+            {errors.username && (
               <p className="text-xs sm:text-sm text-danger font-medium">
-                {errors.userName.message}
+                {errors.username.message}
               </p>
             )}
           </div>
@@ -207,17 +208,17 @@ export default function RegisterForm() {
           </div>
           {/* Input Confirm Password  */}
           <div className="grid gap-2">
-            <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
+            <Label htmlFor="confirm_password">Konfirmasi Password</Label>
             <div className="relative">
               <Input
                 startIcon={<Lock className="h-4 w-4 text-muted-foreground" />}
-                id="confirmPassword"
+                id="confirm_password"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Ulangi password"
                 disabled={isLoading}
                 autoComplete="new-password"
-                {...register("confirmPassword")}
-                className={errors.confirmPassword ? "border-danger pr-10" : "pr-10"}
+                {...register("confirm_password")}
+                className={errors.confirm_password ? "border-danger pr-10" : "pr-10"}
               />
               <button
                 type="button"
@@ -232,9 +233,9 @@ export default function RegisterForm() {
                 )}
               </button>
             </div>
-            {errors.confirmPassword && (
+            {errors.confirm_password && (
               <p className="text-xs sm:text-sm text-danger font-medium">
-                {errors.confirmPassword.message}
+                {errors.confirm_password.message}
               </p>
             )}
           </div>
@@ -244,20 +245,20 @@ export default function RegisterForm() {
             {/* Gunakan div biasa dengan flex agar lebih mudah diatur daripada komponen <Field> bawaan */}
             <div className="flex flex-row items-start space-x-3 space-y-0">
               <Checkbox
-                id="agreeToTerms"
+                id="agree_to_terms"
                 disabled={isLoading}
-                checked={watch("agreeToTerms")}
+                checked={watch("agree_to_terms")}
                 onCheckedChange={(checked) => {
-                  setValue("agreeToTerms", checked === true, {
+                  setValue("agree_to_terms", checked === true, {
                     shouldValidate: true,
                   });
                 }}
-                aria-invalid={!!errors.agreeToTerms}
+                aria-invalid={!!errors.agree_to_terms}
                 className="mt-1"
               />
 
               <label
-                htmlFor="agreeToTerms"
+                htmlFor="agree_to_terms"
                 className="text-sm font-normal leading-relaxed text-muted cursor-pointer"
               >
                 Saya menyetujui{" "}
@@ -282,9 +283,9 @@ export default function RegisterForm() {
             </div>
 
             {/* Pesan Error */}
-            {errors.agreeToTerms && (
+            {errors.agree_to_terms && (
               <p className="text-xs sm:text-sm text-danger font-medium ml-7">
-                {errors.agreeToTerms.message}
+                {errors.agree_to_terms.message}
               </p>
             )}
           </div>
@@ -299,7 +300,7 @@ export default function RegisterForm() {
           {/* Tombol Submit */}
           <Button
             type="submit"
-            disabled={isLoading || !watch("agreeToTerms")}
+            disabled={isLoading || !watch("agree_to_terms")}
             className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl font-semibold text-md shadow-glow py-5"
           >
             {isLoading ? (

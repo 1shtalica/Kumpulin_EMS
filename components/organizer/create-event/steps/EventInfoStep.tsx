@@ -58,7 +58,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
   const title = watch("title");
   const description = watch("description");
   const images = watch("images") || [];
-  const imagePreviews = watch("imagePreviews") || [];
+  const image_previews = watch("image_previews") || [];
 
   const [dragActive, setDragActive] = useState(false);
   const [fileError, setFileError] = useState("");
@@ -75,8 +75,8 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
   };
 
   // Banner image state
-  const bannerImage = watch("bannerImage") as File | null | undefined;
-  const bannerImagePreview = watch("bannerImagePreview") as string | null | undefined;
+  const banner_image = watch("banner_image") as File | null | undefined;
+  const banner_image_preview = watch("banner_image_preview") as string | null | undefined;
   const [bannerDragActive, setBannerDragActive] = useState(false);
   const [bannerError, setBannerError] = useState("");
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -90,8 +90,8 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
     }
     const reader = new FileReader();
     reader.onloadend = () => {
-      setValue("bannerImage", file, { shouldValidate: true });
-      setValue("bannerImagePreview", reader.result as string);
+      setValue("banner_image", file, { shouldValidate: true });
+      setValue("banner_image_preview", reader.result as string);
     };
     reader.readAsDataURL(file);
   };
@@ -110,8 +110,8 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
   };
 
   const handleRemoveBanner = () => {
-    setValue("bannerImage", null as any, { shouldValidate: true });
-    setValue("bannerImagePreview", null);
+    setValue("banner_image", null as any, { shouldValidate: true });
+    setValue("banner_image_preview", null);
     setBannerError("");
     if (bannerInputRef.current) bannerInputRef.current.value = "";
   };
@@ -121,7 +121,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
     setFileError("");
 
     const currentImages = images as File[];
-    const currentPreviews = imagePreviews as string[];
+    const currentPreviews = image_previews as string[];
     const remaining = MAX_FILES - currentImages.length;
 
     if (remaining <= 0) {
@@ -163,7 +163,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
           const updatedImages = [...currentImages, ...validFiles];
           const updatedPreviews = [...currentPreviews, ...validPreviews];
           setValue("images", updatedImages, { shouldValidate: true });
-          setValue("imagePreviews", updatedPreviews);
+          setValue("image_previews", updatedPreviews);
         }
       };
       reader.readAsDataURL(file);
@@ -198,11 +198,11 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
 
   const handleRemoveImage = (index: number) => {
     const currentImages = images as File[];
-    const currentPreviews = imagePreviews as string[];
+    const currentPreviews = image_previews as string[];
     const updatedImages = currentImages.filter((_, i) => i !== index);
     const updatedPreviews = currentPreviews.filter((_, i) => i !== index);
     setValue("images", updatedImages, { shouldValidate: true });
-    setValue("imagePreviews", updatedPreviews);
+    setValue("image_previews", updatedPreviews);
     setFileError("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -211,7 +211,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
 
   const handleRemoveAll = () => {
     setValue("images", [], { shouldValidate: true });
-    setValue("imagePreviews", []);
+    setValue("image_previews", []);
     setFileError("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -254,7 +254,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
   };
 
   const currentImages = images as File[];
-  const currentPreviews = imagePreviews as string[];
+  const currentPreviews = image_previews as string[];
   const hasImages = currentImages.length > 0;
 
   return (
@@ -418,14 +418,14 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
           1 gambar utama yang tampil di card event. Format: PNG, JPEG • Maks 5MB • Ukuran ideal: 1920x1080 (16:9)
         </p>
 
-        {!bannerImage ? (
+        {!banner_image ? (
           <div
             className={cn(
               "relative rounded-xl border-2 border-dashed p-6 text-center transition-colors cursor-pointer",
               bannerDragActive
                 ? "border-primary bg-primary/5"
                 : "border-gray-300 hover:border-gray-400",
-              (bannerError || errors.bannerImage) && "border-danger",
+              (bannerError || errors.banner_image) && "border-danger",
             )}
             onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setBannerDragActive(true); }}
             onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setBannerDragActive(false); }}
@@ -461,7 +461,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
         ) : (
           <div className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video w-full">
             <img
-              src={bannerImagePreview || ""}
+              src={banner_image_preview || ""}
               alt="Banner Preview"
               className="h-full w-full object-cover"
             />
@@ -475,16 +475,16 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
               <X className="h-3 w-3" />
             </Button>
             <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-              {bannerImage?.name}
+              {banner_image?.name}
             </div>
           </div>
         )}
 
         {bannerError && <p className="text-sm text-danger">{bannerError}</p>}
-        {errors.bannerImage && (
+        {errors.banner_image && (
           <p className="text-sm text-danger">
-            {typeof errors.bannerImage?.message === "string"
-              ? errors.bannerImage.message
+            {typeof errors.banner_image?.message === "string"
+              ? errors.banner_image.message
               : "Banner wajib diupload"}
           </p>
         )}
@@ -503,7 +503,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
         {currentImages.length < MAX_FILES && (
           <div
             className={cn(
-              "relative rounded-xl border-2 border-dashed p-6 text-center transition-colors",
+              "relative rounded-xl border-2 border-dashed p-6 text-center transition-colors cursor-pointer",
               dragActive
                 ? "border-primary bg-primary/5"
                 : "border-gray-300 hover:border-gray-400",
@@ -513,6 +513,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
           >
             <input
               ref={fileInputRef}
@@ -537,7 +538,7 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
                 >
                   Pilih File
                 </Button>

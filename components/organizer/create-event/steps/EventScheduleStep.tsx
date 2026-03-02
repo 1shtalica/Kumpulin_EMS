@@ -49,43 +49,43 @@ export default function EventScheduleStep({
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "rundown",
+    name: "rundowns",
   });
 
-  const isOnline = watch("isOnline");
+  const is_online = watch("is_online");
   const watchProvince = watch("address.province");
 
   // Watch for progressive date selection
-  const startRegistrationDateTime = watch("startRegistrationDateTime");
-  const endRegistrationDateTime = watch("endRegistrationDateTime");
-  const startEventDateTime = watch("startEventDateTime");
-  const endEventDateTime = watch("endEventDateTime");
+  const start_registration_date = watch("start_registration_date");
+  const end_registration_date = watch("end_registration_date");
+  const event_start_date = watch("event_start_date");
+  const event_end_date = watch("event_end_date");
 
   // Auto-clear dependent fields when prerequisite is cleared (cascade)
   useEffect(() => {
     // If Start Registration is cleared → clear everything below
-    if (!startRegistrationDateTime) {
-      if (endRegistrationDateTime)
-        setValue("endRegistrationDateTime", undefined as any);
-      if (startEventDateTime) setValue("startEventDateTime", undefined as any);
-      if (endEventDateTime) setValue("endEventDateTime", undefined as any);
+    if (!start_registration_date) {
+      if (end_registration_date)
+        setValue("end_registration_date", undefined as any);
+      if (event_start_date) setValue("event_start_date", undefined as any);
+      if (event_end_date) setValue("event_end_date", undefined as any);
       return;
     }
     // If End Registration is cleared → clear event fields
-    if (!endRegistrationDateTime) {
-      if (startEventDateTime) setValue("startEventDateTime", undefined as any);
-      if (endEventDateTime) setValue("endEventDateTime", undefined as any);
+    if (!end_registration_date) {
+      if (event_start_date) setValue("event_start_date", undefined as any);
+      if (event_end_date) setValue("event_end_date", undefined as any);
       return;
     }
     // If Start Event is cleared → clear End Event
-    if (!startEventDateTime) {
-      if (endEventDateTime) setValue("endEventDateTime", undefined as any);
+    if (!event_start_date) {
+      if (event_end_date) setValue("event_end_date", undefined as any);
     }
   }, [
-    startRegistrationDateTime,
-    endRegistrationDateTime,
-    startEventDateTime,
-    endEventDateTime,
+    start_registration_date,
+    end_registration_date,
+    event_start_date,
+    event_end_date,
     setValue,
   ]);
 
@@ -124,7 +124,7 @@ export default function EventScheduleStep({
               </Label>
               <Controller
                 control={control}
-                name="startRegistrationDateTime"
+                name="start_registration_date"
                 render={({ field }) => (
                   <DateTimePicker
                     value={field.value}
@@ -132,16 +132,16 @@ export default function EventScheduleStep({
                     placeholder="Pilih waktu buka pendaftaran"
                     minDate={new Date()}
                     className={cn(
-                      errors.startRegistrationDateTime && "border-danger",
+                      errors.start_registration_date && "border-danger",
                       "shadow-none"
                     )}
 
                   />
                 )}
               />
-              {errors.startRegistrationDateTime && (
+              {errors.start_registration_date && (
                 <p className="text-xs text-danger">
-                  {errors.startRegistrationDateTime.message}
+                  {errors.start_registration_date.message}
                 </p>
               )}
             </div>
@@ -153,27 +153,27 @@ export default function EventScheduleStep({
               </Label>
               <Controller
                 control={control}
-                name="endRegistrationDateTime"
+                name="end_registration_date"
                 render={({ field }) => (
                   <DateTimePicker
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Pilih waktu tutup pendaftaran"
-                    minDate={startRegistrationDateTime || new Date()}
-                    disabled={!startRegistrationDateTime}
+                    minDate={start_registration_date || new Date()}
+                    disabled={!start_registration_date}
                     className={cn(
-                      errors.endRegistrationDateTime && "border-danger",
+                      errors.end_registration_date && "border-danger",
                       "shadow-none"
                     )}
                   />
                 )}
               />
-              {errors.endRegistrationDateTime && (
+              {errors.end_registration_date && (
                 <p className="text-xs text-danger">
-                  {errors.endRegistrationDateTime.message}
+                  {errors.end_registration_date.message}
                 </p>
               )}
-              {!startRegistrationDateTime && (
+              {!start_registration_date && (
                 <p className="text-xs text-muted">
                   Pilih waktu buka pendaftaran terlebih dahulu
                 </p>
@@ -199,28 +199,28 @@ export default function EventScheduleStep({
               </Label>
               <Controller
                 control={control}
-                name="startEventDateTime"
+                name="event_start_date"
                 render={({ field }) => (
                   <DateTimePicker
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Pilih waktu mulai event"
                     minDate={
-                      endRegistrationDateTime
-                        ? addDays(endRegistrationDateTime, 1)
+                      end_registration_date
+                        ? addDays(end_registration_date, 1)
                         : new Date()
                     }
-                    disabled={!endRegistrationDateTime}
-                    className={cn(errors.startEventDateTime && "border-danger", "shadow-none")}
+                    disabled={!end_registration_date}
+                    className={cn(errors.event_start_date && "border-danger", "shadow-none")}
                   />
                 )}
               />
-              {errors.startEventDateTime && (
+              {errors.event_start_date && (
                 <p className="text-xs text-danger">
-                  {errors.startEventDateTime.message}
+                  {errors.event_start_date.message}
                 </p>
               )}
-              {!endRegistrationDateTime && (
+              {!end_registration_date && (
                 <p className="text-xs text-muted">
                   Pilih waktu tutup pendaftaran terlebih dahulu
                 </p>
@@ -234,25 +234,26 @@ export default function EventScheduleStep({
               </Label>
               <Controller
                 control={control}
-                name="endEventDateTime"
+                name="event_end_date"
                 render={({ field }) => (
                   <DateTimePicker
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Pilih waktu selesai event"
-                    minDate={startEventDateTime || new Date()}
-                    disabled={!startEventDateTime}
-                    className={cn(errors.endEventDateTime && "border-danger", "shadow-none")}
+                    minDate={event_start_date || new Date()}
+                    maxDate={event_start_date ? addDays(event_start_date, 1) : undefined}
+                    disabled={!event_start_date}
+                    className={cn(errors.event_end_date && "border-danger", "shadow-none")}
                   />
                 )}
               />
-              {errors.endEventDateTime && (
+              {errors.event_end_date && (
                 <p className="text-xs text-danger">
-                  {errors.endEventDateTime.message}
+                  {errors.event_end_date.message}
                 </p>
               )}
-              {!startEventDateTime && (
-                <p className="text-xs text-muted">
+              {!event_start_date && (
+                <p className="text-xs text-muted font-medium">
                   Pilih waktu mulai event terlebih dahulu
                 </p>
               )}
@@ -292,7 +293,7 @@ export default function EventScheduleStep({
             <div
               className={cn(
                 "rounded-xl border border-dashed p-12 text-center",
-                errors.rundown
+                errors.rundowns
                   ? "border-danger bg-red-50"
                   : "border-gray-300 bg-gray-50",
               )}
@@ -300,15 +301,15 @@ export default function EventScheduleStep({
               <p
                 className={cn(
                   "text-sm",
-                  errors.rundown
+                  errors.rundowns
                     ? "text-danger font-medium"
                     : "text-muted-foreground",
                 )}
               >
-                {errors.rundown &&
-                  !Array.isArray(errors.rundown) &&
-                  "message" in errors.rundown
-                  ? errors.rundown.message
+                {errors.rundowns &&
+                  !Array.isArray(errors.rundowns) &&
+                  "message" in errors.rundowns
+                  ? errors.rundowns.message
                   : 'Belum ada sesi rundown. Klik tombol "Tambah Sesi" untuk memulai.'}
               </p>
             </div>
@@ -320,9 +321,9 @@ export default function EventScheduleStep({
                 key={item.id}
                 className={cn(
                   "rounded-2xl border bg-card p-6 shadow-sm",
-                  (errors.rundown?.[index]?.title ||
-                    errors.rundown?.[index]?.start_time ||
-                    errors.rundown?.[index]?.end_time) &&
+                  (errors.rundowns?.[index]?.title ||
+                    errors.rundowns?.[index]?.start_time ||
+                    errors.rundowns?.[index]?.end_time) &&
                   "border-danger ring-1 ring-danger",
                 )}
               >
@@ -356,7 +357,7 @@ export default function EventScheduleStep({
                       <div className="flex-1 min-w-0">
                         <Controller
                           control={control}
-                          name={`rundown.${index}.start_time`}
+                          name={`rundowns.${index}.start_time`}
                           render={({ field }) => (
                             <TimePicker
                               value={field.value}
@@ -364,7 +365,7 @@ export default function EventScheduleStep({
                               placeholder="Mulai"
                               className={cn(
                                 "h-9 text-sm w-full shadow-none",
-                                errors.rundown?.[index]?.start_time &&
+                                errors.rundowns?.[index]?.start_time &&
                                 "border-danger",
                               )}
                             />
@@ -375,7 +376,7 @@ export default function EventScheduleStep({
                       <div className="flex-1 min-w-0">
                         <Controller
                           control={control}
-                          name={`rundown.${index}.end_time`}
+                          name={`rundowns.${index}.end_time`}
                           render={({ field }) => (
                             <TimePicker
                               value={field.value}
@@ -383,7 +384,7 @@ export default function EventScheduleStep({
                               placeholder="Selesai"
                               className={cn(
                                 "h-9 text-sm w-full shadow-none",
-                                errors.rundown?.[index]?.end_time &&
+                                errors.rundowns?.[index]?.end_time &&
                                 "border-danger",
                               )}
                             />
@@ -391,11 +392,11 @@ export default function EventScheduleStep({
                         />
                       </div>
                     </div>
-                    {(errors.rundown?.[index]?.start_time ||
-                      errors.rundown?.[index]?.end_time) && (
+                    {(errors.rundowns?.[index]?.start_time ||
+                      errors.rundowns?.[index]?.end_time) && (
                         <p className="text-xs text-danger">
-                          {errors.rundown?.[index]?.start_time?.message ||
-                            errors.rundown?.[index]?.end_time?.message}
+                          {errors.rundowns?.[index]?.start_time?.message ||
+                            errors.rundowns?.[index]?.end_time?.message}
                         </p>
                       )}
                   </div>
@@ -409,13 +410,13 @@ export default function EventScheduleStep({
                       placeholder="Nama sesi (contoh: Opening Ceremony)"
                       className={cn(
                         "h-9",
-                        errors.rundown?.[index]?.title && "border-danger",
+                        errors.rundowns?.[index]?.title && "border-danger",
                       )}
-                      {...register(`rundown.${index}.title`)}
+                      {...register(`rundowns.${index}.title`)}
                     />
-                    {errors.rundown?.[index]?.title && (
+                    {errors.rundowns?.[index]?.title && (
                       <p className="text-xs text-danger">
-                        {errors.rundown?.[index]?.title?.message}
+                        {errors.rundowns?.[index]?.title?.message}
                       </p>
                     )}
                   </div>
@@ -428,7 +429,7 @@ export default function EventScheduleStep({
                     <Input
                       placeholder="Tempat (contoh: Aula Utama)"
                       className="h-9"
-                      {...register(`rundown.${index}.location`)}
+                      {...register(`rundowns.${index}.location`)}
                     />
                   </div>
 
@@ -440,7 +441,7 @@ export default function EventScheduleStep({
                     <Input
                       placeholder="Deskripsi singkat..."
                       className="h-9"
-                      {...register(`rundown.${index}.description`)}
+                      {...register(`rundowns.${index}.description`)}
                     />
                   </div>
                 </div>
@@ -462,8 +463,8 @@ export default function EventScheduleStep({
           <div className="flex gap-3">
             <Button
               type="button"
-              variant={isOnline ? "default" : "outline"}
-              onClick={() => setValue("isOnline", true)}
+              variant={is_online ? "default" : "outline"}
+              onClick={() => setValue("is_online", true)}
               className="flex-1 shadow-glow"
             >
               <Video className="mr-2 h-4 w-4" />
@@ -471,8 +472,8 @@ export default function EventScheduleStep({
             </Button>
             <Button
               type="button"
-              variant={!isOnline ? "default" : "outline"}
-              onClick={() => setValue("isOnline", false)}
+              variant={!is_online ? "default" : "outline"}
+              onClick={() => setValue("is_online", false)}
               className="flex-1 shadow-glow"
             >
               <MapPin className="mr-2 h-4 w-4" />
@@ -481,23 +482,37 @@ export default function EventScheduleStep({
           </div>
 
           {/* Online: Meeting URL */}
-          {isOnline && (
+          {is_online && (
             <div className="space-y-2 rounded-2xl border border-border bg-card p-6 shadow-sm">
               <Label>Link Meeting <span className="text-danger">*</span></Label>
               <Input
                 type="url"
                 placeholder="https://meet.google.com/xxx-xxxx-xxx"
                 className={cn(
-                  errors.meetingUrl &&
+                  errors.meeting_url &&
                   "border-danger focus-visible:ring-danger",
                 )}
-                {...register("meetingUrl")}
+                {...register("meeting_url")}
               />
-              {errors.meetingUrl && (
+              {errors.meeting_url && (
                 <p className="text-xs text-danger">
-                  {errors.meetingUrl.message}
+                  {errors.meeting_url.message}
                 </p>
               )}
+              <div className="flex items-center space-x-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="hide_meeting_url"
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  {...register("hide_meeting_url")}
+                />
+                <Label
+                  htmlFor="hide_meeting_url"
+                  className="font-normal text-muted-foreground"
+                >
+                  Sembunyikan link sampai waktu event mulai
+                </Label>
+              </div>
               <p className="text-xs text-muted-foreground">
                 Masukkan link Zoom, Google Meet, atau platform video conference
                 lainnya
@@ -506,7 +521,7 @@ export default function EventScheduleStep({
           )}
 
           {/* Offline: Address */}
-          {!isOnline && (
+          {!is_online && (
             <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
               <div className="grid gap-4 md:grid-cols-2">
                 {/* Province */}
@@ -648,12 +663,30 @@ export default function EventScheduleStep({
                 </Label>
                 <Input
                   placeholder="Jalan, nomor, gedung, dll."
-                  className={cn(errors.address?.rawAddress && "border-danger")}
-                  {...register("address.rawAddress")}
+                  className={cn(errors.address?.raw_address && "border-danger")}
+                  {...register("address.raw_address")}
                 />
-                {errors.address?.rawAddress && (
+                {errors.address?.raw_address && (
                   <p className="text-xs text-danger">
-                    {errors.address.rawAddress.message}
+                    {errors.address.raw_address.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Location URL (Google Maps) */}
+              <div className="space-y-2">
+                <Label>
+                  Link Google Maps <span className="text-danger">*</span>
+                </Label>
+                <Input
+                  type="url"
+                  placeholder="https://maps.app.goo.gl/..."
+                  className={cn(errors.address?.location_url && "border-danger")}
+                  {...register("address.location_url")}
+                />
+                {errors.address?.location_url && (
+                  <p className="text-xs text-danger">
+                    {errors.address.location_url.message}
                   </p>
                 )}
               </div>
@@ -661,7 +694,7 @@ export default function EventScheduleStep({
               {/* Postal Code (Optional) */}
               <div className="flex justify-evenly gap-3">
                 <div className="space-y-2 w-full">
-                  <Label>Nama Alamat</Label>
+                  <Label>Nama Lokasi</Label>
                   <Input
                     placeholder="Contoh. Gedung A"
                     type="text"
@@ -673,7 +706,7 @@ export default function EventScheduleStep({
                   <Input
                     placeholder="12345"
                     type="text"
-                    {...register("address.postalCode")}
+                    {...register("address.postal_code")}
                   />
                 </div>
               </div>

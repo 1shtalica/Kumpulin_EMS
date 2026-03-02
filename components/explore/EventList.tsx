@@ -1,12 +1,14 @@
 import EventCard from "../reusable/EventCard";
 import { Inbox } from "lucide-react";
-import type { Event } from "@/types/event";
+import type { HomeEventCard } from "@/types/event";
 
 interface EventListProps {
-  events: Event[];
+  events: HomeEventCard[];
 }
 
 function formatEventDate(isoDate: string): string {
+  // 🌟 TBA
+  if (!isoDate) return "TBA";
   const date = new Date(isoDate);
   const options: Intl.DateTimeFormatOptions = {
     day: "numeric",
@@ -17,8 +19,7 @@ function formatEventDate(isoDate: string): string {
 }
 
 export default function EventList({ events }: EventListProps) {
-  // 1. EMPTY STATE (Jika hasil filter kosong)
-  if (events.length === 0) {
+  if (!events || events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-border rounded-3xl bg-muted/20">
         <div className="bg-white p-4 rounded-full shadow-sm mb-4">
@@ -35,23 +36,23 @@ export default function EventList({ events }: EventListProps) {
     );
   }
 
-  // 2. SUCCESS STATE (Grid Layout)
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {events.map((event) => (
         <EventCard
           key={event.id}
           title={event.title}
-          category={event.category}
+          // 🌟 seharusnya kategori 
+          category={event.type}
           date={formatEventDate(event.start_date)}
-          location={event.address?.province}
-          price={event.ticket_categories}
-          organizer={event.organizer?.name || "Organizer"}
-          image={event.banner_url || "/placeholder-event.jpg"}
+          location={event.is_online ? "Online" : event.address_title}
+          price={event.ticket_price}
+          organizer={event.organizer_name}
+          image={event.image_url || "/placeholder-event.jpg"}
           slug={event.slug}
-          isOnline={event.location?.toLowerCase() === "online"}
-          quota={0}
-          maxQuota={event.capacity}
+          isOnline={event.is_online}
+          ticketSold={event.total_sold}
+          maxQuota={event.max_capacity}
         />
       ))}
     </div>

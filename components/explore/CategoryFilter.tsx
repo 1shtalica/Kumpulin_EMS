@@ -1,9 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, Tag } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation"; // Hook URL
-
+import { Check, ChevronsUpDown, Tag, Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,50 +13,45 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
-// Dummy Data Kategori (Nanti ini bisa dari Props/API)
-const categories = [
-  { value: "semua_kategori", label: "Semua Kategori" },
-  { value: "musik", label: "Musik" },
-  { value: "teknologi", label: "Teknologi" },
-  { value: "olahraga", label: "Olahraga" },
-  { value: "desain", label: "Desain" },
-  { value: "bisnis", label: "Bisnis" },
-  { value: "kuliner", label: "Kuliner" },
-  { value: "seni", label: "Seni" },
-  { value: "bazar", label: "Bazar" },
-  { value: "lomba", label: "Lomba" },
-];
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { EventService } from "@/services/event-service";
 
 export default function CategoryFilter() {
   const [open, setOpen] = React.useState(false);
+  const [dynamicCategories, setDynamicCategories] = React.useState<string[]>([]);
+  const [loading, setLoading] = React.useState(false);
+
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // 1. Baca URL saat ini untuk menentukan nilai aktif
   const currentCategory = searchParams.get("category");
 
-  // 2. Fungsi update URL saat user memilih item
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      setLoading(true);
+      try {
+        const catList = await EventService.getEventCategories();
+        if (catList && catList.length > 0) {
+          setDynamicCategories(catList);
+        }
+      } catch (error) {
+        console.error("Gagal load kategori untuk filter explore:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const onSelectCategory = (currentValue: string) => {
     const params = new URLSearchParams(searchParams.toString());
-
-    // Logic Toggle: Kalau diklik lagi, hapus filternya
-    if (currentValue === "semua_kategori" || currentValue === currentCategory) {
+    if (currentValue === currentCategory) {
       params.delete("category");
     } else {
       params.set("category", currentValue);
     }
-
-    // Reset page ke 1 setiap ganti filter
-    params.delete("page");
-
+    params.delete("offset"); // Reset paginasi setiap filter ganti.
     router.push(`?${params.toString()}`, { scroll: false });
-    setOpen(false); // Tutup dropdown
+    setOpen(false);
   };
 
   return (
@@ -72,37 +66,43 @@ export default function CategoryFilter() {
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <Tag className="h-3.5 w-3.5 shrink-0 text-muted" />
             <span className="truncate">
-              {currentCategory
-                ? categories.find((cat) => cat.value === currentCategory)?.label
-                : "Kategori"}
+               {currentCategory || "Kategori"}
             </span>
           </div>
-          <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+          {loading ? (
+             <Loader2 className="ml-1 h-3.5 w-3.5 shrink-0 animate-spin opacity-50" />
+          ) : (
+             <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-70 p-0" align="start">
         <Command>
           <CommandInput placeholder="Cari kategori..." />
           <CommandList>
-            <CommandEmpty>Kategori tidak ditemukan.</CommandEmpty>
+            <CommandEmpty>
+              {loading ? "Memuat..." : "Kategori tidak ditemukan."}
+            </CommandEmpty>
             <CommandGroup>
-              {categories.map((category) => (
-                <CommandItem
-                  key={category.value}
-                  value={category.value}
-                  onSelect={() => onSelectCategory(category.value)}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      currentCategory === category.value
-                        ? "opacity-100"
-                        : "opacity-0",
-                    )}
-                  />
-                  {category.label}
-                </CommandItem>
-              ))}
+              {!loading &&
+                dynamicCategories.map((catString) => (
+                  <CommandItem
+                    key={catString}
+                    value={catString}
+                    onSelect={() => onSelectCategory(catString)}
+                    className="capitalize"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        currentCategory?.toLowerCase() === catString.toLowerCase()
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                    {catString}
+                  </CommandItem>
+                ))}
             </CommandGroup>
           </CommandList>
         </Command>

@@ -38,6 +38,7 @@ export default function LoginForm() {
     setError,
     formState: { errors },
   } = useForm<LoginFormValues>({
+    // migrated to zod v4
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",

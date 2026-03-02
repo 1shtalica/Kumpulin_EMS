@@ -74,64 +74,26 @@ export default function CreateEventClient() {
           "title",
           "category",
           "description",
-          "bannerImage",
+          "banner_image",
           "images",
         ] as const);
         break;
       case 3:
         const step3Fields = [
-          "startEventDateTime",
-          "endEventDateTime",
-          "startRegistrationDateTime",
-          "endRegistrationDateTime",
-          "rundown",
-          "isOnline",
+          "event_start_date",
+          "event_end_date",
+          "start_registration_date",
+          "end_registration_date",
+          "rundowns",
+          "is_online",
           "address",
-          "meetingUrl",
+          "meeting_url",
+          "hide_meeting_url",
         ] as const;
         isStepValid = await trigger(step3Fields);
         break;
       case 4:
-        const fieldValid = await trigger();
-
-        const values = getValues();
-        let manualValid = true;
-
-        if (values.isPaid) {
-          if (!values.tickets || values.tickets.length === 0) {
-            methods.setError("tickets", {
-              type: "manual",
-              message: "Event berbayar wajib memiliki minimal 1 tiket",
-            });
-            manualValid = false;
-          } else {
-            const hasInvalidPrice = values.tickets.some(
-              (t) => (t.price ?? 0) <= 0,
-            );
-            if (hasInvalidPrice) {
-              methods.setError("tickets", {
-                type: "manual",
-                message: "Tiket berbayar harus memiliki harga > 0",
-              });
-              manualValid = false;
-            }
-          }
-
-          if (
-            values.maxPurchasePerUser === undefined ||
-            values.maxPurchasePerUser === null ||
-            isNaN(values.maxPurchasePerUser)
-          ) {
-            methods.setError("maxPurchasePerUser", {
-              type: "manual",
-              message:
-                "Batas pembelian per user wajib diisi untuk event berbayar",
-            });
-            manualValid = false;
-          }
-        }
-
-        isStepValid = fieldValid && manualValid;
+        isStepValid = await trigger();
         break;
       case 5:
         isStepValid = true;

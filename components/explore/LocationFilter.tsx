@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, MapPin } from "lucide-react"; // 1. Tambah MapPin
+import { Check, ChevronsUpDown, MapPin } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -19,48 +19,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { INDONESIA_REGIONS } from "@/constants/regions";
 
+// Membentuk opsi dropdown, ditambah opsi default di atas
 const Locations = [
   { value: "semua_lokasi", label: "Semua Lokasi" },
   { value: "online", label: "Online" },
-  { value: "aceh", label: "Aceh" },
-  { value: "bali", label: "Bali" },
-  { value: "banten", label: "Banten" },
-  { value: "bengkulu", label: "Bengkulu" },
-  { value: "di_yogyakarta", label: "DI Yogyakarta" },
-  { value: "dki_jakarta", label: "DKI Jakarta" },
-  { value: "gorontalo", label: "Gorontalo" },
-  { value: "jambi", label: "Jambi" },
-  { value: "jawa_barat", label: "Jawa Barat" },
-  { value: "jawa_tengah", label: "Jawa Tengah" },
-  { value: "jawa_timur", label: "Jawa Timur" },
-  { value: "kalimantan_barat", label: "Kalimantan Barat" },
-  { value: "kalimantan_selatan", label: "Kalimantan Selatan" },
-  { value: "kalimantan_tengah", label: "Kalimantan Tengah" },
-  { value: "kalimantan_timur", label: "Kalimantan Timur" },
-  { value: "kalimantan_utara", label: "Kalimantan Utara" },
-  { value: "kepulauan_bangka_belitung", label: "Kepulauan Bangka Belitung" },
-  { value: "kepulauan_riau", label: "Kepulauan Riau" },
-  { value: "lampung", label: "Lampung" },
-  { value: "maluku", label: "Maluku" },
-  { value: "maluku_utara", label: "Maluku Utara" },
-  { value: "nusa_tenggara_barat", label: "Nusa Tenggara Barat" },
-  { value: "nusa_tenggara_timur", label: "Nusa Tenggara Timur" },
-  { value: "papua", label: "Papua" },
-  { value: "papua_barat", label: "Papua Barat" },
-  { value: "papua_barat_daya", label: "Papua Barat Daya" },
-  { value: "papua_pegunungan", label: "Papua Pegunungan" },
-  { value: "papua_selatan", label: "Papua Selatan" },
-  { value: "papua_tengah", label: "Papua Tengah" },
-  { value: "riau", label: "Riau" },
-  { value: "sulawesi_barat", label: "Sulawesi Barat" },
-  { value: "sulawesi_selatan", label: "Sulawesi Selatan" },
-  { value: "sulawesi_tengah", label: "Sulawesi Tengah" },
-  { value: "sulawesi_tenggara", label: "Sulawesi Tenggara" },
-  { value: "sulawesi_utara", label: "Sulawesi Utara" },
-  { value: "sumatera_barat", label: "Sumatera Barat" },
-  { value: "sumatera_selatan", label: "Sumatera Selatan" },
-  { value: "sumatera_utara", label: "Sumatera Utara" },
+  ...INDONESIA_REGIONS.map((prov) => ({
+    value: prov.id,
+    label: prov.name,
+  }))
 ];
 
 export default function LocationFilter() {
@@ -68,20 +36,18 @@ export default function LocationFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Ambil lokasi dari URL. Jika tidak ada, anggap "semua_lokasi"
   const currentLocation = searchParams.get("location") || "semua_lokasi";
 
   const onSelectLocation = (currentValue: string) => {
     const params = new URLSearchParams(searchParams.toString());
 
-    // Logic: Jika pilih "semua_lokasi" atau klik ulang lokasi yang sama -> Hapus Filter
     if (currentValue === "semua_lokasi" || currentValue === currentLocation) {
       params.delete("location");
     } else {
       params.set("location", currentValue);
     }
 
-    params.delete("page");
+    params.delete("offset"); // Reset pagination
 
     router.push(`?${params.toString()}`, { scroll: false });
     setOpen(false);
@@ -96,11 +62,9 @@ export default function LocationFilter() {
           aria-expanded={open}
           className="w-full justify-between text-sm hover:bg-primary-light"
         >
-          {/* 2. Wrapper Flex untuk Icon + Teks */}
           <div className="flex items-center gap-1.5 min-w-0 flex-1">
             <MapPin className="h-3.5 w-3.5 shrink-0 text-muted" />
             <span className="truncate">
-              {/* Logic Label: Cari label berdasarkan value, fallback ke "Semua Lokasi" */}
               {Locations.find((loc) => loc.value === currentLocation)?.label ||
                 "Lokasi"}
             </span>
@@ -109,7 +73,6 @@ export default function LocationFilter() {
         </Button>
       </PopoverTrigger>
 
-      {/* 3. Lebar diperbesar agar nama provinsi panjang muat */}
       <PopoverContent className="w-70 p-0" align="start">
         <Command>
           <CommandInput placeholder="Cari Lokasi..." />
@@ -134,6 +97,7 @@ export default function LocationFilter() {
                 </CommandItem>
               ))}
             </CommandGroup>
+            {/* TODO: Kalau dari BE udah support kabupaten/kota, nanti dilooping disini atau dibikin 2 tingkat filter */}
           </CommandList>
         </Command>
       </PopoverContent>

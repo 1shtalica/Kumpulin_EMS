@@ -125,8 +125,8 @@ export interface GetEventsParams {
   offset?: number;
   limit?: number;
   type?: string;
-  // Future params when backend supports:
-  // q?: string;
+  q?: string;
+  // 🌟 tunggu api siap
   // category?: string;
   // location?: string;
   // price_type?: 'gratis' | 'berbayar';
@@ -148,8 +148,8 @@ export interface HomeEventCard {
 }
 
 export interface GetOrganizerEventsParams {
-  q?: string;      // search by title
-  status?: string; // draft | published | ongoing | finished | archived | cancelled
+  q?: string;
+  status?: string;
   limit?: number;
   offset?: number;
 }

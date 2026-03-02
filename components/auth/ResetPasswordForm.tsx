@@ -46,10 +46,11 @@ export default function ResetPasswordForm() {
     setError,
     formState: { errors },
   } = useForm<ResetPasswordFormValues>({
+    // migrated to zod v4
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       password: "",
-      confirmPassword: "",
+      confirm_password: "",
     },
   });
 
@@ -59,7 +60,7 @@ export default function ResetPasswordForm() {
     try {
       await AuthService.resetPassword({
         token: token!,
-        newPassword: data.password,
+        new_password: data.password,
       });
       toast.success("Password berhasil direset!", { id: toastId });
       router.push("/login");
@@ -149,20 +150,20 @@ export default function ResetPasswordForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
+            <Label htmlFor="confirm_password">Konfirmasi Password</Label>
             <div className="relative">
               <Input
-                id="confirmPassword"
+                id="confirm_password"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Ulangi password"
                 disabled={isLoading}
                 autoComplete="new-password"
                 className={
-                  errors.confirmPassword
+                  errors.confirm_password
                     ? "border-danger rounded-lg pr-10"
                     : "rounded-lg pr-10"
                 }
-                {...register("confirmPassword")}
+                {...register("confirm_password")}
               />
               <button
                 type="button"
@@ -176,9 +177,9 @@ export default function ResetPasswordForm() {
                 )}
               </button>
             </div>
-            {errors.confirmPassword && (
+            {errors.confirm_password && (
               <p className="text-xs sm:text-sm text-danger font-medium">
-                {errors.confirmPassword.message}
+                {errors.confirm_password.message}
               </p>
             )}
           </div>
