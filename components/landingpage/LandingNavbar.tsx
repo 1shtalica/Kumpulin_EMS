@@ -198,7 +198,7 @@ export default function LandingNavbar() {
               <DropdownMenuTrigger asChild>
                 <button className="focus-visible:outline-none cursor-pointer">
                   <Avatar className="h-8 w-8 ring-2 ring-primary/30 hover:ring-primary transition-all">
-                    <AvatarImage src={user.avatar ?? undefined} alt={user.username} />
+                    <AvatarImage src={user.profile_url ?? undefined} alt={user.username} />
                     <AvatarFallback className="bg-primary text-white text-xs font-bold">
                       {userInitials}
                     </AvatarFallback>

@@ -20,10 +20,10 @@ export interface RundownRequest {
 }
 
 export interface CreateEventFormState {
-  // 📌 Step 1: Type (pilih publik atau eksternal)
+  // Step 1: Type (pilih publik atau eksternal)
   type: EventType | undefined;
 
-  // 📌 Step 2: Basic Info
+  // Step 2: Basic Info
   title: string;
   category: string;
   description: string;
@@ -32,7 +32,7 @@ export interface CreateEventFormState {
   images: File[];
   image_previews: string[];
 
-  // 📌 Step 3: Combined DateTime fields (instead of separate date + time)
+  // Step 3: Combined DateTime fields (instead of separate date + time)
   event_start_date: Date | undefined;
   event_end_date: Date | undefined;
   start_registration_date: Date | undefined;
@@ -50,7 +50,7 @@ export interface CreateEventFormState {
   meeting_url: string;
   hide_meeting_url: boolean;
 
-  // 📌 Step 4: Tickets
+  // Step 4: Tickets
   max_capacity?: number;
   max_ticket_per_user?: number;
   tickets: TicketRequest[];
