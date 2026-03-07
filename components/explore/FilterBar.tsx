@@ -31,39 +31,36 @@ export default function FilterBar() {
   };
 
   return (
-    <section className="sticky top-22 z-20 px-4 py-2 pointer-events-none">
-      <div className="container mx-auto pointer-events-auto">
-        <div className="w-full bg-white/80 backdrop-blur-xl border border-slate-200 shadow-sm rounded-xl p-3 md:p-4">
-          <div className="flex flex-col lg:flex-row gap-3 lg:items-center justify-between">
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full flex-1">
-              {/* Hapus div pembungkus width manual, biarkan grid yang mengatur */}
-              <CategoryFilter />
-              <LocationFilter />
-              <PriceFilter />
-              <SortByFilter />
+    <section className="sticky top-20 z-40 py-4 pointer-events-none">
+      <div className="w-full max-w-4xl mx-auto pointer-events-auto">
+        <div className="relative w-full bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_40px_rgb(0,0,0,0.06)] rounded-[1.5rem] lg:rounded-full p-2 lg:p-1.5 transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
+          <div className="flex flex-col lg:flex-row lg:items-center">
+
+            {/* Filter Items inside pill */}
+            <div className="grid grid-cols-2 lg:flex w-full flex-1 gap-1 lg:gap-0 lg:divide-x divide-slate-100">
+              <div className="flex-1 w-full"><CategoryFilter /></div>
+              <div className="flex-1 w-full"><LocationFilter /></div>
+              <div className="flex-1 w-full"><PriceFilter /></div>
+              <div className="flex-1 w-full"><SortByFilter /></div>
             </div>
 
-            {/* Tombol Reset (Kanan) */}
-            {isFiltering && (
-              <div className="flex justify-end lg:justify-start mt-2 lg:mt-0 lg:pl-4 lg:border-l lg:border-slate-200 shrink-0">
+            {/* Reset Button (End of pill) */}
+            <div className="flex items-center justify-end mt-2 lg:mt-0 lg:ml-2 shrink-0">
+              {isFiltering ? (
                 <Button
-                  variant="outline"
                   onClick={handleReset}
-                  className="text-danger border-danger hover:bg-danger/50 hover:text-danger hover:border-danger gap-2 px-3 h-10 w-full sm:w-auto rounded-xl"
+                  className="bg-red-50 hover:bg-red-100 text-red-600 border-0 rounded-xl lg:rounded-full h-12 lg:h-14 px-6 gap-2 w-full lg:w-auto shadow-none transition-colors font-semibold"
                 >
-                  <X size={16} />
-                  <span>Reset Filter</span>
+                  <X size={18} />
+                  <span>Reset</span>
                 </Button>
-              </div>
-            )}
+              ) : (
+                <div className="hidden lg:flex items-center justify-center w-14 h-14 rounded-full bg-slate-50 text-slate-400 border border-slate-100 shrink-0">
+                  <Filter size={20} />
+                </div>
+              )}
+            </div>
 
-            {/* Label Filter (Jika tidak ada reset) */}
-            {!isFiltering && (
-              <div className="hidden lg:flex items-center gap-2 text-slate-400 px-4 border-l border-slate-200 text-sm font-medium shrink-0">
-                <Filter size={16} />
-                <span>Filter</span>
-              </div>
-            )}
           </div>
         </div>
       </div>

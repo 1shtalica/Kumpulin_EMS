@@ -52,21 +52,24 @@ export default function SortByFilter() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between text-sm hover:bg-primary-light"
+          className="w-full justify-between h-auto py-2.5 lg:py-3 px-3 lg:px-5 bg-transparent hover:bg-slate-50 rounded-xl lg:rounded-full border-0 shadow-none transition-colors"
         >
-          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-muted" />
-            <span className="truncate">
-              {/* Cari label berdasarkan value, kalau gak ketemu (default) pake "Terbaru" */}
-              {sortMethods.find((s) => s.value === currentSort)?.label ||
-                "Urutkan"}
-            </span>
+          <div className="flex items-center gap-3 w-full min-w-0">
+            <div className="hidden sm:flex h-10 w-10 rounded-full bg-primary/10 items-center justify-center shrink-0">
+              <ArrowUpDown className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex flex-col items-start min-w-0 flex-1 text-left">
+              <span className="text-xs text-slate-400 font-medium">Urutkan</span>
+              <span className="text-sm font-semibold text-slate-900 truncate w-full mt-0.5">
+                {sortMethods.find((s) => s.value === currentSort)?.label || "Terbaru"}
+              </span>
+            </div>
           </div>
-          <ChevronsUpDown className="ml-1 h-3.5 w-3.5 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-300" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-50 p-0" align="start">

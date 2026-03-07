@@ -89,11 +89,11 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative w-full py-16 md:py-24 lg:py-32 flex flex-col items-center justify-center overflow-hidden bg-slate-50">
+    <section className="relative w-full py-16 md:py-24 lg:py-32 flex flex-col items-center justify-center overflow-hidden bg-linear-to-b from-primary/10 via-primary/5 to-white">
       {/* Background gradients and texture */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 -left-1/4 w-1/2 h-1/2 bg-primary/10 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 -right-1/4 w-1/2 h-1/2 bg-secondary/10 rounded-full blur-[120px]" />
+        <div className="absolute -top-20 -right-20 w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] bg-primary/20 rounded-full blur-[100px] opacity-70" />
+        <div className="absolute top-1/2 -left-20 w-[30vw] h-[30vw] max-w-[500px] max-h-[500px] bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 opacity-70" />
         <Image
           src="/Images/noiseGradient.png"
           alt="Background Texture"
@@ -115,7 +115,7 @@ export default function HeroSection() {
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150 fill-mode-both leading-tight">
           Waktunya Eksplorasi <br className="hidden sm:block" />
           <span className="relative whitespace-nowrap inline-block mt-2">
-            <span className="relative z-10 bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">Event Terbaik</span>
+            <span className="text-primary">Event Terbaik</span>
             {/* Decorative underline */}
             <svg className="absolute -bottom-1 left-0 w-full h-2 sm:h-3 text-primary/30 -z-10" viewBox="0 0 100 20" preserveAspectRatio="none">
               <path d="M0 15 Q 50 0 100 15 L 100 20 L 0 20 Z" fill="currentColor" />

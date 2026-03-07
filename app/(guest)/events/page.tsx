@@ -5,7 +5,7 @@ import EventList from "@/components/explore/EventList";
 import { EventService } from "@/services/event-service";
 import type { HomeEventCard } from "@/types/event";
 import { Suspense } from "react";
-import EventPagination from "@/components/explore/EventPagination"; 
+import EventPagination from "@/components/explore/EventPagination";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -22,10 +22,10 @@ export default async function ExplorePage(props: {
   const query = typeof searchParams.q === "string" ? searchParams.q : "";
   const sort = typeof searchParams.sort === "string" ? searchParams.sort : "Terbaru";
   const offsetStr = typeof searchParams.offset === "string" ? searchParams.offset : "0";
-  
+
   let offset = parseInt(offsetStr, 10);
   if (isNaN(offset) || offset < 0) offset = 0;
-  
+
   const LIMIT = 12;
 
   let events: HomeEventCard[] = [];
@@ -52,10 +52,10 @@ export default async function ExplorePage(props: {
   let filteredEvents = events.filter((event) => {
     // Note: 🌟 'event.type' digunakan krn backend saat ini tdk memiliki endpoint 'category' yg dikirim
     if (category) {
-       // Filter category diabaikan krn structure belum mensupportnya
+      // Filter category diabaikan krn structure belum mensupportnya
     }
     if (location && location !== "semua_lokasi") {
-        if (location === "online" && !event.is_online) return false;
+      if (location === "online" && !event.is_online) return false;
     }
     if (priceType === "gratis" && event.ticket_price > 0) return false;
     if (priceType === "berbayar" && event.ticket_price === 0) return false;
@@ -72,14 +72,14 @@ export default async function ExplorePage(props: {
     <div className="min-h-screen bg-background flex flex-col">
       <LandingNavbar />
       <main className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl pb-20 grow">
-        
+
         {/* Search Bar - Interactive */}
         <Suspense fallback={<div className="w-full h-32" />}>
           <SearchBar />
         </Suspense>
 
         {/* Filter Bar - Interactive */}
-        <div className="-mt-8 mb-8 relative z-20">
+        <div className="mb-8 relative z-20">
           <Suspense fallback={<div className="w-full h-16" />}>
             <FilterBar />
           </Suspense>
@@ -87,9 +87,9 @@ export default async function ExplorePage(props: {
 
         {/* Error State */}
         {error && (
-           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-             <p className="text-danger text-sm">{error}</p>
-           </div>
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-danger text-sm">{error}</p>
+          </div>
         )}
 
         <div className="mb-6 text-muted text-sm md:text-base">
@@ -102,9 +102,9 @@ export default async function ExplorePage(props: {
 
         {/* Pagination UI - Interactive */}
         <div className="mt-12 flex justify-center">
-            <Suspense fallback={<div className="h-10 w-full" />}>
-                <EventPagination limit={LIMIT} totalItems={totalData} currentOffset={offset} />
-            </Suspense>
+          <Suspense fallback={<div className="h-10 w-full" />}>
+            <EventPagination limit={LIMIT} totalItems={totalData} currentOffset={offset} />
+          </Suspense>
         </div>
       </main>
     </div>
