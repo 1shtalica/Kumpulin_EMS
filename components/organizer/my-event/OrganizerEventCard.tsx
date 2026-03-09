@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Clock, Eye, Pencil, CheckSquare } from "lucide-react";
+import { Calendar, Clock, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { OrganizerEventCard as OrganizerEventCardType } from "@/types/event";
@@ -9,6 +9,7 @@ import { id } from "date-fns/locale";
 
 interface Props {
     event: OrganizerEventCardType;
+    layout?: "list" | "grid";
 }
 
 const statusTranslation: Record<string, string> = {
@@ -21,7 +22,7 @@ const statusTranslation: Record<string, string> = {
     cancelled: "Dibatalkan",
 };
 
-export default function OrganizerEventCard({ event }: Props) {
+export default function OrganizerEventCard({ event, layout = "list" }: Props) {
     let dateStr = "TBA";
     let timeStr = "TBA";
 
@@ -33,10 +34,20 @@ export default function OrganizerEventCard({ event }: Props) {
         } catch (e) { }
     }
 
+    const isGrid = layout === "grid";
+
     return (
-        <div className="flex flex-col md:flex-row bg-card text-card-foreground border border-border rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
-            {/* Left side: Image and Badge */}
-            <div className="relative w-full md:w-[280px] h-40 md:h-auto shrink-0 bg-gradient-to-br from-primary/5 via-background to-secondary/30 p-4 flex flex-col justify-center items-center">
+        <div className={`flex bg-card relative text-card-foreground border border-border/40 rounded-[28px] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group ${isGrid ? "flex-col h-full" : "flex-col md:flex-row"}`}>
+            {/* Very subtle elegant geometric line pattern overlay */}
+            <div
+                className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"
+                style={{
+                    backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)',
+                    backgroundSize: '24px 24px'
+                }}
+            />
+            {/* Left side/Top side: Image */}
+            <div className={`relative shrink-0 bg-transparent flex justify-center items-center z-10 m-3 rounded-[20px] overflow-hidden ${isGrid ? "w-[calc(100%-24px)] h-48" : "w-full md:w-[280px] h-40 md:h-auto"}`}>
                 {event.image_url ? (
                     <Image
                         src={event.image_url}
@@ -45,117 +56,98 @@ export default function OrganizerEventCard({ event }: Props) {
                         className="object-cover"
                     />
                 ) : (
-                    <div className="w-24 h-24 relative drop-shadow-xl hover:scale-105 transition-transform duration-500">
+                    <div className="w-full h-full bg-gradient-to-br from-primary/5 via-background to-secondary/30 flex justify-center items-center relative drop-shadow-sm">
                         <Image
                             src="/logo.png"
                             alt="Event Cover"
-                            fill
-                            className="object-cover opacity-80"
+                            width={96}
+                            height={96}
+                            className="object-contain opacity-70"
                             unoptimized
                         />
                     </div>
                 )}
-                <div className="absolute top-4 right-4 z-10">
+            </div>
+
+            {/* Right side/Bottom side: Content */}
+            <div className={`flex flex-col flex-1 z-10 relative bg-card justify-between gap-4 ${isGrid ? "p-5 pt-2" : "p-5 md:py-6 md:pr-7 md:pl-2"}`}>
+                {/* Top-Right Badge */}
+                <div className="absolute top-5 right-5 z-20">
                     <Badge
                         className={
                             event.status?.toLowerCase() === "published"
-                                ? "bg-success hover:bg-success-hover text-primary-foreground border-none px-4 py-1 text-xs font-bold rounded-full shadow-sm capitalize"
-                                : "bg-muted-foreground hover:bg-muted-foreground/90 text-primary-foreground border-none px-4 py-1 text-xs font-bold rounded-full shadow-sm capitalize"
+                                ? "bg-success-light/80 hover:bg-success-light text-success border-none px-3 py-0.5 text-[11px] font-medium rounded-full shadow-none capitalize backdrop-blur-sm transition-colors"
+                                : "bg-warning-light/80 hover:bg-warning-light text-warning-hover border-none px-3 py-0.5 text-[11px] font-medium rounded-full shadow-none capitalize backdrop-blur-sm transition-colors"
                         }
                     >
                         {event.status ? statusTranslation[event.status.toLowerCase()] || event.status.toLowerCase() : "Draft"}
                     </Badge>
                 </div>
-            </div>
 
-            {/* Right side: Content */}
-            <div className="flex flex-col flex-1 p-5 md:p-6 justify-between gap-4">
                 {/* Top: Category and Title */}
-                <div className="space-y-2.5">
-                    <Badge
-                        variant="secondary"
-                        className="bg-primary/10 hover:bg-primary/20 text-primary rounded-full px-3 py-1 border-none font-medium text-xs"
-                    >
+                <div className="space-y-1.5 mt-2 md:mt-0 pr-20">
+                    <span className="text-muted-foreground/60 font-medium text-[11px] uppercase tracking-widest inline-block">
                         {event.type || "Event"}
-                    </Badge>
+                    </span>
 
                     <div>
-                        <h3 className="text-[18px] font-bold text-foreground tracking-tight mb-1 line-clamp-1">
+                        <h3 className="text-[18px] font-semibold text-foreground/90 tracking-tight leading-snug mb-1 line-clamp-1 group-hover:text-primary transition-colors">
                             {event.title}
                         </h3>
-                        <p className="text-muted-foreground text-[13px] line-clamp-1">
+                        <p className="text-muted-foreground/70 text-[13px] font-medium line-clamp-1">
                             {event.is_online
                                 ? "Berlangsung secara online"
                                 : event.address_title}
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-6 text-[12px] font-medium text-muted-foreground/80 mt-1.5">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-muted-foreground/50" />
+                    <div className="flex items-center gap-5 text-[12px] font-medium text-muted-foreground/70 mt-3 pt-1">
+                        <div className="flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5 stroke-[1.5]" />
                             <span>{dateStr}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-muted-foreground/50" />
+                        <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 stroke-[1.5]" />
                             <span>{timeStr}</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="w-full h-px bg-border my-1" />
+                <div className="w-full h-px bg-border/40 my-1" />
 
                 {/* Bottom: Stats and Actions */}
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+                <div className={`flex justify-between gap-4 ${isGrid ? "flex-col sm:flex-row sm:items-end mt-auto" : "flex-col md:flex-row md:items-end"}`}>
                     <div className="flex gap-10">
                         <div className="flex flex-col">
-                            <span className="text-base font-bold text-foreground leading-tight">
+                            <span className="text-[15px] font-semibold text-foreground/90 leading-tight">
                                 {event.total_sold}/{event.max_capacity}
                             </span>
-                            <span className="text-xs text-muted-foreground font-medium tracking-tight">
+                            <span className="text-[11px] text-muted-foreground/60 font-medium tracking-wide uppercase mt-0.5">
                                 Peserta
                             </span>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-base font-bold text-foreground leading-tight">
+                            <span className="text-[15px] font-semibold text-foreground/90 leading-tight">
                                 Rp -
                             </span>
-                            <span className="text-xs text-muted-foreground font-medium tracking-tight">
+                            <span className="text-[11px] text-muted-foreground/60 font-medium tracking-wide uppercase mt-0.5">
                                 Pendapatan
                             </span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 mt-2 lg:mt-0">
-                        {/* Mobile: 2 row, Desktop: 1 row */}
-                        <div className="flex flex-col gap-2 w-full lg:flex-row lg:items-center lg:w-auto">
-                            {/* Row 1: Lihat & Edit */}
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    asChild
-                                    className="h-9 px-4 text-muted-foreground font-medium flex-1 lg:flex-none"
-                                >
-                                    <Link href={`/organizer/my-event/${event.id}`}>
-                                        <Eye className="w-4 h-4 mr-2" />
-                                        Lihat
-                                    </Link>
-                                </Button>
-                            </div>
-
-                            {/* Row 2: Check-in (full width di mobile) */}
-                            <Button
-                                variant="default"
-                                size="sm"
-                                asChild
-                                className="h-9 px-5 font-medium shadow-md shadow-primary/20 w-full lg:w-auto"
-                            >
-                                <Link href={`/organizer/my-event/${event.id}/check-in`}>
-                                    <CheckSquare className="w-4 h-4 mr-2" />
-                                    Check-in
-                                </Link>
-                            </Button>
-                        </div>
+                    <div className={`flex items-center gap-3 ${isGrid ? "mt-2 sm:mt-0" : "mt-1 md:mt-0"}`}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className={`h-[34px] font-medium hover:text-foreground hover:bg-muted/50 rounded-full border-border/80 shadow-sm transition-all ${isGrid ? "w-full justify-center px-4" : "px-5 text-muted-foreground/80"}`}
+                        >
+                            <Link href={`/organizer/my-event/${event.id}`}>
+                                <Eye className="w-4 h-4 mr-1.5 stroke-[1.5]" />
+                                Lihat
+                            </Link>
+                        </Button>
                     </div>
                 </div>
             </div>

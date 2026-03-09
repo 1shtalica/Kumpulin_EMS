@@ -64,7 +64,7 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
     const isPublished = event.status?.toLowerCase() === 'published';
 
     return (
-        <div className="p-8 space-y-8 max-w-5xl mx-auto">
+        <div className="p-8 space-y-8 px-6">
             {/* Header & Back Button */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">

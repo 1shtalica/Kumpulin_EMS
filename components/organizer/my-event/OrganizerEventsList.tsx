@@ -19,6 +19,7 @@ export default function OrganizerEventsList() {
   const search = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
   const offset = parseInt(searchParams.get("offset") ?? "0");
+  const layout = searchParams.get("layout") ?? "list";
 
   const [events, setEvents] = useState<OrganizerEventCardType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,9 +87,11 @@ export default function OrganizerEventsList() {
   return (
     <div className="flex flex-col gap-5">
       {/* Event list */}
-      {events.map((event) => (
-        <OrganizerEventCard key={event.id} event={event} />
-      ))}
+      <div className={layout === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" : "flex flex-col gap-5"}>
+        {events.map((event) => (
+          <OrganizerEventCard key={event.id} event={event} layout={layout as "list" | "grid"} />
+        ))}
+      </div>
 
       {/* Pagination — hanya tampil jika ada lebih dari 1 halaman */}
       {totalPages > 1 && (

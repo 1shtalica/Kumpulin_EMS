@@ -71,7 +71,7 @@ export default function HeaderSection() {
                 <button className="relative h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all hover:scale-105 active:scale-95">
                   <Avatar className="h-10 w-10 border-2 border-slate-100 shadow-sm">
                     <AvatarImage
-                      src={user.avatar || ""}
+                      src={user.profile_url || ""}
                       alt={user.username}
                       className="object-cover"
                     />
