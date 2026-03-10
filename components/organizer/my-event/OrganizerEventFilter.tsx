@@ -67,7 +67,7 @@ export default function MyEventFilter() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 h-4 w-4" />
           <Input
             type="text"
-            className="w-full pl-11 h-11 bg-card rounded-full border-border/60 text-[14px] shadow-none focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/40 transition-all font-medium"
+            className="w-full pl-11 h-11 bg-card rounded-full border-border text-[14px] shadow-none focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/40 transition-all font-medium"
             placeholder="Cari event kamu di sini..."
             defaultValue={query}
             onChange={(e) => debounceSearch(e.target.value)}
@@ -80,7 +80,7 @@ export default function MyEventFilter() {
           />
         </div>
 
-        <div className="flex items-center bg-card rounded-full p-1 border border-border/60 shadow-sm shrink-0">
+        <div className="flex items-center bg-card rounded-full p-1 border border-border shadow-sm shrink-0">
           <Button
             variant={layout === "list" ? "brand" : "ghost"}
             size="icon"

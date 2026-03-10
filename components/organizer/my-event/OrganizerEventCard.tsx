@@ -37,7 +37,7 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
     const isGrid = layout === "grid";
 
     return (
-        <div className={`flex bg-card relative text-card-foreground border border-border/40 rounded-[28px] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group ${isGrid ? "flex-col h-full" : "flex-col md:flex-row"}`}>
+        <div className={`flex bg-card relative text-card-foreground border border-border rounded-[28px] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group ${isGrid ? "flex-col h-full" : "flex-col md:flex-row"}`}>
             {/* Very subtle elegant geometric line pattern overlay */}
             <div
                 className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"
@@ -113,7 +113,7 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
                     </div>
                 </div>
 
-                <div className="w-full h-px bg-border/40 my-1" />
+                <div className="w-full h-px bg-border my-1" />
 
                 {/* Bottom: Stats and Actions */}
                 <div className={`flex justify-between gap-4 ${isGrid ? "flex-col sm:flex-row sm:items-end mt-auto" : "flex-col md:flex-row md:items-end"}`}>
@@ -141,7 +141,7 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
                             variant="outline"
                             size="sm"
                             asChild
-                            className={`h-[34px] font-medium hover:text-foreground hover:bg-muted/50 rounded-full border-border/80 shadow-sm transition-all ${isGrid ? "w-full justify-center px-4" : "px-5 text-muted-foreground/80"}`}
+                            className={`h-[34px] font-medium hover:text-foreground hover:bg-muted/50 rounded-full border-border shadow-sm transition-all ${isGrid ? "w-full justify-center px-4" : "px-5 text-muted-foreground/80"}`}
                         >
                             <Link href={`/organizer/my-event/${event.id}`}>
                                 <Eye className="w-4 h-4 mr-1.5 stroke-[1.5]" />

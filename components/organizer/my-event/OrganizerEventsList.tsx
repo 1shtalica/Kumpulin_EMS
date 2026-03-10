@@ -20,12 +20,11 @@ export default function OrganizerEventsList() {
   const status = searchParams.get("status") ?? "all";
   const offset = parseInt(searchParams.get("offset") ?? "0");
   const layout = searchParams.get("layout") ?? "list";
+  const limit = parseInt(searchParams.get("limit") ?? "10");
 
   const [events, setEvents] = useState<OrganizerEventCardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
-
-  const limit = 10;
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
@@ -46,7 +45,7 @@ export default function OrganizerEventsList() {
       }
     };
     fetchEvents();
-  }, [search, status, offset]);
+  }, [search, status, offset, limit]);
 
   const totalPages = Math.max(1, Math.ceil(totalItems / limit));
   const currentPage = Math.floor(offset / limit) + 1;
@@ -93,40 +92,72 @@ export default function OrganizerEventsList() {
         ))}
       </div>
 
-      {/* Pagination — hanya tampil jika ada lebih dari 1 halaman */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={currentPage === 1}
-            onClick={() => goToPage(currentPage - 1)}
-            className="h-9 w-9 p-0"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+      {/* Bottom Actions: Pagination and Items per page */}
+      {totalPages > 0 && (
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 mt-4 mb-2">
+          {/* Rows per page selector */}
+          <div className="flex items-center gap-2.5 text-[13px] text-muted-foreground font-medium bg-card px-4 py-1.5 rounded-full border border-border/60 shadow-sm">
+            <span>Tampilkan</span>
+            <div className="relative flex items-center">
+              <select
+                className="appearance-none bg-transparent text-foreground font-semibold px-1 pr-5 focus:outline-none cursor-pointer"
+                value={limit}
+                onChange={(e) => {
+                  const params = new URLSearchParams(searchParams);
+                  params.set("limit", e.target.value);
+                  params.set("offset", "0"); // Reset offset when changing page size
+                  replace(`${pathname}?${params.toString()}`, { scroll: false });
+                }}
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+              <div className="pointer-events-none absolute right-0 flex items-center text-muted-foreground">
+                <svg className="fill-current h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
+              </div>
+            </div>
+            <span>data</span>
+          </div>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <div className="flex items-center justify-center gap-1.5">
             <Button
-              key={page}
-              variant={page === currentPage ? "brand" : "outline"}
+              variant="outline"
               size="sm"
-              onClick={() => goToPage(page)}
-              className="h-9 w-9 p-0"
+              disabled={currentPage === 1}
+              onClick={() => goToPage(currentPage - 1)}
+              className="h-9 w-9 p-0 rounded-full border-border/80 shadow-sm text-muted-foreground hover:text-foreground"
             >
-              {page}
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-          ))}
 
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={currentPage === totalPages}
-            onClick={() => goToPage(currentPage + 1)}
-            className="h-9 w-9 p-0"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <Button
+                key={page}
+                variant={page === currentPage ? "brand" : "ghost"}
+                size="sm"
+                onClick={() => goToPage(page)}
+                className={
+                  page === currentPage
+                    ? "h-9 w-9 p-0 rounded-full shadow-md shadow-primary/20 font-semibold"
+                    : "h-9 w-9 p-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium transition-all"
+                }
+              >
+                {page}
+              </Button>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => goToPage(currentPage + 1)}
+              className="h-9 w-9 p-0 rounded-full border-border/80 shadow-sm text-muted-foreground hover:text-foreground"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
     </div>
