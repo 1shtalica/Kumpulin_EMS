@@ -22,8 +22,14 @@ import { id } from "date-fns/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
+import { EditSectionModal } from "@/components/organizer/my-event/EditSectionModal";
 
-export default function DetailSection({ event }: { event: Event }) {
+interface DetailSectionProps {
+  event: Event;
+  isEditable?: boolean;
+}
+
+export default function DetailSection({ event, isEditable = false }: DetailSectionProps) {
   const startDate = new Date(event.start_date);
   const endDate = new Date(event.end_date);
 
@@ -102,7 +108,10 @@ export default function DetailSection({ event }: { event: Event }) {
           </div>
 
           {/* Judul event */}
-          <h1 className="font-bold text-accent">{event.title}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="font-bold text-accent">{event.title}</h1>
+            {isEditable && <EditSectionModal event={event as any} section="core" />}
+          </div>
 
           {/* Detail Event Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
@@ -112,7 +121,10 @@ export default function DetailSection({ event }: { event: Event }) {
                 <Calendar size={24} />
               </div>
               <div className="flex flex-col w-full">
-                <p className="text-sm text-muted">Jadwal Event</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm text-muted">Jadwal Event</p>
+                  {isEditable && <EditSectionModal event={event as any} section="datetime" />}
+                </div>
                 <p className="font-semibold text-accent">{eventDateString}</p>
                 <p className="text-sm text-slate-500">{eventTimeString}</p>
               </div>
@@ -124,7 +136,10 @@ export default function DetailSection({ event }: { event: Event }) {
                 <Clock size={24} />
               </div>
               <div className="flex flex-col w-full">
-                <p className="text-sm text-muted">Masa Registrasi</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm text-muted">Masa Registrasi</p>
+                  {isEditable && <EditSectionModal event={event as any} section="datetime" />}
+                </div>
                 <p className="font-semibold text-accent">{regDateString}</p>
                 {regTimeString && (
                   <p className="text-sm text-slate-500">{regTimeString}</p>
@@ -139,8 +154,9 @@ export default function DetailSection({ event }: { event: Event }) {
               </div>
 
               <div className="flex flex-col w-full">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <p className="text-sm text-muted">Lokasi</p>
+                  {isEditable && <EditSectionModal event={event as any} section="location" />}
                   {!event.is_online && (
                     <Button
                       variant="ghost"
@@ -174,7 +190,10 @@ export default function DetailSection({ event }: { event: Event }) {
                 <Users size={24} />
               </div>
               <div className="flex flex-col w-full">
-                <p className="text-sm text-muted">Partisipan</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm text-muted">Partisipan</p>
+                  {isEditable && <EditSectionModal event={event as any} section="capacity" />}
+                </div>
                 <p className="font-semibold text-accent">
                   {event.sold_event}/{event.capacity || "-"} terdaftar
                 </p>
@@ -250,7 +269,10 @@ export default function DetailSection({ event }: { event: Event }) {
 
           {/* Bagian Deskripsi Event  */}
           <div>
-            <h4 className="font-bold mb-4">Tentang Event</h4>
+            <div className="flex items-center gap-2 mb-4">
+              <h4 className="font-bold">Tentang Event</h4>
+              {isEditable && <EditSectionModal event={event as any} section="core" />}
+            </div>
             <div
               className="prose prose-sm max-w-none text-slate-600"
               dangerouslySetInnerHTML={{ __html: event.description }}
@@ -263,6 +285,7 @@ export default function DetailSection({ event }: { event: Event }) {
               <div className="flex items-center gap-2 mb-6">
                 <div className="h-8 w-1 bg-primary rounded-full"></div>
                 <h4 className="font-bold text-lg text-accent">Rundown Acara</h4>
+                {isEditable && <EditSectionModal event={event as any} section="rundown" />}
               </div>
 
               <div className="flex flex-col gap-4">
@@ -283,9 +306,9 @@ export default function DetailSection({ event }: { event: Event }) {
 
                     {/* Detail (Kanan) */}
                     <div className={cn(
-                    "flex flex-col w-full",
-                    (item.location || item.description) ? "gap-2" : "justify-center"
-                  )}>
+                      "flex flex-col w-full",
+                      (item.location || item.description) ? "gap-2" : "justify-center"
+                    )}>
                       <h5 className="font-bold text-accent text-lg leading-tight group-hover:text-primary transition-colors">
                         {item.title}
                       </h5>

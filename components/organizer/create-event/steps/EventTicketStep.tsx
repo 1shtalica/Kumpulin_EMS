@@ -42,7 +42,7 @@ export default function EventTicketStep({
     if (max_capacity > 0 && max_capacity.toString() !== capacityInput) {
       setCapacityInput(max_capacity.toString());
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [max_capacity]);
 
   const start_registration_date = watch("start_registration_date");
@@ -57,7 +57,7 @@ export default function EventTicketStep({
     if (tickets && tickets.length > 0) {
       trigger("tickets");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalTicketQuota, max_capacity]);
 
   return (
@@ -74,7 +74,7 @@ export default function EventTicketStep({
 
       {/* Max Purchase Per User */}
       {(!sectionOnly || sectionOnly === 'tickets') && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
             <ShoppingCart className="h-5 w-5 text-primary" />
             Batas Pembelian
@@ -84,36 +84,36 @@ export default function EventTicketStep({
               Batas Pembelian Per User <span className="text-danger">*</span>
             </Label>
             <Input
-            id="max_ticket_per_user"
-            type="number"
-            min={0}
-            placeholder="0"
-            defaultValue={0}
-            {...register("max_ticket_per_user")}
-            onChange={(e) => {
-              const value = e.target.value;
-              setValue(
-                "max_ticket_per_user",
-                value === "" ? 0 : parseInt(value),
-                { shouldValidate: true },
-              );
-            }}
-            className={cn(
-              "shadow-none bg-white",
-              errors.max_ticket_per_user &&
-              "border-danger focus-visible:ring-danger",
-            )}
-          />
-          <p className="text-xs text-muted-foreground">
-            💡 Batas total tiket yang dapat dibeli oleh 1 user. <br />• Contoh: Jika batas 3, user hanya bisa membeli
-            maksimal 3 tiket. <br />• Isi <strong>0</strong> untuk{" "}
-            <strong>tanpa batas pembelian</strong>.
-          </p>
-          {errors.max_ticket_per_user && (
-            <p className="text-xs text-danger">
-              {errors.max_ticket_per_user.message}
+              id="max_ticket_per_user"
+              type="number"
+              min={0}
+              placeholder="0"
+              defaultValue={0}
+              {...register("max_ticket_per_user")}
+              onChange={(e) => {
+                const value = e.target.value;
+                setValue(
+                  "max_ticket_per_user",
+                  value === "" ? 0 : parseInt(value),
+                  { shouldValidate: true },
+                );
+              }}
+              className={cn(
+                "shadow-none bg-white",
+                errors.max_ticket_per_user &&
+                "border-danger focus-visible:ring-danger",
+              )}
+            />
+            <p className="text-xs text-muted-foreground">
+              Batas total tiket yang dapat dibeli oleh 1 user. <br />• Contoh: Jika batas 3, user hanya bisa membeli
+              maksimal 3 tiket. <br />• Isi <strong>0</strong> untuk{" "}
+              <strong>tanpa batas pembelian</strong>.
             </p>
-          )}
+            {errors.max_ticket_per_user && (
+              <p className="text-xs text-danger">
+                {errors.max_ticket_per_user.message}
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -122,55 +122,55 @@ export default function EventTicketStep({
 
       {/* Capacity Settings */}
       {(!sectionOnly || sectionOnly === 'capacity') && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
             <Users className="h-5 w-5 text-primary" />
             Kapasitas Event
           </h3>
 
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-6">
-            <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Jumlah Kapasitas Maksimal Event</Label>
-                  <Input
-                    type="text"
-                    placeholder="Contoh: 100"
-                    value={capacityInput}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "");
-                      setCapacityInput(value);
-                      if (value !== "" && value !== "0") {
-                        setValue("max_capacity", parseInt(value), { shouldValidate: true });
-                      }
-                    }}
-                    onBlur={() => {
-                      if (capacityInput === "" || capacityInput === "0") {
-                        const lastValid = max_capacity > 0 ? max_capacity.toString() : "50";
-                        setCapacityInput(lastValid);
-                        setValue("max_capacity", parseInt(lastValid), { shouldValidate: true });
-                      }
-                    }}
-                    className={cn(
-                      errors.max_capacity &&
-                      "border-danger focus-visible:ring-danger",
-                    )}
-                  />
-                  {errors.max_capacity && (
-                    <p className="text-xs text-danger">
-                      {errors.max_capacity.message}
-                    </p>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label>Jumlah Kapasitas Maksimal Event</Label>
+                <Input
+                  type="text"
+                  placeholder="Contoh: 100"
+                  value={capacityInput}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    setCapacityInput(value);
+                    if (value !== "" && value !== "0") {
+                      setValue("max_capacity", parseInt(value), { shouldValidate: true });
+                    }
+                  }}
+                  onBlur={() => {
+                    if (capacityInput === "" || capacityInput === "0") {
+                      const lastValid = max_capacity > 0 ? max_capacity.toString() : "50";
+                      setCapacityInput(lastValid);
+                      setValue("max_capacity", parseInt(lastValid), { shouldValidate: true });
+                    }
+                  }}
+                  className={cn(
+                    errors.max_capacity &&
+                    "border-danger focus-visible:ring-danger",
                   )}
-                </div>
+                />
+                {errors.max_capacity && (
+                  <p className="text-xs text-danger">
+                    {errors.max_capacity.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                <Label className="text-muted-foreground">Total Kuota Tiket yang Telah Dibuat:</Label>
-                <span className={cn("text-lg font-bold", max_capacity > 0 && totalTicketQuota > max_capacity ? "text-danger" : "text-primary")}>
-                  {totalTicketQuota} Tiket
-                </span>
+              <Label className="text-muted-foreground">Total Kuota Tiket yang Telah Dibuat:</Label>
+              <span className={cn("text-lg font-bold", max_capacity > 0 && totalTicketQuota > max_capacity ? "text-danger" : "text-primary")}>
+                {totalTicketQuota} Tiket
+              </span>
             </div>
             {max_capacity > 0 && totalTicketQuota > max_capacity && (
-              <p className="text-xs text-danger">⚠️ Total kuota tiket ({totalTicketQuota}) melebihi Kapasitas Event ({max_capacity}).</p>
+              <p className="text-xs text-danger">Total kuota tiket ({totalTicketQuota}) melebihi Kapasitas Event ({max_capacity}).</p>
             )}
           </div>
         </div>
@@ -178,11 +178,11 @@ export default function EventTicketStep({
 
       {/* Tickets List */}
       {(!sectionOnly || sectionOnly === 'tickets') && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-               <TicketIcon className="h-5 w-5 text-primary" />
-               Daftar Tiket
+              <TicketIcon className="h-5 w-5 text-primary" />
+              Daftar Tiket
             </h3>
             {fields.length < 5 && (
               <div className="flex gap-2">
@@ -236,12 +236,12 @@ export default function EventTicketStep({
           )}
 
           {typeof errors.tickets?.message === 'string' && (
-              <p className="text-xs text-danger text-center">
-                 {errors.tickets.message}
-              </p>
+            <p className="text-xs text-danger text-center">
+              {errors.tickets.message}
+            </p>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {fields.map((ticket, index) => (
               <div
                 key={ticket.id}

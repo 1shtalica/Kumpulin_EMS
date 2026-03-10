@@ -33,11 +33,11 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
             category: "Umum", // Fallback (BEEventResponse doesn't have it explicitly right now)
             description: typeof event.description?.content === 'string' ? event.description.content : "",
 
-            // Image Maps
+            // Image Maps -> Embed the original backend ID in the File name so the UI knows it's an existing file
             banner_image_preview: event.images?.[0]?.image_url,
             banner_image: event.images?.[0] ? new File([""], "existing-banner.jpg", { type: "image/jpeg" }) : (undefined as any),
             image_previews: event.images?.slice(1)?.map(img => img.image_url) || [],
-            images: event.images?.slice(1)?.map((img, i) => new File([""], `existing-gallery-${i + 1}.jpg`, { type: "image/jpeg" })) || [],
+            images: event.images?.slice(1)?.map((img) => new File([""], `existing-gallery-${img.id || "unknown"}.jpg`, { type: "image/jpeg" })) || [],
 
             // Schedule & Location
             event_start_date: event.event_start_date ? new Date(event.event_start_date) : (undefined as any),
@@ -82,6 +82,16 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
     const handleSubmit = async (data: CreateEventSchema) => {
         setIsLoading(true);
 
+        // Jika section === 'core', lakukan Diff check untuk file baru yang akan dikirim:
+        if (section === 'core') {
+            const isNewBanner = data.banner_image && data.banner_image.name !== "existing-banner.jpg";
+            const newGalleryImages = data.images.filter(file => !file.name.startsWith("existing-gallery-"));
+
+            console.log("Diffing Results untuk Gambar:");
+            console.log("- Kirim banner baru?", isNewBanner ? "Ya" : "Tidak");
+            console.log("- Jumlah poster baru yang perlu diupload:", newGalleryImages.length);
+        }
+
         // Simulating API call
         setTimeout(() => {
             setIsLoading(false);
@@ -95,7 +105,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
     const renderContent = () => {
         switch (section) {
             case 'core':
-                return <EventInfoStep hideHeader={true} />;
+                return <EventInfoStep hideHeader={true} eventId={event.event_id || (event as any).id} />;
             case 'location':
             case 'datetime':
             case 'rundown':
@@ -136,7 +146,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         </SheetHeader>
 
                         {/* Scrollable Content Zone */}
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 custom-scrollbar">
                             {/* Inner Wrapper for safe padding on very long content */}
                             <div className="max-w-xl mx-auto w-full pb-8">
                                 {renderContent()}
@@ -145,10 +155,10 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
 
                         {/* Sticky Footer */}
                         <SheetFooter className="px-6 py-5 md:px-8 md:py-5 border-t border-border/40 bg-slate-50/50 backdrop-blur-lg shrink-0 flex flex-row items-center justify-end gap-3">
-                            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={isLoading} className="rounded-xl px-5 m-0">
+                            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading} className="rounded-full shadow-sm m-0 border-border">
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={isLoading} className="rounded-xl px-6 m-0 bg-primary hover:bg-primary-hover shadow-md">
+                            <Button type="submit" disabled={isLoading} className="rounded-full m-0 bg-primary hover:bg-primary-hover shadow-md text-white">
                                 {isLoading ? "Saving..." : "Save Changes"}
                             </Button>
                         </SheetFooter>

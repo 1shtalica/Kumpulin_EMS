@@ -198,7 +198,7 @@ export default function CreateEventClient() {
             onClick={handlePrev}
             disabled={!canGoPrev}
             className={cn(
-              "rounded-xl shadow-glow transition-opacity",
+              "rounded-full shadow-glow transition-opacity",
               !canGoPrev && "opacity-0 pointer-events-none",
             )}
           >
@@ -211,7 +211,7 @@ export default function CreateEventClient() {
             <Button
               type="button"
               onClick={handleNext}
-              className="min-w-30 rounded-xl shadow-glow"
+              className="min-w-30 rounded-full shadow-glow"
             >
               Selanjutnya
               <ArrowRight className="h-4 w-4" />

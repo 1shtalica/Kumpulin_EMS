@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Editor } from "@tiptap/react";
 import { Toggle } from "../ui/toggle";
+import React from "react";
 
 export default function TipTapMenuBar({ editor }: { editor: Editor | null }) {
   if (!editor) {
@@ -84,16 +85,20 @@ export default function TipTapMenuBar({ editor }: { editor: Editor | null }) {
   return (
     <div className="flex flex-wrap gap-1">
       {menuOptions.map((option, index) => (
-        <Toggle
-          key={index}
-          size="sm"
-          pressed={option.isActive()}
-          onPressedChange={option.action}
-          aria-label={option.label}
-          className="h-8 w-8 p-0"
-        >
-          <option.icon className="h-4 w-4" />
-        </Toggle>
+        <React.Fragment key={index}>
+          <Toggle
+            size="sm"
+            pressed={option.isActive()}
+            onPressedChange={option.action}
+            aria-label={option.label}
+            className="h-8 w-8 p-0"
+          >
+            <option.icon className="h-4 w-4" />
+          </Toggle>
+          {(index === 2 || index === 5 || index === 7) && (
+            <div className="w-px h-5 bg-border mx-1 self-center" />
+          )}
+        </React.Fragment>
       ))}
     </div>
   );

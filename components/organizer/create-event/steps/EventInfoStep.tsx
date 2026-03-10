@@ -17,21 +17,30 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { useFormContext, Controller } from "react-hook-form";
 import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
 import Tiptap from "@/components/reusable/TipTap";
 import { EventService } from "@/services/event-service";
-
+import { toast } from "sonner";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_FILES = 5;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 
-export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) {
+export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: boolean; eventId?: string }) {
   const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
   const [openCategory, setOpenCategory] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'banner' } | { type: 'gallery', index: number } | null>(null);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -110,10 +119,25 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
   };
 
   const handleRemoveBanner = () => {
+    if (banner_image?.name === "existing-banner.jpg" && eventId) {
+      setDeleteConfirm({ type: 'banner' });
+      return;
+    }
+    executeRemoveBanner();
+  };
+
+  const executeRemoveBanner = () => {
+    if (deleteConfirm?.type === 'banner') {
+      // Simulasi API call DELETE /api/v1/events/:id/banner
+      toast.success("Banner berhasil dihapus dari server");
+    }
+
     setValue("banner_image", null as any, { shouldValidate: true });
     setValue("banner_image_preview", null);
     setBannerError("");
     if (bannerInputRef.current) bannerInputRef.current.value = "";
+
+    setDeleteConfirm(null);
   };
 
 
@@ -198,6 +222,24 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
 
   const handleRemoveImage = (index: number) => {
     const currentImages = images as File[];
+    const fileToRemove = currentImages[index];
+
+    // Check if it's an existing image from the backend
+    const match = fileToRemove?.name.match(/^existing-gallery-(.+)\.jpg$/);
+    if (match && eventId) {
+      setDeleteConfirm({ type: 'gallery', index });
+      return;
+    }
+    executeRemoveImage(index);
+  };
+
+  const executeRemoveImage = (index: number) => {
+    if (deleteConfirm?.type === 'gallery') {
+      // Simulasi API call DELETE /api/v1/events/:id/images/:imageId
+      toast.success("Gambar berhasil dihapus dari server");
+    }
+
+    const currentImages = images as File[];
     const currentPreviews = image_previews as string[];
     const updatedImages = currentImages.filter((_, i) => i !== index);
     const updatedPreviews = currentPreviews.filter((_, i) => i !== index);
@@ -206,6 +248,15 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
     setFileError("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    setDeleteConfirm(null);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirm?.type === 'banner') {
+      executeRemoveBanner();
+    } else if (deleteConfirm?.type === 'gallery') {
+      executeRemoveImage(deleteConfirm.index);
     }
   };
 
@@ -269,22 +320,27 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
 
       {/* Title */}
       <div className="space-y-2">
-        <Label htmlFor="title">
+        <Label htmlFor="title" className="block text-sm font-medium">
           Judul Event<span className="text-danger">*</span>
         </Label>
-        <Input
-          id="title"
-          placeholder="Contoh: Festival Musik Jazz Jakarta 2026"
-          {...register("title")}
-          maxLength={50}
-          className={cn(
-            errors.title && "border-danger focus-visible:ring-danger",
-          )}
-        />
-        <div className="flex justify-between">
-          <p className="text-danger text-xs">{errors.title?.message}</p>
-          <p className="text-muted text-xs">{title?.length || 0}/50 karakter</p>
+        <div className="relative">
+          <Input
+            id="title"
+            placeholder="Contoh: Festival Musik Jazz Jakarta 2026"
+            {...register("title")}
+            maxLength={50}
+            className={cn(
+              "pr-16",
+              errors.title && "border-danger focus-visible:ring-danger",
+            )}
+          />
+          <div className="absolute right-3 bottom-0 top-0 flex items-center pointer-events-none">
+            <span className="text-muted text-[10px]">{title?.length || 0}/50</span>
+          </div>
         </div>
+        {errors.title && (
+          <p className="text-danger text-xs">{errors.title.message}</p>
+        )}
       </div>
 
       {/* Category */}
@@ -580,7 +636,6 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
                     alt={`Preview ${index + 1}`}
                     className="h-32 w-full object-cover"
                   />
-                  {/* 🌟 */}
                   <Button
                     type="button"
                     variant="destructive"
@@ -617,6 +672,35 @@ export default function EventInfoStep({ hideHeader }: { hideHeader?: boolean }) 
           </p>
         )}
       </div>
+
+      <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}>
+        <DialogContent className="sm:max-w-md rounded-2xl p-6 border-border">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-xl text-accent font-bold">Hapus Gambar</DialogTitle>
+            <DialogDescription className="text-muted text-base leading-relaxed">
+              Yakin ingin menghapus {deleteConfirm?.type === 'banner' ? 'banner' : 'poster'} ini? Gambar akan dihapus segera dan tidak dapat dikembalikan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-end gap-3 mt-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteConfirm(null)}
+              className="rounded-xl px-5 m-0 font-medium hover:bg-slate-100"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={confirmDelete}
+              className="rounded-xl px-5 m-0 bg-danger hover:bg-danger-hover shadow-sm font-medium"
+            >
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

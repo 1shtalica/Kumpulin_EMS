@@ -110,7 +110,7 @@ export default function EventScheduleStep({
 
       {/* --- Section 1: Periode Pendaftaran (FIRST) --- */}
       {(!sectionOnly || sectionOnly === "datetime") && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
             <Clock className="h-5 w-5 text-primary" />
             Periode Pendaftaran
@@ -185,7 +185,7 @@ export default function EventScheduleStep({
 
       {/* --- Section 2: Waktu Pelaksanaan Event (AFTER Registration) --- */}
       {(!sectionOnly || sectionOnly === "datetime") && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
             <CalendarIcon className="h-5 w-5 text-primary" />
             Waktu Pelaksanaan Event
@@ -264,7 +264,7 @@ export default function EventScheduleStep({
 
       {/* --- Section 3: Rundown --- */}
       {(!sectionOnly || sectionOnly === "rundown") && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
               <CalendarIcon className="h-5 w-5 text-primary" />
@@ -315,7 +315,7 @@ export default function EventScheduleStep({
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {fields.map((item, index) => (
               <div
                 key={item.id}
@@ -453,7 +453,7 @@ export default function EventScheduleStep({
 
       {/* --- Section 4: Location --- */}
       {(!sectionOnly || sectionOnly === "location") && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
             <MapPin className="h-5 w-5 text-primary" />
             Lokasi Event
@@ -522,7 +522,7 @@ export default function EventScheduleStep({
 
           {/* Offline: Address */}
           {!is_online && (
-            <div className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="space-y-6 rounded-2xl border border-border bg-card p-6 shadow-sm">
               <div className="grid gap-4 md:grid-cols-2">
                 {/* Province */}
                 <div className="space-y-2">
