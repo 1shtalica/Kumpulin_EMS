@@ -301,7 +301,7 @@ export default function RegisterForm() {
           <Button
             type="submit"
             disabled={isLoading || !watch("agree_to_terms")}
-            className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl font-semibold text-md shadow-glow py-5"
+            className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-3xl font-semibold text-md shadow-glow "
           >
             {isLoading ? (
               <>
@@ -332,7 +332,7 @@ export default function RegisterForm() {
           onClick={() => onGoogleSubmit()}
           type="button"
           variant="outline"
-          className="w-full font-semibold hover:bg-primary/10 rounded-2xl py-5 shadow-none"
+          className="w-full font-semibold hover:bg-primary/10 rounded-3xl shadow-none"
           disabled={isLoading}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">

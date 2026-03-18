@@ -179,15 +179,15 @@ export default function EventTicketStep({
       {/* Tickets List */}
       {(!sectionOnly || sectionOnly === 'tickets') && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
               <TicketIcon className="h-5 w-5 text-primary" />
               Daftar Tiket
             </h3>
             {fields.length < 5 && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
-                  className="shadow-glow"
+                  className="shadow-glow flex-1 sm:flex-none py-4"
                   type="button"
                   variant="outline"
                   size="sm"
@@ -195,19 +195,19 @@ export default function EventTicketStep({
                     append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "free" })
                   }
                 >
-                  <Plus className="mr-1 h-4 w-4" />
-                  Tambah Tiket Gratis
+                  <Plus className="h-4 w-4 shrink-0" />
+                  <span className="whitespace-nowrap text-xs">Tiket Gratis</span>
                 </Button>
                 <Button
-                  className="shadow-glow"
+                  className="shadow-glow flex-1 sm:flex-none py-4"
                   type="button"
                   size="sm"
                   onClick={() =>
                     append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "paid" })
                   }
                 >
-                  <Plus className="mr-1 h-4 w-4" />
-                  Tambah Tiket Berbayar
+                  <Plus className="h-4 w-4 shrink-0" />
+                  <span className="whitespace-nowrap text-xs">Tiket Berbayar</span>
                 </Button>
               </div>
             )}

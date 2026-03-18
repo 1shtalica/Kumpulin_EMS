@@ -272,7 +272,6 @@ export default function EventScheduleStep({
             </h3>
             <Button
               type="button"
-              variant="outline"
               size="lg"
               onClick={() =>
                 append({
@@ -337,10 +336,10 @@ export default function EventScheduleStep({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="text-danger hover:bg-danger-light hover:text-danger"
+                      className="py-4 px-6 text-danger hover:bg-danger-light hover:text-danger"
                       onClick={() => remove(index)}
                     >
-                      <Trash2 className="mr-1 h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                       Hapus
                     </Button>
                   )}
@@ -354,7 +353,7 @@ export default function EventScheduleStep({
                       Waktu <span className="text-danger">*</span>
                     </Label>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-[3] min-w-0">
                         <Controller
                           control={control}
                           name={`rundowns.${index}.start_time`}
@@ -364,16 +363,16 @@ export default function EventScheduleStep({
                               onChange={field.onChange}
                               placeholder="Mulai"
                               className={cn(
-                                "h-9 text-sm w-full shadow-none",
+                                "h-9 text-sm w-full shadow-none px-2.5",
                                 errors.rundowns?.[index]?.start_time &&
-                                "border-danger",
+                                "border-danger"
                               )}
                             />
                           )}
                         />
                       </div>
-                      <span className="text-muted-foreground shrink-0">-</span>
-                      <div className="flex-1 min-w-0">
+                      <span className="text-muted-foreground shrink-0 flex-[1] text-center">-</span>
+                      <div className="flex-[3] min-w-0">
                         <Controller
                           control={control}
                           name={`rundowns.${index}.end_time`}
@@ -383,9 +382,9 @@ export default function EventScheduleStep({
                               onChange={field.onChange}
                               placeholder="Selesai"
                               className={cn(
-                                "h-9 text-sm w-full shadow-none",
+                                "h-9 text-sm w-full shadow-none px-2.5",
                                 errors.rundowns?.[index]?.end_time &&
-                                "border-danger",
+                                "border-danger"
                               )}
                             />
                           )}
@@ -459,26 +458,36 @@ export default function EventScheduleStep({
             Lokasi Event
           </h3>
 
-          {/* Toggle Online/Offline */}
-          <div className="flex gap-3">
-            <Button
+          {/* Toggle Online/Offline (Slider) */}
+          <div className="relative flex w-full bg-slate-100 dark:bg-slate-800 p-1 rounded-full items-center shadow-inner">
+            <div
+              className={cn(
+                "absolute inset-y-1 left-1 w-[calc(50%-4px)] bg-white dark:bg-slate-700 shadow-md rounded-full transition-transform duration-300 ease-in-out",
+                !is_online && "translate-x-full"
+              )}
+            />
+            <button
               type="button"
-              variant={is_online ? "default" : "outline"}
               onClick={() => setValue("is_online", true)}
-              className="flex-1 shadow-glow"
+              className={cn(
+                "relative z-10 flex flex-1 items-center justify-center py-2.5 text-sm font-semibold transition-colors duration-200",
+                is_online ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
             >
               <Video className="mr-2 h-4 w-4" />
               Online
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              variant={!is_online ? "default" : "outline"}
               onClick={() => setValue("is_online", false)}
-              className="flex-1 shadow-glow"
+              className={cn(
+                "relative z-10 flex flex-1 items-center justify-center py-2.5 text-sm font-semibold transition-colors duration-200",
+                !is_online ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              )}
             >
               <MapPin className="mr-2 h-4 w-4" />
               Offline
-            </Button>
+            </button>
           </div>
 
           {/* Online: Meeting URL */}

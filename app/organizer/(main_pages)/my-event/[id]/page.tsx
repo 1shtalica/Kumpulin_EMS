@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    Pencil, Calendar, Clock, MapPin, Ticket, Video,
+    Pencil, Calendar, MapPin, Ticket, Video,
     Map, Users, ChevronLeft, Navigation, List, Component
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
@@ -32,7 +32,7 @@ function formatTimeOnly(isoString: string | undefined) {
 export default async function OrganizerEventDetail({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const event = await EventService.getEventByIdFull(id);
-
+    (event)
     if (!event) {
         notFound();
     }
@@ -85,7 +85,7 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                     <div className="bg-card border border-border shadow-sm rounded-3xl p-6 sm:p-8">
                         <div className="relative w-full aspect-video rounded-2xl overflow-hidden mb-8 bg-slate-100">
                             {event.images && event.images.length > 0 ? (
-                                <Image src={event.images[0].image_url} alt="Banner" fill className="object-cover" />
+                                <Image src={event.images[0].image_url} alt="Banner" fill className="object-cover" unoptimized />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center">
                                     <Image src="/logo.png" alt="Logo" width={100} height={100} className="opacity-30" />
@@ -229,7 +229,6 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                                 <Users className="w-5 h-5 text-primary" />
                                 Capacity & Load
                             </h3>
-                            <EditSectionModal event={event} section="capacity" />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">

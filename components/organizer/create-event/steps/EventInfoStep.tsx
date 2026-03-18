@@ -128,8 +128,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
 
   const executeRemoveBanner = () => {
     if (deleteConfirm?.type === 'banner') {
-      // Simulasi API call DELETE /api/v1/events/:id/banner
-      toast.success("Banner berhasil dihapus dari server");
+      toast.info("Banner akan dihapus saat Anda menekan tombol simpan.");
     }
 
     setValue("banner_image", null as any, { shouldValidate: true });
@@ -235,8 +234,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
 
   const executeRemoveImage = (index: number) => {
     if (deleteConfirm?.type === 'gallery') {
-      // Simulasi API call DELETE /api/v1/events/:id/images/:imageId
-      toast.success("Gambar berhasil dihapus dari server");
+      toast.info("Gambar akan dihapus saat Anda menekan tombol simpan.");
     }
 
     const currentImages = images as File[];
@@ -503,7 +501,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
               <div className="space-y-1">
                 <p className="text-sm font-medium text-accent">Drag & drop banner di sini, atau</p>
                 <Button
-                  className="my-2 rounded-xl"
+                  className="my-2 px-5 rounded-3xl"
                   type="button"
                   variant="outline"
                   size="sm"
@@ -590,7 +588,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
                   Drag & drop gambar di sini, atau
                 </p>
                 <Button
-                  className="my-2 rounded-xl"
+                  className="my-2 px-5 rounded-3xl"
                   type="button"
                   variant="outline"
                   size="sm"

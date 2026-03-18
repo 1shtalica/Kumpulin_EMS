@@ -215,7 +215,7 @@ export default function LoginForm() {
             {/* Tombol Submit */}
             <Button
               type="submit"
-              className="w-full py-5 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow"
+              className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-3xl font-semibold text-md shadow-glow"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -246,7 +246,7 @@ export default function LoginForm() {
           <Button
             type="button"
             variant="outline"
-            className="w-full font-semibold hover:bg-primary/10 rounded-2xl py-5 shadow-none"
+            className="w-full font-semibold hover:bg-primary/10 rounded-3xl shadow-none"
             disabled={isLoading}
             onClick={() => onGoogleSubmit()}
           >

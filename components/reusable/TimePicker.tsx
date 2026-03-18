@@ -54,13 +54,13 @@ export default function TimePicker({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal px-2.5",
             !value && "text-muted-foreground",
             className,
           )}
         >
-          <Clock className="mr-2 h-4 w-4" />
-          {value || placeholder}
+          <Clock className="mr-1.5 h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{value || placeholder}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -75,7 +75,7 @@ export default function TimePicker({
                   className={cn(
                     "cursor-pointer rounded px-2 py-1 text-center text-sm hover:bg-slate-200 transition-colors",
                     h === hour &&
-                      "bg-primary text-primary-foreground font-medium",
+                    "bg-primary text-primary-foreground font-medium",
                   )}
                 >
                   {h}
@@ -99,7 +99,7 @@ export default function TimePicker({
                   className={cn(
                     "cursor-pointer rounded px-2 py-1 text-center text-sm hover:bg-slate-200 transition-colors",
                     m === minute &&
-                      "bg-primary text-primary-foreground font-medium",
+                    "bg-primary text-primary-foreground font-medium",
                   )}
                 >
                   {m}

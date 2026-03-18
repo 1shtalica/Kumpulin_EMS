@@ -19,6 +19,7 @@ export interface Event {
   max_purchases?: number;
   meeting_url?: string;
   address?: {
+    address_id: string;
     province: string;
     city: string;
     raw_address: string;
@@ -58,6 +59,10 @@ export interface Event {
   posters?: string[];
   created_at?: string;
   updated_at?: string;
+  online_address?: {
+    meeting_url: string;
+    link_policy: string;
+  }
 }
 
 // ============================================================
@@ -99,11 +104,14 @@ export interface BEEventResponse {
     location?: string;
   }[];
   ticket_categories?: {
+    id?: string;
     name: string;
     price: number;
     quota: number;
     booked: number;
     description: string;
+    start_date_time?: string; // ISO 8601
+    end_date_time?: string;   // ISO 8601
   }[];
   images?: {
     id: number;
@@ -133,7 +141,8 @@ export interface GetEventsParams {
   // sort?: string;
 }
 export interface HomeEventCard {
-  id: string;
+  id?: string;
+  event_id?: string;
   title: string;
   slug: string;
   type: string;
@@ -155,7 +164,8 @@ export interface GetOrganizerEventsParams {
 }
 
 export interface OrganizerEventCard {
-  id: string;
+  id?: string;
+  event_id?: string;
   title: string;
   slug: string;
   type: string;
@@ -167,4 +177,35 @@ export interface OrganizerEventCard {
   image_url: string;
   start_date: string;
   status: string;
+}
+
+export interface TicketPayloadItem {
+  id?: string;            // UUID — present for update; omit for add
+  name: string;
+  price: number;
+  quota: number;
+  description?: string;
+  start_date_time: string; // ISO 8601 full datetime
+  end_date_time: string;   // ISO 8601 full datetime
+}
+
+export interface PatchTicketsPayload {
+  added: TicketPayloadItem[];
+  updated: TicketPayloadItem[];
+  deleted_ids: string[];  // UUIDs to delete
+}
+
+export interface RundownPayloadItem {
+  id?: string;        // UUID — present for update; omit for add
+  title: string;
+  description?: string;
+  start_time: string; // plain "HH:mm"
+  end_time: string;   // plain "HH:mm"
+  location?: string;
+}
+
+export interface PatchRundownsPayload {
+  added: RundownPayloadItem[];
+  updated: RundownPayloadItem[];
+  deleted_ids: string[]; // UUIDs to delete
 }

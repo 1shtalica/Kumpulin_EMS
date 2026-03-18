@@ -14,6 +14,9 @@ import { CreateEventSchema } from "@/lib/validator/create-event.schema";
 import EventInfoStep from "@/components/organizer/create-event/steps/EventInfoStep";
 import EventScheduleStep from "@/components/organizer/create-event/steps/EventScheduleStep";
 import EventTicketStep from "@/components/organizer/create-event/steps/EventTicketStep";
+import axiosClient from "@/lib/axios-client";
+import { EventService } from "@/services/event-service";
+import { useRouter } from "next/navigation";
 
 interface EditModalProps {
     event: BEEventResponse;
@@ -23,6 +26,7 @@ interface EditModalProps {
 export function EditSectionModal({ event, section }: EditModalProps): ReactNode {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     // Initialize React Hook Form with mapped data from existing event
     const methods = useForm<CreateEventSchema>({
@@ -81,25 +85,218 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
 
     const handleSubmit = async (data: CreateEventSchema) => {
         setIsLoading(true);
+        console.log("log edit data: ", data)
 
-        // Jika section === 'core', lakukan Diff check untuk file baru yang akan dikirim:
-        if (section === 'core') {
-            const isNewBanner = data.banner_image && data.banner_image.name !== "existing-banner.jpg";
-            const newGalleryImages = data.images.filter(file => !file.name.startsWith("existing-gallery-"));
+        let payloadToSubmit: any = {};
 
-            console.log("Diffing Results untuk Gambar:");
-            console.log("- Kirim banner baru?", isNewBanner ? "Ya" : "Tidak");
-            console.log("- Jumlah poster baru yang perlu diupload:", newGalleryImages.length);
-        }
+        // 1. Construct specific payload based on section (Approach B)
+        try {
+            switch (section) {
+                case 'core':
+                    // PATCH /api/v1/events/:id/core
+                    payloadToSubmit = {
+                        title: data.title,
+                        category: data.category,
+                        description: data.description,
+                        type: data.type
+                    };
 
-        // Simulating API call
-        setTimeout(() => {
-            setIsLoading(false);
-            setOpen(false);
-            toast.success("Feature in development", {
-                description: `Endpoint untuk update ${section} belum tersedia.`
+                    const isNewBanner = data.banner_image && data.banner_image.name;
+                    const newGalleryImages = data.images.filter(file => !file.name.startsWith("existing-gallery-"));
+
+                    console.log("[API Call] PATCH /core ->", payloadToSubmit);
+                    if (isNewBanner) console.log("[API Call] PUT /banner ->", data.banner_image);
+
+                    const originalGalleryImages = event.images?.slice(1) || [];
+                    const keptGalleryIds = data.images
+                        .filter(f => f.name.startsWith("existing-gallery-"))
+                        .map(f => {
+                            const match = f.name.match(/^existing-gallery-(.+)\.jpg$/);
+                            return match ? parseInt(match[1]) : null;
+                        })
+                        .filter(id => id !== null);
+
+                    const deletedGalleryImages = originalGalleryImages.filter(origImg =>
+                        origImg.id !== undefined && !keptGalleryIds.includes(origImg.id)
+                    );
+
+                    let imageChanged = false;
+                    const targetEventId = event.event_id || (event as any).id;
+
+                    // 1. Delete removed images
+                    for (const deletedImg of deletedGalleryImages) {
+                        try {
+                            await axiosClient.delete(`/organizer/events/${targetEventId}/image/${deletedImg.id}`);
+                            console.log(`[API Call Result] DELETE /images/${deletedImg.id} success`);
+                            imageChanged = true;
+                        } catch (error: any) {
+                            console.error(`[API Call Error] DELETE /images/${deletedImg.id} ->`, error);
+                            throw new Error(error.response?.data?.message || `Gagal menghapus gambar ID ${deletedImg.id}`);
+                        }
+                    }
+
+                    // 2. Upload new images
+                    if (newGalleryImages.length > 0) {
+                        try {
+                            const formData = new FormData();
+                            // Append each file using the field name "images" per instructions
+                            newGalleryImages.forEach(file => {
+                                formData.append("images", file);
+                            });
+
+                            const response = await axiosClient.post(`/organizer/events/${targetEventId}/image`, formData, {
+                                headers: {
+                                    "Content-Type": "multipart/form-data",
+                                },
+                            });
+                            console.log("[API Call Result] POST /images ->", response.data);
+                            imageChanged = true;
+                        } catch (error: any) {
+                            console.error("[API Call Error] POST /images ->", error);
+                            if (error.response?.status === 403) {
+                                throw new Error("Akses ditolak: Anda bukan pemilik acara ini.");
+                            }
+                            throw new Error(error.response?.data?.message || "Gagal mengupload gambar event");
+                        }
+                    }
+
+                    if (imageChanged && router) {
+                        router.refresh();
+                    }
+                    break;
+
+                case 'datetime':
+                    payloadToSubmit = {
+                        event_start_date: data.event_start_date.toISOString(),
+                        event_end_date: data.event_end_date.toISOString(),
+                        start_registration_date: data.start_registration_date.toISOString(),
+                        end_registration_date: data.end_registration_date.toISOString()
+                    };
+
+                    try {
+                        const response = await axiosClient.patch(`/organizer/events/${event.event_id}/schedule`, payloadToSubmit);
+                        console.log("[API Call Result] PATCH /schedule ->", response.data);
+                    } catch (error: any) {
+                        console.error("[API Call Error] PATCH /schedule ->", error);
+                        throw new Error(error.response?.data?.message || "Gagal mengubah tanggal event");
+                    }
+                    break;
+
+                case 'location':
+                    // PATCH /api/v1/events/:id/location
+                    payloadToSubmit = {
+                        is_online: data.is_online,
+                        meeting_url: data.meeting_url,
+                        address: data.is_online ? null : {
+                            title: data.address.title,
+                            raw_address: data.address.raw_address,
+                            province: data.address.province,
+                            city: data.address.city,
+                            postal_code: data.address.postal_code,
+                            location_url: data.address.location_url
+                        }
+                    };
+                    console.log("[API Call] PATCH /location ->", payloadToSubmit);
+                    break;
+
+
+                case 'rundown': {
+                    // Diff against original event.rundowns by index position:
+                    // same index = updated (carry original UUID); beyond original length = added (no id);
+                    // original items reduced = deleted (collect their UUIDs).
+                    const origRundowns = event.rundowns || [];
+                    const formRundowns = data.rundowns;
+
+                    const addedRundowns = formRundowns.slice(origRundowns.length).map(r => ({
+                        title: r.title,
+                        description: r.description || "",
+                        start_time: r.start_time,
+                        end_time: r.end_time,
+                        location: r.location || "",
+                    }));
+
+                    const updatedRundowns = formRundowns.slice(0, origRundowns.length).map((r, i) => ({
+                        id: origRundowns[i].id,
+                        title: r.title,
+                        description: r.description || "",
+                        start_time: r.start_time,
+                        end_time: r.end_time,
+                        location: r.location || "",
+                    }));
+
+                    const deletedIds = origRundowns
+                        .slice(formRundowns.length)
+                        .map(r => r.id)
+                        .filter((id): id is string => !!id);
+
+                    const rundownPayload = { added: addedRundowns, updated: updatedRundowns, deleted_ids: deletedIds };
+                    console.log("[API Call] PATCH /rundowns ->", rundownPayload);
+
+                    await EventService.updateOrganizerRundowns(
+                        event.event_id || (event as any).id,
+                        rundownPayload
+                    );
+                    break;
+                }
+
+                case 'tickets': {
+                    // Diff against original event.ticket_categories by index position.
+                    const origTickets = event.ticket_categories || [];
+                    const formTickets = data.tickets;
+
+                    const addedTickets = formTickets.slice(origTickets.length).map(t => ({
+                        name: t.name,
+                        price: t.price,
+                        quota: t.quota,
+                        description: t.description || "",
+                        start_date_time: t.start_date_time.toISOString(),
+                        end_date_time: t.end_date_time.toISOString(),
+                    }));
+
+                    const updatedTickets = formTickets.slice(0, origTickets.length).map((t, i) => ({
+                        id: origTickets[i].id,
+                        name: t.name,
+                        price: t.price,
+                        quota: t.quota,
+                        description: t.description || "",
+                        start_date_time: t.start_date_time.toISOString(),
+                        end_date_time: t.end_date_time.toISOString(),
+                    }));
+
+                    const deletedTicketIds = origTickets
+                        .slice(formTickets.length)
+                        .map(t => t.id)
+                        .filter((id): id is string => !!id);
+
+                    const ticketPayload = { added: addedTickets, updated: updatedTickets, deleted_ids: deletedTicketIds };
+                    console.log("[API Call] PATCH /tickets ->", ticketPayload);
+
+                    await EventService.updateOrganizerTickets(
+                        event.event_id || (event as any).id,
+                        ticketPayload
+                    );
+                    break;
+                }
+            }
+
+            // Refresh page data to reflect changes
+            router.refresh();
+
+            toast.success("Section berhasil diupdate", {
+                description: `Perubahan pada bagian ${section} telah disimpan.`
             });
-        }, 800);
+            setOpen(false);
+
+        } catch (error: any) {
+            console.error("Failed to update section:", error);
+            if (error instanceof Error) {
+                toast.error(error.message);
+            } else {
+                toast.error("Gagal menyimpan perubahan");
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const renderContent = () => {
@@ -110,7 +307,6 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
             case 'datetime':
             case 'rundown':
                 return <EventScheduleStep hideHeader={true} sectionOnly={section} />;
-            case 'capacity':
             case 'tickets':
                 return <EventTicketStep hideHeader={true} sectionOnly={section} />;
             default:
@@ -122,7 +318,6 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
         core: "Edit Core Information",
         location: "Edit Location Details",
         datetime: "Edit Time Constraints",
-        capacity: "Edit Capacity Parameters",
         tickets: "Manage Ticket Categories",
         rundown: "Manage Rundowns"
     };

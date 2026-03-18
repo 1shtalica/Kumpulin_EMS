@@ -1,6 +1,10 @@
 import axiosClient from "@/lib/axios-client";
 import { CreateEventFormState } from "@/types/create-event";
-import type { Event, EventsResponse, EventResponse, GetEventsParams, GetOrganizerEventsParams, HomeEventCard, OrganizerEventCard } from "@/types/event";
+import type {
+  Event, EventsResponse, EventResponse, GetEventsParams,
+  GetOrganizerEventsParams, HomeEventCard, OrganizerEventCard,
+  PatchTicketsPayload, PatchRundownsPayload
+} from "@/types/event";
 
 export const EventService = {
 
@@ -18,11 +22,11 @@ export const EventService = {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/events?${urlParams.toString()}`,
-        { cache: 'no-store' } 
+        { cache: 'no-store' }
       );
 
       const json = await response.json();
-      
+
       const data = json.data || [];
       const estimatedTotal = data.length === limit ? offset + limit + 1 : offset + data.length;
 
@@ -39,6 +43,7 @@ export const EventService = {
   async getEventById(id: string): Promise<Event> {
     try {
       const response = await axiosClient.get<EventResponse>(`/events/${id}`);
+      console.log("getting data")
       return response.data.data;
     } catch (error) {
       console.error(`Failed to fetch event ${id}:`, error);
@@ -204,5 +209,38 @@ export const EventService = {
       console.error("Failed to fetch organizer events:", error);
       throw error;
     }
-  }
+  },
+
+  /**
+   * PATCH /api/v1/organizer/events/:id/tickets
+   * Sends a diff payload: added / updated / deleted_ids buckets.
+   * All IDs are UUIDs. Full transaction — all-or-nothing on the backend.
+   */
+  async updateOrganizerTickets(eventId: string, payload: PatchTicketsPayload): Promise<void> {
+    try {
+      await axiosClient.patch(`/organizer/events/${eventId}/tickets`, {
+        actions: payload
+      });
+    } catch (error: any) {
+      console.error("Failed to update tickets:", error);
+      const msg = error?.response?.data?.message || error?.message || "Gagal menyimpan perubahan tiket";
+      throw new Error(msg);
+    }
+  },
+
+  /**
+   * PATCH /api/v1/organizer/events/:id/rundowns
+   * Sends a diff payload: added / updated / deleted_ids buckets.
+   * Times are plain "HH:mm" strings (NOT ISO datetime). All IDs are UUIDs.
+   * Deleting a non-existent ID is silently skipped by the backend.
+   */
+  async updateOrganizerRundowns(eventId: string, payload: PatchRundownsPayload): Promise<void> {
+    try {
+      await axiosClient.patch(`/organizer/events/${eventId}/rundowns`, payload);
+    } catch (error: any) {
+      console.error("Failed to update rundowns:", error);
+      const msg = error?.response?.data?.message || error?.message || "Gagal menyimpan perubahan rundown";
+      throw new Error(msg);
+    }
+  },
 };

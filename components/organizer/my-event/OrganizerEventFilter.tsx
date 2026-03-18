@@ -6,6 +6,7 @@ import { Search, LayoutList, LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
+import { useViewPreferenceStore } from "@/stores/view-preference-store";
 
 
 // type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -32,7 +33,7 @@ export default function MyEventFilter() {
 
   const query = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
-  const layout = searchParams.get("layout") ?? "list";
+  const { layout, setLayout } = useViewPreferenceStore();
 
   const handleURL = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);
@@ -84,7 +85,7 @@ export default function MyEventFilter() {
           <Button
             variant={layout === "list" ? "brand" : "ghost"}
             size="icon"
-            onClick={() => handleURL("layout", "list")}
+            onClick={() => setLayout("list")}
             className={`h-9 w-9 rounded-full ${layout !== "list" && "text-muted-foreground hover:text-foreground"}`}
           >
             <LayoutList className="h-4 w-4" />
@@ -92,7 +93,7 @@ export default function MyEventFilter() {
           <Button
             variant={layout === "grid" ? "brand" : "ghost"}
             size="icon"
-            onClick={() => handleURL("layout", "grid")}
+            onClick={() => setLayout("grid")}
             className={`h-9 w-9 rounded-full ${layout !== "grid" && "text-muted-foreground hover:text-foreground"}`}
           >
             <LayoutGrid className="h-4 w-4" />

@@ -29,15 +29,16 @@ export default function CreateEventHeader() {
   return (
     <nav
       className={cn(
-        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out px-4 py-3 md:px-6 md:py-4",
+        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out px-3 py-2 md:px-6 md:py-2",
         "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
         isScrolled ? "shadow-md" : "shadow-xs",
       )}
     >
       <div className="container mx-auto flex flex-row items-center justify-between">
         <Button
+          size="lg"
           variant="ghost"
-          className="rounded-xl pl-2 gap-2 text-muted hover:text-accent"
+          className="rounded-3xl pl-2 gap-2 text-muted hover:text-accent"
           asChild
         >
           {/* 🌟 Nanti diubah pakai callback jika iya */}
@@ -50,9 +51,9 @@ export default function CreateEventHeader() {
         {/* KANAN: Aksi Simpan */}
         <div className="flex items-center gap-2">
           <Button
-            variant="light"
+            size="lg"
             onClick={handleSaveDraft}
-            className="gap-2 rounded-xl"
+            className="gap-2 rounded-3xl"
           >
             <Save className="h-4 w-4" />
             Simpan Draft

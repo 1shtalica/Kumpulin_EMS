@@ -8,6 +8,7 @@ import EmptyState from "@/components/reusable/EmptyState";
 import { CalendarX, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useViewPreferenceStore } from "@/stores/view-preference-store";
 
 
 
@@ -19,7 +20,7 @@ export default function OrganizerEventsList() {
   const search = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
   const offset = parseInt(searchParams.get("offset") ?? "0");
-  const layout = searchParams.get("layout") ?? "list";
+  const { layout } = useViewPreferenceStore();
   const limit = parseInt(searchParams.get("limit") ?? "10");
 
   const [events, setEvents] = useState<OrganizerEventCardType[]>([]);
@@ -88,7 +89,7 @@ export default function OrganizerEventsList() {
       {/* Event list */}
       <div className={layout === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" : "flex flex-col gap-5"}>
         {events.map((event) => (
-          <OrganizerEventCard key={event.id} event={event} layout={layout as "list" | "grid"} />
+          <OrganizerEventCard key={event.id || event.event_id} event={event} layout={layout as "list" | "grid"} />
         ))}
       </div>
 
