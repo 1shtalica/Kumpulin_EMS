@@ -187,27 +187,25 @@ export default function EventTicketStep({
             {fields.length < 5 && (
               <div className="flex flex-wrap gap-2">
                 <Button
-                  className="shadow-glow flex-1 sm:flex-none py-4"
+                  className="shadow-glow flex-1 sm:flex-none"
                   type="button"
                   variant="outline"
-                  size="sm"
                   onClick={() =>
                     append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "free" })
                   }
                 >
                   <Plus className="h-4 w-4 shrink-0" />
-                  <span className="whitespace-nowrap text-xs">Tiket Gratis</span>
+                  <span className="whitespace-nowrap">Tiket Gratis</span>
                 </Button>
                 <Button
-                  className="shadow-glow flex-1 sm:flex-none py-4"
+                  className="shadow-glow flex-1 sm:flex-none"
                   type="button"
-                  size="sm"
                   onClick={() =>
                     append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "paid" })
                   }
                 >
                   <Plus className="h-4 w-4 shrink-0" />
-                  <span className="whitespace-nowrap text-xs">Tiket Berbayar</span>
+                  <span className="whitespace-nowrap">Tiket Berbayar</span>
                 </Button>
               </div>
             )}

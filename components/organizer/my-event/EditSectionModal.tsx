@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 
 interface EditModalProps {
     event: BEEventResponse;
-    section: 'core' | 'location' | 'rundown' | 'datetime' | 'capacity' | 'tickets';
+    section: 'core' | 'location' | 'rundown' | 'datetime' | 'tickets';
 }
 
 export function EditSectionModal({ event, section }: EditModalProps): ReactNode {
@@ -246,8 +246,8 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
 
                     const addedTickets = formTickets.slice(origTickets.length).map(t => ({
                         name: t.name,
-                        price: t.price,
-                        quota: t.quota,
+                        price: Number(t.price),
+                        quota: Number(t.quota),
                         description: t.description || "",
                         start_date_time: t.start_date_time.toISOString(),
                         end_date_time: t.end_date_time.toISOString(),
@@ -256,8 +256,8 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                     const updatedTickets = formTickets.slice(0, origTickets.length).map((t, i) => ({
                         id: origTickets[i].id,
                         name: t.name,
-                        price: t.price,
-                        quota: t.quota,
+                        price: Number(t.price),
+                        quota: Number(t.quota),
                         description: t.description || "",
                         start_date_time: t.start_date_time.toISOString(),
                         end_date_time: t.end_date_time.toISOString(),
