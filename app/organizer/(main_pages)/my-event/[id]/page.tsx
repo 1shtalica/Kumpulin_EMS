@@ -32,7 +32,7 @@ function formatTimeOnly(isoString: string | undefined) {
 export default async function OrganizerEventDetail({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const event = await EventService.getEventByIdFull(id);
-    (event)
+
     if (!event) {
         notFound();
     }

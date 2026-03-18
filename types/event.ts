@@ -85,7 +85,7 @@ export interface BEEventResponse {
   event_end_date: string;
   start_registration_date: string;
   end_registration_date: string;
-  address?: {
+  address: {
     address_id: string;
     title?: string;
     raw_address: string;
@@ -209,3 +209,14 @@ export interface PatchRundownsPayload {
   updated: RundownPayloadItem[];
   deleted_ids: string[]; // UUIDs to delete
 }
+
+export interface PatchEventLocationPayload {
+  address_id: string;
+  title: string;
+  raw_address: string;
+  city: string;
+  province: string;
+  postal_code: string;
+  maps_url: string;
+}
+

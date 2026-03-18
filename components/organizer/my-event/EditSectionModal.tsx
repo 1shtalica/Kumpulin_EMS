@@ -24,6 +24,7 @@ interface EditModalProps {
 }
 
 export function EditSectionModal({ event, section }: EditModalProps): ReactNode {
+
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -60,6 +61,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
             is_online: event.is_online,
             meeting_url: event.meeting_url || "",
             address: {
+                address_id: event.address.address_id!,
                 title: event.address?.title || "",
                 raw_address: event.address?.raw_address || "",
                 city: event.address?.city || "",
@@ -188,15 +190,29 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         is_online: data.is_online,
                         meeting_url: data.meeting_url,
                         address: data.is_online ? null : {
+                            address_id: data.address.address_id,
                             title: data.address.title,
                             raw_address: data.address.raw_address,
                             province: data.address.province,
                             city: data.address.city,
                             postal_code: data.address.postal_code,
-                            location_url: data.address.location_url
+                            location_url: data.address.location_url,
+
                         }
                     };
                     console.log("[API Call] PATCH /location ->", payloadToSubmit);
+
+
+
+                    await EventService.updateEventLocation(event.event_id, {
+                        address_id: payloadToSubmit.address.address_id,
+                        title: payloadToSubmit.address.title,
+                        raw_address: payloadToSubmit.address?.raw_address!,
+                        city: payloadToSubmit.address?.city!,
+                        province: payloadToSubmit.address?.province!,
+                        postal_code: payloadToSubmit.address?.postal_code!,
+                        maps_url: payloadToSubmit.address?.location_url!
+                    });
                     break;
 
 

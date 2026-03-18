@@ -160,6 +160,7 @@ export const step3Schema = z
       .optional(),
     hide_meeting_url: z.boolean().default(false),
     address: z.object({
+      address_id: z.string().optional(),
       title: z
         .string()
         .max(50, { error: "Judul lokasi maksimal 50 karakter" })

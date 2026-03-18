@@ -347,13 +347,33 @@ export default function EventScheduleStep({
 
                 {/* Content Grid */}
                 <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-12">
+                  {/* Title */}
+                  <div className="space-y-1 md:col-span-12">
+                    <Label className="text-xs text-muted-foreground">
+                      Sesi <span className="text-danger">*</span>
+                    </Label>
+                    <Input
+                      placeholder="Nama sesi (contoh: Opening Ceremony)"
+                      className={cn(
+                        "h-9",
+                        errors.rundowns?.[index]?.title && "border-danger",
+                      )}
+                      {...register(`rundowns.${index}.title`)}
+                    />
+                    {errors.rundowns?.[index]?.title && (
+                      <p className="text-xs text-danger">
+                        {errors.rundowns?.[index]?.title?.message}
+                      </p>
+                    )}
+                  </div>
+
                   {/* Time Inputs */}
-                  <div className="space-y-2 md:col-span-12 lg:col-span-4">
+                  <div className="space-y-2 md:col-span-12">
                     <Label className="text-xs text-muted-foreground">
                       Waktu <span className="text-danger">*</span>
                     </Label>
                     <div className="flex items-center gap-2">
-                      <div className="flex-[3] min-w-0">
+                      <div className="flex-1 min-w-0">
                         <Controller
                           control={control}
                           name={`rundowns.${index}.start_time`}
@@ -371,8 +391,8 @@ export default function EventScheduleStep({
                           )}
                         />
                       </div>
-                      <span className="text-muted-foreground shrink-0 flex-[1] text-center">-</span>
-                      <div className="flex-[3] min-w-0">
+                      <span className="text-muted-foreground shrink-0">-</span>
+                      <div className="flex-1 min-w-0">
                         <Controller
                           control={control}
                           name={`rundowns.${index}.end_time`}
@@ -398,26 +418,6 @@ export default function EventScheduleStep({
                             errors.rundowns?.[index]?.end_time?.message}
                         </p>
                       )}
-                  </div>
-
-                  {/* Title */}
-                  <div className="space-y-1 md:col-span-12 lg:col-span-8">
-                    <Label className="text-xs text-muted-foreground">
-                      Sesi <span className="text-danger">*</span>
-                    </Label>
-                    <Input
-                      placeholder="Nama sesi (contoh: Opening Ceremony)"
-                      className={cn(
-                        "h-9",
-                        errors.rundowns?.[index]?.title && "border-danger",
-                      )}
-                      {...register(`rundowns.${index}.title`)}
-                    />
-                    {errors.rundowns?.[index]?.title && (
-                      <p className="text-xs text-danger">
-                        {errors.rundowns?.[index]?.title?.message}
-                      </p>
-                    )}
                   </div>
 
                   {/* Location */}

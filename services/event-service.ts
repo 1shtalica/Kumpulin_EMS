@@ -3,7 +3,7 @@ import { CreateEventFormState } from "@/types/create-event";
 import type {
   Event, EventsResponse, EventResponse, GetEventsParams,
   GetOrganizerEventsParams, HomeEventCard, OrganizerEventCard,
-  PatchTicketsPayload, PatchRundownsPayload
+  PatchTicketsPayload, PatchRundownsPayload, PatchEventLocationPayload
 } from "@/types/event";
 
 export const EventService = {
@@ -230,17 +230,29 @@ export const EventService = {
 
   /**
    * PATCH /api/v1/organizer/events/:id/rundowns
-   * Sends a diff payload: added / updated / deleted_ids buckets.
+  * Sends a diff payload: added / updated / deleted_ids buckets.
    * Times are plain "HH:mm" strings (NOT ISO datetime). All IDs are UUIDs.
    * Deleting a non-existent ID is silently skipped by the backend.
    */
   async updateOrganizerRundowns(eventId: string, payload: PatchRundownsPayload): Promise<void> {
     try {
-      await axiosClient.patch(`/organizer/events/${eventId}/rundowns`, payload);
+      await axiosClient.patch(`/organizer/events/${eventId}/rundowns`, {
+        actions: payload
+      });
     } catch (error: any) {
       console.error("Failed to update rundowns:", error);
       const msg = error?.response?.data?.message || error?.message || "Gagal menyimpan perubahan rundown";
       throw new Error(msg);
     }
   },
+
+  async updateEventLocation(eventId: string, payload: PatchEventLocationPayload): Promise<void> {
+    try {
+      await axiosClient.patch(`/organizer/events/${eventId}/address`, payload);
+    } catch (error: any) {
+      console.error("Failed to update location:", error);
+      const msg = error?.response?.data?.message || error?.message || "Gagal menyimpan perubahan lokasi";
+      throw new Error(msg);
+    }
+  }
 };
