@@ -20,8 +20,15 @@ export default function OrganizerEventsList() {
   const search = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
   const offset = parseInt(searchParams.get("offset") ?? "0");
-  const { layout } = useViewPreferenceStore();
+  const { layout: rawLayout } = useViewPreferenceStore();
+  const [isMounted, setIsMounted] = useState(false);
   const limit = parseInt(searchParams.get("limit") ?? "10");
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const layout = isMounted ? rawLayout : "list";
 
   const [events, setEvents] = useState<OrganizerEventCardType[]>([]);
   const [loading, setLoading] = useState(true);

@@ -217,7 +217,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
 
               <Button
                 onClick={handleNextStep}
-                className="w-full py-6 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
+                className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
               >
                 Lanjutkan
               </Button>
@@ -259,10 +259,10 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   <Users className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-foreground">
+                  <h3 className="text-foreground text-lg">
                     Saya Pengguna
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs text-gray-600">
                     Jelajahi dan ikuti berbagai event menarik
                   </p>
                 </div>
@@ -300,10 +300,10 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                     />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-foreground">
+                    <h3 className="text-foreground text-lg">
                       Saya Organizer
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs text-gray-600">
                       Buat dan kelola event Anda sendiri
                     </p>
                   </div>
@@ -345,7 +345,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
               </div>
             </div>
 
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-4">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -353,7 +353,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   setSelectedRole(null);
                 }}
                 disabled={isLoading}
-                className="flex-1 py-6 rounded-2xl font-semibold shadow-none border-border hover:bg-muted-foreground/10"
+                className="flex-1 rounded-2xl font-semibold shadow-none border-border hover:bg-muted-foreground/10"
               >
                 <ArrowLeft className="h-4 w-4 " />
                 Kembali
@@ -370,7 +370,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                   }
                 }}
                 disabled={isLoading || !selectedRole}
-                className="flex-2 py-6 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
+                className="flex-1 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow transition-all"
               >
                 {isLoading ? (
                   <>

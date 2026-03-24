@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    dangerouslyAllowSVG: true,
+    dangerouslyAllowLocalIP: true,
     remotePatterns: [
       {
         protocol: "https",
@@ -13,6 +15,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "storage.temanbicara.web.id",
         port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "9001",
         pathname: "/**",
       },
       {
