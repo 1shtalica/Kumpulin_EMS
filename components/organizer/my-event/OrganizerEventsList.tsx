@@ -5,10 +5,16 @@ import { EventService } from "@/services/event-service";
 import type { OrganizerEventCard as OrganizerEventCardType } from "@/types/event";
 import OrganizerEventCard from "./OrganizerEventCard";
 import EmptyState from "@/components/reusable/EmptyState";
-import { CalendarX, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarX, Loader2, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useViewPreferenceStore } from "@/stores/view-preference-store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 
 
@@ -103,30 +109,39 @@ export default function OrganizerEventsList() {
       {/* Bottom Actions: Pagination and Items per page */}
       {totalPages > 0 && (
         <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 mt-4 mb-2">
-          {/* Rows per page selector */}
-          <div className="flex items-center gap-2.5 text-[13px] text-muted-foreground font-medium bg-card px-4 py-1.5 rounded-full border border-border/60 shadow-sm">
-            <span>Tampilkan</span>
-            <div className="relative flex items-center">
-              <select
-                className="appearance-none bg-transparent text-foreground font-semibold px-1 pr-5 focus:outline-none cursor-pointer"
-                value={limit}
-                onChange={(e) => {
-                  const params = new URLSearchParams(searchParams);
-                  params.set("limit", e.target.value);
-                  params.set("offset", "0"); // Reset offset when changing page size
-                  replace(`${pathname}?${params.toString()}`, { scroll: false });
-                }}
-              >
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-              </select>
-              <div className="pointer-events-none absolute right-0 flex items-center text-muted-foreground">
-                <svg className="fill-current h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" /></svg>
-              </div>
-            </div>
-            <span>data</span>
+          <div className="flex items-center gap-3">
+            <span className="text-[13px] text-muted-foreground font-medium hidden sm:inline-block">Data per halaman</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-2 rounded-xl border-border/60 bg-card px-3 text-[13px] font-semibold text-foreground shadow-sm hover:border-primary/40 hover:text-primary transition-all focus:ring-0"
+                >
+                  {limit}
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground/70" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[80px] rounded-2xl border-border/60 shadow-lg p-1.5">
+                {[5, 10, 20, 50].map((pageSize) => (
+                  <DropdownMenuItem
+                    key={pageSize}
+                    className={`justify-center cursor-pointer rounded-xl text-sm py-2 mb-0.5 last:mb-0 transition-colors ${limit === pageSize
+                      ? "bg-primary/10 text-primary font-bold shadow-sm"
+                      : "text-muted-foreground hover:bg-muted font-medium"
+                      }`}
+                    onClick={() => {
+                      const params = new URLSearchParams(searchParams);
+                      params.set("limit", String(pageSize));
+                      params.set("offset", "0");
+                      replace(`${pathname}?${params.toString()}`, { scroll: false });
+                    }}
+                  >
+                    {pageSize}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className="flex items-center justify-center gap-1.5">
@@ -135,7 +150,7 @@ export default function OrganizerEventsList() {
               size="sm"
               disabled={currentPage === 1}
               onClick={() => goToPage(currentPage - 1)}
-              className="h-9 w-9 p-0 rounded-full border-border/80 shadow-sm text-muted-foreground hover:text-foreground"
+              className="h-9 w-9 p-0 rounded-xl border-border/60 shadow-sm text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -143,13 +158,13 @@ export default function OrganizerEventsList() {
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <Button
                 key={page}
-                variant={page === currentPage ? "brand" : "ghost"}
+                variant="ghost"
                 size="sm"
                 onClick={() => goToPage(page)}
                 className={
                   page === currentPage
-                    ? "h-9 w-9 p-0 rounded-full shadow-md shadow-primary/20 font-semibold"
-                    : "h-9 w-9 p-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium transition-all"
+                    ? "h-9 w-9 p-0 rounded-xl bg-primary text-white shadow-md font-bold hover:opacity-90"
+                    : "h-9 w-9 p-0 rounded-xl bg-card border border-border/60 text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 font-medium transition-all shadow-sm"
                 }
               >
                 {page}
@@ -161,7 +176,7 @@ export default function OrganizerEventsList() {
               size="sm"
               disabled={currentPage === totalPages}
               onClick={() => goToPage(currentPage + 1)}
-              className="h-9 w-9 p-0 rounded-full border-border/80 shadow-sm text-muted-foreground hover:text-foreground"
+              className="h-9 w-9 p-0 rounded-xl border-border/60 shadow-sm text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

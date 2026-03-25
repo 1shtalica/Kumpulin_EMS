@@ -23,7 +23,8 @@ import {
 } from "@/lib/validator/create-event.schema";
 import { useEffect, useState } from "react";
 import { EventService } from "@/services/event-service";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 
@@ -39,7 +40,12 @@ export default function CreateEventClient() {
     syncFormData,
     setStep,
     reset,
+    loadFromExistingEvent,
   } = useCreateEventStore();
+
+  const searchParams = useSearchParams();
+  const duplicateId = searchParams.get("duplicateId");
+  const [isInitializing, setIsInitializing] = useState(!!duplicateId);
 
   const methods = useForm<CreateEventSchema>({
     resolver: zodResolver(createEventSchema) as any, // Type inference issue with z.coerce.number()
@@ -53,10 +59,39 @@ export default function CreateEventClient() {
   useEffect(() => {
     const subscription = watch((value) => {
       // Type assertion needed because RHF returns DeepPartialFieldValues which makes array elements optional
-      syncFormData(value as Partial<CreateEventFormState>);
+      if (!isInitializing) {
+        syncFormData(value as Partial<CreateEventFormState>);
+      }
     });
     return () => subscription.unsubscribe();
-  }, [watch, syncFormData]);
+  }, [watch, syncFormData, isInitializing]);
+
+  // Handle Duplication Initialization
+  useEffect(() => {
+    if (duplicateId) {
+      const fetchAndPopulate = async () => {
+        try {
+          const originalEvent = await EventService.getEventByIdFull(duplicateId);
+          if (originalEvent) {
+            loadFromExistingEvent(originalEvent);
+            // Refresh RHF defaults tightly hooked to our updated store state
+            const freshState = useCreateEventStore.getState().formData;
+            methods.reset(freshState as Partial<CreateEventSchema>);
+            toast.success("Data event berhasil disalin");
+          }
+        } catch (error) {
+          console.error("Failed to duplicate event:", error);
+          toast.error("Gagal menyalin data event");
+        } finally {
+          setIsInitializing(false);
+          // remove query param without refreshing page to prevent refetching
+          router.replace("/organizer/create-event", { scroll: false });
+        }
+      };
+      
+      fetchAndPopulate();
+    }
+  }, [duplicateId, loadFromExistingEvent, methods, router]);
 
   // Determine if we can go back
   const canGoPrev = currentStep > 1;
@@ -161,6 +196,17 @@ export default function CreateEventClient() {
         return null;
     }
   };
+
+  if (isInitializing) {
+    return (
+      <div className="mx-auto min-h-screen max-w-4xl px-4 py-32 flex flex-col items-center justify-center">
+        <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+        <p className="text-muted-foreground font-medium animate-pulse text-lg">
+          Menyiapkan formulir duplikasi...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto min-h-screen max-w-4xl px-4 py-8">

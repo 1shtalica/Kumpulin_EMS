@@ -5,6 +5,7 @@ import type {
   RundownRequest,
   TicketRequest,
 } from "@/types/create-event";
+import type { BEEventResponse } from "@/types/event";
 
 interface CreateEventStore {
   // Form data
@@ -70,6 +71,9 @@ interface CreateEventStore {
 
   // Sync form data from RHF to Store
   syncFormData: (data: Partial<CreateEventFormState>) => void;
+
+  // Load duplicated data
+  loadFromExistingEvent: (event: BEEventResponse) => void;
 }
 
 // Initial state
@@ -327,6 +331,64 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     set((state) => ({
       formData: { ...state.formData, ...data }
     }));
+  },
+
+  loadFromExistingEvent: (event) => {
+    set({
+      currentStep: 1,
+      formData: {
+        ...initialFormData,
+        title: `${event.title} (Copy)`,
+        type: (event.type as EventType) || "public",
+        category: "Umum",
+        description: typeof event.description?.content === 'string' ? event.description.content : "",
+        
+        // Explicitly clear all dates
+        event_start_date: undefined,
+        event_end_date: undefined,
+        start_registration_date: undefined,
+        end_registration_date: undefined,
+        
+        // Images are intentionally left empty for the user to re-upload.
+        banner_image: null,
+        banner_image_preview: "",
+        images: [],
+        image_previews: [],
+
+        rundowns: event.rundowns?.map(r => ({
+          title: r.title || "",
+          description: r.description || "",
+          start_time: r.start_time || "",
+          end_time: r.end_time || "",
+          location: r.location || "",
+        })) || [],
+
+        is_online: event.is_online,
+        meeting_url: event.meeting_url || "",
+        hide_meeting_url: false,
+        address: event.address ? {
+          title: event.address.title || "",
+          raw_address: event.address.raw_address || "",
+          city: event.address.city || "",
+          province: event.address.province || "",
+          postal_code: event.address.postal_code || "",
+          location_url: "",
+        } : initialFormData.address,
+
+        max_capacity: event.max_capacity || 1,
+        max_ticket_per_user: event.max_ticket_per_user || 0,
+
+        tickets: event.ticket_categories?.map(t => ({
+          name: t.name,
+          price: t.price,
+          quota: t.quota,
+          description: t.description || "",
+          type: (t.price > 0 ? "paid" : "free") as "paid" | "free",
+          start_date_time: undefined,
+          end_date_time: undefined,
+        })) || [],
+      }
+    });
   }
 }));
 
