@@ -53,8 +53,9 @@ function QuotaBar({
 export default function TicketSection({ event }: { event: Event }) {
   // --- LOGIC TIKET GRATIS ---
   // Jika event gratis & tidak ada tiket spesifik dari backend, buat tiket virtual
+  const isPaid = event.ticket_categories?.some((t) => t.price > 0) || false;
   const isFreeEventWithNoTickets =
-    !event.is_paid && event.ticket_categories.length === 0;
+    !isPaid && event.ticket_categories.length === 0;
 
   const effectiveTickets = isFreeEventWithNoTickets
     ? [
@@ -62,8 +63,8 @@ export default function TicketSection({ event }: { event: Event }) {
           id: -1, 
           name: "Tiket Gratis",
           price: 0,
-          quota: event.capacity || 0, 
-          sold: event.sold_event || 0,
+          quota: event.maxCapacity || 0, 
+          sold: event.totalSold || 0,
           description: "Tiket masuk untuk event ini.",
         },
       ]
@@ -73,7 +74,7 @@ export default function TicketSection({ event }: { event: Event }) {
   const availableTicket = effectiveTickets.find(
     (t) => t.quota === 0 || t.quota > t.sold, // Modified check: quota 0 (unlimited) is available
   );
-  const [selectedTicketId, setSelectedTicketId] = useState<number | null>(
+  const [selectedTicketId, setSelectedTicketId] = useState<string | number | null>(
     availableTicket?.id || null,
   );
   const [qty, setQty] = useState(1);
@@ -96,7 +97,7 @@ export default function TicketSection({ event }: { event: Event }) {
     }).format(num);
   };
 
-  const handleSelectTicket = (id: number, isSoldOut: boolean) => {
+  const handleSelectTicket = (id: string | number, isSoldOut: boolean) => {
     if (isSoldOut) return; // Cegah klik jika habis
     setSelectedTicketId(id);
     setQty(1); // Reset jumlah jadi 1 tiap ganti tiket

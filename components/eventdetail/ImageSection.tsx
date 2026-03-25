@@ -20,13 +20,13 @@ export default function ImageSection({ event }: { event: Event }) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [blurOpacity, setBlurOpacity] = useState(1);
 
-  // Use posters if available, otherwise fallback to banner_url
-  // 🌟 Nanti tambahkan image eror jika sudah ada 
-  const images =
-    event.posters && event.posters.length > 0
-      ? event.posters
-      : [
-        event.banner_url ||
+  // Use primary image as banner, and others as additional posters
+  const primaryImage = event.event_images?.find((img) => img.is_primary)?.image_url;
+  const otherImages = event.event_images?.filter((img) => !img.is_primary).map((img) => img.image_url) || [];
+
+  const images = primaryImage
+    ? [primaryImage, ...otherImages]
+    : [
         "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2070",
       ];
 

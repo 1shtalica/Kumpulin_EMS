@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 import { EditSectionModal } from "@/components/organizer/my-event/EditSectionModal";
+import TipTapViewer from "@/components/reusable/TipTapViewer";
 
 interface DetailSectionProps {
   event: Event;
@@ -30,8 +31,8 @@ interface DetailSectionProps {
 }
 
 export default function DetailSection({ event, isEditable = false }: DetailSectionProps) {
-  const startDate = new Date(event.start_date);
-  const endDate = new Date(event.end_date);
+  const startDate = new Date(event.eventStartDate);
+  const endDate = new Date(event.eventEndDate);
 
   // Helper untuk format tanggal & waktu yang seragam
   const formatDateRange = (start: Date, end: Date) => {
@@ -56,11 +57,11 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
   const eventTimeString = formatTimeRange(startDate, endDate);
 
   // 2. Masa Registrasi
-  const regStartDate = event.registration_start_date
-    ? new Date(event.registration_start_date)
+  const regStartDate = event.startRegistrationDate
+    ? new Date(event.startRegistrationDate)
     : null;
-  const regEndDate = event.registration_end_date
-    ? new Date(event.registration_end_date)
+  const regEndDate = event.endRegistrationDate
+    ? new Date(event.endRegistrationDate)
     : null;
 
   const regDateString =
@@ -92,16 +93,16 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
 
             <Badge
               className={cn(
-                event.is_online
+                event.isOnline
                   ? "bg-linear-to-r from-blue-600 to-blue-800 text-white font-bold border-none px-3 rounded-full uppercase text-[10px] tracking-wide shadow-sm"
                   : "bg-muted text-white shadow-sm",
               )}
             >
-              {event.is_online ? "Online" : "Offline"}
+              {event.isOnline ? "Online" : "Offline"}
             </Badge>
 
             <Badge className="bg-secondary-light text-secondary border border-secondary rounded-full px-2 flex items-center gap-1">
-              {event.is_paid ? "Berbayar" : "Gratis"}
+              {event.ticket_categories?.some((t) => t.price > 0) ? "Berbayar" : "Gratis"}
             </Badge>
 
             {/* 🌟 Mungkin nanti bisa ditambahkan bagde isrtpintar jika event internal  */}
@@ -157,7 +158,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                 <div className="flex items-center gap-1.5">
                   <p className="text-sm text-muted">Lokasi</p>
                   {isEditable && <EditSectionModal event={event as any} section="location" />}
-                  {!event.is_online && (
+                  {!event.isOnline && (
                     <Button
                       variant="ghost"
                       onClick={handleCopyAddress}
@@ -172,7 +173,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                   className="font-semibold text-accent line-clamp-2"
                   title={event.address?.raw_address}
                 >
-                  {event.is_online
+                  {event.isOnline
                     ? "Online Meeting"
                     : event.address?.raw_address || "Lokasi Event"}
                 </p>
@@ -192,10 +193,10 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
               <div className="flex flex-col w-full">
                 <div className="flex items-center gap-1.5">
                   <p className="text-sm text-muted">Partisipan</p>
-                  {isEditable && <EditSectionModal event={event as any} section="capacity" />}
+                  {isEditable && <EditSectionModal event={event as any} section="tickets" />}
                 </div>
                 <p className="font-semibold text-accent">
-                  {event.sold_event}/{event.capacity || "-"} terdaftar
+                  {event.totalSold}/{event.maxCapacity || "-"} terdaftar
                 </p>
               </div>
             </div>
@@ -273,14 +274,11 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
               <h4 className="font-bold">Tentang Event</h4>
               {isEditable && <EditSectionModal event={event as any} section="core" />}
             </div>
-            <div
-              className="prose prose-sm max-w-none text-slate-600"
-              dangerouslySetInnerHTML={{ __html: event.description }}
-            />
+            <TipTapViewer content={event.description?.content || ""} />
           </div>
 
           {/* Bagian Rundown Acara  */}
-          {event.rundowns && event.rundowns.length > 0 && (
+          {event.event_rundowns && event.event_rundowns.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-6">
                 <div className="h-8 w-1 bg-primary rounded-full"></div>
@@ -289,7 +287,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
               </div>
 
               <div className="flex flex-col gap-4">
-                {event.rundowns.map((item) => (
+                {event.event_rundowns.map((item) => (
                   <div
                     key={item.id}
                     className="group flex flex-col md:flex-row gap-3 md:gap-6 p-5 rounded-3xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 transition-all duration-300"

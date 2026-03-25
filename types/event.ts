@@ -5,21 +5,37 @@
 // ============================================================
 export interface Event {
   id: string;
+  communityId?: string;
+  organizerId?: string;
+  addressId?: string;
   title: string;
   slug: string;
-  description: string;
-  start_date: string;
-  end_date: string;
-  registration_start_date?: string;
-  registration_end_date?: string;
-  is_online: boolean;
-  is_paid: boolean;
+  description: {
+    content: string;
+  };
+  type?: string;
+  status?: string;
   category: string;
-  capacity: number;
-  max_purchases?: number;
-  meeting_url?: string;
+  maxCapacity: number;
+  totalSold: number;
+  isOnline: boolean;
+  eventStartDate: string;
+  eventEndDate: string;
+  startRegistrationDate?: string;
+  endRegistrationDate?: string;
+  max_purchases?: number; // Kept for frontend logic
+  organizer: {
+    id: string | number;
+    owner_id?: number;
+    name: string;
+    slug?: string;
+    avatar?: string;
+    description?: string;
+    verification_status?: string;
+  };
   address?: {
-    address_id: string;
+    id?: string;
+    title?: string;
     province: string;
     city: string;
     raw_address: string;
@@ -27,8 +43,8 @@ export interface Event {
     latitude?: number;
     longitude?: number;
   };
-  rundowns: {
-    id: number;
+  event_rundowns: {
+    id: string | number;
     title: string;
     description?: string;
     location?: string;
@@ -36,33 +52,22 @@ export interface Event {
     end_time: string;
   }[];
   ticket_categories: {
-    id: number;
+    id: string | number;
     name: string;
     description?: string;
     price: number;
     quota: number;
     sold: number;
+    start_registration_date?: string;
+    end_registration_date?: string;
   }[];
-  sold_event: number;
-  organizer_id: number;
-  organizer: {
+  event_images?: {
     id: number;
-    name: string;
-    avatar?: string;
-    description?: string;
-    email?: string;
-    instagram?: string;
-    linkedin?: string;
-    verification_status?: string;
-  };
-  banner_url?: string;
-  posters?: string[];
+    image_url: string;
+    is_primary: boolean;
+  }[];
   created_at?: string;
   updated_at?: string;
-  online_address?: {
-    meeting_url: string;
-    link_policy: string;
-  }
 }
 
 // ============================================================

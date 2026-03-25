@@ -1,20 +1,20 @@
 import DetailSection from "./DetailSection";
 import ImageSection from "./ImageSection";
 import TicketSection from "./TicketSection";
-import { DUMMY_EVENT_DETAIL } from "@/lib/data/dummy-events";
+import { Event } from "@/types/event";
 
-export default function EventDetailContent() {
+export default function EventDetailContent({ event }: { event: Event }) {
   return (
     <div className="pt-18">
-      <ImageSection event={DUMMY_EVENT_DETAIL} />
+      <ImageSection event={event} />
       <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl pb-20 relative z-20">
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
           <div className="xl:col-span-8">
-            <DetailSection event={DUMMY_EVENT_DETAIL} />
+            <DetailSection event={event} />
           </div>
           <div className="xl:col-span-4 relative">
             <div className="sticky top-28">
-              <TicketSection event={DUMMY_EVENT_DETAIL} />
+              <TicketSection event={event} />
             </div>
           </div>
         </div>

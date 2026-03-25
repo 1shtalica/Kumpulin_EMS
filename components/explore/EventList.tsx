@@ -21,7 +21,7 @@ function formatEventDate(isoDate: string): string {
 export default function EventList({ events }: EventListProps) {
   if (!events || events.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-4 text-center border border-border rounded-[2rem] bg-card shadow-sm max-w-3xl mx-auto my-8">
+      <div className="flex flex-col items-center justify-center py-20 px-4 text-center border border-border rounded-4xl bg-card shadow-sm max-w-3xl mx-auto my-8">
         <div className="bg-primary/5 p-5 rounded-3xl mb-4 border border-primary/10">
           <Inbox className="w-10 h-10 text-primary" strokeWidth={1.5} />
         </div>
@@ -42,7 +42,7 @@ export default function EventList({ events }: EventListProps) {
         <EventCard
           key={event.id}
           title={event.title}
-          // 🌟 seharusnya kategori 
+          // 🌟 seharusnya kategori
           category={event.type}
           date={formatEventDate(event.start_date)}
           location={event.is_online ? "Online" : event.address_title}

@@ -5,16 +5,16 @@ const DUMMY_EVENT_OFFLINE_PAID: Event = {
   id: "evt-offline-paid",
   title: "Tech Conference Indonesia 2026 (Offline Paid)",
   slug: "tech-conference-indonesia-2026",
-  description:
-    "<p>Bergabunglah dengan konferensi teknologi terbesar di Indonesia tahun ini! Diskusikan masa depan AI, Cloud Computing, dan Web Development bersama para ahli.</p><br><p><strong>Highlight Acara:</strong></p><ul><li>Keynote dari CEO Tech Giant</li><li>Workshop Coding Hands-on</li><li>Networking Session dengan 500+ Developer</li></ul>",
-  start_date: new Date("2026-10-15T09:00:00Z").toISOString(),
-  end_date: new Date("2026-10-16T17:00:00Z").toISOString(),
-  registration_start_date: new Date("2026-08-01T00:00:00Z").toISOString(),
-  registration_end_date: new Date("2026-10-14T23:59:59Z").toISOString(),
-  is_online: false,
-  is_paid: true,
+  description: { content:
+    "<p>Bergabunglah dengan konferensi teknologi terbesar di Indonesia tahun ini! Diskusikan masa depan AI, Cloud Computing, dan Web Development bersama para ahli.</p><br><p><strong>Highlight Acara:</strong></p><ul><li>Keynote dari CEO Tech Giant</li><li>Workshop Coding Hands-on</li><li>Networking Session dengan 500+ Developer</li></ul>"
+  },
+  eventStartDate: new Date("2026-10-15T09:00:00Z").toISOString(),
+  eventEndDate: new Date("2026-10-16T17:00:00Z").toISOString(),
+  startRegistrationDate: new Date("2026-08-01T00:00:00Z").toISOString(),
+  endRegistrationDate: new Date("2026-10-14T23:59:59Z").toISOString(),
+  isOnline: false,
   category: "Technology",
-  capacity: 320,
+  maxCapacity: 320,
   max_purchases: 5,
   address: {
     province: "DKI Jakarta",
@@ -23,14 +23,11 @@ const DUMMY_EVENT_OFFLINE_PAID: Event = {
       "Grand Ballroom Hotel Indonesia Kempinski, Jl. M.H. Thamrin No.1",
     postal_code: "10310",
   },
-  banner_url:
-    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2070",
-  posters: [
-    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=2000",
+  event_images: [
+    { id: 1, image_url: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=2070", is_primary: true },
+    { id: 2, image_url: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&q=80&w=2070", is_primary: false },
+    { id: 3, image_url: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=2000", is_primary: false }
   ],
-  organizer_id: 101,
   organizer: {
     id: 101,
     name: "Komunitas Dev Indo",
@@ -65,8 +62,8 @@ const DUMMY_EVENT_OFFLINE_PAID: Event = {
       description: "Front row seat + Lunch + Exclusive Merchandise.",
     },
   ],
-  sold_event: 155,
-  rundowns: [
+  totalSold: 155,
+  event_rundowns: [
     {
       id: 1,
       title: "Registrasi Ulang",
@@ -108,27 +105,22 @@ const DUMMY_EVENT_ONLINE_PAID: Event = {
   id: "evt-online-paid",
   title: "Masterclass Cyber Security (Online)",
   slug: "masterclass-cyber-security",
-  description:
-    "<p>Pelajari teknik ethical hacking dan cyber security dari praktisi berpengalaman secara online.</p>",
-  start_date: new Date("2026-12-05T19:00:00Z").toISOString(),
-  end_date: new Date("2026-12-05T21:00:00Z").toISOString(),
-  registration_start_date: new Date("2026-11-01T00:00:00Z").toISOString(),
-  registration_end_date: new Date("2026-12-04T23:59:59Z").toISOString(),
-  is_online: true,
-  is_paid: true,
+  description: { content:
+    "<p>Pelajari teknik ethical hacking dan cyber security dari praktisi berpengalaman secara online.</p>"
+  },
+  eventStartDate: new Date("2026-12-05T19:00:00Z").toISOString(),
+  eventEndDate: new Date("2026-12-05T21:00:00Z").toISOString(),
+  startRegistrationDate: new Date("2026-11-01T00:00:00Z").toISOString(),
+  endRegistrationDate: new Date("2026-12-04T23:59:59Z").toISOString(),
+  isOnline: true,
   category: "Technology",
-  capacity: 200,
+  maxCapacity: 200,
   max_purchases: 1,
-  meeting_url: "https://zoom.us/j/1234567890", // Online Meeting URL
-  // Address is optional and typically usually omitted for Online events, but types allow it.
-  banner_url:
-    "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070",
-  posters: [
-    "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1470",
-    "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&q=80&w=2070",
+  event_images: [
+    { id: 1, image_url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070", is_primary: true },
+    { id: 2, image_url: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1470", is_primary: false },
+    { id: 3, image_url: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&q=80&w=2070", is_primary: false }
   ],
-  organizer_id: 103,
   organizer: {
     id: 103,
     name: "SecureCode Academy",
@@ -146,8 +138,8 @@ const DUMMY_EVENT_ONLINE_PAID: Event = {
       description: "Link Zoom + E-Certificate + Modul PDF.",
     },
   ],
-  sold_event: 45,
-  rundowns: [
+  totalSold: 45,
+  event_rundowns: [
     {
       id: 1,
       start_time: "19:00",
@@ -182,16 +174,16 @@ const DUMMY_EVENT_OFFLINE_FREE_LIMITED: Event = {
   id: "evt-offline-free-limited",
   title: "Community Meetup: Open Source (Offline Free Limited)",
   slug: "community-meetup-open-source",
-  description:
-    "<p>Ajang kumpul komunitas Open Source Indonesia. Sharing session santai mengenai kontribusi di proyek open source.</p>",
-  start_date: new Date("2026-11-20T18:00:00Z").toISOString(),
-  end_date: new Date("2026-11-20T21:00:00Z").toISOString(),
-  registration_start_date: new Date("2026-11-01T00:00:00Z").toISOString(),
-  registration_end_date: new Date("2026-11-19T23:59:59Z").toISOString(),
-  is_online: false,
-  is_paid: false,
+  description: { content:
+    "<p>Ajang kumpul komunitas Open Source Indonesia. Sharing session santai mengenai kontribusi di proyek open source.</p>"
+  },
+  eventStartDate: new Date("2026-11-20T18:00:00Z").toISOString(),
+  eventEndDate: new Date("2026-11-20T21:00:00Z").toISOString(),
+  startRegistrationDate: new Date("2026-11-01T00:00:00Z").toISOString(),
+  endRegistrationDate: new Date("2026-11-19T23:59:59Z").toISOString(),
+  isOnline: false,
   category: "Community",
-  capacity: 50, // Kuota terbatas 50 orang
+  maxCapacity: 50, // Kuota terbatas 50 orang
   max_purchases: 2,
   address: {
     province: "DI Yogyakarta",
@@ -199,13 +191,10 @@ const DUMMY_EVENT_OFFLINE_FREE_LIMITED: Event = {
     raw_address: "Coworking Space Jogja, Jl. Kaliurang KM 5",
     postal_code: "55281",
   },
-  banner_url:
-    "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop",
-  posters: [
-    "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=2070",
+  event_images: [
+    { id: 1, image_url: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop", is_primary: true },
+    { id: 2, image_url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=2070", is_primary: false }
   ],
-  organizer_id: 102,
   organizer: {
     id: 102,
     name: "Jogja JS",
@@ -214,8 +203,8 @@ const DUMMY_EVENT_OFFLINE_FREE_LIMITED: Event = {
     verification_status: "verified",
   },
   ticket_categories: [], // Kosong karena gratis
-  sold_event: 42, // Sisa 8 tiket
-  rundowns: [
+  totalSold: 42, // Sisa 8 tiket
+  event_rundowns: [
     {
       id: 1,
       start_time: "18:00",
@@ -250,25 +239,21 @@ const DUMMY_EVENT_FREE_UNLIMITED: Event = {
   id: "evt-free-unlimited",
   title: "Global Climate Action Webinar (Free Unlimited)",
   slug: "global-climate-action",
-  description:
-    "<p>Webinar global tentang aksi nyata perubahan iklim. Terbuka untuk umum tanpa batasan peserta.</p>",
-  start_date: new Date("2026-11-25T13:00:00Z").toISOString(),
-  end_date: new Date("2026-11-25T15:00:00Z").toISOString(),
-  registration_start_date: new Date("2026-11-01T00:00:00Z").toISOString(),
-  registration_end_date: new Date("2026-11-25T12:00:00Z").toISOString(),
-  is_online: true,
-  is_paid: false,
+  description: { content:
+    "<p>Webinar global tentang aksi nyata perubahan iklim. Terbuka untuk umum tanpa batasan peserta.</p>"
+  },
+  eventStartDate: new Date("2026-11-25T13:00:00Z").toISOString(),
+  eventEndDate: new Date("2026-11-25T15:00:00Z").toISOString(),
+  startRegistrationDate: new Date("2026-11-01T00:00:00Z").toISOString(),
+  endRegistrationDate: new Date("2026-11-25T12:00:00Z").toISOString(),
+  isOnline: true,
   category: "Environment",
-  capacity: 0, // 0 = Unlimited
+  maxCapacity: 0, // 0 = Unlimited
   max_purchases: 10, // Max beli per user tetap bisa ada
-  meeting_url: "https://youtube.com/live/xyz123", // Streaming link
-  banner_url:
-    "https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&q=80&w=2070",
-  posters: [
-    "https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&q=80&w=2070",
-    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=1574",
+  event_images: [
+    { id: 1, image_url: "https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&q=80&w=2070", is_primary: true },
+    { id: 2, image_url: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=1574", is_primary: false }
   ],
-  organizer_id: 105,
   organizer: {
     id: 105,
     name: "Eco World",
@@ -277,8 +262,8 @@ const DUMMY_EVENT_FREE_UNLIMITED: Event = {
     verification_status: "verified",
   },
   ticket_categories: [], // Kosong karena gratis
-  sold_event: 1250, // Sudah banyak yang daftar
-  rundowns: [
+  totalSold: 1250, // Sudah banyak yang daftar
+  event_rundowns: [
     {
       id: 1,
       start_time: "13:00",
