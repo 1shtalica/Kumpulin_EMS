@@ -151,7 +151,7 @@ export default function OrganizerEventDetail() {
                         ) : (
                             <div className="flex flex-col gap-6">
                                 {event.address && (event.address.raw_address || event.address.title) ? (
-                                    <div className="flex items-start gap-4 p5 bg-slate-50 rounded-2xl border border-border">
+                                    <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-2xl border border-border">
                                         <div className="p-3 bg-white rounded-full shadow-sm text-primary shrink-0">
                                             <Map className="w-6 h-6" />
                                         </div>

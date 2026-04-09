@@ -78,16 +78,14 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                 quota: t.quota,
                 description: t.description || "",
                 type: (t.price > 0 ? "paid" : "free") as "paid" | "free",
-                start_date_time: event.start_registration_date ? new Date(event.start_registration_date) : new Date(),
-                end_date_time: event.end_registration_date ? new Date(event.end_registration_date) : new Date(),
+                start_date_time: t.start_date_time ? new Date(t.start_date_time) : (event.start_registration_date ? new Date(event.start_registration_date) : new Date()),
+                end_date_time: t.end_date_time ? new Date(t.end_date_time) : (event.end_registration_date ? new Date(event.end_registration_date) : new Date()),
             })) || []
         }
     });
 
     const handleSubmit = async (data: CreateEventSchema) => {
         setIsLoading(true);
-        console.log("log edit data: ", data)
-
         let payloadToSubmit: any = {};
 
         // 1. Construct specific payload based on section (Approach B)
@@ -226,8 +224,6 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         }
                     };
                     console.log("[API Call] PATCH /location ->", payloadToSubmit);
-
-
 
                     await EventService.updateEventLocation(event.event_id, {
                         address_id: payloadToSubmit.address.address_id,
