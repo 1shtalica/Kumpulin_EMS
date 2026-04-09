@@ -88,7 +88,7 @@ export default function CreateEventClient() {
           router.replace("/organizer/create-event", { scroll: false });
         }
       };
-      
+
       fetchAndPopulate();
     }
   }, [duplicateId, loadFromExistingEvent, methods, router]);

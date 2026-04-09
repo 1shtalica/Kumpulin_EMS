@@ -24,7 +24,6 @@ interface EditModalProps {
 }
 
 export function EditSectionModal({ event, section }: EditModalProps): ReactNode {
-
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -35,8 +34,8 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
         defaultValues: {
             title: event.title || "",
             type: (event.type as any) || "public",
-            category: "Umum", // Fallback (BEEventResponse doesn't have it explicitly right now)
-            description: typeof event.description?.content === 'string' ? event.description.content : "",
+            category: event.category || "Umum",
+            description: typeof event.description === 'string' ? event.description : "",
 
             // Image Maps -> Embed the original backend ID in the File name so the UI knows it's an existing file
             banner_image_preview: event.images?.[0]?.image_url,
@@ -67,7 +66,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                 city: event.address?.city || "",
                 province: event.address?.province || "",
                 postal_code: event.address?.postal_code || "",
-                location_url: "",
+                location_url: event.address?.maps_url || "",
             },
 
             // Tickets & Capacity
@@ -100,13 +99,16 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         title: data.title,
                         category: data.category,
                         description: data.description,
-                        type: data.type
                     };
 
                     const isNewBanner = data.banner_image && data.banner_image.name;
                     const newGalleryImages = data.images.filter(file => !file.name.startsWith("existing-gallery-"));
 
                     console.log("[API Call] PATCH /core ->", payloadToSubmit);
+
+                    const targetEventIdCore = event.event_id || (event as any).id;
+                    await EventService.updateEventCore(targetEventIdCore, payloadToSubmit);
+
                     if (isNewBanner) console.log("[API Call] PUT /banner ->", data.banner_image);
 
                     const originalGalleryImages = event.images?.slice(1) || [];
@@ -197,7 +199,6 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                             city: data.address.city,
                             postal_code: data.address.postal_code,
                             location_url: data.address.location_url,
-
                         }
                     };
                     console.log("[API Call] PATCH /location ->", payloadToSubmit);

@@ -1,16 +1,22 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, notFound } from "next/navigation";
 import { EventService } from "@/services/event-service";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-    Pencil, Calendar, MapPin, Ticket, Video,
-    Map, Users, ChevronLeft, Navigation, List, Component
+    Calendar, MapPin, Ticket, Video,
+    Map, Users, ChevronLeft, Navigation, List, Loader2
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
-import { notFound } from "next/navigation";
 import { EditSectionModal } from "@/components/organizer/my-event/EditSectionModal";
+import TipTapViewer from "@/components/reusable/TipTapViewer";
+import type { BEEventResponse } from "@/types/event";
+
 
 function formatDate(isoString: string | undefined) {
     if (!isoString) return "TBA";
@@ -21,47 +27,50 @@ function formatDate(isoString: string | undefined) {
     }
 }
 
-function formatTimeOnly(isoString: string | undefined) {
-    if (!isoString) return "TBA";
-    try {
-        return format(parseISO(isoString), "HH:mm", { locale: id });
-    } catch {
-        return "Invalid Time";
-    }
-}
-export default async function OrganizerEventDetail({ params }: { params: Promise<{ id: string }> }) {
-    const { id } = await params;
-    const event = await EventService.getEventByIdFull(id);
 
-    if (!event) {
-        notFound();
-    }
+export default function OrganizerEventDetail() {
+    const params = useParams();
+    const eventId = params?.id as string;
 
-    let descriptionHtml = "No description provided.";
-    if (event.description && typeof event.description.content === 'string') {
-        try {
-            // Attempt to parse TipTap JSON and extract raw text if it matches {"type":"doc",...}
-            const doc = JSON.parse(event.description.content);
-            if (doc.type === 'doc') {
-                let extractedText = "";
-                const traverse = (node: any) => {
-                    if (node.type === 'paragraph') extractedText += "<br/>";
-                    if (node.text) extractedText += node.text;
-                    if (node.content && Array.isArray(node.content)) {
-                        node.content.forEach(traverse);
-                    }
-                };
-                traverse(doc);
-                descriptionHtml = extractedText || "No content.";
-            } else {
-                descriptionHtml = event.description.content;
-            }
-        } catch {
-            descriptionHtml = event.description.content; // fallback if not JSON or different format
-        }
+    const [event, setEvent] = useState<BEEventResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [notFoundFlag, setNotFoundFlag] = useState(false);
+
+    useEffect(() => {
+        if (!eventId) return;
+        setLoading(true);
+        EventService.getEventByIdFull(eventId)
+            .then((data) => {
+                if (!data) {
+                    setNotFoundFlag(true);
+                } else {
+                    setEvent(data);
+                }
+            })
+            .catch(() => setNotFoundFlag(true))
+            .finally(() => setLoading(false));
+    }, [eventId]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        );
     }
 
-    const isPublished = event.status?.toLowerCase() === 'published';
+    if (notFoundFlag || !event) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                <p className="text-muted-foreground text-lg">Event not found.</p>
+                <Button asChild variant="outline">
+                    <Link href="/organizer/my-event">Back to My Events</Link>
+                </Button>
+            </div>
+        );
+    }
+
+    const isPublished = event.status?.toLowerCase() === "published";
 
     return (
         <div className="p-8 space-y-8 px-6">
@@ -78,7 +87,6 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
                 {/* Main Column */}
                 <div className="md:col-span-2 space-y-8">
                     {/* Core Info Card */}
@@ -97,7 +105,7 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-3">
                                     <Badge className={isPublished ? "bg-success text-white" : "bg-muted-foreground text-white"}>
-                                        {event.status || 'Draft'}
+                                        {event.status || "Draft"}
                                     </Badge>
                                     <Badge variant="secondary" className="bg-primary/10 text-primary">
                                         {event.type}
@@ -108,9 +116,13 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
 
                             <h2 className="text-3xl font-bold tracking-tight text-foreground">{event.title}</h2>
 
-                            <div className="prose prose-sm md:prose-base text-muted-foreground max-w-none prose-p:leading-relaxed"
-                                dangerouslySetInnerHTML={{ __html: descriptionHtml }}
-                            />
+                            <div className="space-y-1 text-muted-foreground">
+                                {event.description
+                                    ? <TipTapViewer content={event.description} />
+                                    : <p className="text-sm italic">No description provided.</p>
+                                }
+                            </div>
+
                         </div>
                     </div>
 
@@ -139,7 +151,7 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                         ) : (
                             <div className="flex flex-col gap-6">
                                 {event.address && (event.address.raw_address || event.address.title) ? (
-                                    <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-2xl border border-border">
+                                    <div className="flex items-start gap-4 p5 bg-slate-50 rounded-2xl border border-border">
                                         <div className="p-3 bg-white rounded-full shadow-sm text-primary shrink-0">
                                             <Map className="w-6 h-6" />
                                         </div>
@@ -149,6 +161,11 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                                             <p className="text-sm font-medium text-slate-500">
                                                 {[event.address.city, event.address.province, event.address.postal_code].filter(Boolean).join(", ")}
                                             </p>
+                                            {event.address.maps_url && (
+                                                <a href={event.address.maps_url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1">
+                                                    <Navigation className="w-3 h-3" /> View on Google Maps
+                                                </a>
+                                            )}
                                         </div>
                                     </div>
                                 ) : (
@@ -178,7 +195,7 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                                             <span className="text-sm font-bold">{r.end_time}</span>
                                         </div>
                                         <div className="flex flex-col justify-center">
-                                            <h4 className="font-semibold text-foreground leading-tight">{r.title || 'Untitled Rundown'}</h4>
+                                            <h4 className="font-semibold text-foreground leading-tight">{r.title || "Untitled Rundown"}</h4>
                                             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.description || "No specific details provided."}</p>
                                             {r.location && <p className="text-xs text-primary font-medium mt-2 flex items-center gap-1"><Navigation className="w-3 h-3" /> {r.location}</p>}
                                         </div>
@@ -189,7 +206,6 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                             <p className="text-muted-foreground text-sm italic">No rundowns configured.</p>
                         )}
                     </div>
-
                 </div>
 
                 {/* Sidebar / Tickets Column */}
@@ -227,7 +243,7 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                         <div className="flex items-center justify-between mb-5">
                             <h3 className="text-lg font-bold flex items-center gap-2">
                                 <Users className="w-5 h-5 text-primary" />
-                                Capacity & Load
+                                Capacity &amp; Load
                             </h3>
                         </div>
 
@@ -273,9 +289,7 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                             <p className="text-muted-foreground text-sm italic">No tickets configured.</p>
                         )}
                     </div>
-
                 </div>
-
             </div>
         </div>
     );

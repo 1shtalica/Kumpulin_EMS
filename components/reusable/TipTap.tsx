@@ -1,6 +1,7 @@
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
+import { useEffect, useRef } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import TipTapMenuBar from "./TipTapMenuBar";
@@ -11,6 +12,8 @@ interface TiptapProps {
 }
 
 export default function Tiptap({ content = "", onChange }: TiptapProps) {
+  const isSettingContent = useRef(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -40,14 +43,11 @@ export default function Tiptap({ content = "", onChange }: TiptapProps) {
         types: ["heading", "paragraph"],
       }),
     ],
-    content: (() => {
-      try {
-        return content ? JSON.parse(content) : "";
-      } catch {
-        return content;
-      }
-    })(),
+    // Start empty — content is injected via useEffect below (same pattern as TipTapViewer)
+    content: "",
     onUpdate: ({ editor }) => {
+      // Skip onChange during programmatic setContent calls to avoid overwriting RHF field
+      if (isSettingContent.current) return;
       if (onChange) {
         onChange(JSON.stringify(editor.getJSON()));
       }
@@ -59,6 +59,22 @@ export default function Tiptap({ content = "", onChange }: TiptapProps) {
       },
     },
   });
+
+  // Sync editor whenever the content prop or editor instance changes.
+  // Mirrors TipTapViewer's approach — always call setContent unconditionally.
+  useEffect(() => {
+    if (!editor) return;
+    isSettingContent.current = true;
+    try {
+      const json = JSON.parse(content);
+      editor.commands.setContent(json);
+    } catch {
+      editor.commands.setContent(content);
+    }
+    isSettingContent.current = false;
+  }, [content, editor]);
+
+  if (!editor) return null;
 
   return (
     <div className="border rounded-xl bg-white overflow-hidden">
