@@ -101,15 +101,14 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         description: data.description,
                     };
 
-                    const isNewBanner = data.banner_image && data.banner_image.name;
+                    const isNewBanner = data.banner_image &&
+                        data.banner_image.name !== "existing-banner.jpg";
                     const newGalleryImages = data.images.filter(file => !file.name.startsWith("existing-gallery-"));
 
                     console.log("[API Call] PATCH /core ->", payloadToSubmit);
 
                     const targetEventIdCore = event.event_id || (event as any).id;
                     await EventService.updateEventCore(targetEventIdCore, payloadToSubmit);
-
-                    if (isNewBanner) console.log("[API Call] PUT /banner ->", data.banner_image);
 
                     const originalGalleryImages = event.images?.slice(1) || [];
                     const keptGalleryIds = data.images
@@ -127,7 +126,34 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                     let imageChanged = false;
                     const targetEventId = event.event_id || (event as any).id;
 
-                    // 1. Delete removed images
+                    // 1. Upload new banner image (is_primary: true)
+                    if (isNewBanner && data.banner_image) {
+                        try {
+                            // Delete existing banner first if one exists
+                            const existingBannerId = event.images?.[0]?.id;
+                            if (existingBannerId) {
+                                await axiosClient.delete(`/organizer/events/${targetEventId}/image/${existingBannerId}`);
+                                console.log(`[API Call Result] DELETE old banner /images/${existingBannerId} success`);
+                            }
+
+                            const bannerFormData = new FormData();
+                            bannerFormData.append("images", data.banner_image);
+                            bannerFormData.append("is_primary", "true");
+
+                            const bannerResponse = await axiosClient.post(
+                                `/organizer/events/${targetEventId}/image`,
+                                bannerFormData,
+                                { headers: { "Content-Type": "multipart/form-data" } }
+                            );
+                            console.log("[API Call Result] POST /image (banner) ->", bannerResponse.data);
+                            imageChanged = true;
+                        } catch (error: any) {
+                            console.error("[API Call Error] POST /image (banner) ->", error);
+                            throw new Error(error.response?.data?.message || "Gagal mengupload banner event");
+                        }
+                    }
+
+                    // 2. Delete removed gallery images
                     for (const deletedImg of deletedGalleryImages) {
                         try {
                             await axiosClient.delete(`/organizer/events/${targetEventId}/image/${deletedImg.id}`);
@@ -139,24 +165,22 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         }
                     }
 
-                    // 2. Upload new images
+                    // 3. Upload new gallery images (is_primary: false)
                     if (newGalleryImages.length > 0) {
                         try {
                             const formData = new FormData();
-                            // Append each file using the field name "images" per instructions
                             newGalleryImages.forEach(file => {
                                 formData.append("images", file);
                             });
+                            formData.append("is_primary", "false");
 
                             const response = await axiosClient.post(`/organizer/events/${targetEventId}/image`, formData, {
-                                headers: {
-                                    "Content-Type": "multipart/form-data",
-                                },
+                                headers: { "Content-Type": "multipart/form-data" },
                             });
-                            console.log("[API Call Result] POST /images ->", response.data);
+                            console.log("[API Call Result] POST /images (gallery) ->", response.data);
                             imageChanged = true;
                         } catch (error: any) {
-                            console.error("[API Call Error] POST /images ->", error);
+                            console.error("[API Call Error] POST /images (gallery) ->", error);
                             if (error.response?.status === 403) {
                                 throw new Error("Akses ditolak: Anda bukan pemilik acara ini.");
                             }
