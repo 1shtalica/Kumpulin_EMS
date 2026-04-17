@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import { EventService } from "@/services/event-service";
 import Link from "next/link";
 import Image from "next/image";

@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "storage.temanbicara.web.id",
+        hostname: "storage.eliflab.site",
         port: "",
         pathname: "/**",
       },
@@ -28,10 +28,9 @@ const nextConfig: NextConfig = {
         hostname: "localhost",
         port: "9000",
         pathname: "/**",
-      }
+      },
     ],
   },
 };
 
 export default nextConfig;
-

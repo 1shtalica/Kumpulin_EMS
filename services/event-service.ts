@@ -320,7 +320,7 @@ export const EventService = {
 
   async updateEventCore(
     eventId: string,
-    payload: { title: string; category: string; description: any }
+    payload: { title: string; category: string; description: any; status?: string }
   ): Promise<void> {
     try {
       await axiosClient.patch(`/organizer/events/${eventId}/core`, payload);

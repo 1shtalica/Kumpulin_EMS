@@ -39,8 +39,19 @@ const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: boolean; eventId?: string }) {
   const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
   const [openCategory, setOpenCategory] = useState(false);
+  const [openStatus, setOpenStatus] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'banner' } | { type: 'gallery', index: number } | null>(null);
+
+  const statusOptions = [
+    { title: "Draft", value: "draft" },
+    { title: "Diterbitkan", value: "published" },
+    { title: "Pendaftaran Selesai", value: "registration closed" },
+    { title: "Berlangsung", value: "ongoing" },
+    { title: "Selesai", value: "finished" },
+    { title: "Diarsipkan", value: "archived" },
+    { title: "Dibatalkan", value: "cancelled" },
+  ];
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -434,6 +445,72 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
           <p className="text-xs text-danger">{errors.category.message}</p>
         )}
       </div>
+
+      {/* Status (Only when editing) */}
+      {eventId && (
+        <div className="space-y-2">
+          <Label htmlFor="status">
+            Status Event <span className="text-danger">*</span>
+          </Label>
+
+          <Controller
+            control={control}
+            name="status"
+            render={({ field }) => (
+              <Popover open={openStatus} onOpenChange={setOpenStatus}>
+                <PopoverTrigger asChild>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    role="combobox"
+                    className={cn(
+                      "w-full justify-between font-normal rounded-xl shadow-none",
+                      !field.value && "text-muted-foreground",
+                      errors.status && "border-danger text-danger",
+                    )}
+                  >
+                    {field.value
+                      ? (statusOptions.find((opt) => opt.value === field.value)?.title || field.value)
+                      : "Pilih status event"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[--radix-popover-trigger-width] p-0 rounded-xl"
+                  align="start"
+                >
+                  <Command className="rounded-xl">
+                    <CommandList>
+                      <CommandEmpty>Status tidak ditemukan.</CommandEmpty>
+                      <CommandGroup>
+                        {statusOptions.map((opt) => (
+                          <CommandItem
+                            className="rounded-lg group flex items-center pr-2"
+                            key={opt.value}
+                            value={opt.value}
+                            onSelect={(currentValue) => {
+                              setValue("status", currentValue, { shouldValidate: true });
+                              setOpenStatus(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4 shrink-0",
+                                field.value === opt.value ? "opacity-100" : "opacity-0",
+                              )}
+                            />
+                            <span className="flex-1 truncate">{opt.title}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            )}
+          />
+        </div>
+      )}
 
       {/* Description */}
       <div className="space-y-2">

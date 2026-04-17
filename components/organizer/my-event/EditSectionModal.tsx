@@ -36,6 +36,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
             type: (event.type as any) || "public",
             category: event.category || "Umum",
             description: typeof event.description === 'string' ? event.description : "",
+            status: event.status || "draft",
 
             // Image Maps -> Embed the original backend ID in the File name so the UI knows it's an existing file
             banner_image_preview: event.images?.[0]?.image_url,
@@ -97,6 +98,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         title: data.title,
                         category: data.category,
                         description: data.description,
+                        status: data.status,
                     };
 
                     const isNewBanner = data.banner_image &&
