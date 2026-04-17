@@ -118,7 +118,23 @@ export default function OrganizerEventDetail() {
 
                             <div className="space-y-1 text-muted-foreground">
                                 {event.description
-                                    ? <TipTapViewer content={event.description} />
+                                    ? <TipTapViewer content={(() => {
+                                        const raw = event.description as any;
+                                        if (typeof raw === 'string') {
+                                            try {
+                                                const parsed = JSON.parse(raw);
+                                                if (parsed && typeof parsed.content === 'string') {
+                                                    return parsed.content;
+                                                }
+                                            } catch { /* raw string, pass through */ }
+                                            return raw;
+                                        }
+                                        if (raw && typeof raw === 'object') {
+                                            if (typeof raw.content === 'string') return raw.content;
+                                            return JSON.stringify(raw);
+                                        }
+                                        return String(raw ?? "");
+                                    })()} />
                                     : <p className="text-sm italic">No description provided.</p>
                                 }
                             </div>

@@ -35,8 +35,29 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
             title: event.title || "",
             type: (event.type as any) || "public",
             category: event.category || "Umum",
-            description: typeof event.description === 'string' ? event.description : "",
-            status: event.status || "draft",
+            description: (() => {
+                const text = event.description as any;
+                if (!text) return "";
+                if (typeof text === 'string') {
+                    try {
+                        const parsed = JSON.parse(text);
+                        if (parsed && typeof parsed.content === 'string') {
+                            return parsed.content;
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                    return text;
+                }
+                if (typeof text === 'object') {
+                    if (typeof text.content === 'string') {
+                        return text.content;
+                    }
+                    return JSON.stringify(text);
+                }
+                return String(text);
+            })(),
+            status: (event.status as any) || "draft",
 
             // Image Maps -> Embed the original backend ID in the File name so the UI knows it's an existing file
             banner_image_preview: event.images?.[0]?.image_url,
@@ -97,7 +118,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                     payloadToSubmit = {
                         title: data.title,
                         category: data.category,
-                        description: data.description,
+                        description: JSON.stringify({ content: data.description }),
                         status: data.status,
                     };
 
