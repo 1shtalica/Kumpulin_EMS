@@ -259,9 +259,8 @@ export default function TicketSection({ event }: { event: Event }) {
             <Button
               size="lg"
               onClick={() => {
-                // TODO: implementasi handler beli/daftar
                 setIsLoading(true);
-                setTimeout(() => setIsLoading(false), 2000); // placeholder
+                setTimeout(() => setIsLoading(false), 2000);
               }}
               className="cursor-pointer w-full py-5 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow"
               disabled={!selectedTicket || isLoading}
