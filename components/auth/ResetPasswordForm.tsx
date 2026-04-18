@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { AuthService } from "@/services/auth-service";
@@ -195,7 +195,11 @@ export default function ResetPasswordForm() {
             className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-lg font-bold"
             disabled={isLoading}
           >
-            {isLoading ? "Memproses..." : "Reset Password"}
+            {isLoading ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Memproses...</>
+            ) : (
+              "Reset Password"
+            )}
           </Button>
         </form>
       </CardContent>

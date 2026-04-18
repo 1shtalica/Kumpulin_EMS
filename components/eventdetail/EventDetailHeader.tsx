@@ -107,25 +107,19 @@ export default function HeaderSection() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div>
-              <Button
-                variant="light"
-                size="sm"
-                className="rounded-xl font-bold"
-                asChild
-              >
+            <>
+              <Button variant="ghost" size="sm" className="rounded-full font-bold h-9 bg-white hover:bg-slate-100 border border-slate-200 shadow-sm" asChild>
                 <Link href="/login">Masuk</Link>
               </Button>
-
               <Button
                 variant="brand"
                 size="sm"
                 asChild
-                className="hidden rounded-xl md:inline-flex font-bold"
+                className="hidden md:inline-flex rounded-full font-bold h-9 shadow-[0_4px_14px_0_rgb(0,44,238,0.39)] hover:shadow-[0_6px_20px_rgba(0,44,238,0.23)] hover:-translate-y-0.5 transition-all"
               >
                 <Link href="/register">Daftar</Link>
               </Button>
-            </div>
+            </>
           )}
         </div>
       </div>

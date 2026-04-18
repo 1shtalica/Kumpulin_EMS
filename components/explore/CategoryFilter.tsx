@@ -49,7 +49,7 @@ export default function CategoryFilter() {
     } else {
       params.set("category", currentValue);
     }
-    params.delete("offset"); // Reset paginasi setiap filter ganti.
+    params.delete("offset");
     router.push(`?${params.toString()}`, { scroll: false });
     setOpen(false);
   };

@@ -470,7 +470,7 @@ export default function EventScheduleStep({
               type="button"
               onClick={() => setValue("is_online", true)}
               className={cn(
-                "relative z-10 flex flex-1 items-center justify-center py-2.5 text-sm font-semibold transition-colors duration-200",
+                "relative z-10 flex flex-1 items-center justify-center py-2.5 text-sm font-semibold transition-colors duration-200 cursor-pointer",
                 is_online ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -481,7 +481,7 @@ export default function EventScheduleStep({
               type="button"
               onClick={() => setValue("is_online", false)}
               className={cn(
-                "relative z-10 flex flex-1 items-center justify-center py-2.5 text-sm font-semibold transition-colors duration-200",
+                "relative z-10 flex flex-1 items-center justify-center py-2.5 text-sm font-semibold transition-colors duration-200 cursor-pointer",
                 !is_online ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >

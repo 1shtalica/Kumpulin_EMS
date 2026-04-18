@@ -5,6 +5,7 @@ import { EventService } from "@/services/event-service";
 import type { OrganizerEventCard as OrganizerEventCardType } from "@/types/event";
 import OrganizerEventCard from "./OrganizerEventCard";
 import EmptyState from "@/components/reusable/EmptyState";
+import { SkeletonOrganizerEvents } from "@/components/reusable/SkeletonElements";
 import { CalendarX, Loader2, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -71,14 +72,7 @@ export default function OrganizerEventsList() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100/80 shadow-[0_2px_10px_rgba(0,0,0,0.02)] min-h-[300px]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground font-medium animate-pulse text-sm">
-          Loading events...
-        </p>
-      </div>
-    );
+    return <SkeletonOrganizerEvents layout={layout as "list" | "grid"} />;
   }
 
   if (!loading && events.length === 0 && offset === 0) {
@@ -100,7 +94,7 @@ export default function OrganizerEventsList() {
   return (
     <div className="flex flex-col gap-5">
       {/* Event list */}
-      <div className={layout === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5" : "flex flex-col gap-5"}>
+      <div className={layout === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" : "flex flex-col gap-5"}>
         {events.map((event) => (
           <OrganizerEventCard key={event.id || event.event_id} event={event} layout={layout as "list" | "grid"} />
         ))}

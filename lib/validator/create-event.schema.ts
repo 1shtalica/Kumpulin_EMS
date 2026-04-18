@@ -15,7 +15,7 @@ export const createEventSchema = combinedSchema.superRefine((data, ctx) => {
       ctx.addIssue({
         code: "custom",
         input: data,
-        message: `Tanggal buka tiket tidak boleh sebelum pendaftaran acara dibuka (${start_registration_date.toLocaleDateString("id-ID")})`,
+        message: `Tanggal buka tiket tidak boleh sebelum pendaftaran acara dibuka (${start_registration_date.toLocaleString("id-ID", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })})`,
         path: ["tickets", index, "start_date_time"],
       });
     }
@@ -24,7 +24,7 @@ export const createEventSchema = combinedSchema.superRefine((data, ctx) => {
       ctx.addIssue({
         code: "custom",
         input: data,
-        message: `Tanggal tutup tiket tidak boleh setelah pendaftaran acara ditutup (${end_registration_date.toLocaleDateString("id-ID")})`,
+        message: `Tanggal tutup tiket tidak boleh setelah pendaftaran acara ditutup (${end_registration_date.toLocaleString("id-ID", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })})`,
         path: ["tickets", index, "end_date_time"],
       });
     }

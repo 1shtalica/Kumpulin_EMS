@@ -72,7 +72,7 @@ export default function MyEventFilter() {
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="relative w-full shadow-sm">
+        <div className="relative w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 h-4 w-4" />
           <Input
             type="text"

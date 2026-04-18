@@ -13,7 +13,7 @@ export const useViewPreferenceStore = create<ViewPreferenceState>()(
       setLayout: (layout) => set({ layout }),
     }),
     {
-      name: "view-preference-storage", // name of the item in local storage
+      name: "view-preference-storage",
     }
   )
 );

@@ -86,7 +86,7 @@ export default function ImageSection({ event }: { event: Event }) {
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-12">
               <Carousel
-                className="w-full"
+                className="w-full overflow-hidden rounded-2xl"
                 plugins={[
                   Autoplay({
                     delay: 4000,
@@ -102,7 +102,7 @@ export default function ImageSection({ event }: { event: Event }) {
                       {/* ⭐ Responsive height dengan max-height */}
 
                       <div
-                        className="relative w-full rounded-2xl overflow-hidden ring-1 ring-black/5 
+                        className="relative w-full 
                                       h-50 
                                       sm:h-75 
                                       md:h-100 

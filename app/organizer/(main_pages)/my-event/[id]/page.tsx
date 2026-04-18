@@ -172,7 +172,7 @@ export default async function OrganizerEventDetail({ params }: { params: Promise
                             <div className="space-y-4">
                                 {event.rundowns.map((r, i) => (
                                     <div key={r.id || i} className="flex gap-4 p-4 border border-border rounded-2xl hover:bg-slate-50 transition-colors">
-                                        <div className="flex flex-col items-center justify-center px-4 py-2 bg-primary/10 text-primary rounded-xl shrink-0 h-fit min-w-[100px]">
+                                        <div className="flex flex-col items-center justify-center px-4 py-2 bg-primary/10 text-primary rounded-xl shrink-0 h-fit min-w-25">
                                             <span className="text-sm font-bold">{r.start_time}</span>
                                             <span className="text-xs font-semibold opacity-70">to</span>
                                             <span className="text-sm font-bold">{r.end_time}</span>

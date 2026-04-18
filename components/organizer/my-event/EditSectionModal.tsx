@@ -5,7 +5,7 @@ import {
     Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetFooter
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { BEEventResponse } from "@/types/event";
 import type { ReactNode } from "react";
@@ -370,7 +370,11 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={isLoading} className="rounded-full m-0 bg-primary hover:bg-primary-hover shadow-md text-white">
-                                {isLoading ? "Saving..." : "Save Changes"}
+                                {isLoading ? (
+                                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                                ) : (
+                                  "Save Changes"
+                                )}
                             </Button>
                         </SheetFooter>
                     </form>

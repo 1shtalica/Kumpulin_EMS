@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Clock, Eye, Copy } from "lucide-react";
+import { Calendar, Clock, Eye, Copy, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import type { OrganizerEventCard as OrganizerEventCardType } from "@/types/event";
 import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
@@ -37,17 +38,9 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
     const isGrid = layout === "grid";
 
     return (
-        <div className={`flex bg-card relative text-card-foreground border border-border rounded-[16px] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group h-full ${isGrid ? "flex-col" : "flex-col sm:flex-row"}`}>
-            {/* Very subtle elegant geometric line pattern overlay */}
-            <div
-                className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"
-                style={{
-                    backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)',
-                    backgroundSize: '24px 24px'
-                }}
-            />
+        <div className={`flex bg-card relative text-card-foreground border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group h-full ${isGrid ? "flex-col" : "flex-col sm:flex-row"}`}>
             {/* Left side/Top side: Image */}
-            <div className={`relative shrink-0 bg-transparent flex justify-center items-center z-10 overflow-hidden ${isGrid ? "m-3 rounded-[12px] w-[calc(100%-24px)] h-48" : "m-3 sm:m-4 sm:mr-0 rounded-[12px] w-[calc(100%-24px)] sm:w-[280px] h-48 sm:min-h-[220px]"}`}>
+            <div className={`relative shrink-0 bg-transparent flex justify-center items-center z-10 overflow-hidden ${isGrid ? "m-3 rounded-[12px] w-[calc(100%-24px)] h-48" : "m-3 sm:m-4 sm:mr-0 rounded-[12px] w-[calc(100%-24px)] sm:w-70 h-48 sm:min-h-55"}`}>
                 {event.image_url ? (
                     <Image
                         src={event.image_url}
@@ -56,21 +49,21 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
                         className="object-cover"
                     />
                 ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/5 via-background to-secondary/30 flex justify-center items-center relative drop-shadow-sm">
-                        <Image
-                            src="/logo.png"
-                            alt="Event Cover"
-                            width={96}
-                            height={96}
-                            className="object-contain opacity-70"
-                            unoptimized
-                        />
-                    </div>
+                    <div className="w-full h-full bg-linear-to-br from-primary/5 via-background to-secondary/30 flex justify-center items-center relative drop-shadow-sm">
+                            <Image
+                                src="/logo.png"
+                                alt="Event Cover"
+                                width={96}
+                                height={96}
+                                className="object-contain opacity-70"
+                                unoptimized
+                            />
+                        </div>
                 )}
             </div>
 
             {/* Right side/Bottom side: Content */}
-            <div className={`flex flex-col flex-1 z-10 relative bg-card justify-between gap-4 ${isGrid ? "p-5 pt-2" : "p-5 sm:p-6"}`}>
+            <div className={`flex flex-col flex-1 z-10 relative bg-card justify-between gap-4 ${isGrid ? "p-5 pt-2" : "p-5 pt-2 sm:p-6"}`}>
                 {/* Top-Right Badge */}
                 <div className="absolute top-5 right-5 z-20">
                     <Badge
@@ -85,7 +78,7 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
                 </div>
 
                 {/* Top: Category and Title */}
-                <div className="space-y-1.5 mt-2 md:mt-0 pr-20">
+                <div className="space-y-1.5 mt-2 md:mt-0 pr-16 sm:pr-20">
                     <span className="text-muted-foreground/60 font-medium text-[11px] uppercase tracking-widest inline-block">
                         {event.type || "Event"}
                     </span>
@@ -113,11 +106,7 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
                     </div>
                 </div>
 
-                <div className="w-full h-px bg-border my-1" />
-
-                {/* Bottom: Stats and Actions */}
-                <div className={`flex justify-between gap-4 flex-col sm:flex-row sm:items-end mt-auto ${!isGrid && "w-full"}`}>
-                    <div className="flex gap-10">
+                <div className="flex gap-10">
                         <div className="flex flex-col">
                             <span className="text-[15px] font-semibold text-foreground/90 leading-tight">
                                 {event.total_sold}/{event.max_capacity}
@@ -136,29 +125,49 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
                         </div>
                     </div>
 
-                    <div className={`flex items-center gap-2 mt-2 sm:mt-0 w-full sm:w-auto`}>
+                <Separator />
+
+                {/* Bottom: Stats and Actions */}
+                    <div className="flex items-center justify-end gap-2 w-full">
+                        {/* Duplikat — selalu icon only */}
                         <Button
                             variant="outline"
                             size="icon"
                             asChild
                             title="Duplikat Event"
-                            className="h-[34px] w-[34px] shrink-0 rounded-full border-border shadow-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+                            className="h-8.5 w-8.5 shrink-0 rounded-full border-border shadow-sm text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
                         >
                             <Link href={`/organizer/create-event?duplicateId=${event.id}`}>
                                 <Copy className="w-4 h-4" />
                             </Link>
                         </Button>
+                        {/* Edit — icon di mobile, icon+teks di lg+ */}
                         <Button
+                            variant="outline"
+                            size="icon"
                             asChild
-                            className={`h-[34px] font-semibold bg-primary hover:bg-primary/90 text-white rounded-full shadow-md transition-all flex-1 sm:w-auto justify-center px-4`}
+                            title="Edit Event"
+                            className="h-8.5 w-8.5 px-0 lg:w-auto lg:px-4 shrink-0 rounded-full border border-primary shadow-sm text-primary hover:text-primary hover:bg-primary/5 transition-all"
                         >
-                            <Link href={`/organizer/my-event/${event.id}`}>
-                                <Eye className="w-4 h-4 mr-1.5 stroke-[1.5]" />
-                                Lihat
+                            <Link href={`/organizer/my-event/${event.id || event.event_id}`}>
+                                <Pencil className="w-4 h-4 lg:mr-1.5" />
+                                <span className="hidden lg:inline">Edit</span>
+                            </Link>
+                        </Button>
+                        {/* Lihat — icon di mobile, icon+teks di lg+ */}
+                        <Button
+                            size="icon"
+                            asChild
+                            title="Lihat Event"
+                            className="h-8.5 w-8.5 px-0 lg:w-auto lg:px-4 shrink-0 font-semibold bg-primary hover:bg-primary/90 text-white rounded-full shadow-sm transition-all"
+                        >
+                            <Link href={`/events/${event.slug}`}>
+                                <Eye className="w-4 h-4 stroke-[1.5] lg:mr-1.5" />
+                                <span className="hidden lg:inline">Lihat</span>
                             </Link>
                         </Button>
                     </div>
-                </div>
+                
             </div>
         </div>
     );

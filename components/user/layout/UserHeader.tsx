@@ -40,7 +40,7 @@ export default function UserHeader({ className }: UserHeaderProps) {
 
       {/* Avatar — tanpa dropdown, klik ke profile */}
       <Avatar>
-        <AvatarImage src={user?.avatar ?? undefined} />
+        <AvatarImage src={user?.profile_url ?? undefined} />
         <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
       </Avatar>
     </header>

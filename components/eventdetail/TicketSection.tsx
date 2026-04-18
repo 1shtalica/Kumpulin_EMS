@@ -10,6 +10,7 @@ import {
   Facebook,
   Twitter,
   Link as LinkIcon,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,7 @@ export default function TicketSection({ event }: { event: Event }) {
     availableTicket?.id || null,
   );
   const [qty, setQty] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Cari data tiket yang sedang dipilih
   const selectedTicket = effectiveTickets.find(
@@ -256,10 +258,19 @@ export default function TicketSection({ event }: { event: Event }) {
 
             <Button
               size="lg"
+              onClick={() => {
+                // TODO: implementasi handler beli/daftar
+                setIsLoading(true);
+                setTimeout(() => setIsLoading(false), 2000); // placeholder
+              }}
               className="cursor-pointer w-full py-5 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow"
-              disabled={!selectedTicket}
+              disabled={!selectedTicket || isLoading}
             >
-              {totalPrice === 0 ? "Daftar Sekarang" : "Beli Tiket"}
+              {isLoading ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Memproses...</>
+              ) : (
+                totalPrice === 0 ? "Daftar Sekarang" : "Beli Tiket"
+              )}
             </Button>
           </div>
 
