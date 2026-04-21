@@ -11,8 +11,10 @@ import {
   Copy,
   Check,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDebouncedCallback } from "use-debounce";
 
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
@@ -25,6 +27,9 @@ import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 import { EditSectionModal } from "@/components/organizer/my-event/EditSectionModal";
 import TipTapViewer from "@/components/reusable/TipTapViewer";
+import { UserService } from "@/services/user-service";
+import { toast } from "sonner";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface DetailSectionProps {
   event: Event;
@@ -80,6 +85,50 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     }
+  };
+
+  const { user } = useAuthStore();
+  const [hasFollowed, setHasFollowed] = useState(false);
+  const [isLoadingFollow, setIsLoadingFollow] = useState(false);
+
+  useEffect(() => {
+    if (user && event.organizer?.id) {
+      const fetchFollowStatus = async () => {
+        try {
+          const res = await UserService.getFollowStatus(event.organizer.id.toString());
+          if (res.data?.is_follow) {
+            setHasFollowed(true);
+          }
+        } catch (err) {
+          console.error("Failed to fetch follow status", err);
+        }
+      };
+      fetchFollowStatus();
+    }
+  }, [user, event.organizer?.id]);
+
+  const debouncedFollowToggle = useDebouncedCallback(async () => {
+    try {
+      if (hasFollowed) {
+        await UserService.unfollowOrganizer(event.organizer.id.toString());
+        toast.success("Berhasil berhenti mengikuti organizer");
+        setHasFollowed(false);
+      } else {
+        await UserService.followOrganizer(event.organizer.id.toString());
+        toast.success("Berhasil mengikuti organizer");
+        setHasFollowed(true);
+      }
+    } catch (err) {
+      toast.error(hasFollowed ? "Gagal berhenti mengikuti organizer" : "Gagal mengikuti organizer");
+    } finally {
+      setIsLoadingFollow(false);
+    }
+  }, 500);
+
+  const handleFollowToggle = () => {
+    if (isLoadingFollow) return;
+    setIsLoadingFollow(true);
+    debouncedFollowToggle();
   };
 
   return (
@@ -234,11 +283,25 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
               </div>
 
               {/* Kanan: Tombol Aksi */}
-              <Button variant="default" size="sm" asChild className="rounded-full px-6">
-                <Link href="#">
+              <Button
+                variant={hasFollowed ? "outline" : "default"}
+                size="sm"
+                className="rounded-full px-6"
+                onClick={handleFollowToggle}
+                disabled={isLoadingFollow}
+              >
+                {isLoadingFollow ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : hasFollowed ? (
+                  <Check size={14} />
+                ) : (
                   <Plus size={14} className="" />
-                  Ikuti
-                </Link>
+                )}
+                {isLoadingFollow
+                  ? "Loading..."
+                  : hasFollowed
+                  ? "Unfollow"
+                  : "Follow"}
               </Button>
             </div>
           )}
