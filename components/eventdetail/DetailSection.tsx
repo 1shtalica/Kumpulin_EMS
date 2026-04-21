@@ -76,18 +76,21 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
     }
   };
 
-  // Parsing description: BE mengirim JSON string TipTap
+  // Parsing description: Asumsikan data berasal dari Backend (datatypes.JSON) yang menghasilkan Object
   const descriptionContent = (() => {
     if (!event.description) return "";
-    if (typeof event.description === "string") {
-      try {
-        const parsed = JSON.parse(event.description);
-        if (parsed && typeof parsed.content === "string") return parsed.content;
-      } catch {
-        // bukan JSON valid, kembalikan as-is
+
+    // Karena BE Kumpulin_EMS menggunakan datatypes.JSON, event.description adalah Object
+    if (typeof event.description === "object") {
+      const descObj = event.description as any;
+      if (descObj && typeof descObj.content === "string") {
+        return descObj.content;
       }
-      return event.description;
+      // Jika berupa TipTap AST object utuh
+      return JSON.stringify(descObj);
     }
+
+    // Jika kebetulan string (fallback)
     return String(event.description);
   })();
 
