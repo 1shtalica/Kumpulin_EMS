@@ -1,14 +1,22 @@
 import axiosClient from "@/lib/axios-client";
 import { CreateEventFormState } from "@/types/create-event";
 import type {
-  Event, EventsResponse, EventResponse, GetEventsParams,
-  GetOrganizerEventsParams, HomeEventCard, OrganizerEventCard,
-  PatchTicketsPayload, PatchRundownsPayload, PatchEventLocationPayload
+  Event,
+  EventResponse,
+  GetEventsParams,
+  GetOrganizerEventsParams,
+  HomeEventCard,
+  OrganizerEventCard,
+  PatchTicketsPayload,
+  PatchRundownsPayload,
+  PatchEventLocationPayload,
+  BEEventResponse,
 } from "@/types/event";
 
 export const EventService = {
-
-  async getEvents(params: GetEventsParams = {}): Promise<{ data: HomeEventCard[]; total: number }> {
+  async getEvents(
+    params: GetEventsParams = {},
+  ): Promise<{ data: HomeEventCard[]; total: number }> {
     const { offset = 0, limit = 12, type = "", q = "" } = params;
 
     try {
@@ -22,13 +30,14 @@ export const EventService = {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/events?${urlParams.toString()}`,
-        { cache: 'no-store' }
+        { cache: "no-store" },
       );
 
       const json = await response.json();
 
       const data = json.data || [];
-      const estimatedTotal = data.length === limit ? offset + limit + 1 : offset + data.length;
+      const estimatedTotal =
+        data.length === limit ? offset + limit + 1 : offset + data.length;
 
       return {
         data: data,
@@ -43,7 +52,7 @@ export const EventService = {
   async getEventById(id: string): Promise<Event> {
     try {
       const response = await axiosClient.get<EventResponse>(`/events/${id}`);
-      console.log("getting data")
+      console.log("getting data");
       return response.data.data;
     } catch (error) {
       console.error(`Failed to fetch event ${id}:`, error);
@@ -61,9 +70,10 @@ export const EventService = {
     }
   },
 
-  async getEventByIdFull(id: string): Promise<import('@/types/event').BEEventResponse | null> {
+  async getEventByIdFull(id: string): Promise<BEEventResponse | null> {
     try {
-      const response = await axiosClient.get<{ data: import('@/types/event').BEEventResponse }>(`/events/${id}`);
+      const response = await axiosClient.get<{ data: BEEventResponse; message: string; success: boolean }>(`organizer/events/${id}`);
+      console.log(response);
       return response.data.data;
     } catch (error) {
       console.error(`Failed to fetch full event details for ${id}:`, error);
@@ -73,20 +83,26 @@ export const EventService = {
 
   async CreateEvent(data: CreateEventFormState): Promise<EventResponse> {
     try {
-      console.log("data -> ", data)
+      console.log("data -> ", data);
       const formData = new FormData();
 
       // Add scalar fields
       formData.append("type", data.type || "");
       formData.append("title", data.title);
       formData.append("category", data.category);
-      formData.append("description", JSON.stringify({ content: data.description }));
+      formData.append(
+        "description",
+        JSON.stringify({ content: data.description }),
+      );
       formData.append("max_capacity", String(data.max_capacity));
       formData.append("is_online", String(data.is_online));
       formData.append("status", "draft");
 
       if (data.max_ticket_per_user !== undefined) {
-        formData.append("max_ticket_per_user", String(data.max_ticket_per_user));
+        formData.append(
+          "max_ticket_per_user",
+          String(data.max_ticket_per_user),
+        );
       }
       if (data.meeting_url) {
         formData.append("meeting_url", data.meeting_url);
@@ -103,27 +119,40 @@ export const EventService = {
       }
 
       if (data.event_start_date) {
-        formData.append("event_start_date", data.event_start_date.toISOString());
+        formData.append(
+          "event_start_date",
+          data.event_start_date.toISOString(),
+        );
       }
       if (data.event_end_date) {
         formData.append("event_end_date", data.event_end_date.toISOString());
       }
       if (data.start_registration_date) {
-        formData.append("start_registration_date", data.start_registration_date.toISOString());
+        formData.append(
+          "start_registration_date",
+          data.start_registration_date.toISOString(),
+        );
       }
       if (data.end_registration_date) {
-        formData.append("end_registration_date", data.end_registration_date.toISOString());
+        formData.append(
+          "end_registration_date",
+          data.end_registration_date.toISOString(),
+        );
       }
 
       formData.append("tickets", JSON.stringify(data.tickets));
       formData.append("rundowns", JSON.stringify(data.rundowns));
       formData.append("address", JSON.stringify(data.address));
 
-      const response = await axiosClient.post<EventResponse>("/events", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const response = await axiosClient.post<EventResponse>(
+        "/events",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
+      );
       return response.data;
     } catch (error) {
       console.error("Failed to create event:", error);
@@ -133,7 +162,9 @@ export const EventService = {
 
   async getRandomEvents(): Promise<HomeEventCard[]> {
     try {
-      const json = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/random`);
+      const json = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/events/random`,
+      );
       const data = await json.json();
       return data.data || [];
     } catch (error) {
@@ -152,10 +183,13 @@ export const EventService = {
     }
   },
 
-  async updateEventTickets(id: string, data: Partial<CreateEventFormState>): Promise<void> {
+  async updateEventTickets(
+    id: string,
+    data: Partial<CreateEventFormState>,
+  ): Promise<void> {
     try {
       await axiosClient.patch(`/events/${id}/tickets`, {
-        tickets: data.tickets
+        tickets: data.tickets,
       });
     } catch (error) {
       console.error("Failed to update event tickets:", error);
@@ -189,18 +223,28 @@ export const EventService = {
       throw error;
     }
   },
-  async getOrganizerEvents(params: GetOrganizerEventsParams = {}): Promise<{ data: OrganizerEventCard[]; total: number }> {
+  async getOrganizerEvents(
+    params: GetOrganizerEventsParams = {},
+  ): Promise<{ data: OrganizerEventCard[]; total: number }> {
     try {
       const searchParams = new URLSearchParams();
       if (params.q) searchParams.set("q", params.q);
-      if (params.status && params.status !== "all") searchParams.set("status", params.status);
-      if (params.limit !== undefined) searchParams.set("limit", String(params.limit));
-      if (params.offset !== undefined) searchParams.set("offset", String(params.offset));
+      if (params.status && params.status !== "all")
+        searchParams.set("status", params.status);
+      if (params.limit !== undefined)
+        searchParams.set("limit", String(params.limit));
+      if (params.offset !== undefined)
+        searchParams.set("offset", String(params.offset));
 
       const queryString = searchParams.toString();
-      const url = queryString ? `/organizer/events?${queryString}` : "/organizer/events";
+      const url = queryString
+        ? `/organizer/events?${queryString}`
+        : "/organizer/events";
 
-      const response = await axiosClient.get<{ data: OrganizerEventCard[]; total: number }>(url);
+      const response = await axiosClient.get<{
+        data: OrganizerEventCard[];
+        total: number;
+      }>(url);
       return {
         data: response.data.data ?? [],
         total: response.data.total ?? 0,
@@ -216,43 +260,74 @@ export const EventService = {
    * Sends a diff payload: added / updated / deleted_ids buckets.
    * All IDs are UUIDs. Full transaction — all-or-nothing on the backend.
    */
-  async updateOrganizerTickets(eventId: string, payload: PatchTicketsPayload): Promise<void> {
+  async updateOrganizerTickets(
+    eventId: string,
+    payload: PatchTicketsPayload,
+  ): Promise<void> {
     try {
       await axiosClient.patch(`/organizer/events/${eventId}/tickets`, {
-        actions: payload
+        actions: payload,
       });
     } catch (error: any) {
       console.error("Failed to update tickets:", error);
-      const msg = error?.response?.data?.message || error?.message || "Gagal menyimpan perubahan tiket";
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Gagal menyimpan perubahan tiket";
       throw new Error(msg);
     }
   },
 
   /**
    * PATCH /api/v1/organizer/events/:id/rundowns
-  * Sends a diff payload: added / updated / deleted_ids buckets.
+   * Sends a diff payload: added / updated / deleted_ids buckets.
    * Times are plain "HH:mm" strings (NOT ISO datetime). All IDs are UUIDs.
    * Deleting a non-existent ID is silently skipped by the backend.
    */
-  async updateOrganizerRundowns(eventId: string, payload: PatchRundownsPayload): Promise<void> {
+  async updateOrganizerRundowns(
+    eventId: string,
+    payload: PatchRundownsPayload,
+  ): Promise<void> {
     try {
       await axiosClient.patch(`/organizer/events/${eventId}/rundowns`, {
-        actions: payload
+        actions: payload,
       });
     } catch (error: any) {
       console.error("Failed to update rundowns:", error);
-      const msg = error?.response?.data?.message || error?.message || "Gagal menyimpan perubahan rundown";
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Gagal menyimpan perubahan rundown";
       throw new Error(msg);
     }
   },
 
-  async updateEventLocation(eventId: string, payload: PatchEventLocationPayload): Promise<void> {
+  async updateEventLocation(
+    eventId: string,
+    payload: PatchEventLocationPayload,
+  ): Promise<void> {
     try {
       await axiosClient.patch(`/organizer/events/${eventId}/address`, payload);
     } catch (error: any) {
       console.error("Failed to update location:", error);
-      const msg = error?.response?.data?.message || error?.message || "Gagal menyimpan perubahan lokasi";
+      const msg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Gagal menyimpan perubahan lokasi";
       throw new Error(msg);
     }
-  }
+  },
+
+  async updateEventCore(
+    eventId: string,
+    payload: { title: string; category: string; description: any; status?: string }
+  ): Promise<void> {
+    try {
+      await axiosClient.patch(`/organizer/events/${eventId}/core`, payload);
+    } catch (error: any) {
+      console.error("Failed to update core info:", error);
+      const msg = error?.response?.data?.message || error?.message || "Gagal menyimpan info utama event";
+      throw new Error(msg);
+    }
+  },
 };

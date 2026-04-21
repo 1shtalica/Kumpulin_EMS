@@ -5,8 +5,8 @@ import { Event } from "@/types/event";
 
 async function getEvent(slug: string): Promise<Event | null> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/${slug}`, { 
-      cache: "no-store" 
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/${slug}`, {
+      cache: "no-store"
     });
     if (!res.ok) return null;
     const json = await res.json();
@@ -28,7 +28,7 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
   return (
     <>
       <EventDetailHeader />
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen bg-slate-50">
         <EventDetailContent event={event} />
       </main>
     </>

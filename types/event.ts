@@ -39,9 +39,7 @@ export interface Event {
     province: string;
     city: string;
     raw_address: string;
-    postal_code?: string;
-    latitude?: number;
-    longitude?: number;
+    maps_url: string;
   };
   event_rundowns: {
     id: string | number;
@@ -78,7 +76,8 @@ export interface BEEventResponse {
   event_id: string;
   title: string;
   slug: string;
-  description: Record<string, unknown>; // JSON object dari BE, misal: { content: "<p>...</p>" }
+  description: string; // JSON-encoded TipTap doc string from BE, e.g. '{"type":"doc","content":[...]}'
+  category: string;
   type: string;
   status: string;
   max_capacity: number;
@@ -99,6 +98,7 @@ export interface BEEventResponse {
     postal_code: string;
     latitude: number;
     longitude: number;
+    maps_url: string;
   };
   rundowns?: {
     id?: string;

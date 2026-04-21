@@ -108,8 +108,8 @@ export default function TicketSection({ event }: { event: Event }) {
   return (
     <section className="w-full flex flex-col items-center justify-between relative z-20">
       <div className="w-full h-fit p-6 bg-white shadow-xs border-slate-200 rounded-3xl sticky top-24">
-        <div className="flex flex-col gap-6">
-          <h3 className="font-bold text-lg text-accent">Pilih Tiket</h3>
+        <div className="flex flex-col gap-4">
+          <h3 className="text-base font-bold text-accent">Pilih Tiket</h3>
 
           {/* --- LIST TIKET --- */}
           <div className="flex flex-col gap-4">
@@ -123,7 +123,7 @@ export default function TicketSection({ event }: { event: Event }) {
                   key={ticket.id}
                   onClick={() => handleSelectTicket(ticket.id, isSoldOut)}
                   className={cn(
-                    "relative p-4 border rounded-3xl cursor-pointer transition-all duration-200",
+                    "relative p-3 border rounded-2xl cursor-pointer transition-all duration-200",
                     isSoldOut &&
                       "opacity-60 cursor-not-allowed bg-muted/10 border-border",
                     isSelected &&
@@ -138,7 +138,7 @@ export default function TicketSection({ event }: { event: Event }) {
                   <div className="flex justify-between items-start mb-1">
                     <h4
                       className={cn(
-                        "font-bold text-base",
+                        "font-semibold text-sm",
                         isSelected ? "text-primary" : "text-slate-700",
                       )}
                     >
@@ -155,7 +155,7 @@ export default function TicketSection({ event }: { event: Event }) {
                   <div className="flex items-center gap-2 mb-1">
                     <p
                       className={cn(
-                        "font-bold text-lg",
+                        "font-bold text-base",
                         isSelected ? "text-primary" : "text-primary",
                       )}
                     >
@@ -197,7 +197,7 @@ export default function TicketSection({ event }: { event: Event }) {
           {/* --- COUNTER JUMLAH (Hanya muncul jika ada tiket dipilih) --- */}
           {selectedTicket && (
             <>
-              <div className="p-4 bg-primary-light rounded-xl flex items-center justify-between">
+              <div className="p-3 bg-primary-light rounded-xl flex items-center justify-between">
                 <span className="font-medium text-sm text-accent">Jumlah Tiket</span>
                 <div className="flex items-center gap-3 bg-white px-2 py-1 rounded-3xl border-slate-200">
                   <button
@@ -250,8 +250,8 @@ export default function TicketSection({ event }: { event: Event }) {
           {/* --- TOTAL & TOMBOL BELI --- */}
           <div className="flex flex-col gap-4">
             <div className="flex justify-between items-end">
-              <span className="text-accent text-xl font-bold">Total</span>
-              <span className="font-bold text-2xl text-primary">
+              <span className="text-accent text-sm font-semibold">Total</span>
+              <span className="font-bold text-xl text-primary">
                 {selectedTicket ? formatRupiah(totalPrice) : "Rp 0"}
               </span>
             </div>

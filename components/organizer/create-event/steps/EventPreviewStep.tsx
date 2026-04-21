@@ -147,7 +147,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                         )}
                         {idx !== 0 && (
                           <div className="absolute top-4 right-4 text-white z-10">
-                             <div className="inline-flex items-center rounded-full bg-black/40 backdrop-blur-md px-3 py-1 text-xs font-medium text-white ring-1 ring-white/20">
+                            <div className="inline-flex items-center rounded-full bg-black/40 backdrop-blur-md px-3 py-1 text-xs font-medium text-white ring-1 ring-white/20">
                               Poster {idx}
                             </div>
                           </div>
@@ -156,7 +156,7 @@ export default function EventPreviewStep(props: EventPreviewStepProps) {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                
+
                 {previewImages.length > 1 && (
                   <>
                     <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover/carousel:opacity-100 transition-opacity bg-white/20 hover:bg-white/40 text-white border-0 backdrop-blur-md" />

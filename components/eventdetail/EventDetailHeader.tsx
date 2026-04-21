@@ -40,7 +40,7 @@ export default function HeaderSection() {
     <nav
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out py-4",
-        "bg-white/80 backdrop-blur-md border-b border-slate-200/50",
+        "bg-slate-50/80 backdrop-blur-md border-b border-slate-200/50",
         isScrolled ? "shadow-md" : "shadow-xs",
       )}
     >
@@ -50,9 +50,9 @@ export default function HeaderSection() {
           <button
             type="button"
             onClick={() => router.refresh()}
-            className="flex items-center gap-2 text-2xl group cursor-pointer focus-visible:outline-none"
+            className="flex items-center gap-2 text-xl group cursor-pointer focus-visible:outline-none"
           >
-            <span className="text-3xl transition-transform group-hover:rotate-12">
+            <span className="text-2xl transition-transform group-hover:rotate-12">
               🎉
             </span>
             <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">

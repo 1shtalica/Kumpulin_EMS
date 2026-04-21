@@ -71,6 +71,7 @@ export const step2Schema = z.object({
     .min(1, { error: "Minimal 1 poster wajib diupload" })
     .max(5, { error: "Maksimal 5 poster" }),
   image_previews: z.array(z.string()).optional(),
+  status: z.enum(["draft", "published", "registration closed", "ongoing", "finished", "archived", "cancelled"]).optional(),
 });
 
 // 🌟 Step 3: Jadwal & Lokasi

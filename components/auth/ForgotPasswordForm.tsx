@@ -49,7 +49,7 @@ export default function ForgotPasswordForm() {
     try {
       await AuthService.forgotPassword(data.email);
       toast.success("Email terkirim!", { id: toastId });
-      
+
       setSubmittedEmail(data.email);
       setIsSubmitted(true);
       setTimer(60); // Start timer after initial success
@@ -59,7 +59,7 @@ export default function ForgotPasswordForm() {
         axiosError.response?.data?.message ||
         "Gagal mengirim email. Coba lagi.";
       toast.error("Pengiriman gagal", { id: toastId });
-      
+
       setError("root", {
         type: "manual",
         message: errorMessage,
@@ -71,12 +71,12 @@ export default function ForgotPasswordForm() {
 
   const handleResend = async () => {
     if (timer > 0) return;
-    
+
     setIsLoading(true);
     const toastId = toast.loading("Mengirim ulang email...");
     try {
       await AuthService.forgotPassword(submittedEmail);
-      
+
       toast.success("Email terkirim ulang!", { id: toastId });
       setTimer(60); // Reset timer on successful resend
     } catch (error: any) {
@@ -84,7 +84,7 @@ export default function ForgotPasswordForm() {
       const errorMessage =
         axiosError.response?.data?.message ||
         "Gagal mengirim ulang email.";
-      
+
       toast.error(errorMessage, { id: toastId });
     } finally {
       setIsLoading(false);
@@ -103,7 +103,7 @@ export default function ForgotPasswordForm() {
           </h1>
           <CardTitle className="font-semibold text-xl sm:text-2xl text-accent">Lupa Password</CardTitle>
           <CardDescription className="text-sm text-muted">
-            {!isSubmitted 
+            {!isSubmitted
               ? "Masukkan email Anda untuk reset password"
               : "Kami telah mengirim link reset password"
             }
@@ -148,7 +148,7 @@ export default function ForgotPasswordForm() {
                   <CheckCircle className="h-12 w-12 text-secondary" />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <p className="text-sm">
                   Link reset password telah dikirim ke:

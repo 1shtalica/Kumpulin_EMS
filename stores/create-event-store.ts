@@ -340,15 +340,15 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
         ...initialFormData,
         title: `${event.title} (Copy)`,
         type: (event.type as EventType) || "public",
-        category: "Umum",
+        category: event.category || "Umum",
         description: typeof event.description?.content === 'string' ? event.description.content : "",
-        
+
         // Explicitly clear all dates
         event_start_date: undefined,
         event_end_date: undefined,
         start_registration_date: undefined,
         end_registration_date: undefined,
-        
+
         // Images are intentionally left empty for the user to re-upload.
         banner_image: null,
         banner_image_preview: "",
@@ -372,7 +372,7 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
           city: event.address.city || "",
           province: event.address.province || "",
           postal_code: event.address.postal_code || "",
-          location_url: "",
+          location_url: event.address.maps_url || "",
         } : initialFormData.address,
 
         max_capacity: event.max_capacity || 1,

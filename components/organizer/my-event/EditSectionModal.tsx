@@ -24,7 +24,6 @@ interface EditModalProps {
 }
 
 export function EditSectionModal({ event, section }: EditModalProps): ReactNode {
-
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -35,8 +34,30 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
         defaultValues: {
             title: event.title || "",
             type: (event.type as any) || "public",
-            category: "Umum", // Fallback (BEEventResponse doesn't have it explicitly right now)
-            description: typeof event.description?.content === 'string' ? event.description.content : "",
+            category: event.category || "Umum",
+            description: (() => {
+                const text = event.description as any;
+                if (!text) return "";
+                if (typeof text === 'string') {
+                    try {
+                        const parsed = JSON.parse(text);
+                        if (parsed && typeof parsed.content === 'string') {
+                            return parsed.content;
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                    return text;
+                }
+                if (typeof text === 'object') {
+                    if (typeof text.content === 'string') {
+                        return text.content;
+                    }
+                    return JSON.stringify(text);
+                }
+                return String(text);
+            })(),
+            status: (event.status as any) || "draft",
 
             // Image Maps -> Embed the original backend ID in the File name so the UI knows it's an existing file
             banner_image_preview: event.images?.[0]?.image_url,
@@ -67,7 +88,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                 city: event.address?.city || "",
                 province: event.address?.province || "",
                 postal_code: event.address?.postal_code || "",
-                location_url: "",
+                location_url: event.address?.maps_url || "",
             },
 
             // Tickets & Capacity
@@ -79,16 +100,14 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                 quota: t.quota,
                 description: t.description || "",
                 type: (t.price > 0 ? "paid" : "free") as "paid" | "free",
-                start_date_time: event.start_registration_date ? new Date(event.start_registration_date) : new Date(),
-                end_date_time: event.end_registration_date ? new Date(event.end_registration_date) : new Date(),
+                start_date_time: t.start_date_time ? new Date(t.start_date_time) : (event.start_registration_date ? new Date(event.start_registration_date) : new Date()),
+                end_date_time: t.end_date_time ? new Date(t.end_date_time) : (event.end_registration_date ? new Date(event.end_registration_date) : new Date()),
             })) || []
         }
     });
 
     const handleSubmit = async (data: CreateEventSchema) => {
         setIsLoading(true);
-        console.log("log edit data: ", data)
-
         let payloadToSubmit: any = {};
 
         // 1. Construct specific payload based on section (Approach B)
@@ -99,15 +118,18 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                     payloadToSubmit = {
                         title: data.title,
                         category: data.category,
-                        description: data.description,
-                        type: data.type
+                        description: JSON.stringify({ content: data.description }),
+                        status: data.status,
                     };
 
-                    const isNewBanner = data.banner_image && data.banner_image.name;
+                    const isNewBanner = data.banner_image &&
+                        data.banner_image.name !== "existing-banner.jpg";
                     const newGalleryImages = data.images.filter(file => !file.name.startsWith("existing-gallery-"));
 
                     console.log("[API Call] PATCH /core ->", payloadToSubmit);
-                    if (isNewBanner) console.log("[API Call] PUT /banner ->", data.banner_image);
+
+                    const targetEventIdCore = event.event_id || (event as any).id;
+                    await EventService.updateEventCore(targetEventIdCore, payloadToSubmit);
 
                     const originalGalleryImages = event.images?.slice(1) || [];
                     const keptGalleryIds = data.images
@@ -125,7 +147,34 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                     let imageChanged = false;
                     const targetEventId = event.event_id || (event as any).id;
 
-                    // 1. Delete removed images
+                    // 1. Upload new banner image (is_primary: true)
+                    if (isNewBanner && data.banner_image) {
+                        try {
+                            // Delete existing banner first if one exists
+                            const existingBannerId = event.images?.[0]?.id;
+                            if (existingBannerId) {
+                                await axiosClient.delete(`/organizer/events/${targetEventId}/image/${existingBannerId}`);
+                                console.log(`[API Call Result] DELETE old banner /images/${existingBannerId} success`);
+                            }
+
+                            const bannerFormData = new FormData();
+                            bannerFormData.append("images", data.banner_image);
+                            bannerFormData.append("is_primary", "true");
+
+                            const bannerResponse = await axiosClient.post(
+                                `/organizer/events/${targetEventId}/image`,
+                                bannerFormData,
+                                { headers: { "Content-Type": "multipart/form-data" } }
+                            );
+                            console.log("[API Call Result] POST /image (banner) ->", bannerResponse.data);
+                            imageChanged = true;
+                        } catch (error: any) {
+                            console.error("[API Call Error] POST /image (banner) ->", error);
+                            throw new Error(error.response?.data?.message || "Gagal mengupload banner event");
+                        }
+                    }
+
+                    // 2. Delete removed gallery images
                     for (const deletedImg of deletedGalleryImages) {
                         try {
                             await axiosClient.delete(`/organizer/events/${targetEventId}/image/${deletedImg.id}`);
@@ -137,24 +186,22 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         }
                     }
 
-                    // 2. Upload new images
+                    // 3. Upload new gallery images (is_primary: false)
                     if (newGalleryImages.length > 0) {
                         try {
                             const formData = new FormData();
-                            // Append each file using the field name "images" per instructions
                             newGalleryImages.forEach(file => {
                                 formData.append("images", file);
                             });
+                            formData.append("is_primary", "false");
 
                             const response = await axiosClient.post(`/organizer/events/${targetEventId}/image`, formData, {
-                                headers: {
-                                    "Content-Type": "multipart/form-data",
-                                },
+                                headers: { "Content-Type": "multipart/form-data" },
                             });
-                            console.log("[API Call Result] POST /images ->", response.data);
+                            console.log("[API Call Result] POST /images (gallery) ->", response.data);
                             imageChanged = true;
                         } catch (error: any) {
-                            console.error("[API Call Error] POST /images ->", error);
+                            console.error("[API Call Error] POST /images (gallery) ->", error);
                             if (error.response?.status === 403) {
                                 throw new Error("Akses ditolak: Anda bukan pemilik acara ini.");
                             }
@@ -197,12 +244,9 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                             city: data.address.city,
                             postal_code: data.address.postal_code,
                             location_url: data.address.location_url,
-
                         }
                     };
                     console.log("[API Call] PATCH /location ->", payloadToSubmit);
-
-
 
                     await EventService.updateEventLocation(event.event_id, {
                         address_id: payloadToSubmit.address.address_id,
