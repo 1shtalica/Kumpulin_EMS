@@ -68,20 +68,20 @@ export default function ImageSection({ event }: { event: Event }) {
           }}
         >
           {/* Base gradient */}
-          <div className="absolute inset-0 bg-linear-to-br from-muted/20 via-blue-50 to-purple-50" />
+          <div className="absolute inset-0 bg-linear-to-br from-slate-50/80 via-blue-50/60 to-purple-50/60" />
 
           {/* Floating orbs for depth */}
           <div className="absolute top-20 left-20 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl" />
           <div className="absolute top-40 right-32 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl" />
           <div className="absolute bottom-40 left-1/3 w-72 h-72 bg-pink-300/20 rounded-full blur-3xl" />
 
-          {/* Fade to white */}
-          <div className="absolute inset-0 bg-linear-to-b from-white/50 via-transparent to-white" />
+          {/* Fade to slate-50 */}
+          <div className="absolute inset-0 bg-linear-to-b from-slate-50/50 via-transparent to-slate-50" />
         </div>
       )}
 
       {/* Main Content */}
-      <div className="relative z-10 py-8 md:py-12">
+      <div className="relative z-10 py-5 md:py-8">
         <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className="xl:col-span-12">

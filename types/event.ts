@@ -39,9 +39,7 @@ export interface Event {
     province: string;
     city: string;
     raw_address: string;
-    postal_code?: string;
-    latitude?: number;
-    longitude?: number;
+    maps_url: string;
   };
   event_rundowns: {
     id: string | number;

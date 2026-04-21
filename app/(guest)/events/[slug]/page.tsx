@@ -28,7 +28,7 @@ export default async function EventDetail({ params }: { params: Promise<{ slug: 
   return (
     <>
       <EventDetailHeader />
-      <main className="min-h-screen bg-white">
+      <main className="min-h-screen bg-slate-50">
         <EventDetailContent event={event} />
       </main>
     </>
