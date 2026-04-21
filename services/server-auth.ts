@@ -29,11 +29,11 @@ export async function getServerUser(): Promise<User | null> {
         if (payload && payload.exp && payload.exp * 1000 > Date.now()) {
             // Return decoded JWT directly, avoid fetching
             return {
-                user_id: payload.user_id ? String(payload.user_id) : "",
+                id: payload.user_id ? String(payload.user_id) : "",
                 email: payload.email || "",
                 username: payload.username || "",
                 role: payload.role || "",
-                avatar: payload.profile_url || undefined,
+                profile_url: payload.profile_url || undefined,
             } as User;
         }
     }
@@ -64,11 +64,11 @@ export async function getServerUser(): Promise<User | null> {
         if (res.ok) {
             const data = await res.json();
             return {
-                user_id: String(data.user_id),
+                id: String(data.user_id),
                 email: data.email,
                 username: data.username,
                 role: data.role,
-                avatar: data.profile_url,
+                profile_url: data.profile_url,
             } as User;
         } else {
             console.error("getServerUser: Auth Check Failed", res.status, await res.text());

@@ -489,7 +489,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
                             key={opt.value}
                             value={opt.value}
                             onSelect={(currentValue) => {
-                              setValue("status", currentValue, { shouldValidate: true });
+                              setValue("status", opt.value as CreateEventSchema["status"], { shouldValidate: true });
                               setOpenStatus(false);
                             }}
                           >

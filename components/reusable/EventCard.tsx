@@ -11,7 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, cn } from "@/lib/utils";
 
 interface EventCardProps {
-  key: string;
   title: string;
   slug: string;
   category: string;

@@ -15,7 +15,7 @@ import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 import { EditSectionModal } from "@/components/organizer/my-event/EditSectionModal";
 import TipTapViewer from "@/components/reusable/TipTapViewer";
-import type { BEEventResponse } from "@/types/event";
+import type { Event } from "@/types/event";
 
 
 function formatDate(isoString: string | undefined) {
@@ -32,7 +32,7 @@ export default function OrganizerEventDetail() {
     const params = useParams();
     const eventId = params?.id as string;
 
-    const [event, setEvent] = useState<BEEventResponse | null>(null);
+    const [event, setEvent] = useState<Event | null>(null);
     const [loading, setLoading] = useState(true);
     const [notFoundFlag, setNotFoundFlag] = useState(false);
 

@@ -20,9 +20,14 @@ export default function ImageSection({ event }: { event: Event }) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [blurOpacity, setBlurOpacity] = useState(1);
 
-  // Use primary image as banner, and others as additional posters
-  const primaryImage = event.event_images?.find((img) => img.is_primary)?.image_url;
-  const otherImages = event.event_images?.filter((img) => !img.is_primary).map((img) => img.image_url) || [];
+  // Gambar dengan is_primary=true sebagai banner utama, sisanya galeri
+  // is_primary tersedia di response BE (dari domain.EventImage)
+  const allImages = event.images ?? [];
+  const primaryImage = allImages.find((img) => img.is_primary)?.image_url
+    ?? allImages[0]?.image_url; // fallback ke index 0 jika tidak ada yang is_primary
+  const otherImages = allImages
+    .filter((img) => !img.is_primary)
+    .map((img) => img.image_url);
 
   const images = primaryImage
     ? [primaryImage, ...otherImages]
@@ -99,7 +104,6 @@ export default function ImageSection({ event }: { event: Event }) {
                 <CarouselContent>
                   {images.map((src, index) => (
                     <CarouselItem key={index}>
-                      {/* ⭐ Responsive height dengan max-height */}
 
                       <div
                         className="relative w-full 

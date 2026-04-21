@@ -5,9 +5,6 @@ import {
   Clock,
   MapPin,
   Users,
-  Dot,
-  Plus,
-  CheckCircle2,
   Copy,
   Check,
   ExternalLink,
@@ -16,12 +13,10 @@ import { useState } from "react";
 
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
-import Link from "next/link";
 import { Event } from "@/types/event";
 import { format, isSameDay } from "date-fns";
 import { id } from "date-fns/locale";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 import { EditSectionModal } from "@/components/organizer/my-event/EditSectionModal";
 import TipTapViewer from "@/components/reusable/TipTapViewer";
@@ -32,11 +27,13 @@ interface DetailSectionProps {
 }
 
 export default function DetailSection({ event, isEditable = false }: DetailSectionProps) {
-  const startDate = new Date(event.eventStartDate);
-  const endDate = new Date(event.eventEndDate);
+  // Guard: pastikan date string valid sebelum diparse
+  const startDate = event.event_start_date ? new Date(event.event_start_date) : null;
+  const endDate = event.event_end_date ? new Date(event.event_end_date) : null;
 
   // Helper untuk format tanggal & waktu yang seragam
-  const formatDateRange = (start: Date, end: Date) => {
+  const formatDateRange = (start: Date | null, end: Date | null) => {
+    if (!start || !end) return "Tanggal belum ditentukan";
     if (isSameDay(start, end)) {
       return format(start, "dd MMMM yyyy", { locale: id });
     }
@@ -47,7 +44,8 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
     )}`;
   };
 
-  const formatTimeRange = (start: Date, end: Date) => {
+  const formatTimeRange = (start: Date | null, end: Date | null) => {
+    if (!start || !end) return "-";
     return `${format(start, "HH:mm", { locale: id })} - ${format(end, "HH:mm", {
       locale: id,
     })} WIB`;
@@ -58,19 +56,15 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
   const eventTimeString = formatTimeRange(startDate, endDate);
 
   // 2. Masa Registrasi
-  const regStartDate = event.startRegistrationDate
-    ? new Date(event.startRegistrationDate)
+  const regStartDate = event.start_registration_date
+    ? new Date(event.start_registration_date)
     : null;
-  const regEndDate = event.endRegistrationDate
-    ? new Date(event.endRegistrationDate)
+  const regEndDate = event.end_registration_date
+    ? new Date(event.end_registration_date)
     : null;
 
-  const regDateString =
-    regStartDate && regEndDate
-      ? formatDateRange(regStartDate, regEndDate)
-      : "-";
-  const regTimeString =
-    regStartDate && regEndDate ? formatTimeRange(regStartDate, regEndDate) : "";
+  const regDateString = formatDateRange(regStartDate, regEndDate);
+  const regTimeString = formatTimeRange(regStartDate, regEndDate);
 
   // Copy Address Logic
   const [isCopied, setIsCopied] = useState(false);
@@ -81,6 +75,21 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
       setTimeout(() => setIsCopied(false), 2000);
     }
   };
+
+  // Parsing description: BE mengirim JSON string TipTap
+  const descriptionContent = (() => {
+    if (!event.description) return "";
+    if (typeof event.description === "string") {
+      try {
+        const parsed = JSON.parse(event.description);
+        if (parsed && typeof parsed.content === "string") return parsed.content;
+      } catch {
+        // bukan JSON valid, kembalikan as-is
+      }
+      return event.description;
+    }
+    return String(event.description);
+  })();
 
   return (
     <section className="w-full flex flex-col items-center justify-between relative z-20">
@@ -93,13 +102,13 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
             </Badge>
 
             <Badge
-              className={cn(
-                event.isOnline
+              className={
+                event.is_online
                   ? "bg-linear-to-r from-blue-600 to-blue-800 text-white font-bold border-none px-3 rounded-full uppercase text-[10px] tracking-wide shadow-sm"
-                  : "bg-muted text-white shadow-sm",
-              )}
+                  : "bg-muted text-white shadow-sm"
+              }
             >
-              {event.isOnline ? "Online" : "Offline"}
+              {event.is_online ? "Online" : "Offline"}
             </Badge>
 
             <Badge className="bg-secondary-light text-secondary border border-secondary rounded-full px-2 flex items-center gap-1">
@@ -154,7 +163,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                 <div className="flex items-center gap-1">
                   <span className="text-[11px] tracking-wide font-medium text-muted">Lokasi</span>
                   {isEditable && <EditSectionModal event={event as any} section="location" />}
-                  {!event.isOnline && (
+                  {!event.is_online && (
                     <Button
                       variant="ghost"
                       onClick={handleCopyAddress}
@@ -165,8 +174,13 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                     </Button>
                   )}
                 </div>
-                <p className="text-sm font-semibold text-accent mt-0.5 line-clamp-2" title={event.address?.raw_address}>
-                  {event.isOnline ? "Online Meeting" : event.address?.raw_address || "Lokasi Event"}
+                <p
+                  className="font-semibold text-accent line-clamp-2"
+                  title={event.address?.raw_address}
+                >
+                  {event.is_online
+                    ? "Online Meeting"
+                    : event.address?.raw_address || "Lokasi Event"}
                 </p>
                 {event.address?.city && event.address?.province && (
                   <p className="text-xs text-slate-400">{event.address.city}, {event.address.province}</p>
@@ -196,8 +210,8 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                   <span className="text-[11px] tracking-wide font-medium text-muted">Partisipan</span>
                   {isEditable && <EditSectionModal event={event as any} section="tickets" />}
                 </div>
-                <p className="text-sm font-semibold text-accent mt-0.5">
-                  {event.totalSold}/{event.maxCapacity || "-"} terdaftar
+                <p className="font-semibold text-accent">
+                  {event.total_sold}/{event.max_capacity || "-"} terdaftar
                 </p>
               </div>
             </div>
@@ -206,42 +220,43 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
           {/* Pemisah  */}
           <Separator orientation="horizontal" />
 
-          {/* Detail Profil Event Organizer  */}
-          {event.organizer && (
-            <div className="flex items-center justify-between gap-4 border border-slate-100 rounded-2xl p-4 bg-slate-50/60">
-              {/* Kiri: Avatar + Info */}
-              <div className="flex items-center gap-3 min-w-0">
-                <Link
-                  href={`/organizer/${event.organizer.id}`}
-                  className="shrink-0 hover:opacity-80 transition-opacity"
-                >
-                  <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-                    <AvatarImage src={event.organizer.avatar} />
-                    <AvatarFallback className="bg-primary-light text-primary text-xs font-bold">
-                      {event.organizer.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
-                <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1">
-                    <p className="text-sm font-semibold text-accent truncate">{event.organizer.name}</p>
-                    {event.organizer.verification_status === "verified" && (
-                      <CheckCircle2 size={14} className="text-blue-500 fill-blue-50 shrink-0" />
-                    )}
+          {/* ============================================================
+              🌟 Section Organizer — data belum ada di response BE.
+              Akan ditampilkan kembali setelah BE menambahkan field organizer
+              ke EventResponse DTO.
+          ============================================================ */}
+          {/* <div className="bg-primary-light p-6 rounded-3xl">
+            {event.organizer && (
+              <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex flex-row items-center gap-3 w-full md:w-auto">
+                  <div className="shrink-0">
+                    <Link href={`/organizer/${event.organizer.id}`} className="hover:opacity-80 transition-opacity">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={event.organizer.avatar} />
+                        <AvatarFallback>
+                          {event.organizer.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Link>
                   </div>
-                  <span className="text-[11px] text-muted font-medium">Event Organizer</span>
+                  <div className="flex flex-col">
+                    <div className="flex flex-row items-center gap-1">
+                      <p className="font-semibold text-accent">{event.organizer.name}</p>
+                      {event.organizer.verification_status === "verified" && (
+                        <CheckCircle2 size={16} className="text-blue-500 fill-blue-50" />
+                      )}
+                    </div>
+                    <div className="flex flex-row items-center text-sm text-muted">
+                      <p>Organizer Terpercaya</p>
+                    </div>
+                  </div>
                 </div>
+                <Button variant="default" asChild className="w-full md:w-fit rounded-full" size="default">
+                  <Link href="#"><Plus size={18} className="mr-1" />Ikuti</Link>
+                </Button>
               </div>
-
-              {/* Kanan: Tombol Aksi */}
-              <Button variant="default" size="sm" asChild className="rounded-full px-6">
-                <Link href="#">
-                  <Plus size={14} className="" />
-                  Ikuti
-                </Link>
-              </Button>
-            </div>
-          )}
+            )}
+          </div> */}
 
           {/* Bagian Deskripsi Event  */}
           <div>
@@ -250,11 +265,11 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
               <h4 className="text-lg font-bold text-accent">Tentang Event</h4>
               {isEditable && <EditSectionModal event={event as any} section="core" />}
             </div>
-            <TipTapViewer content={event.description?.content || ""} />
+            <TipTapViewer content={descriptionContent} />
           </div>
 
           {/* Bagian Rundown Acara  */}
-          {event.event_rundowns && event.event_rundowns.length > 0 && (
+          {event.rundowns && event.rundowns.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-8 w-1 bg-primary rounded-full"></div>
@@ -263,10 +278,10 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
               </div>
 
               <div className="flex flex-col gap-4">
-                {event.event_rundowns.map((item) => (
+                {event.rundowns.map((item, index) => (
                   <div
-                    key={item.id}
-                    className="group flex flex-col md:flex-row gap-3 md:gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 transition-all duration-300"
+                    key={item.id ?? index}
+                    className="group flex flex-col md:flex-row gap-3 md:gap-6 p-5 rounded-3xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 transition-all duration-300"
                   >
                     {/* Waktu (Kiri) */}
                     <div className=" shrink-0 flex flex-col justify-start md:justify-center pt-1">
@@ -279,11 +294,8 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                     </div>
 
                     {/* Detail (Kanan) */}
-                    <div className={cn(
-                      "flex flex-col w-full",
-                      (item.location || item.description) ? "gap-2" : "justify-center"
-                    )}>
-                      <h5 className="font-semibold text-accent text-sm leading-snug group-hover:text-primary transition-colors">
+                    <div className={`flex flex-col w-full ${(item.location || item.description) ? "gap-2" : "justify-center"}`}>
+                      <h5 className="font-bold text-accent text-lg leading-tight group-hover:text-primary transition-colors">
                         {item.title}
                       </h5>
 
@@ -294,7 +306,6 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                         </div>
                       )}
 
-                      {/* Line Separator if description exists */}
                       {item.description && (
                         <div className="mt-1 pb-1 border-l-2 border-slate-200 pl-3 ml-1">
                           <p className="text-sm text-muted leading-relaxed">

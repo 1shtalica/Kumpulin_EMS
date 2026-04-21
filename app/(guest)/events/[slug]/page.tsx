@@ -10,7 +10,7 @@ async function getEvent(slug: string): Promise<Event | null> {
     });
     if (!res.ok) return null;
     const json = await res.json();
-    return json.data;
+    return json.data ?? null;
   } catch (error) {
     console.error("Failed to fetch event:", error);
     return null;

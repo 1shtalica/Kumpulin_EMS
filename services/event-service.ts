@@ -10,7 +10,6 @@ import type {
   PatchTicketsPayload,
   PatchRundownsPayload,
   PatchEventLocationPayload,
-  BEEventResponse,
 } from "@/types/event";
 
 export const EventService = {
@@ -52,7 +51,6 @@ export const EventService = {
   async getEventById(id: string): Promise<Event> {
     try {
       const response = await axiosClient.get<EventResponse>(`/events/${id}`);
-      console.log("getting data");
       return response.data.data;
     } catch (error) {
       console.error(`Failed to fetch event ${id}:`, error);
@@ -60,20 +58,25 @@ export const EventService = {
     }
   },
 
-  async getEventBySlug(slug: string): Promise<HomeEventCard | null> {
+  async getEventBySlug(slug: string): Promise<Event | null> {
     try {
-      const { data } = await this.getEvents({ limit: 1000 });
-      return data.find((e) => e.slug === slug) || null;
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/events/${slug}`,
+        { cache: "no-store" }
+      );
+      if (!response.ok) return null;
+      const json = await response.json();
+      return json.data ?? null;
     } catch (error) {
       console.error(`Failed to fetch event by slug ${slug}:`, error);
-      throw error;
+      return null;
     }
   },
 
-  async getEventByIdFull(id: string): Promise<BEEventResponse | null> {
+  // Endpoint organizer — butuh auth token (pakai axiosClient)
+  async getEventByIdFull(id: string): Promise<Event | null> {
     try {
-      const response = await axiosClient.get<{ data: BEEventResponse; message: string; success: boolean }>(`organizer/events/${id}`);
-      console.log(response);
+      const response = await axiosClient.get<{ data: Event; message: string; success: boolean }>(`organizer/events/${id}`);
       return response.data.data;
     } catch (error) {
       console.error(`Failed to fetch full event details for ${id}:`, error);
