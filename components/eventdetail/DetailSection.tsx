@@ -185,7 +185,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                 {event.address?.city && event.address?.province && (
                   <p className="text-xs text-slate-400">{event.address.city}, {event.address.province}</p>
                 )}
-                {!event.isOnline && event.address?.maps_url && (
+                {!event.is_online && event.address?.maps_url && (
                   <a
                     href={event.address.maps_url}
                     target="_blank"
