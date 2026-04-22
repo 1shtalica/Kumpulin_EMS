@@ -5,47 +5,42 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-0 focus-visible:border-transparent aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:cursor-pointer",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background aria-invalid:ring-destructive/20 aria-invalid:border-destructive hover:cursor-pointer",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "border bg-background shadow-xs hover:bg-slate-100 hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "text-black hover:bg-slate-200 dark:hover:bg-primary ",
+        default: "bg-primary text-primary-foreground shadow-md shadow-primary/20 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/30",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
 
-        // ⭐custom button variant
-        brand: "bg-primary text-white hover:bg-primary-hover hover:shadow-md",
-        light:
-          "bg-white text-primary hover:text-primary-hover border-2 border-primary hover:shadow-md",
-        rtpintar:
-          "bg-secondary-light text-white border border-secondary hover:bg-secondary hover:border-secondary rounded-full shadow-sm font-bold hover:shadow-md",
+        // ⭐ Custom premium variants
+        brand: "bg-primary text-primary-foreground shadow-glow hover:bg-primary-hover transition-all duration-300",
+        glass: "bg-background/30 backdrop-blur-md border border-border text-foreground shadow-sm hover:bg-background/40",
+        light: "bg-white text-primary border border-primary/20 shadow-sm hover:bg-slate-50",
+        rtpintar: "bg-secondary text-secondary-foreground border border-secondary hover:bg-secondary/80 shadow-md font-bold",
       },
       size: {
-        default: "h-auto px-8 py-3 has-[>svg]:px-6",
-        sm: "h-8 rounded-full gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-full px-6 has-[>svg]:px-4",
-        icon: "size-9",
-        "icon-sm": "size-8",
-        "icon-lg": "size-10",
+        default: "h-11 px-6 py-2.5",
+        sm: "h-9 rounded-md px-4 text-xs",
+        lg: "h-12 rounded-md px-8 text-base",
+        icon: "size-11",
+        "icon-sm": "size-9",
+        "icon-lg": "size-12",
 
-        // ⭐custom button size
-        xl: "h-14 px-8 text-lg rounded-full gap-3 font-semibold",
+        // ⭐ Custom heavy size
+        xl: "h-14 px-10 text-lg rounded-lg gap-3 font-semibold",
       },
       hoverEffect: {
         none: "",
-        grow: "hover:scale-105",
-        shrink: "hover:scale-95",
-        ring: "hover:text-kumpulinPurple hover:ring-2 hover:ring-kumpulinPurple hover:ring-offset-2",
+        grow: "hover:scale-[1.02]",
+        shrink: "hover:scale-[0.98]",
+        ring: "hover:ring-2 hover:ring-primary hover:ring-offset-2 hover:text-primary",
         lighten: "hover:brightness-110",
         darken: "hover:brightness-90",
-        hover_up:
-          "ease-out hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(0,0,0,0.2)]",
+        hover_up: "ease-out hover:-translate-y-1 hover:shadow-lg",
       },
     },
     defaultVariants: {
