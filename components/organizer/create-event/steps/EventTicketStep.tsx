@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Ticket as TicketIcon, Users, ShoppingCart } from "lucide-react";
+import { Plus, Trash2, Ticket as TicketIcon, Users, ShoppingCart, CalendarCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,37 @@ export default function EventTicketStep({
   const start_registration_date = watch("start_registration_date");
   const end_registration_date = watch("end_registration_date");
 
+  // --- STATE: followRegistration[index] = apakah tiket mengikuti jadwal pendaftaran ---
+  const [followRegistration, setFollowRegistration] = useState<boolean[]>([]);
+
+  // Sinkronisasi panjang array followRegistration dengan jumlah tiket
+  useEffect(() => {
+    setFollowRegistration((prev) => {
+      const next = [...prev];
+      while (next.length < fields.length) next.push(false);
+      return next.slice(0, fields.length);
+    });
+  }, [fields.length]);
+
+  // Auto-set nilai start/end tiket jika checkbox aktif (termasuk saat pendaftaran berubah)
+  useEffect(() => {
+    fields.forEach((_, index) => {
+      if (followRegistration[index]) {
+        if (start_registration_date) {
+          setValue(`tickets.${index}.start_date_time`, start_registration_date, {
+            shouldValidate: true,
+          });
+        }
+        if (end_registration_date) {
+          setValue(`tickets.${index}.end_date_time`, end_registration_date, {
+            shouldValidate: true,
+          });
+        }
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [followRegistration, start_registration_date, end_registration_date]);
+
   const totalTicketQuota = (tickets || []).reduce(
     (sum, ticket) => sum + (Number(ticket.quota) || 0),
     0,
@@ -59,6 +90,16 @@ export default function EventTicketStep({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalTicketQuota, max_capacity]);
+
+  // Helper format tanggal ringkas
+  const formatDateShort = (date: Date) =>
+    date.toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   return (
     <div className="space-y-8">
@@ -187,7 +228,7 @@ export default function EventTicketStep({
             {fields.length < 5 && (
               <div className="flex flex-wrap gap-2">
                 <Button
-                  className="shadow-glow flex-1 sm:flex-none"
+                  className="shadow-glow flex-1 sm:flex-none sm:min-w-50"
                   type="button"
                   variant="outline"
                   onClick={() =>
@@ -198,7 +239,7 @@ export default function EventTicketStep({
                   <span className="whitespace-nowrap">Tiket Gratis</span>
                 </Button>
                 <Button
-                  className="shadow-glow flex-1 sm:flex-none"
+                  className="shadow-glow flex-1 sm:flex-none sm:min-w-50"
                   type="button"
                   onClick={() =>
                     append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "paid" })
@@ -385,9 +426,51 @@ export default function EventTicketStep({
                     )}
                   </div>
 
+                  {/* Toggle: Sesuai Jadwal Pendaftaran */}
+                  <div className="col-span-full">
+                    <label
+                      htmlFor={`follow-reg-${index}`}
+                      className={cn(
+                        "flex items-center gap-3 p-3 rounded-xl border cursor-pointer select-none transition-all duration-200",
+                        followRegistration[index]
+                          ? "bg-primary-light border-primary/30 text-primary"
+                          : "bg-muted/20 border-border text-muted-foreground hover:border-primary/40 hover:bg-primary-light/30"
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        id={`follow-reg-${index}`}
+                        className="h-4 w-4 rounded border-gray-300 accent-primary cursor-pointer"
+                        checked={followRegistration[index] ?? false}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setFollowRegistration((prev) => {
+                            const next = [...prev];
+                            next[index] = checked;
+                            return next;
+                          });
+                        }}
+                      />
+                      <CalendarCheck className="h-4 w-4 shrink-0" />
+                      <span className="text-sm font-medium">
+                        Sesuai jadwal pendaftaran
+                      </span>
+                      {followRegistration[index] && start_registration_date && end_registration_date && (
+                        <span className="ml-auto text-xs font-normal text-primary/80 hidden sm:block">
+                          {formatDateShort(start_registration_date)} – {formatDateShort(end_registration_date)}
+                        </span>
+                      )}
+                      {followRegistration[index] && (!start_registration_date || !end_registration_date) && (
+                        <span className="ml-auto text-xs font-normal text-amber-600">
+                          ⚠ Isi jadwal pendaftaran di step sebelumnya
+                        </span>
+                      )}
+                    </label>
+                  </div>
+
                   {/* Ticket Start Date */}
                   <div className="space-y-2">
-                    <Label>
+                    <Label className={cn(followRegistration[index] && "text-muted-foreground")}>
                       Waktu Mulai Penjualan <span className="text-danger">*</span>
                     </Label>
                     <Controller
@@ -400,13 +483,22 @@ export default function EventTicketStep({
                           placeholder="Pilih waktu mulai"
                           minDate={start_registration_date || new Date()}
                           maxDate={end_registration_date || undefined}
+                          disabled={followRegistration[index] ?? false}
                           className={cn(
-                            "shadow-none bg-white",
+                            "shadow-none",
+                            followRegistration[index]
+                              ? "bg-muted/30 opacity-70 cursor-not-allowed"
+                              : "bg-white",
                             errors.tickets?.[index]?.start_date_time && "border-danger"
                           )}
                         />
                       )}
                     />
+                    {followRegistration[index] && (
+                      <p className="text-xs text-muted-foreground">
+                        Diisi otomatis sesuai waktu buka pendaftaran
+                      </p>
+                    )}
                     {errors.tickets?.[index]?.start_date_time && (
                       <p className="text-xs text-danger">
                         {errors.tickets[index].start_date_time.message}
@@ -416,7 +508,7 @@ export default function EventTicketStep({
 
                   {/* Ticket End Date */}
                   <div className="space-y-2">
-                    <Label>
+                    <Label className={cn(followRegistration[index] && "text-muted-foreground")}>
                       Waktu Selesai Penjualan <span className="text-danger">*</span>
                     </Label>
                     <Controller
@@ -429,20 +521,28 @@ export default function EventTicketStep({
                           placeholder="Pilih waktu selesai"
                           minDate={tickets[index]?.start_date_time || start_registration_date || new Date()}
                           maxDate={end_registration_date || undefined}
-                          disabled={!tickets[index]?.start_date_time}
+                          disabled={(followRegistration[index] ?? false) || !tickets[index]?.start_date_time}
                           className={cn(
-                            "shadow-none bg-white",
+                            "shadow-none",
+                            followRegistration[index]
+                              ? "bg-muted/30 opacity-70 cursor-not-allowed"
+                              : "bg-white",
                             errors.tickets?.[index]?.end_date_time && "border-danger"
                           )}
                         />
                       )}
                     />
+                    {followRegistration[index] && (
+                      <p className="text-xs text-muted-foreground">
+                        Diisi otomatis sesuai waktu tutup pendaftaran
+                      </p>
+                    )}
                     {errors.tickets?.[index]?.end_date_time && (
                       <p className="text-xs text-danger">
                         {errors.tickets[index].end_date_time.message}
                       </p>
                     )}
-                    {!tickets[index]?.start_date_time && (
+                    {!followRegistration[index] && !tickets[index]?.start_date_time && (
                       <p className="text-xs text-muted">
                         Pilih waktu mulai penjualan terlebih dahulu
                       </p>

@@ -1,82 +1,12 @@
 // ============================================================
-// Event type yang dipakai komponen event detail (belum terintegrasikan dengan BE)
-// Field ini masih menggunakan format lama / dummy data
-// 🌟 Update bertahap saat komponen eventdetail mulai diintegrasikan ke BE
+// Event type — disesuaikan dengan actual BE response (EventResponse DTO)
+// Endpoint: GET /api/v1/events/:slug  &  GET /api/v1/organizer/events/:id
 // ============================================================
 export interface Event {
-  id: string;
-  communityId?: string;
-  organizerId?: string;
-  addressId?: string;
-  title: string;
-  slug: string;
-  description: {
-    content: string;
-  };
-  type?: string;
-  status?: string;
-  category: string;
-  maxCapacity: number;
-  totalSold: number;
-  isOnline: boolean;
-  eventStartDate: string;
-  eventEndDate: string;
-  startRegistrationDate?: string;
-  endRegistrationDate?: string;
-  max_purchases?: number; // Kept for frontend logic
-  organizer: {
-    id: string | number;
-    owner_id?: number;
-    name: string;
-    slug?: string;
-    avatar?: string;
-    description?: string;
-    verification_status?: string;
-  };
-  address?: {
-    id?: string;
-    title?: string;
-    province: string;
-    city: string;
-    raw_address: string;
-    maps_url: string;
-  };
-  event_rundowns: {
-    id: string | number;
-    title: string;
-    description?: string;
-    location?: string;
-    start_time: string;
-    end_time: string;
-  }[];
-  ticket_categories: {
-    id: string | number;
-    name: string;
-    description?: string;
-    price: number;
-    quota: number;
-    sold: number;
-    start_registration_date?: string;
-    end_registration_date?: string;
-  }[];
-  event_images?: {
-    id: number;
-    image_url: string;
-    is_primary: boolean;
-  }[];
-  created_at?: string;
-  updated_at?: string;
-}
-
-// ============================================================
-// Response type yang sesuai actual BE response
-// Digunakan saat mulai integrasi halaman event detail dengan BE
-// ============================================================
-export interface BEEventResponse {
   event_id: string;
   title: string;
   slug: string;
-  description: string; // JSON-encoded TipTap doc string from BE, e.g. '{"type":"doc","content":[...]}'
+  description: string; // JSON-encoded TipTap doc string dari BE, e.g. '{"type":"doc","content":[...]}'
   category: string;
   type: string;
   status: string;
@@ -85,27 +15,27 @@ export interface BEEventResponse {
   total_sold: number;
   is_online: boolean;
   meeting_url?: string;
-  event_start_date: string;
-  event_end_date: string;
-  start_registration_date: string;
-  end_registration_date: string;
+  event_start_date: string;  // ISO 8601
+  event_end_date: string;    // ISO 8601
+  start_registration_date: string; // ISO 8601
+  end_registration_date: string;   // ISO 8601
   address: {
-    address_id: string;
+    address_id?: string;
     title?: string;
     raw_address: string;
     city: string;
     province: string;
     postal_code: string;
-    latitude: number;
-    longitude: number;
-    maps_url: string;
+    latitude?: number;
+    longitude?: number;
+    maps_url?: string;
   };
   rundowns?: {
     id?: string;
     title?: string;
     description?: string;
-    start_time?: string;
-    end_time?: string;
+    start_time?: string; // "HH:mm"
+    end_time?: string;   // "HH:mm"
     location?: string;
   }[];
   ticket_categories?: {
@@ -113,17 +43,36 @@ export interface BEEventResponse {
     name: string;
     price: number;
     quota: number;
-    booked: number;
+    booked: number;           // jumlah yang sudah dipesan
     description: string;
-    start_date_time?: string; // ISO 8601
-    end_date_time?: string;   // ISO 8601
+    start_date_time?: string | null; // ISO 8601 — *time.Time pointer di Go, bisa null
+    end_date_time?: string | null;   // ISO 8601 — *time.Time pointer di Go, bisa null
   }[];
   images?: {
     id: number;
     image_url: string;
+    is_primary: boolean;     // dari domain.EventImage — tersedia di response BE
+    event_id?: string;
+    created_at?: string;
+    updated_at?: string;
   }[];
+  // ============================================================
+  // 🌟 Field organizer belum ada di response BE saat ini.
+  //    Akan diisi dummy atau ditambahkan ke BE di iterasi berikutnya.
+  // ============================================================
+  // organizer?: {
+  //   id: string | number;
+  //   name: string;
+  //   slug?: string;
+  //   avatar?: string;
+  //   description?: string;
+  //   verification_status?: string;
+  // };
 }
 
+// ============================================================
+// Wrapper response dari BE
+// ============================================================
 export interface EventsResponse {
   message: string;
   data: Event[];
@@ -134,6 +83,9 @@ export interface EventResponse {
   data: Event;
 }
 
+// ============================================================
+// Params untuk list events
+// ============================================================
 export interface GetEventsParams {
   offset?: number;
   limit?: number;
@@ -145,6 +97,10 @@ export interface GetEventsParams {
   // price_type?: 'gratis' | 'berbayar';
   // sort?: string;
 }
+
+// ============================================================
+// Card types untuk explore / home page
+// ============================================================
 export interface HomeEventCard {
   id?: string;
   event_id?: string;
@@ -184,6 +140,9 @@ export interface OrganizerEventCard {
   status: string;
 }
 
+// ============================================================
+// Payload types untuk PATCH endpoints (organizer)
+// ============================================================
 export interface TicketPayloadItem {
   id?: string;            // UUID — present for update; omit for add
   name: string;
@@ -222,6 +181,5 @@ export interface PatchEventLocationPayload {
   city: string;
   province: string;
   postal_code: string;
-  maps_url: string;
+  location_url: string;
 }
-

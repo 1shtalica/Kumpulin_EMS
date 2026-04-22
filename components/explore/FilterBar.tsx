@@ -33,7 +33,7 @@ export default function FilterBar() {
   return (
     <section className="sticky top-20 z-40 py-4 pointer-events-none">
       <div className="w-full max-w-4xl mx-auto pointer-events-auto">
-        <div className="relative w-full bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_40px_rgb(0,0,0,0.06)] rounded-[1.5rem] lg:rounded-full p-2 lg:p-1.5 transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
+        <div className="relative w-full bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_40px_rgb(0,0,0,0.06)] rounded-3xl lg:rounded-full p-2 lg:p-1.5 transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
           <div className="flex flex-col lg:flex-row lg:items-center">
 
             {/* Filter Items inside pill */}

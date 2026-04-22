@@ -15,7 +15,7 @@ import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 import { EditSectionModal } from "@/components/organizer/my-event/EditSectionModal";
 import TipTapViewer from "@/components/reusable/TipTapViewer";
-import type { BEEventResponse } from "@/types/event";
+import type { Event } from "@/types/event";
 
 
 function formatDate(isoString: string | undefined) {
@@ -32,7 +32,7 @@ export default function OrganizerEventDetail() {
     const params = useParams();
     const eventId = params?.id as string;
 
-    const [event, setEvent] = useState<BEEventResponse | null>(null);
+    const [event, setEvent] = useState<Event | null>(null);
     const [loading, setLoading] = useState(true);
     const [notFoundFlag, setNotFoundFlag] = useState(false);
 
@@ -205,7 +205,7 @@ export default function OrganizerEventDetail() {
                             <div className="space-y-4">
                                 {event.rundowns.map((r, i) => (
                                     <div key={r.id || i} className="flex gap-4 p-4 border border-border rounded-2xl hover:bg-slate-50 transition-colors">
-                                        <div className="flex flex-col items-center justify-center px-4 py-2 bg-primary/10 text-primary rounded-xl shrink-0 h-fit min-w-[100px]">
+                                        <div className="flex flex-col items-center justify-center px-4 py-2 bg-primary/10 text-primary rounded-xl shrink-0 h-fit min-w-25">
                                             <span className="text-sm font-bold">{r.start_time}</span>
                                             <span className="text-xs font-semibold opacity-70">to</span>
                                             <span className="text-sm font-bold">{r.end_time}</span>

@@ -5,7 +5,8 @@ import type {
   RundownRequest,
   TicketRequest,
 } from "@/types/create-event";
-import type { BEEventResponse } from "@/types/event";
+import type { Event } from "@/types/event";
+
 
 interface CreateEventStore {
   // Form data
@@ -73,7 +74,8 @@ interface CreateEventStore {
   syncFormData: (data: Partial<CreateEventFormState>) => void;
 
   // Load duplicated data
-  loadFromExistingEvent: (event: BEEventResponse) => void;
+  loadFromExistingEvent: (event: Event) => void;
+
 }
 
 // Initial state
@@ -333,7 +335,7 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
     }));
   },
 
-  loadFromExistingEvent: (event) => {
+  loadFromExistingEvent: (event: Event) => {
     set({
       currentStep: 1,
       formData: {
@@ -341,8 +343,9 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
         title: `${event.title} (Copy)`,
         type: (event.type as EventType) || "public",
         category: event.category || "Umum",
-        description: typeof event.description?.content === 'string' ? event.description.content : "",
+        description: typeof event.description === 'string' ? event.description : "",
 
+        
         // Explicitly clear all dates
         event_start_date: undefined,
         event_end_date: undefined,

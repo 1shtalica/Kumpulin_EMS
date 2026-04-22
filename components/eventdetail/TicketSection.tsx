@@ -10,22 +10,22 @@ import {
   Facebook,
   Twitter,
   Link as LinkIcon,
+  Loader2,
 } from "lucide-react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Event } from "@/types/event";
 
 // --- 1. KOMPONEN QUOTA BAR (Progress Bar) ---
 function QuotaBar({
-  sold,
+  booked,
   total,
   isSoldOut,
 }: {
-  sold: number;
+  booked: number;
   total: number;
   isSoldOut?: boolean;
 }) {
-  const percentage = Math.min((sold / total) * 100, 100);
+  const percentage = Math.min((booked / total) * 100, 100);
 
   return (
     <div className="w-full flex flex-col gap-1 mt-3">
@@ -42,42 +42,45 @@ function QuotaBar({
           />
         </div>
         <span className="text-[10px] text-muted whitespace-nowrap min-w-fit">
-          {Math.max(0, total - sold)} tersisa
+          {Math.max(0, total - booked)} tersisa
         </span>
       </div>
     </div>
   );
 }
 
-// --- 3. KOMPONEN UTAMA ---
+// --- 2. KOMPONEN UTAMA ---
 export default function TicketSection({ event }: { event: Event }) {
   // --- LOGIC TIKET GRATIS ---
   // Jika event gratis & tidak ada tiket spesifik dari backend, buat tiket virtual
   const isPaid = event.ticket_categories?.some((t) => t.price > 0) || false;
   const isFreeEventWithNoTickets =
-    !isPaid && event.ticket_categories.length === 0;
+    !isPaid && (event.ticket_categories?.length ?? 0) === 0;
 
   const effectiveTickets = isFreeEventWithNoTickets
     ? [
         {
-          id: -1, 
+          id: "free-virtual",
           name: "Tiket Gratis",
           price: 0,
-          quota: event.maxCapacity || 0, 
-          sold: event.totalSold || 0,
+          quota: event.max_capacity || 0,
+          booked: event.total_sold || 0,
           description: "Tiket masuk untuk event ini.",
+          start_date_time: undefined as string | undefined,
+          end_date_time: undefined as string | undefined,
         },
       ]
-    : event.ticket_categories;
+    : (event.ticket_categories ?? []);
 
   // Use first available ticket as default if exists
   const availableTicket = effectiveTickets.find(
-    (t) => t.quota === 0 || t.quota > t.sold, // Modified check: quota 0 (unlimited) is available
+    (t) => t.quota === 0 || t.booked < t.quota,
   );
-  const [selectedTicketId, setSelectedTicketId] = useState<string | number | null>(
-    availableTicket?.id || null,
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(
+    availableTicket?.id ?? null,
   );
   const [qty, setQty] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Cari data tiket yang sedang dipilih
   const selectedTicket = effectiveTickets.find(
@@ -97,10 +100,10 @@ export default function TicketSection({ event }: { event: Event }) {
     }).format(num);
   };
 
-  const handleSelectTicket = (id: string | number, isSoldOut: boolean) => {
-    if (isSoldOut) return; // Cegah klik jika habis
+  const handleSelectTicket = (id: string, isSoldOut: boolean) => {
+    if (isSoldOut) return;
     setSelectedTicketId(id);
-    setQty(1); // Reset jumlah jadi 1 tiap ganti tiket
+    setQty(1);
   };
 
   return (
@@ -114,12 +117,12 @@ export default function TicketSection({ event }: { event: Event }) {
             {effectiveTickets.map((ticket) => {
               const isSelected = selectedTicketId === ticket.id;
               const isSoldOut =
-                ticket.quota > 0 && ticket.sold >= ticket.quota;
+                ticket.quota > 0 && ticket.booked >= ticket.quota;
 
               return (
                 <div
                   key={ticket.id}
-                  onClick={() => handleSelectTicket(ticket.id, isSoldOut)}
+                  onClick={() => handleSelectTicket(ticket.id ?? "", isSoldOut)}
                   className={cn(
                     "relative p-3 border rounded-2xl cursor-pointer transition-all duration-200",
                     isSoldOut &&
@@ -151,12 +154,7 @@ export default function TicketSection({ event }: { event: Event }) {
 
                   {/* Harga */}
                   <div className="flex items-center gap-2 mb-1">
-                    <p
-                      className={cn(
-                        "font-bold text-base",
-                        isSelected ? "text-primary" : "text-primary",
-                      )}
-                    >
+                    <p className="font-bold text-lg text-primary">
                       {formatRupiah(ticket.price)}
                     </p>
                   </div>
@@ -171,7 +169,7 @@ export default function TicketSection({ event }: { event: Event }) {
                   {/* Progress Bar (Hanya jika quota > 0 alias terbatas) */}
                   {ticket.quota > 0 ? (
                     <QuotaBar
-                      sold={ticket.sold}
+                      booked={ticket.booked}
                       total={ticket.quota}
                       isSoldOut={isSoldOut}
                     />
@@ -184,7 +182,7 @@ export default function TicketSection({ event }: { event: Event }) {
                 </div>
               );
             })}
-            
+
             {effectiveTickets.length === 0 && (
                 <div className="p-4 text-center text-muted text-sm border border-dashed rounded-xl">
                     Belum ada tiket tersedia.
@@ -208,17 +206,13 @@ export default function TicketSection({ event }: { event: Event }) {
                   <span className="font-bold w-4 text-center text-sm">{qty}</span>
                   <button
                     onClick={() => {
-                        const maxLimit = event.max_purchases;
-                        
-                        // Calculate max purchaseable based on quota
-                        // If quota > 0 (limited), max is min(remaining, limit)
-                        // If quota == 0 (unlimited), max is limit
-                        let maxPurchase = maxLimit || 10;
-                        
-                        if(selectedTicket.quota > 0) {
+                        const maxLimit = event.max_ticket_per_user || 10;
+
+                        let maxPurchase = maxLimit;
+                        if (selectedTicket.quota > 0) {
                             maxPurchase = Math.min(
-                                selectedTicket.quota - selectedTicket.sold,
-                                maxLimit || 10
+                                selectedTicket.quota - selectedTicket.booked,
+                                maxLimit
                             );
                         }
 
@@ -226,20 +220,20 @@ export default function TicketSection({ event }: { event: Event }) {
                     }}
                     className="p-1 hover:bg-primary text-accent hover:text-white disabled:opacity-50 rounded-full cursor-pointer disabled:cursor-default"
                     disabled={
-                        selectedTicket.quota > 0 
-                          ? qty >= Math.min(selectedTicket.quota - selectedTicket.sold, event.max_purchases || 10)
-                          : qty >= (event.max_purchases || 10)
+                        selectedTicket.quota > 0
+                          ? qty >= Math.min(selectedTicket.quota - selectedTicket.booked, event.max_ticket_per_user || 10)
+                          : qty >= (event.max_ticket_per_user || 10)
                     }
                   >
                     <Plus size={16} />
                   </button>
                 </div>
               </div>
-             {(event.max_purchases ?? 0) > 0 && (
+              {(event.max_ticket_per_user ?? 0) > 0 && (
                 <p className="text-xs text-muted text-right mt-1 px-1">
-                    Maksimal pembelian {event.max_purchases} tiket per transaksi
+                    Maksimal pembelian {event.max_ticket_per_user} tiket per transaksi
                 </p>
-             ) }
+              )}
             </>
           )}
 
@@ -255,11 +249,20 @@ export default function TicketSection({ event }: { event: Event }) {
             </div>
 
             <Button
-              size="default"
-              className="cursor-pointer w-full py-2.5 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-sm shadow-glow"
-              disabled={!selectedTicket}
+              size="lg"
+              onClick={() => {
+                // TODO: implementasi handler beli/daftar
+                setIsLoading(true);
+                setTimeout(() => setIsLoading(false), 2000); // placeholder
+              }}
+              className="cursor-pointer w-full py-5 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow"
+              disabled={!selectedTicket || isLoading}
             >
-              {totalPrice === 0 ? "Daftar Sekarang" : "Beli Tiket"}
+              {isLoading ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Memproses...</>
+              ) : (
+                totalPrice === 0 ? "Daftar Sekarang" : "Beli Tiket"
+              )}
             </Button>
           </div>
 
@@ -283,7 +286,6 @@ export default function TicketSection({ event }: { event: Event }) {
               >
                 <Twitter size={16} />
               </Button>
-              {/* WhatsApp icon tidak ada di Lucide default, pakai LinkIcon sbg ganti atau import library lain */}
               <Button
                 variant="outline"
                 size="icon"

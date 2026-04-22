@@ -5,9 +5,9 @@ import {
     Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetFooter
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { BEEventResponse } from "@/types/event";
+import { Event } from "@/types/event";
 import type { ReactNode } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { CreateEventSchema } from "@/lib/validator/create-event.schema";
@@ -19,7 +19,7 @@ import { EventService } from "@/services/event-service";
 import { useRouter } from "next/navigation";
 
 interface EditModalProps {
-    event: BEEventResponse;
+    event: Event;
     section: 'core' | 'location' | 'rundown' | 'datetime' | 'tickets';
 }
 
@@ -255,7 +255,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         city: payloadToSubmit.address?.city!,
                         province: payloadToSubmit.address?.province!,
                         postal_code: payloadToSubmit.address?.postal_code!,
-                        maps_url: payloadToSubmit.address?.location_url!
+                        location_url: payloadToSubmit.address?.location_url!
                     });
                     break;
 
@@ -389,9 +389,9 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                     <Pencil className="w-4 h-4" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="!max-w-2xl w-[100vw] p-0 gap-0 overflow-hidden bg-background border-l border-border/50 shadow-2xl pointer-events-auto">
+            <SheetContent side="right" className="max-w-2xl! w-screen p-0 gap-0 overflow-hidden bg-background border-l border-border/50 shadow-2xl pointer-events-auto">
                 <FormProvider {...methods}>
-                    <form onSubmit={methods.handleSubmit(handleSubmit as any)} className="flex flex-col h-[100dvh]">
+                    <form onSubmit={methods.handleSubmit(handleSubmit as any)} className="flex flex-col h-dvh">
                         {/* Sticky Header */}
                         <SheetHeader className="px-6 py-5 md:px-8 md:py-6 border-b border-border/40 bg-background/60 backdrop-blur-lg shrink-0 text-left">
                             <SheetTitle className="text-xl tracking-tight font-bold">{titles[section]}</SheetTitle>
@@ -414,7 +414,11 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={isLoading} className="rounded-full m-0 bg-primary hover:bg-primary-hover shadow-md text-white">
-                                {isLoading ? "Saving..." : "Save Changes"}
+                                {isLoading ? (
+                                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+                                ) : (
+                                  "Save Changes"
+                                )}
                             </Button>
                         </SheetFooter>
                     </form>

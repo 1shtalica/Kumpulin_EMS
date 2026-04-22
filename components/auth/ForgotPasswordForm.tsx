@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, CheckCircle } from "lucide-react";
+import { Mail, CheckCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
@@ -134,7 +134,11 @@ export default function ForgotPasswordForm() {
               </div>
 
               <Button type="submit" className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-lg font-bold" disabled={isLoading}>
-                {isLoading ? "Mengirim..." : "Kirim Link Reset"}
+                {isLoading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Mengirim...</>
+                ) : (
+                  "Kirim Link Reset"
+                )}
               </Button>
             </form>
           ) : (
@@ -161,12 +165,13 @@ export default function ForgotPasswordForm() {
                 onClick={handleResend}
                 disabled={isLoading || timer > 0}
               >
-                <Mail className="mr-2 h-4 w-4" />
-                {isLoading
-                  ? "Mengirim..."
-                  : timer > 0
-                    ? `Kirim Ulang (${timer}s)`
-                    : "Kirim Ulang"}
+                {isLoading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Mengirim...</>
+                ) : timer > 0 ? (
+                  <><Mail className="mr-2 h-4 w-4" />Kirim Ulang ({timer}s)</>
+                ) : (
+                  <><Mail className="mr-2 h-4 w-4" />Kirim Ulang</>
+                )}
               </Button>
 
               <Link href="/login" className="block text-sm text-primary hover:underline">

@@ -11,7 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, cn } from "@/lib/utils";
 
 interface EventCardProps {
-  key: string;
   title: string;
   slug: string;
   category: string;
@@ -63,14 +62,14 @@ export default function EventCard({
       <Card
         className={cn(
           "h-full flex overflow-hidden transition-all duration-300 transform hover:-translate-y-2 rounded-3xl bg-white border hover:border-primary/50 shadow-sm hover:shadow-lg",
-          variant === "horizontal" ? "flex-row h-[220px]" : "flex-col"
+          variant === "horizontal" ? "flex-row h-55" : "flex-col"
         )}
       >
         {/* === HEADER IMAGE === */}
         <div
           className={cn(
             "relative overflow-hidden bg-slate-50 shrink-0",
-            variant === "horizontal" ? "w-[260px] h-full" : "w-full aspect-video"
+            variant === "horizontal" ? "w-65 h-full" : "w-full aspect-video"
           )}
         >
           {imgError ? (
@@ -101,7 +100,7 @@ export default function EventCard({
             )}
           </div>
 
-          <button className="absolute top-4 right-4 z-10 bg-white p-2 rounded-full text-slate-400 hover:text-red-500 hover:scale-110 transition-all shadow-sm">
+          <button className="absolute top-4 right-4 z-10 bg-white p-2 rounded-full text-slate-400 hover:text-red-500 hover:scale-110 transition-all shadow-sm cursor-pointer">
             <Heart size={18} />
           </button>
         </div>
@@ -112,7 +111,7 @@ export default function EventCard({
           <div className="flex gap-4 items-start">
 
             {/* Date Box */}
-            <div className="flex flex-col items-center justify-center w-14 py-2 min-h-[68px] bg-indigo-50/80 text-indigo-600 rounded-2xl shrink-0 border border-indigo-100/50">
+            <div className="flex flex-col items-center justify-center w-14 py-2 min-h-17 bg-indigo-50/80 text-indigo-600 rounded-2xl shrink-0 border border-indigo-100/50">
               <span className="text-xl font-bold leading-none tracking-tight">{day}</span>
               <span className="text-[9px] font-semibold mt-1 leading-none">{month}</span>
               <span className="text-[8px] font-semibold text-indigo-400 mt-0.5 leading-none tracking-wider">{year}</span>
@@ -175,19 +174,19 @@ export function EventCardSkeleton({
     <Card
       className={cn(
         "h-full flex overflow-hidden rounded-3xl bg-white border shadow-sm",
-        variant === "horizontal" ? "flex-row h-[220px]" : "flex-col"
+        variant === "horizontal" ? "flex-row h-55" : "flex-col"
       )}
     >
       <Skeleton
         className={cn(
           "shrink-0 rounded-none",
-          variant === "horizontal" ? "w-[260px] h-full" : "w-full aspect-video"
+          variant === "horizontal" ? "w-65 h-full" : "w-full aspect-video"
         )}
       />
 
       <CardContent className="flex flex-col p-4 sm:p-5 h-full relative">
         <div className="flex gap-4 items-start">
-          <Skeleton className="w-14 h-[68px] rounded-2xl shrink-0" />
+          <Skeleton className="w-14 h-17 rounded-2xl shrink-0" />
           <div className="flex flex-col gap-2 w-full pt-1">
             <Skeleton className="h-3 w-1/3" />
             <Skeleton className="h-4 w-full" />

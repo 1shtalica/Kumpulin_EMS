@@ -54,7 +54,7 @@ export default function DateTimePicker({
   const [isOpen, setIsOpen] = React.useState(false);
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
-  const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -70,8 +70,8 @@ export default function DateTimePicker({
         // Set to current time if no time set yet
         const newDate = new Date(selectedDate);
         const now = new Date();
-        newDate.setHours(now.getHours());
-        newDate.setMinutes(now.getMinutes());
+        newDate.setHours(0);
+        newDate.setMinutes(0);
         newDate.setSeconds(0);
         newDate.setMilliseconds(0);
         onChange?.(newDate);

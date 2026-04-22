@@ -40,7 +40,7 @@ export default function OrganizerHeader({ className }: OrganizerHeaderProps) {
 
       {/* Avatar */}
       <Avatar>
-        <AvatarImage src={user?.avatar ?? undefined} />
+        <AvatarImage src={user?.profile_url ?? undefined} />
         <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
       </Avatar>
     </header>
