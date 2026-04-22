@@ -6,7 +6,9 @@ export interface Event {
   event_id: string;
   title: string;
   slug: string;
-  description: string; // JSON-encoded TipTap doc string dari BE, e.g. '{"type":"doc","content":[...]}'
+  description: {
+    content: string
+  }; // JSON-encoded TipTap doc string dari BE, e.g. '{"type":"doc","content":[...]}'
   category: string;
   type: string;
   status: string;
@@ -56,18 +58,14 @@ export interface Event {
     created_at?: string;
     updated_at?: string;
   }[];
-  // ============================================================
-  // 🌟 Field organizer belum ada di response BE saat ini.
-  //    Akan diisi dummy atau ditambahkan ke BE di iterasi berikutnya.
-  // ============================================================
-  // organizer?: {
-  //   id: string | number;
-  //   name: string;
-  //   slug?: string;
-  //   avatar?: string;
-  //   description?: string;
-  //   verification_status?: string;
-  // };
+  organizer: {
+    id: string | number;
+    name: string;
+    slug?: string;
+    avatar?: string;
+    description?: string;
+    verification_status?: string;
+  };
 }
 
 // ============================================================

@@ -9,6 +9,7 @@ import {
   Check,
   ExternalLink,
   Loader2,
+  Plus,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
@@ -309,7 +310,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                 : "Follow"}
           </Button>
         </div>
-          )}
+
 
         {/* Bagian Deskripsi Event  */}
         <div>
@@ -318,7 +319,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
             <h4 className="text-lg font-bold text-accent">Tentang Event</h4>
             {isEditable && <EditSectionModal event={event as any} section="core" />}
           </div>
-          <TipTapViewer content={descriptionContent} />
+          <TipTapViewer content={event.description?.content || ""} />
         </div>
 
         {/* Bagian Rundown Acara  */}
@@ -373,7 +374,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
           </div>
         )}
       </div>
-    </div>
+
     </section >
   );
 }
