@@ -89,11 +89,11 @@ export function NavContent({ showLabel = true, onClose, items }: NavContentProps
             asChild
             variant="ghost"
             className={cn(
-              "w-full justify-start h-10 whitespace-nowrap overflow-hidden",
+              "w-full justify-start h-10 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200",
               !showLabel && "justify-center px-2",
               isActive
-                ? "bg-primary/10 text-primary font-bold hover:bg-primary/20"
-                : "text-muted font-medium",
+                ? "bg-primary/10 text-primary font-bold shadow-sm hover:shadow hover:bg-primary/20 hover:text-primary"
+                : "text-muted-foreground font-medium hover:bg-primary/5 hover:text-primary",
             )}
             onClick={onClose}
           >
@@ -131,7 +131,7 @@ export default function OrganizerNavBar({ isOpen, toggleSidebar }: OrganizerNavB
     <Button
       variant="ghost"
       className={cn(
-        "w-full justify-start h-10 whitespace-nowrap overflow-hidden text-danger hover:text-danger hover:bg-danger/10",
+        "w-full justify-start h-10 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200 text-danger hover:text-danger hover:bg-danger/10",
         !isOpen && "justify-center px-2",
       )}
       onClick={logout}
@@ -196,12 +196,12 @@ export default function OrganizerNavBar({ isOpen, toggleSidebar }: OrganizerNavB
         <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-4 gap-4">
 
           <div className="flex flex-col gap-2 overflow-hidden">
-            <h2 className={cn("text-xs font-semibold text-muted", !isOpen && "text-center")}>Menu</h2>
+            <h2 className={cn("text-xs font-semibold text-muted-foreground uppercase tracking-wider", !isOpen && "text-center")}>Menu</h2>
             <NavContent showLabel={isOpen} items={menuItems} />
           </div>
 
           <div className="flex flex-col gap-2 overflow-hidden">
-            <h2 className={cn("text-xs font-semibold text-muted", !isOpen && "text-center")}>Akun</h2>
+            <h2 className={cn("text-xs font-semibold text-muted-foreground uppercase tracking-wider", !isOpen && "text-center")}>Akun</h2>
             <NavContent showLabel={isOpen} items={accountItems} />
             {isOpen ? (
               logoutButton
