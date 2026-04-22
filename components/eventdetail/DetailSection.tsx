@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Loader2,
   Plus,
+  CheckCircle2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
@@ -26,6 +27,7 @@ import TipTapViewer from "@/components/reusable/TipTapViewer";
 import { UserService } from "@/services/user-service";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth-store";
+import Link from "next/link";
 
 interface DetailSectionProps {
   event: Event;
@@ -72,15 +74,6 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
   const regDateString = formatDateRange(regStartDate, regEndDate);
   const regTimeString = formatTimeRange(regStartDate, regEndDate);
 
-  // Copy Address Logic
-  const [isCopied, setIsCopied] = useState(false);
-  const handleCopyAddress = () => {
-    if (event.address?.raw_address) {
-      navigator.clipboard.writeText(event.address.raw_address);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
 
   const { user } = useAuthStore();
   const [hasFollowed, setHasFollowed] = useState(false);
@@ -127,8 +120,8 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
   };
 
   return (
-    <section className="w-full flex flex-col items-center justify-between relative z-20">
-      <div className="w-full h-fit p-6 bg-white shadow-xs border-slate-200 rounded-3xl">
+    <section className="w-full flex flex-col items-center justify-between relative ">
+      <div className="w-full h-fit p-12 bg-white shadow-xs border-slate-200 rounded-3xl">
         <div className="flex flex-col gap-5">
           {/* Baris Kategori */}
           <div className="flex flex-wrap items-center gap-2">
@@ -161,8 +154,8 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8">
             {/* 1. Jadwal Event */}
             <div className="flex flex-row items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 shrink-0 rounded-full bg-primary-light text-primary mt-0.5">
-                <Calendar size={15} />
+              <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary-light text-primary">
+                <Calendar size={16} />
               </div>
               <div className="flex flex-col ">
                 <div className="flex items-center gap-1">
@@ -176,8 +169,8 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
 
             {/* 2. Masa Registrasi */}
             <div className="flex flex-row items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 shrink-0 rounded-full bg-primary-light text-primary mt-0.5">
-                <Clock size={15} />
+              <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary-light text-primary">
+                <Clock size={16} />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1">
@@ -191,23 +184,14 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
 
             {/* 3. Lokasi */}
             <div className="flex flex-row items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 shrink-0 rounded-full bg-primary-light text-primary mt-0.5">
-                <MapPin size={15} />
+              <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary-light text-primary">
+                <MapPin size={16} />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1">
                   <span className="text-[11px] tracking-wide font-medium text-muted">Lokasi</span>
                   {isEditable && <EditSectionModal event={event as any} section="location" />}
-                  {!event.is_online && (
-                    <Button
-                      variant="ghost"
-                      onClick={handleCopyAddress}
-                      className="text-primary hover:text-primary-hover transition-colors p-0.5 h-fit rounded-full"
-                      title="Salin Alamat"
-                    >
-                      {isCopied ? <Check size={12} /> : <Copy size={12} />}
-                    </Button>
-                  )}
+
                 </div>
                 <p
                   className="font-semibold text-accent line-clamp-2"
@@ -237,8 +221,8 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
 
             {/* 4. Partisipan */}
             <div className="flex flex-row items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 shrink-0 rounded-full bg-primary-light text-primary mt-0.5">
-                <Users size={15} />
+              <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary-light text-primary mt-0.5">
+                <Users size={16} />
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1">
@@ -255,19 +239,14 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
           {/* Pemisah  */}
           <Separator orientation="horizontal" />
 
-          {/* ============================================================
-              🌟 Section Organizer — data belum ada di response BE.
-              Akan ditampilkan kembali setelah BE menambahkan field organizer
-              ke EventResponse DTO.
-          ============================================================ */}
-          {/* <div className="bg-primary-light p-6 rounded-3xl">
+          <div className="bg-primary-light p-6 rounded-3xl">
             {event.organizer && (
               <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex flex-row items-center gap-3 w-full md:w-auto">
                   <div className="shrink-0">
                     <Link href={`/organizer/${event.organizer.id}`} className="hover:opacity-80 transition-opacity">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={event.organizer.avatar} />
+                        <AvatarImage src={event.organizer.profile_image_url} />
                         <AvatarFallback>
                           {event.organizer.name.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
@@ -286,93 +265,94 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                     </div>
                   </div>
                 </div>
+                {/* Kanan: Tombol Aksi */}
+                <Button
+                  variant={hasFollowed ? "outline" : "default"}
+                  size="sm"
+                  className="rounded-full px-6"
+                  onClick={handleFollowToggle}
+                  disabled={isLoadingFollow}
+                >
+                  {isLoadingFollow ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : hasFollowed ? (
+                    <Check size={14} />
+                  ) : (
+                    <Plus size={14} className="" />
+                  )}
+                  {isLoadingFollow
+                    ? "Loading..."
+                    : hasFollowed
+                      ? "Unfollow"
+                      : "Follow"}
+                </Button>
               </div>
-
-              {/* Kanan: Tombol Aksi */}
-          <Button
-            variant={hasFollowed ? "outline" : "default"}
-            size="sm"
-            className="rounded-full px-6"
-            onClick={handleFollowToggle}
-            disabled={isLoadingFollow}
-          >
-            {isLoadingFollow ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : hasFollowed ? (
-              <Check size={14} />
-            ) : (
-              <Plus size={14} className="" />
             )}
-            {isLoadingFollow
-              ? "Loading..."
-              : hasFollowed
-                ? "Unfollow"
-                : "Follow"}
-          </Button>
-        </div>
-
-
-        {/* Bagian Deskripsi Event  */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-1 bg-primary rounded-full"></div>
-            <h4 className="text-lg font-bold text-accent">Tentang Event</h4>
-            {isEditable && <EditSectionModal event={event as any} section="core" />}
           </div>
-          <TipTapViewer content={event.description?.content || ""} />
-        </div>
 
-        {/* Bagian Rundown Acara  */}
-        {event.rundowns && event.rundowns.length > 0 && (
+
+          {/* Bagian Deskripsi Event  */}
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="h-8 w-1 bg-primary rounded-full"></div>
-              <h4 className="text-lg font-bold text-accent">Rundown Acara</h4>
-              {isEditable && <EditSectionModal event={event as any} section="rundown" />}
+              <h4 className="text-lg font-bold text-accent">Tentang Event</h4>
+              {isEditable && <EditSectionModal event={event as any} section="core" />}
             </div>
+            <TipTapViewer content={event.description?.content || ""} />
+          </div>
 
-            <div className="flex flex-col gap-4">
-              {event.rundowns.map((item, index) => (
-                <div
-                  key={item.id ?? index}
-                  className="group flex flex-col md:flex-row gap-3 md:gap-6 p-5 rounded-3xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 transition-all duration-300"
-                >
-                  {/* Waktu (Kiri) */}
-                  <div className=" shrink-0 flex flex-col justify-start md:justify-center pt-1">
-                    <div className="flex items-center gap-2 text-sm font-bold text-primary bg-white border border-primary/10 px-3 py-1.5 rounded-xl w-fit">
-                      <Clock size={14} className="md:w-5 md:h-5" />
-                      <span>
-                        {item.start_time} - {item.end_time}
-                      </span>
+          {/* Bagian Rundown Acara  */}
+          {event.rundowns && event.rundowns.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-8 w-1 bg-primary rounded-full"></div>
+                <h4 className="text-lg font-bold text-accent">Rundown Acara</h4>
+                {isEditable && <EditSectionModal event={event as any} section="rundown" />}
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {event.rundowns.map((item, index) => (
+                  <div
+                    key={item.id ?? index}
+                    className="group flex flex-col md:flex-row gap-3 md:gap-6 p-5 rounded-3xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 transition-all duration-300"
+                  >
+                    {/* Waktu (Kiri) */}
+                    <div className=" shrink-0 flex flex-col justify-start md:justify-center pt-1">
+                      <div className="flex items-center gap-2 text-sm font-bold text-primary bg-white border border-primary/10 px-3 py-1.5 rounded-xl w-fit">
+                        <Clock size={14} className="md:w-5 md:h-5" />
+                        <span>
+                          {item.start_time} - {item.end_time}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Detail (Kanan) */}
+                    <div className={`flex flex-col w-full ${(item.location || item.description) ? "gap-2" : "justify-center"}`}>
+                      <h5 className="font-bold text-accent text-lg leading-tight group-hover:text-primary transition-colors">
+                        {item.title}
+                      </h5>
+
+                      {item.location && (
+                        <div className="flex items-center gap-2 text-sm text-slate-500">
+                          <MapPin size={16} className="text-primary shrink-0" />
+                          <span className="font-medium">{item.location}</span>
+                        </div>
+                      )}
+
+                      {item.description && (
+                        <div className="mt-1 pb-1 border-l-2 border-slate-200 pl-3 ml-1">
+                          <p className="text-sm text-muted leading-relaxed">
+                            {item.description}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {/* Detail (Kanan) */}
-                  <div className={`flex flex-col w-full ${(item.location || item.description) ? "gap-2" : "justify-center"}`}>
-                    <h5 className="font-bold text-accent text-lg leading-tight group-hover:text-primary transition-colors">
-                      {item.title}
-                    </h5>
-
-                    {item.location && (
-                      <div className="flex items-center gap-2 text-sm text-slate-500">
-                        <MapPin size={16} className="text-primary shrink-0" />
-                        <span className="font-medium">{item.location}</span>
-                      </div>
-                    )}
-
-                    {item.description && (
-                      <div className="mt-1 pb-1 border-l-2 border-slate-200 pl-3 ml-1">
-                        <p className="text-sm text-muted leading-relaxed">
-                          {item.description}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
     </section >

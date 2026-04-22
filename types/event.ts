@@ -62,7 +62,8 @@ export interface Event {
     id: string | number;
     name: string;
     slug?: string;
-    avatar?: string;
+    profile_image_url?: string;
+    banner_image_url?: string;
     description?: string;
     verification_status?: string;
   };
