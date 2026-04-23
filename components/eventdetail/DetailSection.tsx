@@ -121,7 +121,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
 
   return (
     <section className="w-full flex flex-col items-center justify-between relative ">
-      <div className="w-full h-fit p-12 bg-white shadow-xs border-slate-200 rounded-3xl">
+      <div className="w-full h-fit p-10 bg-white shadow-xs border-slate-200 rounded-3xl">
         <div className="flex flex-col gap-5">
           {/* Baris Kategori */}
           <div className="flex flex-wrap items-center gap-2">
@@ -145,7 +145,8 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
           </div>
 
           {/* Judul event */}
-          <div className="flex items-center gap-3 mt-3">
+          <div className="flex items-center gap-3 py-5">
+            <div className="h-8 w-1 bg-primary rounded-full"></div>
             <h1 className="text-xl md:text-2xl font-bold text-accent leading-tight">{event.title}</h1>
             {isEditable && <EditSectionModal event={event as any} section="core" />}
           </div>
@@ -292,7 +293,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
 
 
           {/* Bagian Deskripsi Event  */}
-          <div>
+          <div className="pt-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="h-8 w-1 bg-primary rounded-full"></div>
               <h4 className="text-lg font-bold text-accent">Tentang Event</h4>
@@ -303,7 +304,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
 
           {/* Bagian Rundown Acara  */}
           {event.rundowns && event.rundowns.length > 0 && (
-            <div>
+            <div className="pt-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-8 w-1 bg-primary rounded-full"></div>
                 <h4 className="text-lg font-bold text-accent">Rundown Acara</h4>
@@ -328,6 +329,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
 
                     {/* Detail (Kanan) */}
                     <div className={`flex flex-col w-full ${(item.location || item.description) ? "gap-2" : "justify-center"}`}>
+
                       <h5 className="font-bold text-accent text-lg leading-tight group-hover:text-primary transition-colors">
                         {item.title}
                       </h5>

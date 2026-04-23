@@ -297,7 +297,7 @@ export default function PublicOrganizerProfile({ organizerId }: PublicOrganizerP
           <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white/50 to-transparent" />
         </div>
 
-        <div className="container max-w-6xl mx-auto px-4 md:px-8 pb-6">
+        <div className="container max-w-6xl mx-auto px-4 md:px-8 pb-6 relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 -mt-10 sm:-mt-12">
             {/* Avatar */}
             <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-primary/10 border-4 border-white shadow-md flex items-center justify-center">
@@ -325,24 +325,24 @@ export default function PublicOrganizerProfile({ organizerId }: PublicOrganizerP
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0">
               <button
                 onClick={() => setFollowed((f) => !f)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200",
+                  "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300",
                   followed
                     ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    : "bg-primary text-white hover:bg-primary/90 shadow-sm hover:-translate-y-0.5"
+                    : "bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg hover:-translate-y-0.5"
                 )}
               >
                 <UserPlus className="w-4 h-4" />
                 {followed ? "Mengikuti" : "Ikuti"}
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all">
+              <button className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-300">
                 <Mail className="w-4 h-4" />
                 Hubungi
               </button>
-              <button className="flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all">
+              <button className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300">
                 <Share2 className="w-4 h-4" />
               </button>
             </div>
