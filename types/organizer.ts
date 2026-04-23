@@ -11,6 +11,7 @@ export interface OrganizerProfileEvent {
   start_time: string; // ISO 8601
   end_time: string;   // ISO 8601
   attendee_count: number;
+  primary_image?: string;
 }
 
 export interface OrganizerProfileReview {
@@ -37,6 +38,7 @@ export interface OrganizerProfileInfo {
   slug: string;
   description: string;
   joined_at: string; // ISO 8601
+  profile_image_url?: string;
 }
 
 export interface OrganizerProfileData {

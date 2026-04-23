@@ -245,7 +245,7 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
               <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex flex-row items-center gap-3 w-full md:w-auto">
                   <div className="shrink-0">
-                    <Link href={`/organizer/${event.organizer.id}`} className="hover:opacity-80 transition-opacity">
+                    <Link href={`/organizer/${event.organizer.slug}`} className="hover:opacity-80 transition-opacity">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={event.organizer.profile_image_url} />
                         <AvatarFallback>

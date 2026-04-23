@@ -111,7 +111,7 @@ function OrganizerEventCard({ event }: { event: OrganizerProfileEvent }) {
           </div>
         ) : (
           <Image
-            src={`/placeholder-event.jpg`}
+            src={event.primary_image || `/placeholder-event.jpg`}
             alt={event.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
@@ -225,10 +225,10 @@ const TABS: { id: TabId; label: string }[] = [
 interface PublicOrganizerProfileProps {
   /** When provided, fetches the public profile by this ID.
    *  Omit to fetch the currently-authenticated organizer's own profile. */
-  organizerId?: string;
+  slug?: string;
 }
 
-export default function PublicOrganizerProfile({ organizerId }: PublicOrganizerProfileProps = {}) {
+export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileProps = {}) {
   const [profile, setProfile] = useState<OrganizerProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -236,8 +236,8 @@ export default function PublicOrganizerProfile({ organizerId }: PublicOrganizerP
   const [followed, setFollowed] = useState(false);
 
   useEffect(() => {
-    const fetch = organizerId
-      ? OrganizerService.getProfileById(organizerId)
+    const fetch = slug
+      ? OrganizerService.getProfileBySlug(slug)
       : OrganizerService.getProfile();
 
     fetch
@@ -247,7 +247,7 @@ export default function PublicOrganizerProfile({ organizerId }: PublicOrganizerP
         setError("Gagal memuat profil organizer.");
       })
       .finally(() => setIsLoading(false));
-  }, [organizerId]);
+  }, [slug]);
 
   // ── Loading ──
   if (isLoading) {
@@ -300,10 +300,19 @@ export default function PublicOrganizerProfile({ organizerId }: PublicOrganizerP
         <div className="container max-w-6xl mx-auto px-4 md:px-8 pb-6 relative z-10">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 -mt-10 sm:-mt-12">
             {/* Avatar */}
-            <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-primary/10 border-4 border-white shadow-md flex items-center justify-center">
-              <span className="text-4xl sm:text-5xl font-bold text-primary select-none">
-                {organizer.name.charAt(0).toUpperCase()}
-              </span>
+            <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-primary/10 border-4 border-white shadow-md flex items-center justify-center overflow-hidden relative">
+              {organizer.profile_image_url ? (
+                <Image
+                  src={organizer.profile_image_url}
+                  alt={organizer.name}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <span className="text-4xl sm:text-5xl font-bold text-primary select-none z-10">
+                  {organizer.name.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
 
 

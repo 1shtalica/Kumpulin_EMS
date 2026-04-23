@@ -3,18 +3,18 @@ import LandingFooter from "@/components/landingpage/LandingFooter";
 import PublicOrganizerProfile from "@/components/organizer/profile/PublicOrganizerProfile";
 
 type Props = {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateMetadata({ params }: Props) {
-  const { id } = await params;
+  const { slug } = await params;
   return {
     title: `Profil Organizer - Kumpulin`,
     description: `Lihat profil, event mendatang, dan ulasan dari organizer ini.`,
     // TODO: swap to real organizer name once BE is integrated
     openGraph: {
       title: `Profil Organizer - Kumpulin`,
-      description: `Event mendatang dan ulasan dari organizer ${id}`,
+      description: `Event mendatang dan ulasan dari organizer ${slug}`,
     },
   };
 }
@@ -27,13 +27,13 @@ export async function generateMetadata({ params }: Props) {
  * Fetches profile data by organizer ID from GET /organizer/:id/profile.
  */
 export default async function PublicOrganizerProfilePage({ params }: Props) {
-  const { id } = await params;
+  const { slug } = await params;
 
   return (
     <div className="min-h-screen bg-[#f8f8fa] flex flex-col">
       <LandingNavbar />
       <main className="flex-1 pt-16">
-        <PublicOrganizerProfile organizerId={id} />
+        <PublicOrganizerProfile slug={slug} key={Math.random()} />
       </main>
       <LandingFooter />
     </div>
