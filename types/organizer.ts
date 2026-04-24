@@ -39,6 +39,7 @@ export interface OrganizerProfileInfo {
   description: string;
   joined_at: string; // ISO 8601
   profile_image_url?: string;
+  banner_image_url?: string;
 }
 
 export interface OrganizerProfileData {

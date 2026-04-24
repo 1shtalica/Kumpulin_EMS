@@ -17,7 +17,12 @@ import {
   AlertCircle,
   Inbox,
   CalendarDays,
+  Check,
 } from "lucide-react";
+import { useDebouncedCallback } from "use-debounce";
+import { UserService } from "@/services/user-service";
+import { toast } from "sonner";
+import { useAuthStore } from "@/stores/auth-store";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import Image from "next/image";
@@ -229,11 +234,54 @@ interface PublicOrganizerProfileProps {
 }
 
 export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileProps = {}) {
+  const { user } = useAuthStore();
   const [profile, setProfile] = useState<OrganizerProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("upcoming");
   const [followed, setFollowed] = useState(false);
+  const [isLoadingFollow, setIsLoadingFollow] = useState(false);
+
+  useEffect(() => {
+    if (user && profile?.organizer?.id) {
+      const fetchFollowStatus = async () => {
+        try {
+          const res = await UserService.getFollowStatus(profile.organizer.id.toString());
+          if (res.data?.is_follow) {
+            setFollowed(true);
+          }
+        } catch (err) {
+          console.error("Failed to fetch follow status", err);
+        }
+      };
+      fetchFollowStatus();
+    }
+  }, [user, profile?.organizer?.id]);
+
+  const debouncedFollowToggle = useDebouncedCallback(async () => {
+    if (!profile?.organizer?.id) return;
+    try {
+      if (followed) {
+        await UserService.unfollowOrganizer(profile.organizer.id.toString());
+        toast.success("Berhasil berhenti mengikuti organizer");
+        setFollowed(false);
+      } else {
+        await UserService.followOrganizer(profile.organizer.id.toString());
+        toast.success("Berhasil mengikuti organizer");
+        setFollowed(true);
+      }
+    } catch (err) {
+      toast.error(followed ? "Gagal berhenti mengikuti organizer" : "Gagal mengikuti organizer");
+    } finally {
+      setIsLoadingFollow(false);
+    }
+  }, 500);
+
+  const handleFollowToggle = () => {
+    if (isLoadingFollow || !profile?.organizer?.id) return;
+    setIsLoadingFollow(true);
+    debouncedFollowToggle();
+  };
 
   useEffect(() => {
     const fetch = slug
@@ -287,7 +335,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
         {/* Cover Banner */}
         <div className="relative w-full h-32 sm:h-44 overflow-hidden bg-slate-100">
           <Image
-            src="/organizer-cover-placeholder.png"
+            src={organizer.banner_image_url || "/organizer-cover-placeholder.png"}
             alt="Organizer cover"
             fill
             className="object-cover"
@@ -298,9 +346,9 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
         </div>
 
         <div className="container max-w-6xl mx-auto px-4 md:px-8 pb-6 relative z-10">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 -mt-10 sm:-mt-12">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
             {/* Avatar */}
-            <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-primary/10 border-4 border-white shadow-md flex items-center justify-center overflow-hidden relative">
+            <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-primary/10 border-4 border-white shadow-md flex items-center justify-center overflow-hidden relative -mt-10 sm:-mt-12">
               {organizer.profile_image_url ? (
                 <Image
                   src={organizer.profile_image_url}
@@ -317,7 +365,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
 
 
             {/* Name + description */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 pt-2 sm:pt-3">
               <div className="flex items-center gap-2 flex-wrap mb-0.5">
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
                   {organizer.name}
@@ -334,24 +382,36 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0 sm:pt-3">
               <button
-                onClick={() => setFollowed((f) => !f)}
+                onClick={handleFollowToggle}
+                disabled={isLoadingFollow}
                 className={cn(
-                  "flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300",
+                  "cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300",
                   followed
                     ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    : "bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                    : "bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg hover:-translate-y-0.5",
+                  isLoadingFollow && "opacity-70 cursor-not-allowed"
                 )}
               >
-                <UserPlus className="w-4 h-4" />
-                {followed ? "Mengikuti" : "Ikuti"}
+                {isLoadingFollow ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : followed ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <UserPlus className="w-4 h-4" />
+                )}
+                {isLoadingFollow
+                  ? "Loading..."
+                  : followed
+                    ? "Mengikuti"
+                    : "Ikuti"}
               </button>
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-300">
+              <button className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-300">
                 <Mail className="w-4 h-4" />
                 Hubungi
               </button>
-              <button className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300">
+              <button className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300">
                 <Share2 className="w-4 h-4" />
               </button>
             </div>
@@ -445,7 +505,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "relative pb-3 px-5 text-sm font-bold transition-colors",
+                    "cursor-pointer relative pb-3 px-5 text-sm font-bold transition-colors",
                     activeTab === tab.id
                       ? "text-primary"
                       : "text-slate-400 hover:text-slate-700"
