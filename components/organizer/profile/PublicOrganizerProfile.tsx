@@ -40,7 +40,6 @@ import type {
 import { cn } from "@/lib/utils";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function formatStat(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
@@ -88,7 +87,6 @@ function hostingDuration(joinedAt: string): string {
 }
 
 // ─── Event Mode Config ────────────────────────────────────────────────────────
-
 const modeConfig: Record<
   string,
   { label: string; icon: React.ElementType; className: string }
@@ -99,7 +97,6 @@ const modeConfig: Record<
 };
 
 // ─── Event Card ───────────────────────────────────────────────────────────────
-
 function OrganizerEventCard({ event }: { event: OrganizerProfileEvent }) {
   const [imgError, setImgError] = useState(false);
   const mode = modeConfig[event.event_mode] ?? modeConfig.offline;
@@ -245,15 +242,15 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
   const [activeTab, setActiveTab] = useState<TabId>(slug ? "upcoming" : "reviews");
   const [followed, setFollowed] = useState(false);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
-  
+
   const router = useRouter();
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const profileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     toast.loading("Mengunggah banner...", { id: "upload-banner" });
     try {
       await OrganizerService.updateBannerImage(file);
@@ -270,7 +267,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
   const handleProfileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     toast.loading("Mengunggah foto profil...", { id: "upload-profile" });
     try {
       await OrganizerService.updateProfileImage(file);
@@ -281,6 +278,12 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
       toast.error(err.message || "Gagal mengunggah foto profil", { id: "upload-profile" });
     }
   };
+
+  function handleShareableLink() {
+    const PROFILE_LINK = window.location.href;
+    navigator.clipboard.writeText(PROFILE_LINK);
+    toast.info("Link berhasil disalin!");
+  }
 
   useEffect(() => {
     if (user && profile?.organizer?.id) {
@@ -390,7 +393,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                 className="hidden"
                 onChange={handleBannerUpload}
               />
-              <button 
+              <button
                 onClick={() => bannerInputRef.current?.click()}
                 className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-xs font-bold rounded-full transition-colors border border-white/20"
               >
@@ -428,7 +431,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                     className="hidden"
                     onChange={handleProfileUpload}
                   />
-                  <div 
+                  <div
                     onClick={() => profileInputRef.current?.click()}
                     className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 cursor-pointer z-20"
                   >
@@ -488,7 +491,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                     <Mail className="w-4 h-4" />
                     Hubungi
                   </button>
-                  <button className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300">
+                  <button className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300" onClick={handleShareableLink}>
                     <Share2 className="w-4 h-4" />
                   </button>
                 </>
