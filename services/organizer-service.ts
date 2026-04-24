@@ -20,6 +20,56 @@ export const OrganizerService = {
   },
 
   /**
+   * PATCH /organizer/profile
+   * Updates the organizer's profile name and description
+   */
+  async updateProfile(payload: { name: string; description: string }): Promise<any> {
+    try {
+      const response = await axiosClient.patch("/auth/profile", payload);
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to update organizer profile", error);
+      throw error;
+    }
+  },
+
+  /**
+   * PATCH /organizer/profile/image
+   * Updates the organizer's profile avatar
+   */
+  async updateProfileImage(file: File): Promise<any> {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await axiosClient.patch("/organizer/profile/image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to update profile image", error);
+      throw error;
+    }
+  },
+
+  /**
+   * PATCH /organizer/profile/banner
+   * Updates the organizer's banner image
+   */
+  async updateBannerImage(file: File): Promise<any> {
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await axiosClient.patch("/organizer/profile/banner", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error("Failed to update banner image", error);
+      throw error;
+    }
+  },
+
+  /**
    * GET /organizers/profile/:slug  (real — public profile by organizer slug)
    * This maps the backend's Event response into the expected OrganizerProfileData shape
    */

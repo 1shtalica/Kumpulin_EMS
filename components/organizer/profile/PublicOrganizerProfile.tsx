@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import {
   Users,
   Calendar,
@@ -21,6 +22,7 @@ import {
   Settings,
   Image as ImageIcon,
 } from "lucide-react";
+import { EditProfileModal } from "./EditProfileModal";
 import { useDebouncedCallback } from "use-debounce";
 import { UserService } from "@/services/user-service";
 import { toast } from "sonner";
@@ -243,6 +245,42 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
   const [activeTab, setActiveTab] = useState<TabId>(slug ? "upcoming" : "reviews");
   const [followed, setFollowed] = useState(false);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
+  
+  const router = useRouter();
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    toast.loading("Mengunggah banner...", { id: "upload-banner" });
+    try {
+      await OrganizerService.updateBannerImage(file);
+      toast.success("Banner berhasil diperbarui!", { id: "upload-banner" });
+      router.refresh();
+      // Optional: Update local state immediately if needed, or rely on a full page reload if we re-fetch profile on component mount
+      // For now, refreshing the router and re-running the fetch effect will grab the new data.
+      window.location.reload(); // Quick dirty way to refresh page if router.refresh() doesn't immediately refetch the effect for this component.
+    } catch (err: any) {
+      toast.error(err.message || "Gagal mengunggah banner", { id: "upload-banner" });
+    }
+  };
+
+  const handleProfileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    toast.loading("Mengunggah foto profil...", { id: "upload-profile" });
+    try {
+      await OrganizerService.updateProfileImage(file);
+      toast.success("Foto profil berhasil diperbarui!", { id: "upload-profile" });
+      router.refresh();
+      window.location.reload();
+    } catch (err: any) {
+      toast.error(err.message || "Gagal mengunggah foto profil", { id: "upload-profile" });
+    }
+  };
 
   useEffect(() => {
     if (user && profile?.organizer?.id) {
@@ -345,7 +383,17 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
           />
           {!slug && (
             <div className="absolute top-4 right-4 z-20">
-              <button className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-xs font-bold rounded-full transition-colors border border-white/20">
+              <input
+                type="file"
+                accept="image/*"
+                ref={bannerInputRef}
+                className="hidden"
+                onChange={handleBannerUpload}
+              />
+              <button 
+                onClick={() => bannerInputRef.current?.click()}
+                className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-xs font-bold rounded-full transition-colors border border-white/20"
+              >
                 <ImageIcon className="w-3.5 h-3.5" />
                 Ubah Banner
               </button>
@@ -372,9 +420,21 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                 </span>
               )}
               {!slug && (
-                <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 cursor-pointer z-20">
-                  <ImageIcon className="w-6 h-6 text-white" />
-                </div>
+                <>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={profileInputRef}
+                    className="hidden"
+                    onChange={handleProfileUpload}
+                  />
+                  <div 
+                    onClick={() => profileInputRef.current?.click()}
+                    className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 cursor-pointer z-20"
+                  >
+                    <ImageIcon className="w-6 h-6 text-white" />
+                  </div>
+                </>
               )}
             </div>
 
@@ -434,10 +494,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                 </>
               ) : (
                 <>
-                  <button className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold bg-primary text-white hover:bg-primary/90 shadow-md hover:-translate-y-0.5 transition-all duration-300">
-                    <Settings className="w-4 h-4" />
-                    Edit Profil
-                  </button>
+                  <EditProfileModal organizer={organizer} />
                   <button className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300">
                     <Share2 className="w-4 h-4" />
                   </button>
