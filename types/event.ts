@@ -21,6 +21,7 @@ export interface Event {
   event_end_date: string;    // ISO 8601
   start_registration_date: string; // ISO 8601
   end_registration_date: string;   // ISO 8601
+  is_wishlisted?: boolean; //🌟 belum diimplementasi backend
   address: {
     address_id?: string;
     title?: string;

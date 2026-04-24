@@ -1,23 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
   Minus,
   Plus,
-  Share2,
   Facebook,
-  Twitter,
   Link as LinkIcon,
   Loader2,
   X,
-  InstagramIcon,
   Phone,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Event } from "@/types/event";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/auth-store";
 
 const TICKET_COLORS = [
   { bg: "bg-pink-100", border: "border-pink-200", ring: "ring-pink-400 border-pink-400", text: "text-pink-600" },
@@ -63,6 +63,8 @@ function QuotaBar({
 
 // --- 2. KOMPONEN UTAMA ---
 export default function TicketSection({ event }: { event: Event }) {
+  const user = useAuthStore((state) => state.user);
+
   // --- LOGIC TIKET GRATIS ---
   // Jika event gratis & tidak ada tiket spesifik dari backend, buat tiket virtual
   const isPaid = event.ticket_categories?.some((t) => t.price > 0) || false;
@@ -71,17 +73,17 @@ export default function TicketSection({ event }: { event: Event }) {
 
   const effectiveTickets = isFreeEventWithNoTickets
     ? [
-      {
-        id: "free-virtual",
-        name: "Tiket Gratis",
-        price: 0,
-        quota: event.max_capacity || 0,
-        booked: event.total_sold || 0,
-        description: "Tiket masuk untuk event ini.",
-        start_date_time: undefined as string | undefined,
-        end_date_time: undefined as string | undefined,
-      },
-    ]
+        {
+          id: "free-virtual",
+          name: "Tiket Gratis",
+          price: 0,
+          quota: event.max_capacity || 0,
+          booked: event.total_sold || 0,
+          description: "Tiket masuk untuk event ini.",
+          start_date_time: undefined as string | undefined,
+          end_date_time: undefined as string | undefined,
+        },
+      ]
     : (event.ticket_categories ?? []);
 
   // Use first available ticket as default if exists
@@ -93,11 +95,38 @@ export default function TicketSection({ event }: { event: Event }) {
   );
   const [qty, setQty] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(event.is_wishlisted || false);
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setCurrentTime(new Date()); // Hanya jalan di client
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const now = currentTime?.getTime() ?? 0;
+  const startReg = event.start_registration_date ? new Date(event.start_registration_date).getTime() : 0;
+  const endReg = event.end_registration_date ? new Date(event.end_registration_date).getTime() : Infinity;
+
+  const isRegistrationUpcoming = startReg > 0 && now > 0 && now < startReg;
+  const isRegistrationClosed = now > 0 && now > endReg;
+  const isRegistrationOpen = now > 0 && !isRegistrationUpcoming && !isRegistrationClosed;
 
   // Cari data tiket yang sedang dipilih
   const selectedTicket = effectiveTickets.find(
     (t) => t.id === selectedTicketId,
   );
+
+  const maxPurchase = (() => {
+    if (!selectedTicket) return 0;
+    const remaining = selectedTicket.quota > 0
+      ? selectedTicket.quota - selectedTicket.booked
+      : Infinity;
+    const limitPerUser = event.max_ticket_per_user ?? 0;
+    return limitPerUser > 0
+      ? Math.min(remaining, limitPerUser)
+      : remaining;
+  })();
 
   // Hitung Total Harga
   const totalPrice = selectedTicket ? selectedTicket.price * qty : 0;
@@ -112,55 +141,64 @@ export default function TicketSection({ event }: { event: Event }) {
     }).format(num);
   };
 
-  const handleSelectTicket = (id: string, isSoldOut: boolean) => {
-    if (isSoldOut) return;
+  const formatCountdown = (diff: number) => {
+    if (diff <= 0) return "00:00:00:00";
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const m = Math.floor((diff / 1000 / 60) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+    return `${d.toString().padStart(2, "0")}:${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const handleSelectTicket = (id: string, isSelectable: boolean) => {
+    if (!isSelectable) return;
     setSelectedTicketId(id);
     setQty(1);
   };
 
   const handleShare = (platform: string) => {
-    // Implementasi handle share sesuai platform
     switch (platform) {
-      case "facebook":
+      case "facebook": {
         const url = window.location.href;
         const text = `Yuk ikut event seru ini: ${event.title} - ${url}`;
-        const urlFacebook = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-          url,
-        )}&text=${encodeURIComponent(text)}`;
-        window.open(urlFacebook, "_blank");
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+          "_blank",
+        );
         break;
-      case "x":
-        const urlX = window.location.href;
-        const textX = `Yuk ikut event seru ini: ${event.title} - ${urlX}`;
-        const urlXTweet = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-          urlX,
-        )}&text=${encodeURIComponent(textX)}`;
-        window.open(urlXTweet, "_blank");
+      }
+      case "x": {
+        const url = window.location.href;
+        const text = `Yuk ikut event seru ini: ${event.title} - ${url}`;
+        window.open(
+          `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+          "_blank",
+        );
         break;
-      case "instagram":
-        const urlInsta = window.location.href;
-        const textInsta = `Yuk ikut event seru ini: ${event.title} - ${urlInsta}`;
-        const urlInstaPost = `https://www.instagram.com/share?url=${encodeURIComponent(
-          urlInsta,
-        )}&text=${encodeURIComponent(textInsta)}`;
-        window.open(urlInstaPost, "_blank");
+      }
+      case "instagram": {
+        const url = window.location.href;
+        const text = `Yuk ikut event seru ini: ${event.title} - ${url}`;
+        window.open(
+          `https://www.instagram.com/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+          "_blank",
+        );
         break;
-      case "whatsapp":
-        const urlWhatsapp = window.location.href;
-        const textWhatsapp = `Yuk ikut event seru ini: ${event.title} - ${urlWhatsapp}`;
-        const urlWhatsappShare = `https://wa.me/?text=${encodeURIComponent(
-          textWhatsapp,
-        )}`;
-        window.open(urlWhatsappShare, "_blank");
+      }
+      case "whatsapp": {
+        const text = `Yuk ikut event seru ini: ${event.title} - ${window.location.href}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
         break;
-      case "telegram":
-        const urlTelegram = window.location.href;
-        const textTelegram = `Yuk ikut event seru ini: ${event.title} - ${urlTelegram}`;
-        const urlTelegramShare = `https://t.me/share/url?url=${encodeURIComponent(
-          urlTelegram,
-        )}&text=${encodeURIComponent(textTelegram)}`;
-        window.open(urlTelegramShare, "_blank");
+      }
+      case "telegram": {
+        const url = window.location.href;
+        const text = `Yuk ikut event seru ini: ${event.title} - ${url}`;
+        window.open(
+          `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+          "_blank",
+        );
         break;
+      }
       case "link":
         navigator.clipboard.writeText(window.location.href);
         toast.success("Link berhasil disalin!");
@@ -174,23 +212,53 @@ export default function TicketSection({ event }: { event: Event }) {
         <div className="flex flex-col gap-4">
           <h3 className="text-base font-bold text-accent">Pilih Tiket</h3>
 
+          {/* --- EVENT REGISTRATION COUNTDOWN --- */}
+          {isRegistrationUpcoming && currentTime && (
+            <div className="p-3 bg-primary/10 border border-primary/20 rounded-2xl text-center flex flex-col items-center">
+              <span className="text-xs text-primary font-medium mb-1">Pendaftaran dibuka dalam</span>
+              <span className="text-xl font-bold text-primary font-mono tracking-wider">{formatCountdown(startReg - now)}</span>
+            </div>
+          )}
+          {!isRegistrationUpcoming && isRegistrationOpen && endReg !== Infinity && currentTime && (
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-center flex flex-col items-center">
+              <span className="text-xs text-amber-600 font-medium mb-1">Pendaftaran ditutup dalam</span>
+              <span className="text-xl font-bold text-amber-600 font-mono tracking-wider">{formatCountdown(endReg - now)}</span>
+            </div>
+          )}
+          {isRegistrationClosed && currentTime && (
+            <div className="p-3 bg-slate-100 border border-slate-200 rounded-2xl text-center">
+              <span className="text-sm font-semibold text-slate-500">Pendaftaran Telah Ditutup</span>
+            </div>
+          )}
+
           {/* --- LIST TIKET --- */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 mt-2">
             {effectiveTickets.map((ticket, index) => {
+              const ticketStart = ticket.start_date_time ? new Date(ticket.start_date_time).getTime() : 0;
+              const ticketEnd = ticket.end_date_time ? new Date(ticket.end_date_time).getTime() : Infinity;
+
+              const isTicketUpcoming = ticketStart > 0 && now > 0 && now < ticketStart;
+              const isTicketClosed = now > 0 && now > ticketEnd;
+              const isTicketOpen = now > 0 && !isTicketUpcoming && !isTicketClosed;
+
+              const isActuallySoldOut = ticket.quota > 0 && ticket.booked >= ticket.quota;
+              const isSelectable = !isActuallySoldOut && isRegistrationOpen && isTicketOpen;
+
               const isSelected = selectedTicketId === ticket.id;
-              const isSoldOut = ticket.quota > 0 && ticket.booked >= ticket.quota;
               const color = TICKET_COLORS[index % TICKET_COLORS.length];
 
               return (
                 <div
                   key={ticket.id}
-                  onClick={() => handleSelectTicket(ticket.id ?? "", isSoldOut)}
+                  onClick={() => handleSelectTicket(ticket.id ?? "", isSelectable)}
                   className={cn(
                     "group relative flex w-full rounded-2xl transition-all duration-300 cursor-pointer overflow-hidden",
                     "border shadow-[0_2px_10px_rgba(0,0,0,0.04)]",
                     color.bg,
-                    isSoldOut && "opacity-60 cursor-not-allowed grayscale",
-                    isSelected && !isSoldOut ? `ring-1 scale-[1.01] ${color.ring}` : `hover:shadow-md hover:-translate-y-0.5 ${color.border}`
+                    !isSelectable && "opacity-60 cursor-not-allowed grayscale",
+                    isSelected && isSelectable
+                      ? `ring-1 scale-[1.01] ${color.ring}`
+                      : `hover:shadow-md hover:-translate-y-0.5 ${color.border}`,
                   )}
                 >
                   {/* Left Color Stub */}
@@ -210,6 +278,23 @@ export default function TicketSection({ event }: { event: Event }) {
 
                   {/* Ticket Content */}
                   <div className="flex-1 p-3.5 sm:p-4 flex flex-col justify-between relative">
+
+                    {/* TICKET COUNTDOWN BADGE */}
+                    {isTicketUpcoming && currentTime && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 shadow-xs rounded-full z-10">
+                        <span className="text-[10px] font-bold text-white px-3 py-1 rounded-full bg-slate-700 whitespace-nowrap font-mono">
+                          Dimulai {formatCountdown(ticketStart - now)}
+                        </span>
+                      </div>
+                    )}
+                    {isTicketOpen && currentTime && ticketEnd !== Infinity && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 shadow-xs rounded-full z-10">
+                        <span className="text-[10px] font-bold text-white px-3 py-1 rounded-full bg-amber-500 whitespace-nowrap font-mono">
+                          Berakhir {formatCountdown(ticketEnd - now)}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Header Card */}
                     <div className="flex justify-between items-start mb-1">
                       <h4
@@ -220,7 +305,7 @@ export default function TicketSection({ event }: { event: Event }) {
                       >
                         {ticket.name}
                       </h4>
-                      {isSoldOut && (
+                      {isActuallySoldOut && (
                         <span className="bg-danger text-white text-[10px] px-2 py-0.5 rounded-full font-bold ml-2 shrink-0">
                           Habis
                         </span>
@@ -229,14 +314,14 @@ export default function TicketSection({ event }: { event: Event }) {
 
                     {/* Harga */}
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-bold text-lg text-slate-900">
+                      <p className="font-bold text-lg text-primary">
                         {formatRupiah(ticket.price)}
                       </p>
                     </div>
 
                     {/* Deskripsi */}
                     {ticket.description && (
-                      <p className="text-xs text-slate-600 mb-3 line-clamp-2">
+                      <p className="text-xs text-muted mb-3 line-clamp-2">
                         {ticket.description}
                       </p>
                     )}
@@ -246,12 +331,12 @@ export default function TicketSection({ event }: { event: Event }) {
                       <QuotaBar
                         booked={ticket.booked}
                         total={ticket.quota}
-                        isSoldOut={isSoldOut}
+                        isSoldOut={isActuallySoldOut}
                       />
                     ) : (
                       <div className="mt-3 flex items-center gap-2">
                         <div className="h-1.5 w-full bg-white/60 rounded-full"></div>
-                        <span className="text-[10px] text-slate-600 whitespace-nowrap font-medium">Tanpa Batas Kuota</span>
+                        <span className="text-[10px] text-muted whitespace-nowrap font-medium">Tanpa Batas Kuota</span>
                       </div>
                     )}
                   </div>
@@ -272,42 +357,32 @@ export default function TicketSection({ event }: { event: Event }) {
               <div className="p-3 bg-primary-light rounded-xl flex items-center justify-between">
                 <span className="font-medium text-sm text-accent">Jumlah Tiket</span>
                 <div className="flex items-center gap-3 bg-white px-2 py-1 rounded-3xl border-slate-200">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => setQty(Math.max(1, qty - 1))}
-                    className="p-1 hover:bg-primary text-accent hover:text-white disabled:opacity-50 rounded-full cursor-pointer disabled:cursor-default"
+                    className="h-7 w-7 rounded-full hover:bg-primary text-accent hover:text-white"
                     disabled={qty <= 1}
                   >
                     <Minus size={16} />
-                  </button>
+                  </Button>
                   <span className="font-bold w-4 text-center text-sm">{qty}</span>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => {
-                      const maxLimit = event.max_ticket_per_user || 10;
-
-                      let maxPurchase = maxLimit;
-                      if (selectedTicket.quota > 0) {
-                        maxPurchase = Math.min(
-                          selectedTicket.quota - selectedTicket.booked,
-                          maxLimit
-                        );
-                      }
-
                       if (qty < maxPurchase) setQty(qty + 1);
                     }}
-                    className="p-1 hover:bg-primary text-accent hover:text-white disabled:opacity-50 rounded-full cursor-pointer disabled:cursor-default"
-                    disabled={
-                      selectedTicket.quota > 0
-                        ? qty >= Math.min(selectedTicket.quota - selectedTicket.booked, event.max_ticket_per_user || 10)
-                        : qty >= (event.max_ticket_per_user || 10)
-                    }
+                    className="h-7 w-7 rounded-full hover:bg-primary text-accent hover:text-white"
+                    disabled={qty >= maxPurchase}
                   >
                     <Plus size={16} />
-                  </button>
+                  </Button>
                 </div>
               </div>
               {(event.max_ticket_per_user ?? 0) > 0 && (
                 <p className="text-xs text-muted text-right mt-1 px-1">
-                  Maksimal pembelian {event.max_ticket_per_user} tiket per transaksi
+                  Maksimal pembelian {event.max_ticket_per_user} tiket per user
                 </p>
               )}
             </>
@@ -324,22 +399,61 @@ export default function TicketSection({ event }: { event: Event }) {
               </span>
             </div>
 
-            <Button
-              size="lg"
-              onClick={() => {
-                // TODO: implementasi handler beli/daftar
-                setIsLoading(true);
-                setTimeout(() => setIsLoading(false), 2000); // placeholder
-              }}
-              className="cursor-pointer w-full py-5 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow"
-              disabled={!selectedTicket || isLoading}
-            >
-              {isLoading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Memproses...</>
-              ) : (
-                totalPrice === 0 ? "Daftar Sekarang" : "Beli Tiket"
-              )}
-            </Button>
+            {/* ACTION BUTTONS BERDASARKAN ROLE */}
+            {!user ? (
+              <Button
+                asChild
+                size="lg"
+                className="cursor-pointer w-full py-5 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow"
+              >
+                <Link href="/login">Masuk untuk Membeli Tiket</Link>
+              </Button>
+            ) : user.role === "organizer" && String(event.organizer?.id) === String(user.id) ? (
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="cursor-pointer w-full py-5 border-primary text-primary hover:bg-primary-light rounded-2xl font-semibold text-md"
+              >
+                <Link href={`/organizer/events/${event.event_id}`}>
+                  Manajemen Event
+                </Link>
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  size="lg"
+                  onClick={() => {
+                    // TODO: implementasi handler beli/daftar
+                    setIsLoading(true);
+                    setTimeout(() => setIsLoading(false), 2000); // placeholder
+                  }}
+                  className="cursor-pointer flex-1 h-[60px] bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow"
+                  disabled={!selectedTicket || isLoading || !isRegistrationOpen}
+                >
+                  {isLoading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Memproses...</>
+                  ) : (
+                    totalPrice === 0 ? "Daftar Sekarang" : "Beli Tiket"
+                  )}
+                </Button>
+
+                <Button
+                  size="icon"
+                  variant="outline"
+                  title={isWishlisted ? "Hapus dari Wishlist" : "Tambah ke Wishlist"}
+                  className={cn(
+                    "w-15 h-15 rounded-2xl border-slate-200 shadow-xs cursor-pointer transition-all duration-300",
+                    isWishlisted
+                      ? "bg-danger border-danger text-white hover:bg-danger-light hover:border-danger hover:text-danger"
+                      : "text-slate-500 hover:text-danger hover:border-danger hover:bg-danger-light",
+                  )}
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                >
+                  <Heart size={24} className={cn(isWishlisted && "fill-current")} />
+                </Button>
+              </div>
+            )}
           </div>
 
           <Separator />
