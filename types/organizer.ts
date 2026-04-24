@@ -45,7 +45,7 @@ export interface OrganizerProfileInfo {
 export interface OrganizerProfileData {
   organizer: OrganizerProfileInfo;
   stats: OrganizerProfileStats;
-  events: {
+  events?: {
     upcoming: OrganizerProfileEvent[];
     past: OrganizerProfileEvent[];
   };

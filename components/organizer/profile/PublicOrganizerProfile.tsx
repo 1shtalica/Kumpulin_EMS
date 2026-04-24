@@ -319,7 +319,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
     );
   }
 
-  const { organizer, stats, events, reviews } = profile;
+  const { organizer, stats, events = { upcoming: [], past: [] }, reviews } = profile;
   const ratingFull = Math.floor(stats.average_rating);
   const ratingHalf = stats.average_rating - ratingFull >= 0.5;
 

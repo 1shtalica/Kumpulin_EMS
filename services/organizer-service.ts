@@ -15,17 +15,8 @@ export const OrganizerService = {
    * GET /api/organizer/profile  (mock)
    */
   async getProfile(): Promise<OrganizerProfileData> {
-    if (USE_MOCK) {
-      const res = await fetch("/api/organizer/profile");
-      if (!res.ok) throw new Error("Failed to fetch mock organizer profile");
-      const json: OrganizerProfileResponse = await res.json();
-      return json.data;
-    }
-
-    // 🚀 REAL: restore when BE is ready
-    // const response = await axiosClient.get<OrganizerProfileResponse>("/organizer/profile");
-    // return response.data.data;
-    throw new Error("Real API not configured");
+    const response = await axiosClient.get<OrganizerProfileResponse>("/organizer/profile");
+    return response.data.data;
   },
 
   /**
