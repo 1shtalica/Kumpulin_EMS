@@ -18,6 +18,8 @@ import {
   Inbox,
   CalendarDays,
   Check,
+  Settings,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import { UserService } from "@/services/user-service";
@@ -238,7 +240,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
   const [profile, setProfile] = useState<OrganizerProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabId>("upcoming");
+  const [activeTab, setActiveTab] = useState<TabId>(slug ? "upcoming" : "reviews");
   const [followed, setFollowed] = useState(false);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
 
@@ -341,6 +343,14 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
             className="object-cover"
             priority
           />
+          {!slug && (
+            <div className="absolute top-4 right-4 z-20">
+              <button className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-xs font-bold rounded-full transition-colors border border-white/20">
+                <ImageIcon className="w-3.5 h-3.5" />
+                Ubah Banner
+              </button>
+            </div>
+          )}
           {/* Subtle bottom fade */}
           <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white/50 to-transparent" />
         </div>
@@ -360,6 +370,11 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                 <span className="text-4xl sm:text-5xl font-bold text-primary select-none z-10">
                   {organizer.name.charAt(0).toUpperCase()}
                 </span>
+              )}
+              {!slug && (
+                <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 cursor-pointer z-20">
+                  <ImageIcon className="w-6 h-6 text-white" />
+                </div>
               )}
             </div>
 
@@ -383,37 +398,51 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
 
             {/* CTA Buttons */}
             <div className="flex items-center gap-2.5 shrink-0 sm:pt-3">
-              <button
-                onClick={handleFollowToggle}
-                disabled={isLoadingFollow}
-                className={cn(
-                  "cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300",
-                  followed
-                    ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    : "bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg hover:-translate-y-0.5",
-                  isLoadingFollow && "opacity-70 cursor-not-allowed"
-                )}
-              >
-                {isLoadingFollow ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : followed ? (
-                  <Check className="w-4 h-4" />
-                ) : (
-                  <UserPlus className="w-4 h-4" />
-                )}
-                {isLoadingFollow
-                  ? "Loading..."
-                  : followed
-                    ? "Mengikuti"
-                    : "Ikuti"}
-              </button>
-              <button className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-300">
-                <Mail className="w-4 h-4" />
-                Hubungi
-              </button>
-              <button className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300">
-                <Share2 className="w-4 h-4" />
-              </button>
+              {slug ? (
+                <>
+                  <button
+                    onClick={handleFollowToggle}
+                    disabled={isLoadingFollow}
+                    className={cn(
+                      "cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300",
+                      followed
+                        ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        : "bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg hover:-translate-y-0.5",
+                      isLoadingFollow && "opacity-70 cursor-not-allowed"
+                    )}
+                  >
+                    {isLoadingFollow ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : followed ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      <UserPlus className="w-4 h-4" />
+                    )}
+                    {isLoadingFollow
+                      ? "Loading..."
+                      : followed
+                        ? "Mengikuti"
+                        : "Ikuti"}
+                  </button>
+                  <button className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-300">
+                    <Mail className="w-4 h-4" />
+                    Hubungi
+                  </button>
+                  <button className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300">
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold bg-primary text-white hover:bg-primary/90 shadow-md hover:-translate-y-0.5 transition-all duration-300">
+                    <Settings className="w-4 h-4" />
+                    Edit Profil
+                  </button>
+                  <button className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300">
+                    <Share2 className="w-4 h-4" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -500,7 +529,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
           <div className="flex-1 min-w-0">
             {/* Tabs */}
             <div className="flex items-center gap-0 border-b border-slate-200 mb-7">
-              {TABS.map((tab) => (
+              {(slug ? TABS : TABS.filter(t => t.id === "reviews")).map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
