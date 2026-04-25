@@ -346,6 +346,8 @@ export default function EventScheduleStep({
                 </div>
 
                 {/* Content Grid */}
+                {/* Hidden input to preserve database ID across field array mutations */}
+                <input type="hidden" {...register(`rundowns.${index}._dbId`)} />
                 <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-12">
                   {/* Title */}
                   <div className="space-y-1 md:col-span-12">

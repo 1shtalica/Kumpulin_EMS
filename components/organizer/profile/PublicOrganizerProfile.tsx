@@ -498,9 +498,6 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
               ) : (
                 <>
                   <EditProfileModal organizer={organizer} />
-                  <button className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300">
-                    <Share2 className="w-4 h-4" />
-                  </button>
                 </>
               )}
             </div>

@@ -310,6 +310,9 @@ export default function EventTicketStep({
                   </Button>
                 </div>
 
+                {/* Hidden input to preserve database ID across field array mutations */}
+                <input type="hidden" {...register(`tickets.${index}._dbId`)} />
+
                 <div className="grid gap-4 md:grid-cols-2">
                   {/* Ticket Name */}
                   <div className="space-y-2">

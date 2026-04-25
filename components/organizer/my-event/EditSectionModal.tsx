@@ -71,6 +71,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
             start_registration_date: event.start_registration_date ? new Date(event.start_registration_date) : (undefined as any),
             end_registration_date: event.end_registration_date ? new Date(event.end_registration_date) : (undefined as any),
             rundowns: event.rundowns?.map(r => ({
+                _dbId: r.id,
                 title: r.title || "",
                 description: r.description || "",
                 start_time: r.start_time || "",
@@ -95,6 +96,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
             max_capacity: event.max_capacity || 0,
             max_ticket_per_user: event.max_ticket_per_user || 0,
             tickets: event.ticket_categories?.map(t => ({
+                _dbId: t.id,
                 name: t.name,
                 price: t.price,
                 quota: t.quota,
@@ -267,25 +269,42 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                     const origRundowns = event.rundowns || [];
                     const formRundowns = data.rundowns;
 
-                    const addedRundowns = formRundowns.slice(origRundowns.length).map(r => ({
-                        title: r.title,
-                        description: r.description || "",
-                        start_time: r.start_time,
-                        end_time: r.end_time,
-                        location: r.location || "",
-                    }));
+                    const addedRundowns = formRundowns
+                        .filter(r => !r._dbId)
+                        .map(r => ({
+                            title: r.title,
+                            description: r.description || "",
+                            start_time: r.start_time,
+                            end_time: r.end_time,
+                            location: r.location || "",
+                        }));
 
-                    const updatedRundowns = formRundowns.slice(0, origRundowns.length).map((r, i) => ({
-                        id: origRundowns[i].id,
-                        title: r.title,
-                        description: r.description || "",
-                        start_time: r.start_time,
-                        end_time: r.end_time,
-                        location: r.location || "",
-                    }));
+                    // Only include rundowns that were actually modified
+                    const updatedRundowns = formRundowns
+                        .filter(r => {
+                            if (!r._dbId) return false;
+                            const orig = origRundowns.find(o => o.id === r._dbId);
+                            if (!orig) return false;
+                            return (
+                                (orig.title || "") !== r.title ||
+                                (orig.description || "") !== (r.description || "") ||
+                                (orig.start_time || "") !== r.start_time ||
+                                (orig.end_time || "") !== r.end_time ||
+                                (orig.location || "") !== (r.location || "")
+                            );
+                        })
+                        .map(r => ({
+                            id: r._dbId,
+                            title: r.title,
+                            description: r.description || "",
+                            start_time: r.start_time,
+                            end_time: r.end_time,
+                            location: r.location || "",
+                        }));
 
+                    const formRundownIds = formRundowns.map(r => r._dbId).filter(Boolean);
                     const deletedIds = origRundowns
-                        .slice(formRundowns.length)
+                        .filter(r => !formRundownIds.includes(r.id))
                         .map(r => r.id)
                         .filter((id): id is string => !!id);
 
@@ -300,31 +319,52 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                 }
 
                 case 'tickets': {
-                    // Diff against original event.ticket_categories by index position.
+                    // Diff against original event.ticket_categories using _dbId.
                     const origTickets = event.ticket_categories || [];
                     const formTickets = data.tickets;
 
-                    const addedTickets = formTickets.slice(origTickets.length).map(t => ({
-                        name: t.name,
-                        price: Number(t.price),
-                        quota: Number(t.quota),
-                        description: t.description || "",
-                        start_date_time: t.start_date_time.toISOString(),
-                        end_date_time: t.end_date_time.toISOString(),
-                    }));
+                    console.log("[DEBUG] formTickets _dbId values:", formTickets.map(t => ({ name: t.name, _dbId: t._dbId })));
 
-                    const updatedTickets = formTickets.slice(0, origTickets.length).map((t, i) => ({
-                        id: origTickets[i].id,
-                        name: t.name,
-                        price: Number(t.price),
-                        quota: Number(t.quota),
-                        description: t.description || "",
-                        start_date_time: t.start_date_time.toISOString(),
-                        end_date_time: t.end_date_time.toISOString(),
-                    }));
+                    const addedTickets = formTickets
+                        .filter(t => !t._dbId)
+                        .map(t => ({
+                            name: t.name,
+                            price: Number(t.price),
+                            quota: Number(t.quota),
+                            description: t.description || "",
+                            start_date_time: t.start_date_time.toISOString(),
+                            end_date_time: t.end_date_time.toISOString(),
+                        }));
 
+                    // Only include tickets that were actually modified
+                    const updatedTickets = formTickets
+                        .filter(t => {
+                            if (!t._dbId) return false;
+                            const orig = origTickets.find(o => o.id === t._dbId);
+                            if (!orig) return false;
+                            // Compare fields to detect actual changes
+                            return (
+                                orig.name !== t.name ||
+                                orig.price !== Number(t.price) ||
+                                orig.quota !== Number(t.quota) ||
+                                (orig.description || "") !== (t.description || "") ||
+                                new Date(orig.start_date_time || "").toISOString() !== t.start_date_time.toISOString() ||
+                                new Date(orig.end_date_time || "").toISOString() !== t.end_date_time.toISOString()
+                            );
+                        })
+                        .map(t => ({
+                            id: t._dbId,
+                            name: t.name,
+                            price: Number(t.price),
+                            quota: Number(t.quota),
+                            description: t.description || "",
+                            start_date_time: t.start_date_time.toISOString(),
+                            end_date_time: t.end_date_time.toISOString(),
+                        }));
+
+                    const formTicketIds = formTickets.map(t => t._dbId).filter(Boolean);
                     const deletedTicketIds = origTickets
-                        .slice(formTickets.length)
+                        .filter(t => !formTicketIds.includes(t.id))
                         .map(t => t.id)
                         .filter((id): id is string => !!id);
 

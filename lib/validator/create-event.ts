@@ -77,6 +77,7 @@ export const step2Schema = z.object({
 // 🌟 Step 3: Jadwal & Lokasi
 const rundownSchema = z
   .object({
+    _dbId: z.string().optional(),
     title: z
       .string()
       .trim()
@@ -329,6 +330,7 @@ export const step4Schema = z
             error: "Tanggal tutup penjualan tiket wajib diisi",
           }),
           type: z.enum(["free", "paid"]),
+          _dbId: z.string().optional(),
         })
         .superRefine((data, ctx) => {
           if (data.type === "free" && data.price !== 0) {

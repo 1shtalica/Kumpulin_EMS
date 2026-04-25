@@ -240,10 +240,10 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
           {/* Pemisah  */}
           <Separator orientation="horizontal" />
 
-          <div className="bg-primary-light p-6 rounded-3xl">
+          <div className="bg-primary-light py-4 px-6 rounded-3xl">
             {event.organizer && (
               <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex flex-row items-center gap-3 w-full md:w-auto">
+                <div className="flex flex-row items-center gap-5 w-full md:w-auto">
                   <div className="shrink-0">
                     <Link href={`/organizer/${event.organizer.slug}`} className="hover:opacity-80 transition-opacity">
                       <Avatar className="h-12 w-12">
@@ -261,8 +261,8 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                         <CheckCircle2 size={16} className="text-blue-500 fill-blue-50" />
                       )}
                     </div>
-                    <div className="flex flex-row items-center text-sm text-muted">
-                      <p>Organizer Terpercaya</p>
+                    <div className="text-sm text-muted">
+                      <p className="line-clamp-2">{event.organizer.description}</p>
                     </div>
                   </div>
                 </div>

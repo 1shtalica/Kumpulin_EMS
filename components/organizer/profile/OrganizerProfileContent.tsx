@@ -189,11 +189,10 @@ function ReviewCard({ review }: ReviewCardProps) {
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
-                className={`w-3 h-3 ${
-                  i < review.rating
+                className={`w-3 h-3 ${i < review.rating
                     ? "fill-warning text-warning"
                     : "text-muted-foreground/20"
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -298,13 +297,12 @@ export default function OrganizerProfileContent() {
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-4 h-4 ${
-                    i < ratingFull
+                  className={`w-4 h-4 ${i < ratingFull
                       ? "fill-warning text-warning"
                       : i === ratingFull && ratingHalf
-                      ? "fill-warning/50 text-warning"
-                      : "text-muted-foreground/20"
-                  }`}
+                        ? "fill-warning/50 text-warning"
+                        : "text-muted-foreground/20"
+                    }`}
                 />
               ))}
             </div>
@@ -371,7 +369,7 @@ export default function OrganizerProfileContent() {
           </div>
 
           <div className="flex flex-col gap-2">
-            {events.upcoming.length === 0 ? (
+            {!events?.upcoming || events.upcoming.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground/60 text-sm border border-dashed border-border rounded-2xl">
                 Belum ada event mendatang
               </div>
@@ -401,7 +399,7 @@ export default function OrganizerProfileContent() {
           </div>
 
           <div className="flex flex-col gap-2">
-            {events.past.length === 0 ? (
+            {!events?.past || events.past.length === 0 ? (
               <div className="text-center py-10 text-muted-foreground/60 text-sm border border-dashed border-border rounded-2xl">
                 Belum ada event selesai
               </div>
