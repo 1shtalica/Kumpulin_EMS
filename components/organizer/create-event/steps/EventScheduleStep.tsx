@@ -272,7 +272,9 @@ export default function EventScheduleStep({
             </h3>
             <Button
               type="button"
-              size="lg"
+              size="sm"
+              variant="outline"
+              className="border-dashed rounded-full"
               onClick={() =>
                 append({
                   title: "",
@@ -283,7 +285,7 @@ export default function EventScheduleStep({
                 })
               }
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4 mr-1" />
               Tambah Sesi
             </Button>
           </div>
@@ -336,10 +338,10 @@ export default function EventScheduleStep({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="py-4 px-6 text-danger hover:bg-danger-light hover:text-danger"
+                      className="py-1 px-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
                       onClick={() => remove(index)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 mr-1" />
                       Hapus
                     </Button>
                   )}

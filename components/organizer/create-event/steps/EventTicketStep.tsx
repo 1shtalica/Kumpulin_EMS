@@ -228,24 +228,25 @@ export default function EventTicketStep({
             {fields.length < 5 && (
               <div className="flex flex-wrap gap-2">
                 <Button
-                  className="shadow-glow flex-1 sm:flex-none sm:min-w-50"
+                  className="flex-1 sm:flex-none sm:min-w-40 border-dashed rounded-full"
                   type="button"
                   variant="outline"
                   onClick={() =>
                     append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "free" })
                   }
                 >
-                  <Plus className="h-4 w-4 shrink-0" />
+                  <Plus className="h-4 w-4 shrink-0 mr-1" />
                   <span className="whitespace-nowrap">Tiket Gratis</span>
                 </Button>
                 <Button
-                  className="shadow-glow flex-1 sm:flex-none sm:min-w-50"
+                  className="flex-1 sm:flex-none sm:min-w-40 rounded-full shadow-sm"
                   type="button"
+                  variant="default"
                   onClick={() =>
                     append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "paid" })
                   }
                 >
-                  <Plus className="h-4 w-4 shrink-0" />
+                  <Plus className="h-4 w-4 shrink-0 mr-1" />
                   <span className="whitespace-nowrap">Tiket Berbayar</span>
                 </Button>
               </div>
@@ -303,7 +304,7 @@ export default function EventTicketStep({
                     variant="ghost"
                     size="sm"
                     onClick={() => remove(index)}
-                    className="text-danger hover:bg-danger-light hover:text-danger"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                   >
                     <Trash2 className="mr-1 h-4 w-4" />
                     Hapus
