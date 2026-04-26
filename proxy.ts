@@ -24,12 +24,19 @@ const roleHomePages: Record<string, string> = {
   user: "/",
 };
 
+type SessionClaims = {
+  exp?: number;
+  role?: string;
+  phone_number?: string | null;
+  [key: string]: unknown;
+};
+
 const getApiBaseUrl = () =>
   process.env.INTERNAL_API_URL ||
   process.env.API_URL ||
   process.env.NEXT_PUBLIC_API_URL;
 
-function decodeJwt(token: string) {
+function decodeJwt(token: string): SessionClaims | null {
   try {
     const base64Url = token.split(".")[1];
     if (!base64Url) return null;
@@ -40,17 +47,20 @@ function decodeJwt(token: string) {
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join(""),
     );
-    return JSON.parse(jsonPayload);
+    const parsed = JSON.parse(jsonPayload);
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+    return parsed as SessionClaims;
   } catch {
     return null;
   }
 }
 
-const isProfileIncomplete = (user: any): boolean =>
-  !!user &&
-  typeof user === "object" &&
-  Object.prototype.hasOwnProperty.call(user, "phone_number") &&
-  !user.phone_number;
+const isProfileIncomplete = (user: SessionClaims | null): boolean => {
+  if (!user) return false;
+  return Object.prototype.hasOwnProperty.call(user, "phone_number") && !user.phone_number;
+};
 
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -92,7 +102,7 @@ export default async function proxy(req: NextRequest) {
 
   // Optional optimistic redirect for auth pages only.
   // Authorization for protected routes still relies on backend verification.
-  let optimisticUser: any = null;
+  let optimisticUser: SessionClaims | null = null;
   if (accessToken?.value) {
     optimisticUser = decodeJwt(accessToken.value);
   }
@@ -101,7 +111,7 @@ export default async function proxy(req: NextRequest) {
     optimisticUser && optimisticUser.exp && optimisticUser.exp * 1000 > Date.now();
 
   if (hasValidAccessToken && isAuthRoute) {
-    const homePage = roleHomePages[optimisticUser.role] || "/";
+    const homePage = roleHomePages[optimisticUser.role ?? ""] || "/";
     if (isProfileIncomplete(optimisticUser)) {
       if (!isOnboardingRoute) {
         return NextResponse.redirect(new URL("/get-started", req.nextUrl));
@@ -148,8 +158,8 @@ export default async function proxy(req: NextRequest) {
     }
 
     const data = await res.json();
-    const freshUser = data?.data ?? data;
-    const homePage = roleHomePages[freshUser.role] || "/";
+    const freshUser = (data?.data ?? data) as SessionClaims;
+    const homePage = roleHomePages[freshUser.role ?? ""] || "/";
     const profileIncomplete = isProfileIncomplete(freshUser);
 
     if (profileIncomplete && !isOnboardingRoute) {
@@ -165,7 +175,7 @@ export default async function proxy(req: NextRequest) {
     }
 
     if (isProtectedRoute) {
-      if (!protectedRoute?.roles.includes(freshUser.role)) {
+      if (!protectedRoute?.roles.includes(freshUser.role ?? "")) {
         return NextResponse.redirect(new URL(homePage, req.nextUrl));
       }
     }

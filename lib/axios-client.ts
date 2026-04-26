@@ -2,8 +2,8 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 
 interface QueueItem {
-  resolve: (value?: any) => void;
-  reject: (reason?: any) => void;
+  resolve: (value?: unknown) => void;
+  reject: (reason?: unknown) => void;
 }
 
 const axiosClient = axios.create({
@@ -38,7 +38,7 @@ const noAutoRefreshEndpoints = [
 const shouldBypassAutoRefresh = (url?: string) =>
   noAutoRefreshEndpoints.some((endpoint) => url?.includes(endpoint));
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
