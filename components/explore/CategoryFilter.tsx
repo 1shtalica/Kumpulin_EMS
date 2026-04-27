@@ -29,7 +29,7 @@ export default function CategoryFilter() {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const catList = await EventService.getEventCategories();
+        const catList = ['Rapat', 'Konser', 'Workshop', 'Lomba', 'Pameran', 'Seminar', 'Networking', 'Kompetisi', 'Festival', 'Olahraga', 'Lainnya'];
         if (catList && catList.length > 0) {
           setDynamicCategories(catList);
         }
