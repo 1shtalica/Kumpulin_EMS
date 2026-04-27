@@ -4,6 +4,8 @@ import type { NextRequest } from "next/server";
 const protectedRoutes = [
   { path: "/organizer", roles: ["organizer"] },
   { path: "/user", roles: ["user"] },
+  { path: "/events", roles: ["organizer", "user"] },
+  { path: "/explore", roles: ["organizer", "user"] },
 ];
 
 const authRoutes = [
@@ -15,7 +17,6 @@ const authRoutes = [
 
 const publicRoutes = [
   "/",
-  "/events",
   ...authRoutes,
 ];
 
@@ -192,5 +193,5 @@ export default async function proxy(req: NextRequest) {
 
 // Routes Proxy should not run on
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
+  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
 };
