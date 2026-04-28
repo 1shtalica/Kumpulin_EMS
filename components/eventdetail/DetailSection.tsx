@@ -140,7 +140,15 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
             </Badge>
 
             <Badge className="bg-secondary-light text-secondary border border-secondary rounded-full px-2 flex items-center gap-1">
-              {event.ticket_categories?.some((t) => t.price > 0) ? "Berbayar" : "Gratis"}
+              {(() => {
+                if (!event.ticket_categories || event.ticket_categories.length === 0) return "Gratis";
+                const hasFree = event.ticket_categories.some((t) => t.price === 0);
+                const hasPaid = event.ticket_categories.some((t) => t.price > 0);
+                
+                if (hasFree && hasPaid) return "Gratis & Berbayar";
+                if (hasPaid) return "Berbayar";
+                return "Gratis";
+              })()}
             </Badge>
           </div>
 
