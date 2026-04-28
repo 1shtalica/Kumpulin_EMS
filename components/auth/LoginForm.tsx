@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Eye, EyeOff, Loader2, Home } from "lucide-react";
+import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -23,19 +22,13 @@ import { Separator } from "@/components/ui/separator";
 import { useAuthStore } from "@/stores/auth-store";
 import { AxiosError } from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
-import { AuthService } from "@/services/auth-service";
+import { toast } from "sonner"
+import { Lock } from "lucide-react";
+import { loginSchema } from "@/lib/validator/auth";
 
-
-const loginSchema = z.object({
-  email: z
-    .email({ message: "Format email tidak valid" })
-    .min(1, { message: "Email wajib diisi" }),
-  password: z.string().min(8, { message: "Password minimal 8 karakter" }),
-});
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,6 +38,7 @@ export default function LoginForm() {
     setError,
     formState: { errors },
   } = useForm<LoginFormValues>({
+    // migrated to zod v4
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -52,21 +46,35 @@ export default function LoginForm() {
     },
   });
 
-  const login = useAuthStore((state) => state.login);
+  const loginWithEmail = useAuthStore((state) => state.loginWithEmail);
+  const loginWithGoogle = useAuthStore((state) => state.loginWithGoogle);
+
+  const handlePostLoginRedirect = () => {
+    const user = useAuthStore.getState().user;
+    if (!user?.phone_number) {
+      window.location.href = "/get-started";
+      return;
+    }
+    window.location.href = user.role === "organizer"
+      ? "/organizer/dashboard"
+      : "/";
+  };
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
+    const toastId = toast.loading("Sedang Masuk...");
 
     try {
-      await login(data);
-      router.push("/");
+      await loginWithEmail(data);
+      toast.success("Login berhasil!", { id: toastId });
+      handlePostLoginRedirect();
     } catch (error: any) {
-      console.error("Login Error:", error);
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
         axiosError.response?.data?.message ||
-        "Gagal masuk. Periksa kembali email dan password Anda.";
+        "Periksa kembali email dan password Anda.";
 
+      toast.error("Login gagal", { id: toastId });
       setError("root", {
         type: "manual",
         message: errorMessage,
@@ -78,14 +86,29 @@ export default function LoginForm() {
 
   const onGoogleSubmit = useGoogleLogin({
     onSuccess: async (response) => {
-      await AuthService.googleAuth({ Code: response.code });
-      router.push("/");
+      setIsLoading(true);
+      const toastId = toast.loading("Memproses login Google...");
+
+      try {
+        await loginWithGoogle(response.code);
+
+        toast.success("Login berhasil!", { id: toastId });
+        handlePostLoginRedirect();
+      } catch (error) {
+        toast.error("Login gagal", { id: toastId });
+        setError("root", {
+          type: "manual",
+          message: "Gagal login dengan Google. Silakan coba lagi.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     },
-    onError: (error) => {
-      console.error("Google Login Error:", error);
+    onError: () => {
+      toast.error("Login gagal");
       setError("root", {
         type: "manual",
-        message: "Gagal masuk. Periksa kembali email dan password Anda.",
+        message: "Gagal terhubung dengan Google.",
       });
     },
     flow: "auth-code",
@@ -93,29 +116,17 @@ export default function LoginForm() {
 
   return (
     <div>
-      {/* Kembali ke landingpage */}
-      <Button variant="link" asChild>
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm text-kumpulinLightPurple hover:text-kumpulinPurple font-medium mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <p>Kembali ke beranda</p>
-        </Link>
-      </Button>
-
-      {/* ⭐ BAGIAN HEADER */}
-      <Card className="w-full">
+      <Card className="w-full rounded-3xl py-10 px-4">
         <CardHeader className="space-y-1 text-center">
-          <h1 className="font-semibold text-3xl mb-4">
+          <h1 className="font-bold text-3xl mb-4">
             🎉
-            <span className="bg-linear-to-r from-kumpulinPurple to-kumpulinGreen  text-transparent bg-clip-text">
+            <span className="bg-linear-to-r from-primary to-secondary  text-transparent bg-clip-text">
               kumpul.in
             </span>
           </h1>
 
-          <CardTitle className="font-bold text-3xl ">Login</CardTitle>
-          <CardDescription className="text-sm text-slate-500">
+          <CardTitle className="font-semibold text-xl sm:text-2xl text-accent ">Selamat Datang Kembali!</CardTitle>
+          <CardDescription className="text-sm text-muted">
             Masuk ke akun kumpul.in kamu
           </CardDescription>
         </CardHeader>
@@ -127,21 +138,21 @@ export default function LoginForm() {
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
+                startIcon={<Mail className="h-4 w-4 text-muted-foreground" />}
                 id="email"
                 type="email"
                 placeholder="nama@email.com"
                 disabled={isLoading}
+                autoComplete="email"
                 className={
                   errors.email
-                    ? "border-red-500 rounded-lg"
-                    : "rounded-lg"
+                    ? "border-danger"
+                    : ""
                 }
-                // Hook Form Register:
                 {...register("email")}
               />
-              {/* Error Message Manual (Lebih simpel dari komponen FormField) */}
               {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
+                <p className="text-xs sm:text-sm text-danger font-medium">{errors.email.message}</p>
               )}
             </div>
 
@@ -151,22 +162,25 @@ export default function LoginForm() {
 
               <div className="relative">
                 <Input
+                  startIcon={<Lock className="h-4 w-4 text-muted-foreground" />}
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   disabled={isLoading}
+                  autoComplete="current-password"
                   {...register("password")}
                   className={
                     errors.password
-                      ? "border-red-500 rounded-lg"
-                      : "rounded-lg"
+                      ? "border-danger"
+                      : ""
                   }
                 />
                 {/* Tombol Mata Toggle */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800"
+                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-accent"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -177,14 +191,14 @@ export default function LoginForm() {
               </div>
               <div className="flex justify-between items-start mt-1">
                 {/* Area Pesan Error (Kiri) */}
-                <div className="text-xs text-red-500 font-medium">
+                <div className="text-xs sm:text-sm text-danger font-medium">
                   {errors.password && <span>{errors.password.message}</span>}
                 </div>
 
                 {/* Area Forgot Password (Kanan) */}
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-kumpulinPurple hover:underline font-medium ml-auto whitespace-nowrap"
+                  className="text-xs sm:text-sm text-primary hover:underline font-medium ml-auto whitespace-nowrap"
                 >
                   Lupa password?
                 </Link>
@@ -193,7 +207,7 @@ export default function LoginForm() {
 
             {/* ⭐ Root Error Message */}
             {errors.root && (
-              <div className="p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-600">
+              <div className="p-3 rounded-lg bg-danger-light border border-danger text-xs sm:text-sm font-medium text-danger">
                 {errors.root.message}
               </div>
             )}
@@ -201,7 +215,7 @@ export default function LoginForm() {
             {/* Tombol Submit */}
             <Button
               type="submit"
-              className="w-full bg-linear-to-r from-kumpulinLightPurple to-kumpulinPurple hover:opacity-90 rounded-lg font-bold"
+              className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-3xl font-semibold text-md shadow-glow"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -232,7 +246,7 @@ export default function LoginForm() {
           <Button
             type="button"
             variant="outline"
-            className="w-full font-bold rounded-lg"
+            className="w-full font-semibold hover:bg-primary/10 rounded-3xl shadow-none"
             disabled={isLoading}
             onClick={() => onGoogleSubmit()}
           >
@@ -258,11 +272,11 @@ export default function LoginForm() {
           </Button>
 
           {/* ⭐ KE HALAMAN REGISTER */}
-          <div className="text-center text-sm text-slate-600 mt-2">
+          <div className="text-center text-sm text-muted mt-2">
             Belum punya akun?{" "}
             <Link
               href="/register"
-              className="text-kumpulinPurple font-semibold hover:underline"
+              className="text-primary font-medium hover:underline"
             >
               Daftar sekarang
             </Link>

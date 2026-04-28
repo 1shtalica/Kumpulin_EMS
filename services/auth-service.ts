@@ -1,25 +1,45 @@
 import axiosClient from "@/lib/axios-client";
 import { RegisterOrganizerPayload, RegisterPayload } from "@/types/auth";
 
-// Define Types for Auth
 export interface LoginPayload {
     email: string;
     password: string;
 }
 
 export interface AuthResponse {
-    user_id: string;
+    id: number;
+    email: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    role: string;
+    phone_number: string;
+    provider: string;
+    profile_url?: string;
+}
+
+export interface MeResponse {
+    user_id: number;
     email: string;
     username: string;
     role: string;
-    avatar: string;
+    profile_url?: string;
+    phone_number?: string;
+    first_name?: string;
+    last_name?: string;
+}
+
+export interface GoogleAuthResponse {
+    message: string;
+    data: AuthResponse;
+    success?: boolean;
 }
 
 export const AuthService = {
     async login(payload: LoginPayload): Promise<AuthResponse> {
         try {
             const response = await axiosClient.post("/auth/login", payload);
-            return response.data;
+            return response.data.data;
         } catch (error) {
             throw error;
         }
@@ -41,26 +61,56 @@ export const AuthService = {
         }
     },
     async logout() {
-        try {
-            await axiosClient.post("/auth/logout");
-        } catch (error) {
-            console.error("Logout failed", error);
-        } finally {
-            if (typeof window !== "undefined") {
-                window.location.href = "/login";
-            }
-        }
+        await axiosClient.post("/auth/logout");
     },
     async me() {
-        return axiosClient.get("/auth/me");
+        return axiosClient.get<MeResponse>("/auth/me");
     },
-    async googleAuth(payload: { Code: string }) {
+    async googleAuth(payload: { code: string }): Promise<GoogleAuthResponse> {
         try {
             const response = await axiosClient.post("/auth/google", payload);
             return response.data;
         } catch (error) {
             throw error;
         }
-    }
+    },
+    async updateProfile(payload: { phone_number?: string; role?: string }) {
+        try {
+            const response = await axiosClient.patch(`/auth/profile?role=${payload.role}`, payload);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+    async createOrganizer(payload: { name: string; slug: string }) {
+        try {
+            const response = await axiosClient.post("/auth/register-organizer", payload);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+    async forgotPassword(email: string) {
+        try {
+            const response = await axiosClient.post("/auth/send-code", {
+                email,
+                type: "password_reset",
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+    async resetPassword(payload: { token: string; new_password: string }) {
+        try {
+            const response = await axiosClient.post("/auth/forgot-password", {
+                token: payload.token,
+                new_password: payload.new_password,
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
 };
 

@@ -134,23 +134,30 @@ const POPULAR_CATEGORIES = [
 export default function PopularCategory() {
   return (
     <section className="py-12 md:py-16 bg-white">
-      <div className="container mx-auto px-4">
-        {/* HEADER SECTION */}
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
-            Kategori Populer
-          </h2>
+      <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl">
 
-          <Button variant="link" asChild className="px-0 md:px-4">
-            <Link href="/categories" className="flex items-center gap-1">
-              Lihat Semua <ArrowRight size={18} />
-            </Link>
-          </Button>
+        <div className="flex flex-col gap-3 mb-8 md:mb-12">
+          {/* Row 1: Title + Button */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl md:text-3xl font-bold text-accent">
+              Kategori Populer
+            </h2>
+            <Button variant="link" asChild>
+              <Link href="/events">
+                Lihat Semua <ArrowRight size={18} />
+              </Link>
+            </Button>
+          </div>
+
+          {/* Row 2: Description */}
+          <p className="text-sm md:text-base text-muted">
+            Temukan event berdasarkan kategori favoritmu
+          </p>
         </div>
 
         {/* GRID CATEGORIES */}
         {/* Responsive: 1 kolom (<md), 2 kolom (md-lg), 4 kolom (>=lg) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {POPULAR_CATEGORIES.map((category) => (
             <Link
               key={category.id}
@@ -171,8 +178,8 @@ export default function PopularCategory() {
                   <div
                     className={cn(
                       "w-12 h-12 flex items-center justify-center rounded-xl",
-                      category.colors.bg, // Background dinamis
-                      category.colors.text // Warna icon dinamis
+                      category.colors.bg,
+                      category.colors.text
                     )}
                   >
                     <category.icon size={24} strokeWidth={2.5} />
@@ -180,20 +187,18 @@ export default function PopularCategory() {
 
                   {/* Teks */}
                   <div>
-                    <h3 className="font-bold text-slate-900 text-base md:text-lg leading-tight">
+                    <h3 className="font-bold text-accent text-base md:text-lg leading-tight">
                       {category.name}
                     </h3>
-                    <p className="text-slate-500 text-sm mt-0.5">
+                    <p className="text-muted text-sm mt-0.5">
                       {category.count} events
                     </p>
                   </div>
                 </div>
 
-                {/* Bagian Kanan: Chevron */}
                 <ChevronRight
                   className={cn(
-                    "w-5 h-5 text-slate-300 transition-colors duration-300",
-                    // Saat group di-hover, chevron berubah warna sesuai kategori
+                    "w-5 h-5 text-muted transition-colors duration-300",
                     category.colors.iconHover
                   )}
                 />

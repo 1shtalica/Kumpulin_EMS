@@ -1,138 +1,186 @@
-// "use client";
+"use client";
 
-import { Divide } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Mail, CheckCircle, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
+import { AuthService } from "@/services/auth-service";
+import { forgotPasswordSchema } from "@/lib/validator/auth";
 
-// import { useEffect, useState } from "react";
-// import { useForm } from "react-hook-form";
-// import { z } from "zod";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import {
-//   Card,
-//   CardHeader,
-//   CardTitle,
-//   CardContent,
-//   CardFooter,
-// } from "@/components/ui/card";
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
-// import { FaArrowLeft } from "react-icons/fa";
-// import { Label } from "@/components/ui/label";
-// import { Separator } from "@/components/ui/separator";
-// import { FcGoogle } from "react-icons/fc";
-// import { cn } from "@/lib/utils";
-// import Image from "next/image";
-// import { signIn, useSession, requestPasswordReset } from "@/lib/auth-client";
-// import { useRouter } from "next/navigation";
-
-// // 🔹 Skema validasi Zod
-// const forgotPasswordSchema = z.object({
-//   email: z.string().email("Invalid Email"),
-// });
-
-// type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
-
-// export default function ForgotPasswordForm() {
-//   const router = useRouter();
-//   const sesion = useSession();
-//   const [loading, setLoading] = useState(false);
-//   const [success, setSuccess] = useState<string>();
-//   const [error, setError] = useState<string>();
-
-//   const {
-//     register,
-//     handleSubmit,
-//     formState: { errors },
-//   } = useForm<ForgotPasswordFormValues>({
-//     resolver: zodResolver(forgotPasswordSchema),
-//   });
-
-//   const onSubmit = async (data: ForgotPasswordFormValues) => {
-//     try {
-//       const result = await requestPasswordReset({
-//         email: data.email,
-//         redirectTo: "/reset-password",
-//       });
-//       console.log(data);
-//       if (result.error) {
-//         setError(result.error?.message || "something went wrong");
-//         console.log(result.error.message);
-//       } else {
-//         setSuccess(
-//           "successfully sent password reset request and you'll be redirect to login",
-//         );
-//         setTimeout(() => {
-//           router.push("/login");
-//         }, 1500);
-//       }
-//     } catch (e) {
-//       setError("something went wrong");
-//     }
-//   };
-
-//   return (
-//     <div className="flex justify-center items-center min-h-screen bg-gray-50 px-5 md:mx-0">
-//       <Card className="w-full max-w-lg shadow-md">
-//         <CardHeader>
-//           <CardTitle className="text-center text-x md:text-xl font-semibold">
-//             <div>
-//               <div className="relative flex items-center justify-start">
-//                 <FaArrowLeft onClick={() => router.back()} className="" />
-
-//                 <div className="absolute left-1/2 -translate-x-1/2 text-center">
-//                   Forgot Your Password?
-//                 </div>
-//               </div>
-//               <p className="text-sm md:text-base mt-5 text-center text-gray-500">
-//                 Enter your e-mail address, and we'll give you reset password
-//                 instruction.
-//               </p>
-//             </div>
-//           </CardTitle>
-
-//           <div className="mx-auto">
-//             {error && <h1 className="text-red-500">{error}</h1>}
-//           </div>
-//         </CardHeader>
-
-//         <CardContent>
-//           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-//             {/* Email */}
-//             <div className="space-y-2">
-//               <Label htmlFor="email">Email</Label>
-//               <Input
-//                 id="email"
-//                 type="email"
-//                 placeholder="you@example.com"
-//                 {...register("email")}
-//                 className={cn(
-//                   errors.email && "border-red-500 focus-visible:ring-red-500",
-//                 )}
-//               />
-//               {errors.email && (
-//                 <p className="text-red-500 text-sm">{errors.email.message}</p>
-//               )}
-//             </div>
-//             <div className="">
-//               {success && (
-//                 <p className="text-sm md:text-base text-green-700 text-green-700">
-//                   {success}
-//                 </p>
-//               )}
-//             </div>
-//             <Button type="submit" className="w-full mt-2" disabled={loading}>
-//               {loading ? "sending in..." : "Reset password"}
-//             </Button>
-//           </form>
-//         </CardContent>
-//       </Card>
-//     </div>
-//   );
-// }
 export default function ForgotPasswordForm() {
-    return(
-<div className="text-black">
-    <h1>Forgot Password</h1>
-    <p>Enter your email address, and we'll give you reset password instruction.</p>
-</div>
-) }
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState("");
+  const [timer, setTimer] = useState(0);
+
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormValues>({
+    // migrated to zod v4
+    resolver: zodResolver(forgotPasswordSchema),
+  });
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  const onSubmit = async (data: ForgotPasswordFormValues) => {
+    setIsLoading(true);
+    const toastId = toast.loading("Mengirim email reset...");
+    try {
+      await AuthService.forgotPassword(data.email);
+      toast.success("Email terkirim!", { id: toastId });
+
+      setSubmittedEmail(data.email);
+      setIsSubmitted(true);
+      setTimer(60); // Start timer after initial success
+    } catch (error: any) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Gagal mengirim email. Coba lagi.";
+      toast.error("Pengiriman gagal", { id: toastId });
+
+      setError("root", {
+        type: "manual",
+        message: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (timer > 0) return;
+
+    setIsLoading(true);
+    const toastId = toast.loading("Mengirim ulang email...");
+    try {
+      await AuthService.forgotPassword(submittedEmail);
+
+      toast.success("Email terkirim ulang!", { id: toastId });
+      setTimer(60); // Reset timer on successful resend
+    } catch (error: any) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ||
+        "Gagal mengirim ulang email.";
+
+      toast.error(errorMessage, { id: toastId });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <Card className="w-full max-w-md mx-auto rounded-3xl py-10 px-4 shadow-lg border-border/50">
+        <CardHeader className="space-y-1 text-center">
+          <h1 className="font-bold text-3xl mb-4">
+            🎉
+            <span className="bg-linear-to-r from-primary to-secondary text-transparent bg-clip-text">
+              kumpul.in
+            </span>
+          </h1>
+          <CardTitle className="font-semibold text-xl sm:text-2xl text-accent">Lupa Password</CardTitle>
+          <CardDescription className="text-sm text-muted">
+            {!isSubmitted
+              ? "Masukkan email Anda untuk reset password"
+              : "Kami telah mengirim link reset password"
+            }
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          {!isSubmitted ? (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="nama@email.com"
+                  disabled={isLoading}
+                  autoComplete="email"
+                  className={
+                    errors.email
+                      ? "border-danger rounded-lg"
+                      : "rounded-lg"
+                  }
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <p className="text-xs sm:text-sm text-danger font-medium">{errors.email.message}</p>
+                )}
+              </div>
+
+              <Button type="submit" className="w-full bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-lg font-bold" disabled={isLoading}>
+                {isLoading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Mengirim...</>
+                ) : (
+                  "Kirim Link Reset"
+                )}
+              </Button>
+            </form>
+          ) : (
+            <div className="space-y-4 text-center">
+              <div className="flex justify-center">
+                <div className="rounded-full bg-secondary-light p-3">
+                  <CheckCircle className="h-12 w-12 text-secondary" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm">
+                  Link reset password telah dikirim ke:
+                </p>
+                <p className="font-medium">{submittedEmail}</p>
+                <p className="text-xs text-muted-foreground">
+                  Cek inbox atau folder spam Anda
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                className="w-full hover:bg-primary/10"
+                onClick={handleResend}
+                disabled={isLoading || timer > 0}
+              >
+                {isLoading ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Mengirim...</>
+                ) : timer > 0 ? (
+                  <><Mail className="mr-2 h-4 w-4" />Kirim Ulang ({timer}s)</>
+                ) : (
+                  <><Mail className="mr-2 h-4 w-4" />Kirim Ulang</>
+                )}
+              </Button>
+
+              <Link href="/login" className="block text-sm text-primary hover:underline">
+                Kembali ke Login
+              </Link>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

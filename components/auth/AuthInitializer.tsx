@@ -1,29 +1,30 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
+import { isAuthRoutePath } from "@/lib/auth-policy";
 import { User } from "@/types/user";
 
 export default function AuthInitializer({ user }: { user: User | null }) {
-    const initialized = useRef(false);
-
-    // Server-side hydration (Run once on mount/render)
-    if (!initialized.current && user) {
-        useAuthStore.setState({ user, isLoading: false });
-        initialized.current = true;
-    }
-
     const checkAuth = useAuthStore((state) => state.checkAuth);
-    const currentUser = useAuthStore((state) => state.user);
+    const pathname = usePathname();
 
     useEffect(() => {
-        // Only fetch if we haven't initialized with a user AND we don't have a user yet
-        // This covers the case where the user navigates client-side and we need to re-verify or initial load failed
-        if (!initialized.current && !user && !currentUser) {
-            checkAuth();
-            initialized.current = true;
+        if (user) {
+            useAuthStore.setState({ user, isLoading: false });
+            return;
         }
-    }, [checkAuth, user, currentUser]);
+
+        if (isAuthRoutePath(pathname)) {
+            useAuthStore.setState({ isLoading: false });
+            return;
+        }
+
+        // When SSR cannot resolve user from short-lived access token,
+        // let client revalidate via /auth/me using refresh cookie.
+        void checkAuth();
+    }, [checkAuth, pathname, user]);
 
     return null;
 }

@@ -1,7 +1,5 @@
 import React from "react";
-
-// ⭐ TAMBAHKAN CEK ROLE DI LAYOUT
-// ⭐ CEK COOKIES
+import { MeshGradientBackground } from "@/components/reusable/mesh-gradient-background";
 
 export default function AuthLayout({
   children,
@@ -9,8 +7,8 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen w-full bg-slate-50 flex flex-col items-center justify-center p-4">
+    <MeshGradientBackground className="flex items-center justify-center">
       <div className="w-full max-w-md">{children}</div>
-    </div>
+    </MeshGradientBackground>
   );
 }

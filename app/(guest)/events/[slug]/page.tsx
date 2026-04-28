@@ -1,34 +1,35 @@
-import HeaderSection from "@/components/eventdetail/HeaderSection";
-import ImageSection from "@/components/eventdetail/ImageSection";
-import DetailSection from "@/components/eventdetail/DetailSection";
-import TicketSection from "@/components/eventdetail/TicketSection";
+import { notFound } from "next/navigation";
+import EventDetailHeader from "@/components/eventdetail/EventDetailHeader";
+import EventDetailContent from "@/components/eventdetail/EventDetailContent";
+import { Event } from "@/types/event";
 
-export default function EventDetail({ params }: { params: { slug: string } }) {
+async function getEvent(slug: string): Promise<Event | null> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/${slug}`, {
+      cache: "no-store"
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data ?? null;
+  } catch (error) {
+    console.error("Failed to fetch event:", error);
+    return null;
+  }
+}
+
+export default async function EventDetail({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const event = await getEvent(slug);
+
+  if (!event) {
+    return notFound();
+  }
+
   return (
     <>
-      <HeaderSection />
-      <main className="min-h-screen bg-white">
-        <div className="pt-24">
-          {/* Image Section dengan Blur Background */}
-          <ImageSection />
-
-          {/* Main Content - Pastikan z-index lebih tinggi */}
-          <div className="container mx-auto px-4 pb-20 relative z-20">
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-              {/* Detail Section */}
-              <div className="xl:col-span-8">
-                <DetailSection />
-              </div>
-
-              {/* Ticket Section */}
-              <div className="xl:col-span-4 relative">
-                <div className="sticky top-28">
-                  <TicketSection />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <EventDetailHeader />
+      <main className="min-h-screen bg-slate-50">
+        <EventDetailContent event={event} />
       </main>
     </>
   );

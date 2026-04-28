@@ -7,17 +7,17 @@ import { Button } from "../ui/button";
 export default function LandingFooter() {
   return (
     <footer className="w-full bg-slate-900 text-slate-200 py-10">
-      <div className="container mx-auto px-6 flex flex-col gap-10">
+      <div className="container mx-auto px-4 md:px-8 lg:px-12 flex flex-col gap-10 w-full max-w-7xl">
         {/* === BAGIAN ATAS (GRID UTAMA) === */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
           {/* KOLOM 1: BRAND & SOSIAL MEDIA (Lebar 5 kolom di desktop) */}
           <div className="md:col-span-5 flex flex-col gap-6">
             <div className="space-y-3">
-              <Link href="/" className="inline-block">
+              <div className="inline-block">
                 <h2 className="font-bold text-2xl md:text-3xl tracking-tight text-white flex items-center gap-2">
                   <span>🎉</span> kumpul.in
                 </h2>
-              </Link>
+              </div>
               <p className="text-slate-400 text-sm md:text-base leading-relaxed max-w-sm">
                 Ciptakan eventmu dan jangkau ribuan peserta dengan mudah.
                 Platform manajemen event terpercaya di Indonesia.

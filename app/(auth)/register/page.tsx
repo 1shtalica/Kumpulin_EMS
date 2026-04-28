@@ -1,15 +1,17 @@
 import { Metadata } from "next";
 import RegisterForm from "@/components/auth/RegisterForm";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata: Metadata = {
-    title: "Login Kumpulin",
-    description: "Masuk ke akun Kumpulin kamu"
+    title: "Register Kumpulin",
+    description: "Daftar akun Kumpulin"
 }
 
-export default function RegisterPage (){
+export default function RegisterPage() {
     return (
-        <div>
-            <RegisterForm/>
-        </div>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+            <RegisterForm />
+        </GoogleOAuthProvider>
+
     );
 }
