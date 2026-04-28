@@ -56,7 +56,7 @@ export default async function ExplorePage(props: {
     typeof searchParams.price === "string" ? searchParams.price : "";
 
   const filteredEvents = events.filter((event) => {
-    // Note: 🌟 'event.type' digunakan krn backend saat ini tdk memiliki endpoint 'category' yg dikirim
+    // Note: ðŸŒŸ 'event.type' digunakan krn backend saat ini tdk memiliki endpoint 'category' yg dikirim
     if (category) {
       // Filter category diabaikan krn structure belum mensupportnya
     }

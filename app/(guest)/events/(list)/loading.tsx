@@ -1,5 +1,5 @@
 import LandingNavbar from "@/components/landingpage/LandingNavbar";
-import { SkeletonEventGrid } from "@/components/reusable/SkeletonElements";
+import { EventCardSkeletonList } from "@/components/reusable/EventCard";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LoadingEvents() {
@@ -7,7 +7,7 @@ export default function LoadingEvents() {
     <div className="min-h-screen bg-background flex flex-col">
       <LandingNavbar />
       <main className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl pb-20 grow">
-        
+
         {/* Search Bar Skeleton */}
         <section className="w-full pt-28 md:pt-36 pb-4 relative z-10">
           <div className="w-full max-w-3xl mx-auto space-y-4 md:space-y-5 text-center">
@@ -76,7 +76,9 @@ export default function LoadingEvents() {
         </div>
 
         {/* Event List Skeleton */}
-        <SkeletonEventGrid />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          <EventCardSkeletonList count={12} />
+        </div>
 
         {/* Pagination Skeleton */}
         <div className="mt-12 flex justify-center">
