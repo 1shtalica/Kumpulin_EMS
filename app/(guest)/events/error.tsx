@@ -15,7 +15,21 @@ export default function EventsError({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="relative min-h-screen overflow-hidden bg-[#f9fafb]">
+      <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+            opacity: 0.24,
+          }}
+        />
+        <div className="absolute top-8 right-8 h-[22rem] w-[22rem] rounded-full bg-[#002cee14]" />
+        <div className="absolute bottom-8 left-8 h-[18rem] w-[18rem] rounded-full bg-[#6366f112]" />
+      </div>
+      <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
       <div className="text-center max-w-md">
         <div className="mb-6">
           <svg
@@ -44,6 +58,7 @@ export default function EventsError({
         >
           Coba Lagi
         </Button>
+      </div>
       </div>
     </div>
   );
