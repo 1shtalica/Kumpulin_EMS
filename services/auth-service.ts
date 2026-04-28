@@ -18,6 +18,23 @@ export interface AuthResponse {
     profile_url?: string;
 }
 
+export interface MeResponse {
+    user_id: number;
+    email: string;
+    username: string;
+    role: string;
+    profile_url?: string;
+    phone_number?: string;
+    first_name?: string;
+    last_name?: string;
+}
+
+export interface GoogleAuthResponse {
+    message: string;
+    data: AuthResponse;
+    success?: boolean;
+}
+
 export const AuthService = {
     async login(payload: LoginPayload): Promise<AuthResponse> {
         try {
@@ -47,9 +64,9 @@ export const AuthService = {
         await axiosClient.post("/auth/logout");
     },
     async me() {
-        return axiosClient.get("/auth/me");
+        return axiosClient.get<MeResponse>("/auth/me");
     },
-    async googleAuth(payload: { code: string }) {
+    async googleAuth(payload: { code: string }): Promise<GoogleAuthResponse> {
         try {
             const response = await axiosClient.post("/auth/google", payload);
             return response.data;

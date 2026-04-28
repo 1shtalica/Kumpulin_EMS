@@ -2,6 +2,48 @@ import { create } from "zustand";
 import { AuthService, LoginPayload } from "@/services/auth-service";
 import { User } from "@/types/user";
 
+type AuthPayloadRecord = Record<string, unknown>;
+
+const asAuthPayloadRecord = (value: unknown): AuthPayloadRecord | null => {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  return value as AuthPayloadRecord;
+};
+
+// Only keep whitelisted profile fields in client store.
+// This prevents accidental persistence of token-like fields from API responses.
+const sanitizeUserPayload = (value: unknown): User | null => {
+  const root = asAuthPayloadRecord(value);
+  if (!root) return null;
+
+  const payload = asAuthPayloadRecord(root.data) ?? root;
+  const idRaw = payload.id ?? payload.user_id;
+
+  if (idRaw === undefined || idRaw === null) {
+    return null;
+  }
+
+  const email = typeof payload.email === "string" ? payload.email : "";
+  const username = typeof payload.username === "string" ? payload.username : "";
+  const role = typeof payload.role === "string" ? payload.role : "";
+
+  return {
+    id: String(idRaw),
+    email,
+    username,
+    role,
+    profile_url:
+      typeof payload.profile_url === "string" ? payload.profile_url : undefined,
+    phone_number:
+      typeof payload.phone_number === "string" ? payload.phone_number : undefined,
+    first_name:
+      typeof payload.first_name === "string" ? payload.first_name : undefined,
+    last_name:
+      typeof payload.last_name === "string" ? payload.last_name : undefined,
+  };
+};
+
 interface AuthState {
   user: User | null;
   isLoading: boolean;
@@ -16,16 +58,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: true,
 
-  setUser: (user) => set({ user }),
+  setUser: (user) => set({ user: sanitizeUserPayload(user) }),
   loginWithGoogle: async (code: string) => {
     set({ isLoading: true });
     try {
       const response = await AuthService.googleAuth({ code });
       set({
-        user: {
-          ...response.data,
-          role: response.data.role
-        }
+        user: sanitizeUserPayload(response),
       });
     } catch (error) {
       throw error;
@@ -38,16 +77,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const response = await AuthService.login(payload);
       set({
-        user: {
-          id: String(response.id),
-          username: response.username,
-          email: response.email,
-          role: response.role,
-          profile_url: response.profile_url,
-          phone_number: response.phone_number,
-          first_name: response.first_name,
-          last_name: response.last_name,
-        },
+        user: sanitizeUserPayload(response),
       });
     } catch (error) {
       throw error;
@@ -77,16 +107,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const response = (await AuthService.me()).data;
       set({
-        user: {
-          id: String(response.id),
-          username: response.username,
-          email: response.email,
-          role: response.role,
-          profile_url: response.profile_url,
-          phone_number: response.phone_number,
-        },
+        user: sanitizeUserPayload(response),
       });
-    } catch (error) {
+    } catch {
       set({ user: null });
     } finally {
       set({ isLoading: false });
