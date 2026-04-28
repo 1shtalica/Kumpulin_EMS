@@ -98,7 +98,8 @@ axiosClient.interceptors.response.use(
         return axiosClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        useAuthStore.getState().logout();
+        // Do not trigger hard redirect here to avoid reload loops on public/auth pages.
+        useAuthStore.setState({ user: null, isLoading: false });
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
