@@ -2,8 +2,8 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 
 interface QueueItem {
-  resolve: (value?: any) => void;
-  reject: (reason?: any) => void;
+  resolve: () => void;
+  reject: (reason?: unknown) => void;
 }
 
 const axiosClient = axios.create({
@@ -14,15 +14,23 @@ const axiosClient = axios.create({
   withCredentials: true,
 });
 
+const refreshClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+});
+
 let isRefreshing = false;
 let failedQueue: QueueItem[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve();
     }
   });
 
@@ -47,11 +55,19 @@ axiosClient.interceptors.response.use(
       _retry?: boolean;
     };
 
+    if (!originalRequest) {
+      return Promise.reject(error);
+    }
+
     // Public auth endpoints that should NOT trigger auto-logout on 401
     const publicAuthEndpoints = [
       '/auth/login',
       '/auth/register',
       '/auth/google',
+      '/auth/send-code',
+      '/auth/forgot-password',
+      '/auth/refresh',
+      '/auth/logout',
     ];
 
     const isPublicAuthEndpoint = publicAuthEndpoints.some(endpoint => 
@@ -60,7 +76,7 @@ axiosClient.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry && !isPublicAuthEndpoint) {
       if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
+        return new Promise<void>(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
         })
           .then(() => {
@@ -75,12 +91,13 @@ axiosClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await axiosClient.post("/auth/refresh");
+        // Use dedicated client so refresh endpoint never re-enters this interceptor.
+        await refreshClient.post("/auth/refresh");
 
         processQueue(null);
         return axiosClient(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
+        processQueue(refreshError);
         useAuthStore.getState().logout();
         return Promise.reject(refreshError);
       } finally {

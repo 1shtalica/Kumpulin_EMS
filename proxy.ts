@@ -1,11 +1,28 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const protectedRoutes = [
-  { path: "/organizer", roles: ["organizer"] },
-  { path: "/user", roles: ["user"] },
-  { path: "/events", roles: ["organizer", "user"] },
-  { path: "/explore", roles: ["organizer", "user"] },
+type ProtectedRoute = {
+  path: string;
+  roles: string[];
+};
+
+type SessionClaims = {
+  exp?: number;
+  role?: string;
+  phone_number?: string | null;
+  [key: string]: unknown;
+};
+
+const protectedRoutes: ProtectedRoute[] = [
+  { path: "/organizer/dashboard", roles: ["organizer"] },
+  { path: "/organizer/check-in", roles: ["organizer"] },
+  { path: "/organizer/communities", roles: ["organizer"] },
+  { path: "/organizer/my-event", roles: ["organizer"] },
+  { path: "/organizer/profile", roles: ["organizer"] },
+  { path: "/organizer/create-event", roles: ["organizer"] },
+  { path: "/user/following", roles: ["user"] },
+  { path: "/user/my-ticket", roles: ["user"] },
+  { path: "/user/profile", roles: ["user"] },
 ];
 
 const authRoutes = [
@@ -15,124 +32,125 @@ const authRoutes = [
   "/reset-password",
 ];
 
-const publicRoutes = [
-  "/",
-  ...authRoutes,
-];
+const matchesRoute = (pathname: string, route: string): boolean =>
+  pathname === route || pathname.startsWith(`${route}/`);
 
 const roleHomePages: Record<string, string> = {
   organizer: "/organizer/dashboard",
   user: "/",
 };
 
-// Next.js Best Practice: Optimistically decode JWT locally
-function decodeJwt(token: string) {
+const getApiBaseUrl = () =>
+  process.env.INTERNAL_API_URL ||
+  process.env.API_URL ||
+  process.env.NEXT_PUBLIC_API_URL;
+
+const asRecord = (value: unknown): Record<string, unknown> | null => {
+  if (!value || typeof value !== "object") return null;
+  return value as Record<string, unknown>;
+};
+
+function decodeJwt(token: string): SessionClaims | null {
   try {
-    const base64Url = token.split('.')[1];
+    const base64Url = token.split(".")[1];
     if (!base64Url) return null;
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
     );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
+    const parsed = JSON.parse(jsonPayload);
+    const record = asRecord(parsed);
+    if (!record) return null;
+    return record as SessionClaims;
+  } catch {
     return null;
   }
 }
 
+const extractSessionClaims = (value: unknown): SessionClaims | null => {
+  const root = asRecord(value);
+  if (!root) return null;
+
+  const nested = asRecord(root.data);
+  if (nested) return nested as SessionClaims;
+  return root as SessionClaims;
+};
+
+const isProfileIncomplete = (user: SessionClaims | null): boolean => {
+  if (!user) return false;
+  if (!Object.prototype.hasOwnProperty.call(user, "phone_number")) return false;
+  return user.phone_number === "" || user.phone_number === null;
+};
+
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const isOnboardingRoute = pathname === "/get-started";
 
-  const isProtectedRoute = protectedRoutes.find((route) =>
-    pathname.startsWith(route.path),
+  const protectedRoute = protectedRoutes.find((route) =>
+    matchesRoute(pathname, route.path),
   );
+  const isProtectedRoute = Boolean(protectedRoute);
 
-  const isPublicRoute = publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith(route + "/"),
-  );
+  const isEventsRoute = matchesRoute(pathname, "/events");
+  const isExploreRoute = matchesRoute(pathname, "/explore");
+  const isPublicOrganizerRoute =
+    matchesRoute(pathname, "/organizer") && !isProtectedRoute;
+  const isPublicRoute =
+    pathname === "/" ||
+    isEventsRoute ||
+    isExploreRoute ||
+    isPublicOrganizerRoute ||
+    authRoutes.some((route) => matchesRoute(pathname, route));
 
-  const isAuthRoute = authRoutes.some(
-    (route) => pathname === route || pathname.startsWith(route + "/"),
-  );
+  const isAuthRoute = authRoutes.some((route) => matchesRoute(pathname, route));
 
   // Exclude static files and APIs gracefully
-  if (!isProtectedRoute && !isPublicRoute && pathname !== "/get-started") {
+  if (!isProtectedRoute && !isPublicRoute && !isOnboardingRoute) {
     return NextResponse.next();
   }
 
-  // Next.js Best Practice: If it's a completely read-only public route (like / or /events), 
-  // we do NOT need to evaluate the auth state strictly in middleware.
-  if (!isProtectedRoute && !isAuthRoute && pathname !== "/get-started") {
+  // Read-only public routes do not require strict auth checks.
+  if (!isProtectedRoute && !isAuthRoute && !isOnboardingRoute) {
     return NextResponse.next();
   }
 
   const accessToken = req.cookies.get("access_token");
   const refreshToken = req.cookies.get("refresh_token");
 
-  // If no refresh token, user is not logged in. Redirect if accessing protected/get-started.
+  // No refresh token means no active session.
   if (!refreshToken) {
-    if (isProtectedRoute || pathname === "/get-started") {
+    if (isProtectedRoute || isOnboardingRoute) {
       return NextResponse.redirect(new URL("/login", req.nextUrl));
     }
     return NextResponse.next();
   }
 
-  // If no access token but has refresh token, proceed to API call to refresh.
-  if (!accessToken) {
-    if (!isProtectedRoute && pathname !== "/get-started") {
-      return NextResponse.next();
+  // Optional optimistic redirect for auth pages only.
+  // Authorization for protected routes still relies on backend verification.
+  const optimisticUser = accessToken?.value ? decodeJwt(accessToken.value) : null;
+  const hasValidAccessToken =
+    optimisticUser?.exp !== undefined && optimisticUser.exp * 1000 > Date.now();
+
+  if (hasValidAccessToken && isAuthRoute) {
+    const homePage = roleHomePages[optimisticUser.role ?? ""] || "/";
+    if (isProfileIncomplete(optimisticUser) && !isOnboardingRoute) {
+      return NextResponse.redirect(new URL("/get-started", req.nextUrl));
     }
-  }
-
-  // 1. Optimistic Auth Check (No API Call)
-  let user: any = null;
-  if (accessToken?.value) {
-    user = decodeJwt(accessToken.value);
-  }
-
-  const isTokenValid = user && user.exp && user.exp * 1000 > Date.now();
-
-  if (isTokenValid) {
-    const userRole = user.role || "user";
-    const homePage = roleHomePages[userRole] || "/";
-
-    // Handle complete profile redirection
-    if (user.hasOwnProperty('phone_number')) {
-      const isProfileIncomplete = !user.phone_number;
-      if (isProfileIncomplete && pathname !== "/get-started") {
-        return NextResponse.redirect(new URL("/get-started", req.nextUrl));
-      }
-      if (!isProfileIncomplete && pathname === "/get-started") {
-        return NextResponse.redirect(new URL(homePage, req.nextUrl));
-      }
-    }
-
-    if (isAuthRoute) {
-      return NextResponse.redirect(new URL(homePage, req.nextUrl));
-    }
-
-    if (isProtectedRoute) {
-      if (!isProtectedRoute.roles.includes(userRole)) {
-        return NextResponse.redirect(new URL(homePage, req.nextUrl));
-      }
-    }
-
-    // Token is fully valid and authorized, proceed without fetching DB!
-    return NextResponse.next();
-  }
-
-  // 2. Fetch /auth/me ONLY if token is expired, missing, or corrupt
-  // AND the route requires strict validation (protected or auth routes).
-  if (!isProtectedRoute && !isAuthRoute && pathname !== "/get-started") {
-    // For pure public routes (e.g. '/' or '/events'), just pass through if not strictly valid.
-    return NextResponse.next();
+    return NextResponse.redirect(new URL(homePage, req.nextUrl));
   }
 
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = getApiBaseUrl();
+    if (!apiUrl) {
+      if (isProtectedRoute || isOnboardingRoute) {
+        return NextResponse.redirect(new URL("/login", req.nextUrl));
+      }
+      return NextResponse.next();
+    }
+
     const cookieParts: string[] = [];
     if (accessToken) cookieParts.push(`access_token=${accessToken.value}`);
     if (refreshToken) cookieParts.push(`refresh_token=${refreshToken.value}`);
@@ -147,25 +165,36 @@ export default async function proxy(req: NextRequest) {
     });
 
     if (res.status === 401) {
-      return NextResponse.next();
-    }
-
-    if (!res.ok) {
-      if (isProtectedRoute || pathname === "/get-started") {
+      if (isProtectedRoute || isOnboardingRoute) {
         return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
       return NextResponse.next();
     }
 
-    const freshUser = await res.json();
-    const homePage = roleHomePages[freshUser.role] || "/";
-    const isProfileIncomplete = !freshUser.phone_number;
+    if (!res.ok) {
+      if (isProtectedRoute || isOnboardingRoute) {
+        return NextResponse.redirect(new URL("/login", req.nextUrl));
+      }
+      return NextResponse.next();
+    }
 
-    if (isProfileIncomplete && pathname !== "/get-started") {
+    const payload = await res.json();
+    const freshUser = extractSessionClaims(payload);
+    if (!freshUser) {
+      if (isProtectedRoute || isOnboardingRoute) {
+        return NextResponse.redirect(new URL("/login", req.nextUrl));
+      }
+      return NextResponse.next();
+    }
+
+    const homePage = roleHomePages[freshUser.role ?? ""] || "/";
+    const profileIncomplete = isProfileIncomplete(freshUser);
+
+    if (profileIncomplete && !isOnboardingRoute) {
       return NextResponse.redirect(new URL("/get-started", req.nextUrl));
     }
 
-    if (!isProfileIncomplete && pathname === "/get-started") {
+    if (!profileIncomplete && isOnboardingRoute) {
       return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
@@ -173,20 +202,21 @@ export default async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
-    if (isProtectedRoute) {
-      if (!isProtectedRoute.roles.includes(freshUser.role)) {
-        return NextResponse.redirect(new URL(homePage, req.nextUrl));
-      }
+    if (isProtectedRoute && !protectedRoute?.roles.includes(freshUser.role ?? "")) {
+      return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware Auth Verification Failed:", error);
+    if (isProtectedRoute || isOnboardingRoute) {
+      return NextResponse.redirect(new URL("/login", req.nextUrl));
+    }
     return NextResponse.next();
   }
 }
 
 // Routes Proxy should not run on
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 };

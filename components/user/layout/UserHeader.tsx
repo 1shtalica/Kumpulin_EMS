@@ -12,8 +12,8 @@ interface UserHeaderProps {
 }
 
 export default function UserHeader({ className }: UserHeaderProps) {
-  const { user } = useAuthStore();
-  const initials = user?.username?.charAt(0)?.toUpperCase() ?? "?";
+  const { user, isLoading } = useAuthStore();
+  const initials = user?.username?.charAt(0)?.toUpperCase() ?? "U";
 
   return (
     <header
@@ -39,10 +39,14 @@ export default function UserHeader({ className }: UserHeaderProps) {
       <div className="flex-1" />
 
       {/* Avatar — tanpa dropdown, klik ke profile */}
-      <Avatar>
-        <AvatarImage src={user?.profile_url ?? undefined} />
-        <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
-      </Avatar>
+      {isLoading ? (
+        <div className="h-10 w-10 rounded-full bg-muted animate-pulse" aria-hidden />
+      ) : (
+        <Avatar>
+          <AvatarImage src={user?.profile_url ?? undefined} />
+          <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
+        </Avatar>
+      )}
     </header>
   );
 }
