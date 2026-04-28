@@ -68,7 +68,7 @@ const isProfileIncomplete = (user: SessionClaims | null): boolean => {
   return user.phone_number === "" || user.phone_number === null;
 };
 
-export default async function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const {
     isOnboardingRoute,
@@ -212,3 +212,4 @@ export default async function proxy(req: NextRequest) {
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 };
+

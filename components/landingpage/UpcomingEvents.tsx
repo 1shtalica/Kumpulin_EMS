@@ -51,8 +51,21 @@ async function UpcomingEventsGrid() {
 
 export default function UpcomingEvents() {
   return (
-    <section className="py-12 md:py-16 bg-white">
-      <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl">
+    <section className="relative overflow-hidden py-12 md:py-16 bg-[#f9fafb]">
+      <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+            opacity: 0.24,
+          }}
+        />
+        <div className="absolute top-8 right-8 h-[21rem] w-[21rem] rounded-full bg-[#002cee14]" />
+        <div className="absolute bottom-8 left-8 h-[16rem] w-[16rem] rounded-full bg-[#6366f112]" />
+      </div>
+      <div className="relative z-10 container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl">
         {/* HEADER */}
         <div className="flex flex-col gap-3 mb-8">
           {/* Row 1: Title + Button */}

@@ -75,7 +75,21 @@ export default async function ExplorePage(props: {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="relative min-h-screen overflow-hidden bg-[#f9fafb]">
+      <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+            opacity: 0.24,
+          }}
+        />
+        <div className="absolute top-8 right-8 h-[22rem] w-[22rem] rounded-full bg-[#002cee14]" />
+        <div className="absolute bottom-8 left-8 h-[18rem] w-[18rem] rounded-full bg-[#6366f112]" />
+      </div>
+      <div className="relative z-10 flex min-h-screen flex-col">
       <LandingNavbar />
       <main className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl pb-20 grow">
         {/* Search Bar - Interactive */}
@@ -121,6 +135,7 @@ export default async function ExplorePage(props: {
           </Suspense>
         </div>
       </main>
+      </div>
     </div>
   );
 }
