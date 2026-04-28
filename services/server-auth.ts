@@ -1,67 +1,30 @@
 import { cookies } from "next/headers";
 import { User } from "@/types/user";
 
-type ServerPayload = Record<string, unknown>;
-
-const asRecord = (value: unknown): ServerPayload | null => {
-    if (!value || typeof value !== "object") {
-        return null;
-    }
-
-    return value as ServerPayload;
-};
-
 const getApiBaseUrl = () =>
     process.env.INTERNAL_API_URL ||
     process.env.API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:8080/api/v1";
-
-const normalizeUser = (payload: unknown): User | null => {
-    const root = asRecord(payload);
-    if (!root) {
-        return null;
-    }
-
-    const data = asRecord(root.data) ?? root;
-    const idRaw = data.user_id ?? data.id;
-
-    if (idRaw === undefined || idRaw === null) {
-        return null;
-    }
-
-    return {
-        id: String(idRaw),
-        email: typeof data.email === "string" ? data.email : "",
-        username: typeof data.username === "string" ? data.username : "",
-        role: typeof data.role === "string" ? data.role : "",
-        profile_url: typeof data.profile_url === "string" ? data.profile_url : undefined,
-        phone_number: typeof data.phone_number === "string" ? data.phone_number : undefined,
-        first_name: typeof data.first_name === "string" ? data.first_name : undefined,
-        last_name: typeof data.last_name === "string" ? data.last_name : undefined,
-    };
-};
+    process.env.NEXT_PUBLIC_API_URL;
 
 export async function getServerUser(): Promise<User | null> {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("refresh_token");
 
+    // If there is no refresh token, user is not logged in.
     if (!refreshToken) {
         return null;
     }
 
-    const accessToken = cookieStore.get("access_token");
-    const cookieParts: string[] = [];
-
-    if (accessToken?.value) {
-        cookieParts.push(`access_token=${accessToken.value}`);
+    const apiUrl = getApiBaseUrl();
+    if (!apiUrl) {
+        console.error("getServerUser: API URL is not configured");
+        return null;
     }
-    cookieParts.push(`refresh_token=${refreshToken.value}`);
+
+    const allCookies = cookieStore.getAll();
+    const cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join('; ');
 
     try {
-        const apiUrl = getApiBaseUrl();
-        const cookieHeader = cookieParts.join("; ");
-
         const res = await fetch(`${apiUrl}/auth/me`, {
             method: "GET",
             headers: {
@@ -71,17 +34,27 @@ export async function getServerUser(): Promise<User | null> {
             cache: "no-store",
         });
 
-        if (!res.ok) {
-            if (res.status !== 401) {
-                console.error(`getServerUser: Auth check failed with status ${res.status}`);
-            }
-            return null;
+        if (res.ok) {
+            const payload = await res.json();
+            const data = payload?.data ?? payload;
+            return {
+                id: String(data.user_id ?? data.id ?? ""),
+                email: data.email ?? "",
+                username: data.username ?? "",
+                role: data.role ?? "",
+                profile_url: data.profile_url ?? undefined,
+                phone_number: data.phone_number ?? undefined,
+                first_name: data.first_name ?? undefined,
+                last_name: data.last_name ?? undefined,
+            } as User;
         }
 
-        const data = await res.json();
-        return normalizeUser(data);
-    } catch (error) {
-        console.error("getServerUser: Request failed", error);
+        if (res.status !== 401) {
+            console.error("getServerUser: Auth check failed", res.status);
+        }
+        return null;
+    } catch {
+        console.error("getServerUser: Auth check request failed");
         return null;
     }
 }

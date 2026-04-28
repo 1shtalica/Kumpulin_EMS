@@ -14,24 +14,17 @@ const roleHomePages: Record<string, string> = {
   user: "/",
 };
 
-const shouldLogAuthDecision =
-  process.env.AUTH_POLICY_LOG_LEVEL === "debug" ||
-  process.env.NODE_ENV === "development";
-
-const logAuthDecision = (pathname: string, decision: string, reason: string) => {
-  if (!shouldLogAuthDecision) return;
-  console.info("[auth-policy]", { pathname, decision, reason });
+type SessionClaims = {
+  exp?: number;
+  role?: string;
+  phone_number?: string | null;
+  [key: string]: unknown;
 };
 
 const getApiBaseUrl = () =>
   process.env.INTERNAL_API_URL ||
   process.env.API_URL ||
   process.env.NEXT_PUBLIC_API_URL;
-
-const asRecord = (value: unknown): Record<string, unknown> | null => {
-  if (!value || typeof value !== "object") return null;
-  return value as Record<string, unknown>;
-};
 
 function decodeJwt(token: string): SessionClaims | null {
   try {
@@ -45,22 +38,28 @@ function decodeJwt(token: string): SessionClaims | null {
         .join(""),
     );
     const parsed = JSON.parse(jsonPayload);
-    const record = asRecord(parsed);
-    if (!record) return null;
-    return record as SessionClaims;
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+    return parsed as SessionClaims;
   } catch {
     return null;
   }
 }
 
-const extractSessionClaims = (value: unknown): SessionClaims | null => {
-  const root = asRecord(value);
-  if (!root) return null;
-
-  const nested = asRecord(root.data);
-  if (nested) return nested as SessionClaims;
-  return root as SessionClaims;
+const isProfileIncomplete = (user: SessionClaims | null): boolean => {
+  if (!user) return false;
+  return Object.prototype.hasOwnProperty.call(user, "phone_number") && !user.phone_number;
 };
+
+export default async function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  const protectedRoute = protectedRoutes.find((route) =>
+    pathname.startsWith(route.path),
+  );
+  const isProtectedRoute = Boolean(protectedRoute);
+  const isOnboardingRoute = pathname === "/get-started";
 
 const isProfileIncomplete = (user: SessionClaims | null): boolean => {
   if (!user) return false;
@@ -80,13 +79,11 @@ export default async function proxy(req: NextRequest) {
 
   // Exclude static files and APIs gracefully
   if (!isProtectedRoute && !isPublicRoute && !isOnboardingRoute) {
-    logAuthDecision(pathname, "allow", "non-policy route");
     return NextResponse.next();
   }
 
   // Read-only public routes do not require strict auth checks.
   if (!isProtectedRoute && !isAuthRoute && !isOnboardingRoute) {
-    logAuthDecision(pathname, "allow", "public read-only route");
     return NextResponse.next();
   }
 
@@ -96,7 +93,6 @@ export default async function proxy(req: NextRequest) {
   // No refresh token means no active session.
   if (!refreshToken) {
     if (isProtectedRoute || isOnboardingRoute) {
-      logAuthDecision(pathname, "redirect:/login", "missing refresh token");
       return NextResponse.redirect(new URL("/login", req.nextUrl));
     }
     logAuthDecision(pathname, "allow", "missing refresh token on public/auth");
@@ -105,17 +101,22 @@ export default async function proxy(req: NextRequest) {
 
   // Optional optimistic redirect for auth pages only.
   // Authorization for protected routes still relies on backend verification.
-  const optimisticUser = accessToken?.value ? decodeJwt(accessToken.value) : null;
+  let optimisticUser: SessionClaims | null = null;
+  if (accessToken?.value) {
+    optimisticUser = decodeJwt(accessToken.value);
+  }
+
   const hasValidAccessToken =
-    optimisticUser?.exp !== undefined && optimisticUser.exp * 1000 > Date.now();
+    optimisticUser && optimisticUser.exp && optimisticUser.exp * 1000 > Date.now();
 
   if (hasValidAccessToken && isAuthRoute) {
     const homePage = roleHomePages[optimisticUser.role ?? ""] || "/";
-    if (isProfileIncomplete(optimisticUser) && !isOnboardingRoute) {
-      logAuthDecision(pathname, "redirect:/get-started", "auth route with incomplete profile");
-      return NextResponse.redirect(new URL("/get-started", req.nextUrl));
+    if (isProfileIncomplete(optimisticUser)) {
+      if (!isOnboardingRoute) {
+        return NextResponse.redirect(new URL("/get-started", req.nextUrl));
+      }
+      return NextResponse.next();
     }
-    logAuthDecision(pathname, `redirect:${homePage}`, "auth route with valid access token");
     return NextResponse.redirect(new URL(homePage, req.nextUrl));
   }
 
@@ -123,10 +124,8 @@ export default async function proxy(req: NextRequest) {
     const apiUrl = getApiBaseUrl();
     if (!apiUrl) {
       if (isProtectedRoute || isOnboardingRoute) {
-        logAuthDecision(pathname, "redirect:/login", "missing API URL");
         return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
-      logAuthDecision(pathname, "allow", "missing API URL on public/auth route");
       return NextResponse.next();
     }
 
@@ -145,43 +144,29 @@ export default async function proxy(req: NextRequest) {
 
     if (res.status === 401) {
       if (isProtectedRoute || isOnboardingRoute) {
-        logAuthDecision(pathname, "redirect:/login", "backend /auth/me returned 401");
         return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
-      logAuthDecision(pathname, "allow", "backend /auth/me returned 401 on public/auth");
       return NextResponse.next();
     }
 
     if (!res.ok) {
       if (isProtectedRoute || isOnboardingRoute) {
-        logAuthDecision(pathname, "redirect:/login", `backend /auth/me failed with ${res.status}`);
-        return NextResponse.redirect(new URL("/login", req.nextUrl));
-      }
-      logAuthDecision(pathname, "allow", `backend /auth/me failed with ${res.status} on public/auth`);
-      return NextResponse.next();
-    }
-
-    const payload = await res.json();
-    const freshUser = extractSessionClaims(payload);
-    if (!freshUser) {
-      if (isProtectedRoute || isOnboardingRoute) {
-        logAuthDecision(pathname, "redirect:/login", "invalid /auth/me payload");
         return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
       logAuthDecision(pathname, "allow", "invalid /auth/me payload on public/auth");
       return NextResponse.next();
     }
 
+    const data = await res.json();
+    const freshUser = (data?.data ?? data) as SessionClaims;
     const homePage = roleHomePages[freshUser.role ?? ""] || "/";
     const profileIncomplete = isProfileIncomplete(freshUser);
 
     if (profileIncomplete && !isOnboardingRoute) {
-      logAuthDecision(pathname, "redirect:/get-started", "incomplete profile");
       return NextResponse.redirect(new URL("/get-started", req.nextUrl));
     }
 
     if (!profileIncomplete && isOnboardingRoute) {
-      logAuthDecision(pathname, `redirect:${homePage}`, "profile completed on onboarding route");
       return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
@@ -190,9 +175,10 @@ export default async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
-    if (isProtectedRoute && !protectedRoute?.roles.includes(freshUser.role ?? "")) {
-      logAuthDecision(pathname, `redirect:${homePage}`, "role mismatch for protected route");
-      return NextResponse.redirect(new URL(homePage, req.nextUrl));
+    if (isProtectedRoute) {
+      if (!protectedRoute?.roles.includes(freshUser.role ?? "")) {
+        return NextResponse.redirect(new URL(homePage, req.nextUrl));
+      }
     }
 
     logAuthDecision(pathname, "allow", "authorized");
@@ -200,10 +186,8 @@ export default async function proxy(req: NextRequest) {
   } catch (error) {
     console.error("Middleware Auth Verification Failed:", error);
     if (isProtectedRoute || isOnboardingRoute) {
-      logAuthDecision(pathname, "redirect:/login", "middleware exception on protected/onboarding");
       return NextResponse.redirect(new URL("/login", req.nextUrl));
     }
-    logAuthDecision(pathname, "allow", "middleware exception on public/auth");
     return NextResponse.next();
   }
 }
