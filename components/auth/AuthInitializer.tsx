@@ -3,12 +3,8 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
+import { isAuthRoutePath } from "@/lib/auth-policy";
 import { User } from "@/types/user";
-
-const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
-
-const isAuthRoutePath = (pathname: string): boolean =>
-    authRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 
 export default function AuthInitializer({ user }: { user: User | null }) {
     const checkAuth = useAuthStore((state) => state.checkAuth);

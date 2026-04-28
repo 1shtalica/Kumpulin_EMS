@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-type ProtectedRoute = {
-  path: string;
-  roles: string[];
-};
+import { resolveRoutePolicy } from "@/lib/auth-policy";
 
 type SessionClaims = {
   exp?: number;
@@ -13,31 +9,18 @@ type SessionClaims = {
   [key: string]: unknown;
 };
 
-const protectedRoutes: ProtectedRoute[] = [
-  { path: "/organizer/dashboard", roles: ["organizer"] },
-  { path: "/organizer/check-in", roles: ["organizer"] },
-  { path: "/organizer/communities", roles: ["organizer"] },
-  { path: "/organizer/my-event", roles: ["organizer"] },
-  { path: "/organizer/profile", roles: ["organizer"] },
-  { path: "/organizer/create-event", roles: ["organizer"] },
-  { path: "/user/following", roles: ["user"] },
-  { path: "/user/my-ticket", roles: ["user"] },
-  { path: "/user/profile", roles: ["user"] },
-];
-
-const authRoutes = [
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/reset-password",
-];
-
-const matchesRoute = (pathname: string, route: string): boolean =>
-  pathname === route || pathname.startsWith(`${route}/`);
-
 const roleHomePages: Record<string, string> = {
   organizer: "/organizer/dashboard",
   user: "/",
+};
+
+const shouldLogAuthDecision =
+  process.env.AUTH_POLICY_LOG_LEVEL === "debug" ||
+  process.env.NODE_ENV === "development";
+
+const logAuthDecision = (pathname: string, decision: string, reason: string) => {
+  if (!shouldLogAuthDecision) return;
+  console.info("[auth-policy]", { pathname, decision, reason });
 };
 
 const getApiBaseUrl = () =>
@@ -87,33 +70,23 @@ const isProfileIncomplete = (user: SessionClaims | null): boolean => {
 
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isOnboardingRoute = pathname === "/get-started";
-
-  const protectedRoute = protectedRoutes.find((route) =>
-    matchesRoute(pathname, route.path),
-  );
-  const isProtectedRoute = Boolean(protectedRoute);
-
-  const isEventsRoute = matchesRoute(pathname, "/events");
-  const isExploreRoute = matchesRoute(pathname, "/explore");
-  const isPublicOrganizerRoute =
-    matchesRoute(pathname, "/organizer") && !isProtectedRoute;
-  const isPublicRoute =
-    pathname === "/" ||
-    isEventsRoute ||
-    isExploreRoute ||
-    isPublicOrganizerRoute ||
-    authRoutes.some((route) => matchesRoute(pathname, route));
-
-  const isAuthRoute = authRoutes.some((route) => matchesRoute(pathname, route));
+  const {
+    isOnboardingRoute,
+    isProtectedRoute,
+    isPublicRoute,
+    isAuthRoute,
+    protectedRoute,
+  } = resolveRoutePolicy(pathname);
 
   // Exclude static files and APIs gracefully
   if (!isProtectedRoute && !isPublicRoute && !isOnboardingRoute) {
+    logAuthDecision(pathname, "allow", "non-policy route");
     return NextResponse.next();
   }
 
   // Read-only public routes do not require strict auth checks.
   if (!isProtectedRoute && !isAuthRoute && !isOnboardingRoute) {
+    logAuthDecision(pathname, "allow", "public read-only route");
     return NextResponse.next();
   }
 
@@ -123,8 +96,10 @@ export default async function proxy(req: NextRequest) {
   // No refresh token means no active session.
   if (!refreshToken) {
     if (isProtectedRoute || isOnboardingRoute) {
+      logAuthDecision(pathname, "redirect:/login", "missing refresh token");
       return NextResponse.redirect(new URL("/login", req.nextUrl));
     }
+    logAuthDecision(pathname, "allow", "missing refresh token on public/auth");
     return NextResponse.next();
   }
 
@@ -137,8 +112,10 @@ export default async function proxy(req: NextRequest) {
   if (hasValidAccessToken && isAuthRoute) {
     const homePage = roleHomePages[optimisticUser.role ?? ""] || "/";
     if (isProfileIncomplete(optimisticUser) && !isOnboardingRoute) {
+      logAuthDecision(pathname, "redirect:/get-started", "auth route with incomplete profile");
       return NextResponse.redirect(new URL("/get-started", req.nextUrl));
     }
+    logAuthDecision(pathname, `redirect:${homePage}`, "auth route with valid access token");
     return NextResponse.redirect(new URL(homePage, req.nextUrl));
   }
 
@@ -146,8 +123,10 @@ export default async function proxy(req: NextRequest) {
     const apiUrl = getApiBaseUrl();
     if (!apiUrl) {
       if (isProtectedRoute || isOnboardingRoute) {
+        logAuthDecision(pathname, "redirect:/login", "missing API URL");
         return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
+      logAuthDecision(pathname, "allow", "missing API URL on public/auth route");
       return NextResponse.next();
     }
 
@@ -166,15 +145,19 @@ export default async function proxy(req: NextRequest) {
 
     if (res.status === 401) {
       if (isProtectedRoute || isOnboardingRoute) {
+        logAuthDecision(pathname, "redirect:/login", "backend /auth/me returned 401");
         return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
+      logAuthDecision(pathname, "allow", "backend /auth/me returned 401 on public/auth");
       return NextResponse.next();
     }
 
     if (!res.ok) {
       if (isProtectedRoute || isOnboardingRoute) {
+        logAuthDecision(pathname, "redirect:/login", `backend /auth/me failed with ${res.status}`);
         return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
+      logAuthDecision(pathname, "allow", `backend /auth/me failed with ${res.status} on public/auth`);
       return NextResponse.next();
     }
 
@@ -182,8 +165,10 @@ export default async function proxy(req: NextRequest) {
     const freshUser = extractSessionClaims(payload);
     if (!freshUser) {
       if (isProtectedRoute || isOnboardingRoute) {
+        logAuthDecision(pathname, "redirect:/login", "invalid /auth/me payload");
         return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
+      logAuthDecision(pathname, "allow", "invalid /auth/me payload on public/auth");
       return NextResponse.next();
     }
 
@@ -191,27 +176,34 @@ export default async function proxy(req: NextRequest) {
     const profileIncomplete = isProfileIncomplete(freshUser);
 
     if (profileIncomplete && !isOnboardingRoute) {
+      logAuthDecision(pathname, "redirect:/get-started", "incomplete profile");
       return NextResponse.redirect(new URL("/get-started", req.nextUrl));
     }
 
     if (!profileIncomplete && isOnboardingRoute) {
+      logAuthDecision(pathname, `redirect:${homePage}`, "profile completed on onboarding route");
       return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
     if (isAuthRoute) {
+      logAuthDecision(pathname, `redirect:${homePage}`, "already authenticated user on auth route");
       return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
     if (isProtectedRoute && !protectedRoute?.roles.includes(freshUser.role ?? "")) {
+      logAuthDecision(pathname, `redirect:${homePage}`, "role mismatch for protected route");
       return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
+    logAuthDecision(pathname, "allow", "authorized");
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware Auth Verification Failed:", error);
     if (isProtectedRoute || isOnboardingRoute) {
+      logAuthDecision(pathname, "redirect:/login", "middleware exception on protected/onboarding");
       return NextResponse.redirect(new URL("/login", req.nextUrl));
     }
+    logAuthDecision(pathname, "allow", "middleware exception on public/auth");
     return NextResponse.next();
   }
 }
