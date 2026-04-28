@@ -1,24 +1,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { resolveRoutePolicy } from "@/lib/auth-policy";
 
-const protectedRoutes = [
-  { path: "/organizer", roles: ["organizer"] },
-  { path: "/user", roles: ["user"] },
-  { path: "/events", roles: ["organizer", "user"] },
-  { path: "/explore", roles: ["organizer", "user"] },
-];
-
-const authRoutes = [
-  "/login",
-  "/register",
-  "/forgot-password",
-  "/reset-password",
-];
-
-const publicRoutes = [
-  "/",
-  ...authRoutes,
-];
+type SessionClaims = {
+  exp?: number;
+  role?: string;
+  phone_number?: string | null;
+  [key: string]: unknown;
+};
 
 const roleHomePages: Record<string, string> = {
   organizer: "/organizer/dashboard",
@@ -72,13 +61,21 @@ export default async function proxy(req: NextRequest) {
   const isProtectedRoute = Boolean(protectedRoute);
   const isOnboardingRoute = pathname === "/get-started";
 
-  const isPublicRoute = publicRoutes.some(
-    (route) => pathname === route || pathname.startsWith(route + "/"),
-  );
+const isProfileIncomplete = (user: SessionClaims | null): boolean => {
+  if (!user) return false;
+  if (!Object.prototype.hasOwnProperty.call(user, "phone_number")) return false;
+  return user.phone_number === "" || user.phone_number === null;
+};
 
-  const isAuthRoute = authRoutes.some(
-    (route) => pathname === route || pathname.startsWith(route + "/"),
-  );
+export default async function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const {
+    isOnboardingRoute,
+    isProtectedRoute,
+    isPublicRoute,
+    isAuthRoute,
+    protectedRoute,
+  } = resolveRoutePolicy(pathname);
 
   // Exclude static files and APIs gracefully
   if (!isProtectedRoute && !isPublicRoute && !isOnboardingRoute) {
@@ -98,6 +95,7 @@ export default async function proxy(req: NextRequest) {
     if (isProtectedRoute || isOnboardingRoute) {
       return NextResponse.redirect(new URL("/login", req.nextUrl));
     }
+    logAuthDecision(pathname, "allow", "missing refresh token on public/auth");
     return NextResponse.next();
   }
 
@@ -155,6 +153,7 @@ export default async function proxy(req: NextRequest) {
       if (isProtectedRoute || isOnboardingRoute) {
         return NextResponse.redirect(new URL("/login", req.nextUrl));
       }
+      logAuthDecision(pathname, "allow", "invalid /auth/me payload on public/auth");
       return NextResponse.next();
     }
 
@@ -172,6 +171,7 @@ export default async function proxy(req: NextRequest) {
     }
 
     if (isAuthRoute) {
+      logAuthDecision(pathname, `redirect:${homePage}`, "already authenticated user on auth route");
       return NextResponse.redirect(new URL(homePage, req.nextUrl));
     }
 
@@ -181,6 +181,7 @@ export default async function proxy(req: NextRequest) {
       }
     }
 
+    logAuthDecision(pathname, "allow", "authorized");
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware Auth Verification Failed:", error);
@@ -193,5 +194,5 @@ export default async function proxy(req: NextRequest) {
 
 // Routes Proxy should not run on
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 };

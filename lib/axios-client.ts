@@ -2,7 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 
 interface QueueItem {
-  resolve: (value?: unknown) => void;
+  resolve: () => void;
   reject: (reason?: unknown) => void;
 }
 
@@ -43,7 +43,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token);
+      prom.resolve();
     }
   });
 
