@@ -27,19 +27,6 @@ import { Input } from "@/components/ui/input";
 // ── Data ──────────────────────────────────────────────────────
 const CYCLING_WORDS = ["Konser", "Workshop", "Festival", "Seminar", "Pameran"];
 
-const MARQUEE_ITEMS = [
-    "Java Jazz Festival",
-    "TEDx Jakarta",
-    "Bali Arts Festival",
-    "DevFest Indonesia",
-    "Jak-Japan Matsuri",
-    "Indonesia Open",
-    "Ubud Writers Fest",
-    "Bandung Culinary",
-    "Jogja Art Week",
-    "Makassar F8",
-];
-
 const LIVE_EVENTS = [
     {
         id: 1,
@@ -176,7 +163,7 @@ function EventCardStack() {
     }, []);
 
     return (
-        <div className="relative h-[340px] w-full max-w-[340px] mx-auto">
+        <div className="relative h-85 w-full max-w-85 mx-auto">
             {LIVE_EVENTS.map((ev, i) => {
                 const offset =
                     (i - activeIdx + LIVE_EVENTS.length) % LIVE_EVENTS.length;
@@ -314,7 +301,7 @@ function MobileEventStrip() {
                     {LIVE_EVENTS.map((ev) => (
                         <div
                             key={ev.id}
-                            className="shrink-0 w-[240px] bg-white rounded-xl border border-slate-100 shadow-sm p-4"
+                            className="shrink-0 w-60 bg-white rounded-xl border border-slate-100 shadow-sm p-4"
                         >
                             <div className="flex items-center justify-between mb-2">
                                 <span
@@ -359,7 +346,7 @@ function MobileEventStrip() {
                     ))}
                 </div>
                 {/* Right fade mask */}
-                <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-[#f9fafb] to-transparent pointer-events-none" />
+                <div className="absolute right-0 top-0 h-full w-12 bg-linear-to-l from-[#f9fafb] to-transparent pointer-events-none" />
             </div>
         </div>
     );
