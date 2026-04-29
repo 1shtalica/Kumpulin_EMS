@@ -14,13 +14,6 @@ const roleHomePages: Record<string, string> = {
   user: "/",
 };
 
-type SessionClaims = {
-  exp?: number;
-  role?: string;
-  phone_number?: string | null;
-  [key: string]: unknown;
-};
-
 const getApiBaseUrl = () =>
   process.env.INTERNAL_API_URL ||
   process.env.API_URL ||
@@ -49,23 +42,16 @@ function decodeJwt(token: string): SessionClaims | null {
 
 const isProfileIncomplete = (user: SessionClaims | null): boolean => {
   if (!user) return false;
-  return Object.prototype.hasOwnProperty.call(user, "phone_number") && !user.phone_number;
-};
-
-export default async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-
-  const protectedRoute = protectedRoutes.find((route) =>
-    pathname.startsWith(route.path),
-  );
-  const isProtectedRoute = Boolean(protectedRoute);
-  const isOnboardingRoute = pathname === "/get-started";
-
-const isProfileIncomplete = (user: SessionClaims | null): boolean => {
-  if (!user) return false;
   if (!Object.prototype.hasOwnProperty.call(user, "phone_number")) return false;
   return user.phone_number === "" || user.phone_number === null;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function logAuthDecision(pathname: string, decision: string, reason: string) {
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[Auth] ${pathname} → ${decision} (${reason})`);
+  }
+}
 
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -110,7 +96,7 @@ export default async function proxy(req: NextRequest) {
     optimisticUser && optimisticUser.exp && optimisticUser.exp * 1000 > Date.now();
 
   if (hasValidAccessToken && isAuthRoute) {
-    const homePage = roleHomePages[optimisticUser.role ?? ""] || "/";
+    const homePage = roleHomePages[optimisticUser!.role ?? ""] || "/";
     if (isProfileIncomplete(optimisticUser)) {
       if (!isOnboardingRoute) {
         return NextResponse.redirect(new URL("/get-started", req.nextUrl));

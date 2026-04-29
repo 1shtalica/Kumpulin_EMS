@@ -13,7 +13,17 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { EventService } from "@/services/event-service";
 
 export default function CategoryFilter() {
@@ -24,6 +34,7 @@ export default function CategoryFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category");
+  const displayLabel = currentCategory || "Semua";
 
   React.useEffect(() => {
     const fetchCategories = async () => {
@@ -61,17 +72,26 @@ export default function CategoryFilter() {
           variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between h-auto py-2.5 lg:py-3 px-3 lg:px-5 bg-transparent hover:bg-slate-50 rounded-xl lg:rounded-full border-0 shadow-none transition-colors"
+          className="w-full justify-between h-auto py-2.5 lg:py-3 px-3 lg:px-5 bg-transparent hover:bg-slate-50 rounded-xl lg:rounded-full border-0 shadow-none transition-colors min-w-0"
         >
           <div className="flex items-center gap-3 w-full min-w-0">
             <div className="hidden sm:flex h-10 w-10 rounded-full bg-primary/10 items-center justify-center shrink-0">
               <Tag className="h-4 w-4 text-primary" />
             </div>
             <div className="flex flex-col items-start min-w-0 flex-1 text-left">
-              <span className="text-xs text-slate-400 font-medium">Kategori</span>
-              <span className="text-sm font-semibold text-slate-900 truncate w-full mt-0.5">
-                {currentCategory || "Semua"}
-              </span>
+              <span className="text-xs text-slate-400 font-medium shrink-0">Kategori</span>
+              <TooltipProvider>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <span className="text-sm font-semibold text-slate-900 truncate w-full mt-0.5 cursor-pointer">
+                      {displayLabel}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="start">
+                    {displayLabel}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
           {loading ? (

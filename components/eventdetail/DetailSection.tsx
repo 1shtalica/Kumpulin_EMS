@@ -11,6 +11,7 @@ import {
   Loader2,
   Plus,
   CheckCircle2,
+  Pencil,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
@@ -76,6 +77,11 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
 
 
   const { user } = useAuthStore();
+
+  // True jika user yang sedang login adalah pemilik event ini
+  const isOwnEvent =
+    user?.role === "organizer" &&
+    String(user?.id) === String(event.organizer?.id);
   const [hasFollowed, setHasFollowed] = useState(false);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
 
@@ -253,7 +259,10 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
               <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="flex flex-row items-center gap-5 w-full md:w-auto">
                   <div className="shrink-0">
-                    <Link href={`/organizer/${event.organizer.slug}`} className="hover:opacity-80 transition-opacity">
+                    <Link
+                      href={isOwnEvent ? "/organizer/profile" : `/organizer/${event.organizer.slug}`}
+                      className="hover:opacity-80 transition-opacity"
+                    >
                       <Avatar className="h-12 w-12">
                         <AvatarImage src={event.organizer.profile_image_url} />
                         <AvatarFallback>
@@ -275,26 +284,42 @@ export default function DetailSection({ event, isEditable = false }: DetailSecti
                   </div>
                 </div>
                 {/* Kanan: Tombol Aksi */}
-                <Button
-                  variant={hasFollowed ? "outline" : "default"}
-                  size="sm"
-                  className="rounded-full px-6"
-                  onClick={handleFollowToggle}
-                  disabled={isLoadingFollow}
-                >
-                  {isLoadingFollow ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : hasFollowed ? (
-                    <Check size={14} />
-                  ) : (
-                    <Plus size={14} className="" />
-                  )}
-                  {isLoadingFollow
-                    ? "Loading..."
-                    : hasFollowed
+                {isOwnEvent ? (
+                  // Pemilik event: arahkan ke edit profile sendiri
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full px-6 shrink-0"
+                  >
+                    <Link href="/organizer/profile">
+                      <Pencil size={14} className="mr-1.5" />
+                      Edit Profile
+                    </Link>
+                  </Button>
+                ) : (
+                  // Bukan pemilik: tombol Follow / Unfollow
+                  <Button
+                    variant={hasFollowed ? "outline" : "default"}
+                    size="sm"
+                    className="rounded-full px-6 shrink-0"
+                    onClick={handleFollowToggle}
+                    disabled={isLoadingFollow}
+                  >
+                    {isLoadingFollow ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : hasFollowed ? (
+                      <Check size={14} />
+                    ) : (
+                      <Plus size={14} />
+                    )}
+                    {isLoadingFollow
+                      ? "Loading..."
+                      : hasFollowed
                       ? "Unfollow"
                       : "Follow"}
-                </Button>
+                  </Button>
+                )}
               </div>
             )}
           </div>
