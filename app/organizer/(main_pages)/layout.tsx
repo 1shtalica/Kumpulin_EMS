@@ -10,7 +10,7 @@ import OrganizerNavBar, {
 import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Home, LogOut } from "lucide-react";
+import { Home, LogOut, Plus } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -36,29 +36,30 @@ export default function MainPagesLayout({
         {/* ── Mobile Sheet ── */}
         <SheetContent
           side="left"
-          className="w-64 flex flex-col gap-0"
+          className="w-64 flex flex-col gap-0 p-0"
           aria-describedby={undefined}
         >
-          <SheetHeader className="h-16 flex flex-row items-center border-b shrink-0 p-0">
-            <SheetTitle className="flex-1 px-4 font-bold">
+          <SheetHeader className="h-[72px] flex flex-row items-center border-b border-slate-100 shrink-0 p-0">
+            <SheetTitle className="flex-1 px-4 text-left">
               <button
                 type="button"
-                className="flex items-center gap-2 text-xl group cursor-pointer focus-visible:outline-none"
+                className="flex items-center gap-3 group cursor-pointer focus-visible:outline-none"
                 onClick={() => { setIsSheetOpen(false); router.refresh(); }}
               >
-                <span className="transition-transform group-hover:rotate-12">🎉</span>
-                <span className="bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
-                  kumpul.in
-                </span>
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white font-bold text-lg">
+                  K
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="font-bold text-slate-900 leading-tight whitespace-nowrap">kumpul.in</span>
+                  <span className="text-[13px] text-slate-500 font-medium whitespace-nowrap">Organizer</span>
+                </div>
               </button>
             </SheetTitle>
           </SheetHeader>
 
-          <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-4 gap-4">
+          <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-4 gap-6">
 
-            {/* Section Menu */}
-            <div className="flex flex-col gap-2 overflow-hidden">
-              <h2 className="text-xs font-semibold text-muted px-1">Menu</h2>
+            <div className="flex flex-col gap-1 overflow-hidden">
               <NavContent
                 showLabel={true}
                 onClose={() => setIsSheetOpen(false)}
@@ -66,9 +67,7 @@ export default function MainPagesLayout({
               />
             </div>
 
-            {/* Section Akun */}
-            <div className="flex flex-col gap-2 overflow-hidden">
-              <h2 className="text-xs font-semibold text-muted px-1">Akun</h2>
+            <div className="flex flex-col gap-1 overflow-hidden">
               <NavContent
                 showLabel={true}
                 onClose={() => setIsSheetOpen(false)}
@@ -76,10 +75,10 @@ export default function MainPagesLayout({
               />
               <Button
                 variant="ghost"
-                className="w-full justify-start h-10 whitespace-nowrap overflow-hidden text-danger hover:text-danger hover:bg-danger/10"
+                className="w-full justify-start h-10 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200 text-slate-500 font-medium hover:text-slate-900 hover:bg-slate-50"
                 onClick={() => { setIsSheetOpen(false); logout(); }}
               >
-                <LogOut className="h-5 w-5 shrink-0 mr-3 text-danger" />
+                <LogOut className="h-[18px] w-[18px] shrink-0 text-slate-400 mr-3" />
                 <span>Keluar</span>
               </Button>
             </div>
@@ -87,12 +86,14 @@ export default function MainPagesLayout({
             <div className="flex-1" />
           </div>
 
-          {/* Tombol Beranda */}
-          <div className="p-4 border-t shrink-0">
-            <Button variant="brand" size="lg" className="w-full whitespace-nowrap" asChild>
-              <Link href="/" onClick={() => setIsSheetOpen(false)}>
-                <Home className="h-5 w-5 shrink-0" />
-                <span>Kembali ke Beranda</span>
+          <div className="p-4 shrink-0">
+            <Button
+              className="w-full whitespace-nowrap overflow-hidden transition-all duration-300 bg-primary hover:bg-primary/90 text-white rounded-lg h-11"
+              asChild
+            >
+              <Link href="/organizer/dashboard" onClick={() => setIsSheetOpen(false)}>
+                <Plus className="h-5 w-5 shrink-0" />
+                <span className="ml-2 font-medium">Buat Event</span>
               </Link>
             </Button>
           </div>
