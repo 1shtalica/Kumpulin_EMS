@@ -26,7 +26,7 @@ export default function CommunityHubPage() {
           </div>
 
           {/* Post Card 1 */}
-          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
             <div className="flex flex-col gap-5 p-6 sm:p-8">
               {/* Metadata Header */}
               <div className="flex items-center justify-between">
@@ -88,7 +88,7 @@ export default function CommunityHubPage() {
                   className="mt-1 h-8 w-8 rounded-full bg-slate-200 shadow-sm object-cover"
                   src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop"
                 />
-                <div className="flex-1 rounded-2xl rounded-tl-sm border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                <div className="flex-1 rounded-2xl rounded-tl-sm border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
                   <div className="mb-1.5 flex items-baseline gap-2.5">
                     <span className="text-[14px] font-bold text-slate-900">Siti R.</span>
                     <span className="text-[12px] font-medium text-slate-400">1 jam yang lalu</span>
@@ -104,7 +104,7 @@ export default function CommunityHubPage() {
                   className="mt-1 h-8 w-8 rounded-full bg-slate-200 shadow-sm object-cover"
                   src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop"
                 />
-                <div className="flex-1 rounded-2xl rounded-tl-sm border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgb(0,0,0,0.02)]">
+                <div className="flex-1 rounded-2xl rounded-tl-sm border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
                   <div className="mb-1.5 flex items-baseline gap-2.5">
                     <span className="text-[14px] font-bold text-slate-900">Andi Wijaya</span>
                     <span className="text-[12px] font-medium text-slate-400">45 menit yang lalu</span>
@@ -121,7 +121,7 @@ export default function CommunityHubPage() {
           </article>
 
           {/* Post Card 2 */}
-          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
             <div className="flex flex-col gap-5 p-6 sm:p-8">
               {/* Metadata Header */}
               <div className="flex items-center justify-between">

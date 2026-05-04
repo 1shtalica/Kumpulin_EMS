@@ -16,7 +16,7 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
         <div className="flex w-full flex-col gap-8">
           
           {/* Post Detail Card */}
-          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
             <div className="flex flex-col gap-5 p-6 sm:p-8">
               {/* Header */}
               <div className="flex items-center justify-between">
@@ -89,7 +89,7 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
           </article>
 
           {/* Comments Section */}
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:p-8">
+          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] sm:p-8">
             <h2 className="mb-6 text-2xl font-bold text-slate-900">Komentar (84)</h2>
 
             {/* Comment Input */}

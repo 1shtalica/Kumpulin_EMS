@@ -16,7 +16,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
       <main className="mx-auto w-full max-w-[800px] px-4 pb-24 pt-28 sm:px-6">
         <div className="flex w-full flex-col gap-8">
           {/* Community Header Component */}
-          <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
             {/* Banner */}
             <div className="relative h-64 w-full bg-slate-200">
               <img
@@ -90,7 +90,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
           </div>
 
           {/* Post Card 1: Text Only */}
-          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
             <div className="flex flex-col gap-5 p-6 sm:p-8">
               {/* Metadata Header */}
               <div className="flex items-center justify-between">
@@ -143,7 +143,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
           </article>
 
           {/* Post Card 2: With Image */}
-          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+          <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
             <div className="flex flex-col gap-5 p-6 sm:p-8">
               {/* Metadata Header */}
               <div className="flex items-center justify-between">
