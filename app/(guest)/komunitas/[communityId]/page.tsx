@@ -48,22 +48,22 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
               </div>
               
               <div>
-                <h1 className="mb-1 text-3xl font-extrabold tracking-tight text-slate-900">Kumpul.in Tech</h1>
-                <p className="text-[15px] font-medium text-slate-500">k/{params.communityId} • Komunitas Teknologi Terbesar</p>
-                <p className="mt-4 max-w-2xl text-[16px] leading-relaxed text-slate-600">
+                <h1 className="mb-1 text-3xl font-bold tracking-tight text-slate-900">Kumpul.in Tech</h1>
+                <p className="text-sm font-medium text-slate-500">k/{params.communityId} • Komunitas Teknologi Terbesar</p>
+                <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-600">
                   Tempat berkumpulnya para antusias teknologi, developer, dan inovator di Indonesia. Diskusikan tren terbaru, bagikan proyekmu, dan belajar bersama.
                 </p>
                 
                 <div className="mt-6 flex items-center gap-8 border-t border-slate-100 pt-6 text-sm text-slate-700">
                   <div className="flex flex-col">
                     <span className="text-xl font-bold text-slate-900">124K</span>
-                    <span className="text-[13px] text-slate-500">Anggota</span>
+                    <span className="text-xs text-slate-500">Anggota</span>
                   </div>
                   <div className="flex flex-col">
                     <span className="flex items-center gap-2 text-xl font-bold text-slate-900">
                       <span className="h-2.5 w-2.5 rounded-full bg-emerald-400"></span> 1.2K
                     </span>
-                    <span className="text-[13px] text-slate-500">Online</span>
+                    <span className="text-xs text-slate-500">Online</span>
                   </div>
                   <div className="ml-auto flex flex-col text-right">
                     <span className="flex items-center gap-2 font-medium text-slate-400">
@@ -78,13 +78,13 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
 
           {/* Feed Filters */}
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-[14px] font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50">
+            <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50">
               <Flame className="h-4 w-4" /> Hot
             </button>
-            <button className="flex items-center gap-2 rounded-full border border-slate-100 bg-transparent px-4 py-2 text-[14px] font-medium text-slate-500 transition-colors hover:bg-slate-100">
+            <button className="flex items-center gap-2 rounded-full border border-slate-100 bg-transparent px-4 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100">
               <Sparkles className="h-4 w-4" /> Baru
             </button>
-            <button className="flex items-center gap-2 rounded-full border border-slate-100 bg-transparent px-4 py-2 text-[14px] font-medium text-slate-500 transition-colors hover:bg-slate-100">
+            <button className="flex items-center gap-2 rounded-full border border-slate-100 bg-transparent px-4 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100">
               <TrendingUp className="h-4 w-4" /> Teratas
             </button>
           </div>
@@ -102,8 +102,8 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
                   />
                   <div>
                     <div className="mb-0.5 flex items-center gap-2.5">
-                      <span className="text-[15px] font-bold text-slate-900">Budi Santoso</span>
-                      <span className="text-[13px] font-medium text-slate-400">• 2 jam yang lalu</span>
+                      <span className="text-sm font-bold text-slate-900">Budi Santoso</span>
+                      <span className="text-xs font-medium text-slate-400">• 2 jam yang lalu</span>
                     </div>
                   </div>
                 </div>
@@ -118,7 +118,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
                   <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-blue-600">
                     Diskusi: Framework Front-end apa yang paling cocok untuk proyek skala besar di 2024?
                   </h2>
-                  <p className="text-[16px] leading-relaxed text-slate-600">
+                  <p className="text-base leading-relaxed text-slate-600">
                     Tim kami sedang merencanakan migrasi besar-besaran dari arsitektur lama. Kami mempertimbangkan antara React (dengan Next.js) atau Angular, mengingat tim memiliki pengalaman campuran. Apakah ada yang baru saja melakukan migrasi serupa? Faktor apa saja yang paling krusial untuk dipertimbangkan selain learning curve?
                   </p>
                 </Link>
@@ -126,15 +126,15 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
 
               {/* Interactions */}
               <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <ThumbsUp className="h-5 w-5" />
                   <span>245</span>
                 </button>
-                <Link href="/komunitas/post/tren-desain-minimalis" className="group flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <Link href="/komunitas/post/tren-desain-minimalis" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <MessageCircle className="h-5 w-5" />
                   <span>42 Komentar</span>
                 </Link>
-                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <Share className="h-5 w-5" />
                   <span>Bagikan</span>
                 </button>
@@ -155,8 +155,8 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
                   />
                   <div>
                     <div className="mb-0.5 flex items-center gap-2.5">
-                      <span className="text-[15px] font-bold text-slate-900">Rina Melati</span>
-                      <span className="text-[13px] font-medium text-slate-400">• 5 jam yang lalu</span>
+                      <span className="text-sm font-bold text-slate-900">Rina Melati</span>
+                      <span className="text-xs font-medium text-slate-400">• 5 jam yang lalu</span>
                     </div>
                   </div>
                 </div>
@@ -171,7 +171,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
                   <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-blue-600">
                     Setup WFH baru akhirnya selesai! 🚀
                   </h2>
-                  <p className="mb-4 text-[16px] leading-relaxed text-slate-600">
+                  <p className="mb-4 text-base leading-relaxed text-slate-600">
                     Setelah menabung berbulan-bulan, akhirnya bisa upgrade setup. Monitor ultrawide benar-benar mengubah cara saya koding. Keyboard mekanikal custom juga sangat direkomendasikan.
                   </p>
                   <div className="max-h-[500px] overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
@@ -186,15 +186,15 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
 
               {/* Interactions */}
               <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <ThumbsUp className="h-5 w-5" />
                   <span>1.2k</span>
                 </button>
-                <Link href="/komunitas/post/review-singkat" className="group flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <Link href="/komunitas/post/review-singkat" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <MessageCircle className="h-5 w-5" />
                   <span>128 Komentar</span>
                 </Link>
-                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <Share className="h-5 w-5" />
                   <span>Bagikan</span>
                 </button>

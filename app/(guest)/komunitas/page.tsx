@@ -17,10 +17,10 @@ export default function CommunityHubPage() {
           
           {/* Hero Banner */}
           <div className="mb-6 pt-4 text-center">
-            <h1 className="mb-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+            <h1 className="mb-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
               Post terbaru dari komunitas
             </h1>
-            <p className="mx-auto max-w-2xl text-[17px] leading-relaxed text-slate-500">
+            <p className="mx-auto max-w-2xl text-base md:text-lg leading-relaxed text-slate-500">
               Temukan diskusi hangat, wawasan baru, dan cerita menarik dari komunitas yang Anda ikuti.
             </p>
           </div>
@@ -38,10 +38,10 @@ export default function CommunityHubPage() {
                   />
                   <div>
                     <div className="mb-0.5 flex items-center gap-2.5">
-                      <span className="text-[15px] font-bold text-slate-900">Budi Santoso</span>
-                      <span className="text-[13px] font-medium text-slate-400">• 2 jam yang lalu</span>
+                      <span className="text-sm font-bold text-slate-900">Budi Santoso</span>
+                      <span className="text-xs font-medium text-slate-400">• 2 jam yang lalu</span>
                     </div>
-                    <Link href="/komunitas/desain-ui" className="text-[14px] font-semibold text-blue-600 transition-colors hover:text-blue-700 hover:underline">
+                    <Link href="/komunitas/desain-ui" className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700 hover:underline">
                       k/DesainUI
                     </Link>
                   </div>
@@ -57,7 +57,7 @@ export default function CommunityHubPage() {
                   <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
                     Tren Desain Minimalis di 2024: Apakah Masih Relevan?
                   </h2>
-                  <p className="text-[16px] leading-relaxed text-slate-600">
+                  <p className="text-base leading-relaxed text-slate-600">
                     Saya baru saja membaca beberapa artikel tentang bagaimana desain antarmuka mulai bergeser kembali ke arah skeumorphism ringan atau glassmorphism. Namun, banyak platform enterprise yang masih teguh memegang prinsip minimalis ekstrim. Bagaimana pendapat teman-teman desainer di sini? Apakah kita akan melihat akhir dari era 'flat design' murni tahun depan?
                   </p>
                 </Link>
@@ -65,15 +65,15 @@ export default function CommunityHubPage() {
 
               {/* Interactions */}
               <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <ThumbsUp className="h-5 w-5" />
                   <span>245</span>
                 </button>
-                <Link href="/komunitas/post/tren-desain-minimalis" className="group flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <Link href="/komunitas/post/tren-desain-minimalis" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <MessageCircle className="h-5 w-5" />
                   <span>42 Komentar</span>
                 </Link>
-                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <Share className="h-5 w-5" />
                   <span>Bagikan</span>
                 </button>
@@ -90,10 +90,10 @@ export default function CommunityHubPage() {
                 />
                 <div className="flex-1 rounded-2xl rounded-tl-sm border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
                   <div className="mb-1.5 flex items-baseline gap-2.5">
-                    <span className="text-[14px] font-bold text-slate-900">Siti R.</span>
-                    <span className="text-[12px] font-medium text-slate-400">1 jam yang lalu</span>
+                    <span className="text-sm font-bold text-slate-900">Siti R.</span>
+                    <span className="text-xs font-medium text-slate-400">1 jam yang lalu</span>
                   </div>
-                  <p className="text-[15px] leading-relaxed text-slate-600">
+                  <p className="text-sm leading-relaxed text-slate-600">
                     Menurut saya minimalis akan tetap bertahan karena kebutuhan performa dan aksesibilitas, tapi mungkin dengan tambahan depth seperti shadow yang lebih natural.
                   </p>
                 </div>
@@ -106,15 +106,15 @@ export default function CommunityHubPage() {
                 />
                 <div className="flex-1 rounded-2xl rounded-tl-sm border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
                   <div className="mb-1.5 flex items-baseline gap-2.5">
-                    <span className="text-[14px] font-bold text-slate-900">Andi Wijaya</span>
-                    <span className="text-[12px] font-medium text-slate-400">45 menit yang lalu</span>
+                    <span className="text-sm font-bold text-slate-900">Andi Wijaya</span>
+                    <span className="text-xs font-medium text-slate-400">45 menit yang lalu</span>
                   </div>
-                  <p className="text-[15px] leading-relaxed text-slate-600">
+                  <p className="text-sm leading-relaxed text-slate-600">
                     Setuju dengan Siti. Glassmorphism bagus untuk marketing site, tapi untuk dashboard SaaS, flat/minimalist masih juara.
                   </p>
                 </div>
               </div>
-              <Link href="/komunitas/post/tren-desain-minimalis" className="mt-2 text-center text-[14px] font-semibold text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700 rounded-xl py-2.5">
+              <Link href="/komunitas/post/tren-desain-minimalis" className="mt-2 text-center text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700 rounded-xl py-2.5">
                 Lihat 40 komentar lainnya
               </Link>
             </div>
@@ -133,10 +133,10 @@ export default function CommunityHubPage() {
                   />
                   <div>
                     <div className="mb-0.5 flex items-center gap-2.5">
-                      <span className="text-[15px] font-bold text-slate-900">Rina Melati</span>
-                      <span className="text-[13px] font-medium text-slate-400">• 5 jam yang lalu</span>
+                      <span className="text-sm font-bold text-slate-900">Rina Melati</span>
+                      <span className="text-xs font-medium text-slate-400">• 5 jam yang lalu</span>
                     </div>
-                    <Link href="/komunitas/tech-indo" className="text-[14px] font-semibold text-blue-600 transition-colors hover:text-blue-700 hover:underline">
+                    <Link href="/komunitas/tech-indo" className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700 hover:underline">
                       k/TechIndo
                     </Link>
                   </div>
@@ -152,7 +152,7 @@ export default function CommunityHubPage() {
                   <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
                     Review Singkat Framework Frontend Baru
                   </h2>
-                  <p className="line-clamp-3 text-[16px] leading-relaxed text-slate-600">
+                  <p className="line-clamp-3 text-base leading-relaxed text-slate-600">
                     Baru saja mencoba framework X yang sedang ramai dibicarakan. Secara performa memang luar biasa cepat saat initial load. Dokumentasinya juga sangat rapi. Tapi ekosistem library pihak ketiganya masih sangat terbatas dibandingkan React atau Vue. Worth it gak ya untuk project produksi saat ini?
                   </p>
                 </Link>
@@ -160,15 +160,15 @@ export default function CommunityHubPage() {
 
               {/* Interactions */}
               <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <ThumbsUp className="h-5 w-5" />
                   <span>128</span>
                 </button>
-                <Link href="/komunitas/post/review-singkat" className="group flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <Link href="/komunitas/post/review-singkat" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <MessageCircle className="h-5 w-5" />
                   <span>15 Komentar</span>
                 </Link>
-                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-[14px] font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
                   <Share className="h-5 w-5" />
                   <span>Bagikan</span>
                 </button>
@@ -178,7 +178,7 @@ export default function CommunityHubPage() {
 
           {/* Load More Full Width */}
           <div className="flex justify-center pb-8 pt-4">
-            <button className="rounded-full border border-slate-200 bg-white px-8 py-3.5 text-[15px] font-bold text-slate-700 shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md">
+            <button className="rounded-full border border-slate-200 bg-white px-8 py-3.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md">
               Muat lebih banyak post
             </button>
           </div>
