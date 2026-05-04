@@ -111,7 +111,7 @@ export default function MainPagesLayout({
             "px-12 flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden",
             "md:ml-20",
             isOpen ? "md:ml-64" : "md:ml-20",
-            "pt-16"
+            "pt-[72px]"
           )}
         >
           <OrganizerHeader
