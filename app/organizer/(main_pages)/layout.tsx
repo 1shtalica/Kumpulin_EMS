@@ -108,10 +108,10 @@ export default function MainPagesLayout({
         {/* ── Main Content ── */}
         <div
           className={cn(
-            "px-12 flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden",
+            "px-6 md:px-8 pb-8 flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden",
             "md:ml-20",
             isOpen ? "md:ml-64" : "md:ml-20",
-            "pt-[72px]"
+            "pt-[calc(72px+2rem)]"
           )}
         >
           <OrganizerHeader
