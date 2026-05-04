@@ -41,7 +41,7 @@ export default function CommunityHubPage() {
                       <span className="text-sm font-bold text-slate-900">Budi Santoso</span>
                       <span className="text-xs font-medium text-slate-400">• 2 jam yang lalu</span>
                     </div>
-                    <Link href="/komunitas/desain-ui" className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700 hover:underline">
+                    <Link href="/komunitas/desain-ui" className="text-sm font-semibold text-primary transition-colors hover:text-primary/80 hover:underline">
                       k/DesainUI
                     </Link>
                   </div>
@@ -54,7 +54,7 @@ export default function CommunityHubPage() {
               {/* Content */}
               <div className="mt-2">
                 <Link href="/komunitas/post/tren-desain-minimalis" className="group block">
-                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 group-hover:text-primary transition-colors">
                     Tren Desain Minimalis di 2024: Apakah Masih Relevan?
                   </h2>
                   <p className="text-base leading-relaxed text-slate-600">
@@ -65,15 +65,15 @@ export default function CommunityHubPage() {
 
               {/* Interactions */}
               <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <ThumbsUp className="h-5 w-5" />
                   <span>245</span>
                 </button>
-                <Link href="/komunitas/post/tren-desain-minimalis" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <Link href="/komunitas/post/tren-desain-minimalis" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <MessageCircle className="h-5 w-5" />
                   <span>42 Komentar</span>
                 </Link>
-                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <Share className="h-5 w-5" />
                   <span>Bagikan</span>
                 </button>
@@ -114,7 +114,7 @@ export default function CommunityHubPage() {
                   </p>
                 </div>
               </div>
-              <Link href="/komunitas/post/tren-desain-minimalis" className="mt-2 text-center text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700 rounded-xl py-2.5">
+              <Link href="/komunitas/post/tren-desain-minimalis" className="mt-2 text-center text-sm font-semibold text-primary transition-colors hover:bg-primary/10 hover:text-primary/80 rounded-xl py-2.5">
                 Lihat 40 komentar lainnya
               </Link>
             </div>
@@ -136,7 +136,7 @@ export default function CommunityHubPage() {
                       <span className="text-sm font-bold text-slate-900">Rina Melati</span>
                       <span className="text-xs font-medium text-slate-400">• 5 jam yang lalu</span>
                     </div>
-                    <Link href="/komunitas/tech-indo" className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700 hover:underline">
+                    <Link href="/komunitas/tech-indo" className="text-sm font-semibold text-primary transition-colors hover:text-primary/80 hover:underline">
                       k/TechIndo
                     </Link>
                   </div>
@@ -149,7 +149,7 @@ export default function CommunityHubPage() {
               {/* Content */}
               <div className="mt-2">
                 <Link href="/komunitas/post/review-singkat" className="group block">
-                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 group-hover:text-primary transition-colors">
                     Review Singkat Framework Frontend Baru
                   </h2>
                   <p className="line-clamp-3 text-base leading-relaxed text-slate-600">
@@ -160,15 +160,15 @@ export default function CommunityHubPage() {
 
               {/* Interactions */}
               <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <ThumbsUp className="h-5 w-5" />
                   <span>128</span>
                 </button>
-                <Link href="/komunitas/post/review-singkat" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <Link href="/komunitas/post/review-singkat" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <MessageCircle className="h-5 w-5" />
                   <span>15 Komentar</span>
                 </Link>
-                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <Share className="h-5 w-5" />
                   <span>Bagikan</span>
                 </button>
@@ -178,7 +178,7 @@ export default function CommunityHubPage() {
 
           {/* Load More Full Width */}
           <div className="flex justify-center pb-8 pt-4">
-            <button className="rounded-full border border-slate-200 bg-white px-8 py-3.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md">
+            <button className="rounded-full border border-slate-200 bg-white px-8 py-3.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-primary/20 hover:bg-primary/10 hover:text-primary hover:shadow-md">
               Muat lebih banyak post
             </button>
           </div>

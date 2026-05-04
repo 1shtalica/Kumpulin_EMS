@@ -41,7 +41,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
                     <Share className="h-4 w-4" />
                     Bagikan
                   </Button>
-                  <Button className="rounded-full bg-blue-600 px-6 text-white hover:bg-blue-700">
+                  <Button className="rounded-full bg-primary px-6 text-white hover:bg-primary/90">
                     Bergabung
                   </Button>
                 </div>
@@ -115,7 +115,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
               {/* Content */}
               <div className="mt-2">
                 <Link href="/komunitas/post/tren-desain-minimalis" className="group block">
-                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-blue-600">
+                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-primary">
                     Diskusi: Framework Front-end apa yang paling cocok untuk proyek skala besar di 2024?
                   </h2>
                   <p className="text-base leading-relaxed text-slate-600">
@@ -126,15 +126,15 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
 
               {/* Interactions */}
               <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <ThumbsUp className="h-5 w-5" />
                   <span>245</span>
                 </button>
-                <Link href="/komunitas/post/tren-desain-minimalis" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <Link href="/komunitas/post/tren-desain-minimalis" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <MessageCircle className="h-5 w-5" />
                   <span>42 Komentar</span>
                 </Link>
-                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <Share className="h-5 w-5" />
                   <span>Bagikan</span>
                 </button>
@@ -168,7 +168,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
               {/* Content */}
               <div className="mt-2">
                 <Link href="/komunitas/post/review-singkat" className="group block">
-                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-blue-600">
+                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-primary">
                     Setup WFH baru akhirnya selesai! 🚀
                   </h2>
                   <p className="mb-4 text-base leading-relaxed text-slate-600">
@@ -186,15 +186,15 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
 
               {/* Interactions */}
               <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <ThumbsUp className="h-5 w-5" />
                   <span>1.2k</span>
                 </button>
-                <Link href="/komunitas/post/review-singkat" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <Link href="/komunitas/post/review-singkat" className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <MessageCircle className="h-5 w-5" />
                   <span>128 Komentar</span>
                 </Link>
-                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <Share className="h-5 w-5" />
                   <span>Bagikan</span>
                 </button>

@@ -31,7 +31,7 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
                       <span className="text-sm font-bold text-slate-900">Budi Santoso</span>
                       <span className="text-xs font-medium text-slate-400">@budisantoso • 2 jam yang lalu</span>
                     </div>
-                    <Link href="/komunitas/fotografi-indonesia" className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700 hover:underline">
+                    <Link href="/komunitas/fotografi-indonesia" className="text-sm font-semibold text-primary transition-colors hover:text-primary/80 hover:underline">
                       k/FotografiIndonesia
                     </Link>
                   </div>
@@ -72,15 +72,15 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
 
               {/* Interaction Bar */}
               <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <ThumbsUp className="h-5 w-5" />
                   <span>1.2k</span>
                 </button>
-                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <MessageCircle className="h-5 w-5" />
                   <span>84 Komentar</span>
                 </button>
-                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-blue-50 hover:text-blue-600">
+                <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                   <Share className="h-5 w-5" />
                   <span className="hidden sm:inline">Bagikan</span>
                 </button>
@@ -101,11 +101,11 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
               />
               <div className="flex-1 space-y-3">
                 <textarea
-                  className="h-24 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900 transition-all placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="h-24 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900 transition-all placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="Tulis komentar..."
                 ></textarea>
                 <div className="flex justify-end">
-                  <button className="rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700">
+                  <button className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90">
                     Kirim
                   </button>
                 </div>
@@ -130,10 +130,10 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
                     Luar biasa! Tone warnanya sangat natural. Apakah Anda menggunakan filter ND untuk menangkap detail awan tersebut?
                   </p>
                   <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-1 text-xs font-semibold text-slate-500 transition-colors hover:text-blue-600">
+                    <button className="flex items-center gap-1 text-xs font-semibold text-slate-500 transition-colors hover:text-primary">
                       <ThumbsUp className="h-4 w-4" /> 12
                     </button>
-                    <button className="text-xs font-semibold text-blue-600 hover:underline">Balas</button>
+                    <button className="text-xs font-semibold text-primary hover:underline">Balas</button>
                   </div>
 
                   {/* Nested Reply */}
@@ -145,17 +145,17 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
                     />
                     <div className="flex-1">
                       <div className="mb-1 flex items-baseline gap-2">
-                        <span className="text-sm font-bold text-blue-600">Budi Santoso (Author)</span>
+                        <span className="text-sm font-bold text-primary">Budi Santoso (Author)</span>
                         <span className="text-xs font-medium text-slate-400">30 menit yang lalu</span>
                       </div>
                       <p className="mb-2 text-sm leading-relaxed text-slate-700">
                         Terima kasih, Siti! Ya, saya menggunakan filter ND gradasi lunak untuk menyeimbangkan eksposur antara langit dan lanskap bawah.
                       </p>
                       <div className="flex items-center gap-4">
-                        <button className="flex items-center gap-1 text-xs font-semibold text-slate-500 transition-colors hover:text-blue-600">
+                        <button className="flex items-center gap-1 text-xs font-semibold text-slate-500 transition-colors hover:text-primary">
                           <ThumbsUp className="h-4 w-4" /> 5
                         </button>
-                        <button className="text-xs font-semibold text-blue-600 hover:underline">Balas</button>
+                        <button className="text-xs font-semibold text-primary hover:underline">Balas</button>
                       </div>
                     </div>
                   </div>
@@ -178,16 +178,16 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
                     Tips yang sangat berguna, Mas Budi. Saya berencana ke sana bulan depan. Spot persisnya di Penanjakan 1 atau 2?
                   </p>
                   <div className="flex items-center gap-4">
-                    <button className="flex items-center gap-1 text-xs font-semibold text-slate-500 transition-colors hover:text-blue-600">
+                    <button className="flex items-center gap-1 text-xs font-semibold text-slate-500 transition-colors hover:text-primary">
                       <ThumbsUp className="h-4 w-4" /> 3
                     </button>
-                    <button className="text-xs font-semibold text-blue-600 hover:underline">Balas</button>
+                    <button className="text-xs font-semibold text-primary hover:underline">Balas</button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <button className="mt-8 w-full rounded-2xl border border-slate-200 bg-white py-3.5 text-sm font-semibold text-blue-600 transition-colors hover:bg-slate-50">
+            <button className="mt-8 w-full rounded-2xl border border-slate-200 bg-white py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-slate-50">
               Muat lebih banyak komentar
             </button>
           </section>
