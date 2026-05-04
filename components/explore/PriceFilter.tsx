@@ -17,12 +17,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Data Opsi Harga
 const priceOptions = [
   { value: "semua_harga", label: "Semua Harga" },
   { value: "gratis", label: "Gratis" },
   { value: "berbayar", label: "Berbayar" },
+  {value: "gratis_berbayar", label: "Gratis & Berbayar"}
 ];
 
 export default function PriceFilter() {
@@ -33,6 +40,7 @@ export default function PriceFilter() {
   // 1. Baca URL parameter 'price'
   // Jika kosong, anggap user sedang memilih "semua_harga"
   const currentPrice = searchParams.get("price") || "semua_harga";
+  const currentLabel = priceOptions.find((p) => p.value === currentPrice)?.label || "Semua Harga";
 
   const onSelectPrice = (selectedValue: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -59,17 +67,26 @@ export default function PriceFilter() {
           variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between h-auto py-2.5 lg:py-3 px-3 lg:px-5 bg-transparent hover:bg-slate-50 rounded-xl lg:rounded-full border-0 shadow-none transition-colors"
+          className="w-full justify-between h-auto py-2.5 lg:py-3 px-3 lg:px-5 bg-transparent hover:bg-slate-50 rounded-xl lg:rounded-full border-0 shadow-none transition-colors min-w-0"
         >
           <div className="flex items-center gap-3 w-full min-w-0">
             <div className="hidden sm:flex h-10 w-10 rounded-full bg-primary/10 items-center justify-center shrink-0">
               <Ticket className="h-4 w-4 text-primary" />
             </div>
             <div className="flex flex-col items-start min-w-0 flex-1 text-left">
-              <span className="text-xs text-slate-400 font-medium">Harga</span>
-              <span className="text-sm font-semibold text-slate-900 truncate w-full mt-0.5">
-                {priceOptions.find((p) => p.value === currentPrice)?.label || "Semua Harga"}
-              </span>
+              <span className="text-xs text-slate-400 font-medium shrink-0">Harga</span>
+              <TooltipProvider>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <span className="text-sm font-semibold text-slate-900 truncate w-full mt-0.5 cursor-pointer">
+                      {currentLabel}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="start">
+                    {currentLabel}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-300" />

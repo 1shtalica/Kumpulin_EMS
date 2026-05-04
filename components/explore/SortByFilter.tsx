@@ -16,6 +16,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const sortMethods = [
   { value: "Terbaru", label: "Terbaru" },
@@ -32,6 +38,7 @@ export default function SortByFilter() {
 
   // Ambil sort dari URL. Jika kosong, anggap default "Terbaru"
   const currentSort = searchParams.get("sort") || "Terbaru";
+  const currentLabel = sortMethods.find((s) => s.value === currentSort)?.label || "Terbaru";
 
   const onSelectSort = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -56,17 +63,26 @@ export default function SortByFilter() {
           variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between h-auto py-2.5 lg:py-3 px-3 lg:px-5 bg-transparent hover:bg-slate-50 rounded-xl lg:rounded-full border-0 shadow-none transition-colors"
+          className="w-full justify-between h-auto py-2.5 lg:py-3 px-3 lg:px-5 bg-transparent hover:bg-slate-50 rounded-xl lg:rounded-full border-0 shadow-none transition-colors min-w-0"
         >
           <div className="flex items-center gap-3 w-full min-w-0">
             <div className="hidden sm:flex h-10 w-10 rounded-full bg-primary/10 items-center justify-center shrink-0">
               <ArrowUpDown className="h-4 w-4 text-primary" />
             </div>
             <div className="flex flex-col items-start min-w-0 flex-1 text-left">
-              <span className="text-xs text-slate-400 font-medium">Urutkan</span>
-              <span className="text-sm font-semibold text-slate-900 truncate w-full mt-0.5">
-                {sortMethods.find((s) => s.value === currentSort)?.label || "Terbaru"}
-              </span>
+              <span className="text-xs text-slate-400 font-medium shrink-0">Urutkan</span>
+              <TooltipProvider>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <span className="text-sm font-semibold text-slate-900 truncate w-full mt-0.5 cursor-pointer">
+                      {currentLabel}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="start">
+                    {currentLabel}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-300" />

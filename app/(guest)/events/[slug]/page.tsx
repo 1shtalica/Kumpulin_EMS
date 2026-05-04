@@ -1,25 +1,11 @@
 import { notFound } from "next/navigation";
 import EventDetailHeader from "@/components/eventdetail/EventDetailHeader";
 import EventDetailContent from "@/components/eventdetail/EventDetailContent";
-import { Event } from "@/types/event";
-
-async function getEvent(slug: string): Promise<Event | null> {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/${slug}`, {
-      cache: "no-store"
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data ?? null;
-  } catch (error) {
-    console.error("Failed to fetch event:", error);
-    return null;
-  }
-}
+import {EventService} from "@/services/event-service";
 
 export default async function EventDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const event = await getEvent(slug);
+  const event = await EventService.getEventBySlug(slug);
 
   if (!event) {
     return notFound();

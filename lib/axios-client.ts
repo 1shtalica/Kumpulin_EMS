@@ -1,110 +1,156 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 
+declare module "axios" {
+    export interface AxiosRequestConfig {
+        /**
+         * Prevents a failed refresh attempt from forcing a browser redirect.
+         * Use this for passive auth checks such as /auth/me on public pages.
+         */
+        skipAuthFailureRedirect?: boolean;
+    }
+
+    export interface InternalAxiosRequestConfig {
+        /**
+         * Internal copy of the public request option used by the response
+         * interceptor after Axios normalizes the request config.
+         */
+        skipAuthFailureRedirect?: boolean;
+    }
+}
+
 interface QueueItem {
-  resolve: () => void;
-  reject: (reason?: unknown) => void;
+    resolve: (value?: unknown) => void;
+    reject: (reason?: unknown) => void;
 }
 
 const axiosClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
+    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    headers: {
+        "Content-Type": "application/json",
+    },
+    withCredentials: true,
 });
 
 const refreshClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
+    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    headers: {
+        "Content-Type": "application/json",
+    },
+    withCredentials: true,
 });
 
 let isRefreshing = false;
 let failedQueue: QueueItem[] = [];
 const noAutoRefreshEndpoints = [
-  "/auth/login",
-  "/auth/register",
-  "/auth/google",
-  "/auth/refresh",
-  "/auth/logout",
-  "/auth/send-code",
-  "/auth/forgot-password",
-  "/auth/register-organizer",
+    "/auth/login",
+    "/auth/register",
+    "/auth/google",
+    "/auth/refresh",
+    "/auth/logout",
+    "/auth/send-code",
+    "/auth/forgot-password",
+    "/auth/register-organizer",
 ];
 
+/**
+ * Identifies endpoints where a 401 is an expected auth result and should not
+ * start the automatic refresh-and-retry flow.
+ */
 const shouldBypassAutoRefresh = (url?: string) =>
-  noAutoRefreshEndpoints.some((endpoint) => url?.includes(endpoint));
+    noAutoRefreshEndpoints.some((endpoint) => url?.includes(endpoint));
 
-const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve();
-    }
-  });
+/**
+ * Resolves or rejects every request that waited while a token refresh was in
+ * progress, then clears the queue for the next refresh cycle.
+ */
+const processQueue = (error: unknown) => {
+    failedQueue.forEach((prom) => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve();
+        }
+    });
 
-  failedQueue = [];
+    failedQueue = [];
 };
 
 axiosClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    return config;
-  },
-  (error: AxiosError) => {
-    return Promise.reject(error);
-  },
+    /**
+     * Leaves outgoing requests unchanged.
+     * Cookies are sent by the Axios instance through withCredentials.
+     */
+    (config: InternalAxiosRequestConfig) => {
+        return config;
+    },
+    /**
+     * Propagates request setup errors to the caller.
+     */
+    (error: AxiosError) => {
+        return Promise.reject(error);
+    },
 );
 
 axiosClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  async (error: AxiosError) => {
-    const originalRequest = error.config as (InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    }) | undefined;
+    /**
+     * Returns successful responses without extra processing.
+     */
+    (response) => {
+        return response;
+    },
+    /**
+     * Handles 401 responses by refreshing the auth session once, retrying the
+     * original request, and coordinating concurrent 401s through a shared queue.
+     */
+    async (error: AxiosError) => {
+        const originalRequest = error.config as
+            | (InternalAxiosRequestConfig & {
+                  _retry?: boolean;
+              })
+            | undefined;
 
-    if (
-      !originalRequest ||
-      error.response?.status !== 401 ||
-      originalRequest._retry ||
-      shouldBypassAutoRefresh(originalRequest.url)
-    ) {
-      return Promise.reject(error);
-    }
+        if (
+            !originalRequest ||
+            error.response?.status !== 401 ||
+            originalRequest._retry ||
+            shouldBypassAutoRefresh(originalRequest.url)
+        ) {
+            return Promise.reject(error);
+        }
 
-    if (isRefreshing) {
-      return new Promise(function (resolve, reject) {
-        failedQueue.push({ resolve, reject });
-      })
-        .then(() => {
-          return axiosClient(originalRequest);
-        })
-        .catch((err) => {
-          return Promise.reject(err);
-        });
-    }
+        if (isRefreshing) {
+            return new Promise(function (resolve, reject) {
+                failedQueue.push({ resolve, reject });
+            })
+                .then(() => {
+                    return axiosClient(originalRequest);
+                })
+                .catch((err) => {
+                    return Promise.reject(err);
+                });
+        }
 
-    originalRequest._retry = true;
-    isRefreshing = true;
+        originalRequest._retry = true;
+        isRefreshing = true;
 
-    try {
-      await refreshClient.post("/auth/refresh");
+        try {
+            await refreshClient.post("/auth/refresh");
 
-      processQueue(null);
-      return axiosClient(originalRequest);
-    } catch (refreshError) {
-      processQueue(refreshError, null);
-      await useAuthStore.getState().logout();
-      return Promise.reject(refreshError);
-    } finally {
-      isRefreshing = false;
-    }
-  },
+            processQueue(null);
+            return axiosClient(originalRequest);
+        } catch (refreshError) {
+            processQueue(refreshError);
+            if (originalRequest.skipAuthFailureRedirect) {
+                useAuthStore.setState({ user: null });
+            } else {
+                await useAuthStore.getState().logout();
+            }
+            return Promise.reject(refreshError);
+        } finally {
+            isRefreshing = false;
+        }
+    },
 );
 
 export default axiosClient;
