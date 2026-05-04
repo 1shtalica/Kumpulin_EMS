@@ -70,18 +70,8 @@ export default function LoadingEvents() {
           </section>
         </div>
 
-        {/* "Menampilkan X event" Skeleton */}
-        <div className="mb-6">
-           <Skeleton className="h-6 w-48" />
-        </div>
-
         {/* Event List Skeleton */}
         <SkeletonEventGrid />
-
-        {/* Pagination Skeleton */}
-        <div className="mt-12 flex justify-center">
-          <Skeleton className="h-10 w-64 rounded-full" />
-        </div>
       </main>
     </div>
   );
