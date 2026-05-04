@@ -27,9 +27,8 @@ import {
 // Data Opsi Harga
 const priceOptions = [
   { value: "semua_harga", label: "Semua Harga" },
-  { value: "gratis", label: "Gratis" },
-  { value: "berbayar", label: "Berbayar" },
-  {value: "gratis_berbayar", label: "Gratis & Berbayar"}
+  { value: "free", label: "Gratis" },
+  { value: "paid", label: "Berbayar" },
 ];
 
 export default function PriceFilter() {
@@ -40,7 +39,13 @@ export default function PriceFilter() {
   // 1. Baca URL parameter 'price'
   // Jika kosong, anggap user sedang memilih "semua_harga"
   const currentPrice = searchParams.get("price") || "semua_harga";
-  const currentLabel = priceOptions.find((p) => p.value === currentPrice)?.label || "Semua Harga";
+  const normalizedCurrentPrice =
+    currentPrice === "gratis"
+      ? "free"
+      : currentPrice === "berbayar"
+        ? "paid"
+        : currentPrice;
+  const currentLabel = priceOptions.find((p) => p.value === normalizedCurrentPrice)?.label || "Semua Harga";
 
   const onSelectPrice = (selectedValue: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -55,6 +60,7 @@ export default function PriceFilter() {
     }
 
     params.delete("page"); // Reset pagination ke halaman 1
+    params.delete("offset");
 
     router.push(`?${params.toString()}`, { scroll: false });
     setOpen(false);
@@ -107,7 +113,7 @@ export default function PriceFilter() {
                     className={cn(
                       "mr-2 h-4 w-4",
                       // Cek aktif: Bandingkan value item dengan URL (atau default 'semua_harga')
-                      currentPrice === option.value
+                      normalizedCurrentPrice === option.value
                         ? "opacity-100"
                         : "opacity-0",
                     )}

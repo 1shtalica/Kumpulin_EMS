@@ -73,8 +73,25 @@ export interface Event {
 export interface InfiniteEventListProps {
   initialEvents: HomeEventCard[];
   initialHasMore: boolean;
+  initialNextCursor: string | null;
   searchQuery: string;
+  typeFilter: string;
+  categoryFilter: string;
+  provinceFilter: string;
+  priceFilter: string;
+  sortOption: string;
   limit: number;
+}
+
+export interface EventPagination {
+  limit: number;
+  has_more: boolean;
+  next_cursor: string | null;
+}
+
+export interface EventListResult {
+  data: HomeEventCard[];
+  pagination: EventPagination;
 }
 
 // ============================================================
@@ -94,15 +111,16 @@ export interface EventResponse {
 // Params untuk list events
 // ============================================================
 export interface GetEventsParams {
-  offset?: number;
   limit?: number;
+  cursor?: string | null;
   type?: string;
   q?: string;
+  search?: string;
+  category?: string;
+  province?: string;
+  price?: string;
+  sort?: string;
   // 🌟 tunggu api siap
-  // category?: string;
-  // location?: string;
-  // price_type?: 'gratis' | 'berbayar';
-  // sort?: string;
 }
 
 // ============================================================

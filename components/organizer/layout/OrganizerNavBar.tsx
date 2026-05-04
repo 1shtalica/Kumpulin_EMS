@@ -209,18 +209,6 @@ export default function OrganizerNavBar({ isOpen, toggleSidebar }: OrganizerNavB
 
           <div className="flex-1" />
         </div>
-
-        <div className="p-4 shrink-0">
-          <Button
-            className={cn("w-full whitespace-nowrap overflow-hidden transition-all duration-300 bg-primary hover:bg-primary/90 text-white rounded-lg h-11", isOpen ? "" : "px-0")}
-            asChild
-          >
-            <Link href="/organizer/dashboard">
-              <Plus className="h-5 w-5 shrink-0" />
-              {isOpen && <span className="ml-2 font-medium">Buat Event</span>}
-            </Link>
-          </Button>
-        </div>
       </aside>
     </TooltipProvider>
   );

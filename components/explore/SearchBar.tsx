@@ -21,6 +21,7 @@ export default function SearchBar() {
     }
 
     params.delete("page"); // Reset pagination
+    params.delete("offset");
 
     // Update URL
     replace(`${pathname}?${params.toString()}`, { scroll: false });

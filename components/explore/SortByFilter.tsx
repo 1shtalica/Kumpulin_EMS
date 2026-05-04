@@ -24,12 +24,26 @@ import {
 } from "@/components/ui/tooltip";
 
 const sortMethods = [
-  { value: "Terbaru", label: "Terbaru" },
-  { value: "Terdekat", label: "Terdekat" },
-  { value: "Populer", label: "Populer" },
-  { value: "Harga_Terendah", label: "Harga Terendah" },
-  { value: "Harga_Tertinggi", label: "Harga Tertinggi" },
+  { value: "newest", label: "Terbaru" },
+  { value: "closest", label: "Terdekat" },
+  { value: "lowest_price", label: "Harga Terendah" },
+  { value: "highest_price", label: "Harga Tertinggi" },
 ];
+
+const normalizeSortValue = (value: string) => {
+  const legacySortMap: Record<string, string> = {
+    Terbaru: "newest",
+    terbaru: "newest",
+    Terdekat: "closest",
+    terdekat: "closest",
+    Harga_Terendah: "lowest_price",
+    harga_terendah: "lowest_price",
+    Harga_Tertinggi: "highest_price",
+    harga_tertinggi: "highest_price",
+  };
+
+  return legacySortMap[value] ?? value;
+};
 
 export default function SortByFilter() {
   const [open, setOpen] = React.useState(false);
@@ -37,7 +51,7 @@ export default function SortByFilter() {
   const searchParams = useSearchParams();
 
   // Ambil sort dari URL. Jika kosong, anggap default "Terbaru"
-  const currentSort = searchParams.get("sort") || "Terbaru";
+  const currentSort = normalizeSortValue(searchParams.get("sort") || "newest");
   const currentLabel = sortMethods.find((s) => s.value === currentSort)?.label || "Terbaru";
 
   const onSelectSort = (value: string) => {
@@ -45,13 +59,15 @@ export default function SortByFilter() {
 
     // LOGIKA DEFAULT:
     // Jika user memilih "Terbaru", HAPUS parameter dari URL.
-    if (value === "Terbaru") {
+    if (value === "newest") {
       params.delete("sort");
     } else {
       // Jika selain terbaru, pasang di URL
       params.set("sort", value);
     }
 
+    params.delete("page");
+    params.delete("offset");
     router.push(`?${params.toString()}`, { scroll: false });
     setOpen(false);
   };

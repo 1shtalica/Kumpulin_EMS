@@ -1,7 +1,10 @@
 import axiosClient from "@/lib/axios-client";
 import { CreateEventFormState } from "@/types/create-event";
+import type { AxiosError } from "axios";
 import type {
   Event,
+  EventListResult,
+  EventPagination,
   EventResponse,
   GetEventsParams,
   GetOrganizerEventsParams,
@@ -12,35 +15,125 @@ import type {
   PatchEventLocationPayload,
 } from "@/types/event";
 
+type ApiErrorBody = {
+  message?: string;
+};
+
+export class EventListRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "EventListRequestError";
+    Object.setPrototypeOf(this, EventListRequestError.prototype);
+  }
+}
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  const axiosError = error as AxiosError<ApiErrorBody>;
+
+  return (
+    axiosError.response?.data?.message ||
+    (error instanceof Error ? error.message : fallback)
+  );
+};
+
+const normalizeEventPriceFilter = (price = "") => {
+  const priceMap: Record<string, string> = {
+    gratis: "free",
+    berbayar: "paid",
+    free: "free",
+    paid: "paid",
+  };
+
+  return priceMap[price] ?? "";
+};
+
+const normalizeEventSort = (sort = "") => {
+  const sortMap: Record<string, string> = {
+    Terbaru: "newest",
+    terbaru: "newest",
+    newest: "newest",
+    Terdekat: "closest",
+    terdekat: "closest",
+    closest: "closest",
+    Harga_Terendah: "lowest_price",
+    harga_terendah: "lowest_price",
+    lowest_price: "lowest_price",
+    Harga_Tertinggi: "highest_price",
+    harga_tertinggi: "highest_price",
+    highest_price: "highest_price",
+  };
+
+  return sortMap[sort] ?? "";
+};
+
+const buildEventListSearchParams = (params: GetEventsParams = {}) => {
+  const {
+    limit = 10,
+    cursor,
+    type = "",
+    q = "",
+    search,
+    category = "",
+    province = "",
+    price = "",
+    sort = "",
+  } = params;
+  const safeLimit = Math.min(Math.max(limit, 1), 100);
+  const titleSearch = search ?? q;
+  const normalizedPrice = normalizeEventPriceFilter(price);
+  const normalizedSort = normalizeEventSort(sort);
+  const urlParams = new URLSearchParams({
+    limit: String(safeLimit),
+  });
+
+  if (cursor) urlParams.set("cursor", cursor);
+  if (type) urlParams.set("type", type);
+  if (titleSearch) urlParams.set("search", titleSearch);
+  if (category) urlParams.set("category", category);
+  if (province) urlParams.set("province", province);
+  if (normalizedPrice) urlParams.set("price", normalizedPrice);
+  if (normalizedSort) urlParams.set("sort", normalizedSort);
+
+  return urlParams;
+};
+
+const normalizeEventPagination = (
+  pagination: Partial<EventPagination> | undefined,
+  limit: number,
+): EventPagination => ({
+  limit: pagination?.limit ?? limit,
+  has_more: pagination?.has_more ?? false,
+  next_cursor: pagination?.next_cursor ?? null,
+});
+
 export const EventService = {
   async getEvents(
     params: GetEventsParams = {},
-  ): Promise<{ data: HomeEventCard[]; total: number }> {
-    const { offset = 0, limit = 12, type = "", q = "" } = params;
-
+  ): Promise<EventListResult> {
     try {
-      const urlParams = new URLSearchParams({
-        offset: String(offset),
-        limit: String(limit),
-      });
-
-      if (type) urlParams.append("type", type);
-      if (q) urlParams.append("search", q);
+      const urlParams = buildEventListSearchParams(params);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/events?${urlParams.toString()}`,
         { cache: "no-store" },
       );
 
-      const json = await response.json();
+      if (!response.ok) {
+        throw new EventListRequestError(
+          `Fetch events failed with status: ${response.status}`,
+          response.status,
+        );
+      }
 
-      const data = json.data || [];
-      const estimatedTotal =
-        data.length === limit ? offset + limit + 1 : offset + data.length;
+      const json = await response.json();
+      const limit = Number(urlParams.get("limit")) || 10;
 
       return {
-        data: data,
-        total: estimatedTotal,
+        data: json.data ?? [],
+        pagination: normalizeEventPagination(json.pagination, limit),
       };
     } catch (error) {
       console.error("Failed to fetch events:", error);
@@ -50,35 +143,28 @@ export const EventService = {
 
   async getEventsClient(
     params: GetEventsParams = {},
-  ): Promise<{ data: HomeEventCard[]; hasMore: boolean }> {
-    const { offset = 0, limit = 12, type = "", q = "" } = params;
-
+  ): Promise<EventListResult> {
     try {
-      const fetchLimit = limit + 1;
-
-      const urlParams = new URLSearchParams({
-        offset: String(offset),
-        limit: String(fetchLimit),
-      });
-
-      if (type) urlParams.append("type", type);
-      if (q) urlParams.append("search", q);
+      const urlParams = buildEventListSearchParams(params);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/events?${urlParams.toString()}`,
       );
 
       if (!response.ok) {
-        throw new Error(`Fetch events failed with status: ${response.status}`);
+        throw new EventListRequestError(
+          `Fetch events failed with status: ${response.status}`,
+          response.status,
+        );
       }
 
       const json = await response.json();
-      const rawData: HomeEventCard[] = json.data || [];
+      const limit = Number(urlParams.get("limit")) || 10;
 
-      const hasMore = rawData.length > limit;
-      const data = hasMore ? rawData.slice(0, limit) : rawData;
-
-      return { data, hasMore };
+      return {
+        data: json.data ?? [],
+        pagination: normalizeEventPagination(json.pagination, limit),
+      };
     } catch (error) {
       console.error("Failed to fetch events (client):", error);
       throw error;
@@ -312,12 +398,12 @@ export const EventService = {
       await axiosClient.patch(`/organizer/events/${eventId}/tickets`, {
         actions: payload,
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to update tickets:", error);
-      const msg =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Gagal menyimpan perubahan tiket";
+      const msg = getApiErrorMessage(
+        error,
+        "Gagal menyimpan perubahan tiket",
+      );
       throw new Error(msg);
     }
   },
@@ -336,12 +422,12 @@ export const EventService = {
       await axiosClient.patch(`/organizer/events/${eventId}/rundowns`, {
         actions: payload,
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to update rundowns:", error);
-      const msg =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Gagal menyimpan perubahan rundown";
+      const msg = getApiErrorMessage(
+        error,
+        "Gagal menyimpan perubahan rundown",
+      );
       throw new Error(msg);
     }
   },
@@ -352,12 +438,12 @@ export const EventService = {
   ): Promise<void> {
     try {
       await axiosClient.patch(`/organizer/events/${eventId}/address`, payload);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to update location:", error);
-      const msg =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Gagal menyimpan perubahan lokasi";
+      const msg = getApiErrorMessage(
+        error,
+        "Gagal menyimpan perubahan lokasi",
+      );
       throw new Error(msg);
     }
   },
@@ -367,18 +453,18 @@ export const EventService = {
     payload: {
       title: string;
       category: string;
-      description: any;
+      description: unknown;
       status?: string;
     },
   ): Promise<void> {
     try {
       await axiosClient.patch(`/organizer/events/${eventId}/core`, payload);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to update core info:", error);
-      const msg =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Gagal menyimpan info utama event";
+      const msg = getApiErrorMessage(
+        error,
+        "Gagal menyimpan info utama event",
+      );
       throw new Error(msg);
     }
   },

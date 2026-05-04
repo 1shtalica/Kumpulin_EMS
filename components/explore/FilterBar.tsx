@@ -16,17 +16,23 @@ export default function FilterBar() {
   // Cek filter aktif
   const hasCategory = searchParams.has("category");
   const hasLocation = searchParams.has("location");
+  const hasProvince = searchParams.has("province");
   const hasPrice = searchParams.has("price");
   const hasSort = searchParams.has("sort");
-  const isFiltering = hasCategory || hasLocation || hasPrice || hasSort;
+  const hasType = searchParams.has("type");
+  const isFiltering =
+    hasCategory || hasLocation || hasProvince || hasPrice || hasSort || hasType;
 
   const handleReset = () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("category");
     params.delete("location");
+    params.delete("province");
     params.delete("price");
     params.delete("sort");
+    params.delete("type");
     params.delete("page");
+    params.delete("offset");
     router.push(`?${params.toString()}`, { scroll: false });
   };
 

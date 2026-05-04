@@ -85,18 +85,6 @@ export default function MainPagesLayout({
 
             <div className="flex-1" />
           </div>
-
-          <div className="p-4 shrink-0">
-            <Button
-              className="w-full whitespace-nowrap overflow-hidden transition-all duration-300 bg-primary hover:bg-primary/90 text-white rounded-lg h-11"
-              asChild
-            >
-              <Link href="/organizer/dashboard" onClick={() => setIsSheetOpen(false)}>
-                <Plus className="h-5 w-5 shrink-0" />
-                <span className="ml-2 font-medium">Buat Event</span>
-              </Link>
-            </Button>
-          </div>
         </SheetContent>
 
         {/* ── Desktop Sidebar ── */}

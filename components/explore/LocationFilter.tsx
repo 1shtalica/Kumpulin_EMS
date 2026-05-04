@@ -32,7 +32,7 @@ const Locations = [
   { value: "semua_lokasi", label: "Semua Lokasi" },
   { value: "online", label: "Online" },
   ...INDONESIA_REGIONS.map((prov) => ({
-    value: prov.id,
+    value: prov.name,
     label: prov.name,
   }))
 ];
@@ -42,19 +42,33 @@ export default function LocationFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const currentLocation = searchParams.get("location") || "semua_lokasi";
-  const currentLabel = Locations.find((loc) => loc.value === currentLocation)?.label || "Semua";
+  const rawCurrentLocation =
+    searchParams.get("province") ||
+    searchParams.get("location") ||
+    "semua_lokasi";
+  const matchedProvince = INDONESIA_REGIONS.find(
+    (province) =>
+      province.id === rawCurrentLocation || province.name === rawCurrentLocation,
+  );
+  const currentLocation = matchedProvince?.name ?? rawCurrentLocation;
+  const currentLabel =
+    Locations.find((loc) => loc.value === currentLocation)?.label || "Semua";
 
   const onSelectLocation = (currentValue: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("location");
 
     if (currentValue === "semua_lokasi" || currentValue === currentLocation) {
-      params.delete("location");
-    } else {
+      params.delete("province");
+    } else if (currentValue === "online") {
+      params.delete("province");
       params.set("location", currentValue);
+    } else {
+      params.set("province", currentValue);
     }
 
     params.delete("offset"); // Reset pagination
+    params.delete("page");
 
     router.push(`?${params.toString()}`, { scroll: false });
     setOpen(false);

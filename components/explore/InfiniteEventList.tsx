@@ -2,57 +2,103 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import EventList from "./EventList";
-import { EventService } from "@/services/event-service";
+import {
+  EventListRequestError,
+  EventService,
+} from "@/services/event-service";
 import type { HomeEventCard, InfiniteEventListProps } from "@/types/event";
 import { Loader2 } from "lucide-react";
 
 export default function InfiniteEventList({
   initialEvents,
   initialHasMore,
+  initialNextCursor,
   searchQuery,
+  typeFilter,
+  categoryFilter,
+  provinceFilter,
+  priceFilter,
+  sortOption,
   limit,
 }: InfiniteEventListProps) {
-  // Akumulasi semua event (dimulai dari batch SSR)
   const [events, setEvents] = useState<HomeEventCard[]>(initialEvents);
-
-  // Offset untuk fetch berikutnya: mulai dari panjang data SSR (bukan 0)
-  const [offset, setOffset] = useState(initialEvents.length);
-
-  // Apakah masih ada data di BE yang belum di-load?
+  const [nextCursor, setNextCursor] = useState<string | null>(
+    initialNextCursor,
+  );
   const [hasMore, setHasMore] = useState(initialHasMore);
-
-  // Guard: mencegah double-fetch jika IntersectionObserver trigger berkali-kali
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Ref ke div invisible (sentinel) yang diawasi IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const isFetchingRef = useRef(false);
 
-  // ── Load More ───────────────────────────────────────────────────────────────
-  // useCallback: agar fungsi tidak dibuat ulang setiap render.
-  // Jika tidak pakai useCallback, useEffect [loadMore] akan terus re-run
-  // setiap render → observer disconnect/reconnect terus → potensi infinite fetch.
   const loadMore = useCallback(async () => {
-    if (isLoading || !hasMore) return;
+    if (isFetchingRef.current || isLoading || !hasMore || !nextCursor) return;
 
+    isFetchingRef.current = true;
     setIsLoading(true);
+    setError(null);
+
     try {
       const result = await EventService.getEventsClient({
-        offset,
+        cursor: nextCursor,
         limit,
+        type: typeFilter,
         q: searchQuery,
+        category: categoryFilter,
+        province: provinceFilter,
+        price: priceFilter,
+        sort: sortOption,
       });
 
-      setEvents((prev) => [...prev, ...result.data]); // append, bukan replace
-      setOffset((prev) => prev + result.data.length);
-      setHasMore(result.hasMore);
+      setEvents((prev) => [...prev, ...result.data]);
+      setHasMore(result.pagination.has_more);
+      setNextCursor(result.pagination.next_cursor);
     } catch (error) {
       console.error("[InfiniteEventList] Failed to load more:", error);
+
+      if (error instanceof EventListRequestError && error.status === 400) {
+        try {
+          const result = await EventService.getEventsClient({
+            limit,
+            type: typeFilter,
+            q: searchQuery,
+            category: categoryFilter,
+            province: provinceFilter,
+            price: priceFilter,
+            sort: sortOption,
+          });
+
+          setEvents(result.data);
+          setHasMore(result.pagination.has_more);
+          setNextCursor(result.pagination.next_cursor);
+          return;
+        } catch (resetError) {
+          console.error(
+            "[InfiniteEventList] Failed to reload first page:",
+            resetError,
+          );
+        }
+      }
+
+      setError("Gagal memuat event berikutnya. Silakan coba lagi.");
     } finally {
+      isFetchingRef.current = false;
       setIsLoading(false);
     }
-  }, [isLoading, hasMore, offset, limit, searchQuery]);
+  }, [
+    isLoading,
+    hasMore,
+    nextCursor,
+    limit,
+    typeFilter,
+    searchQuery,
+    categoryFilter,
+    provinceFilter,
+    priceFilter,
+    sortOption,
+  ]);
 
-  // ── IntersectionObserver ────────────────────────────────────────────────────
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
@@ -62,8 +108,6 @@ export default function InfiniteEventList({
         if (entries[0].isIntersecting) loadMore();
       },
       {
-        // rootMargin "400px ke bawah": fetch dimulai saat sentinel
-        // masih 400px di bawah viewport → scroll terasa mulus tanpa jeda
         rootMargin: "0px 0px 400px 0px",
         threshold: 0,
       },
@@ -73,40 +117,44 @@ export default function InfiniteEventList({
     return () => observer.disconnect();
   }, [loadMore]);
 
-  // ── Reset saat Search Berubah ───────────────────────────────────────────────
-  // Saat user ganti keyword, ExplorePage (server) fetch ulang dan kirim
-  // initialEvents baru. Sync state client dengan props baru dari server.
-  // Pakai [searchQuery] bukan [initialEvents] agar tidak loop
-  // (initialEvents adalah array baru setiap render → reference selalu beda).
   useEffect(() => {
+    isFetchingRef.current = false;
     setEvents(initialEvents);
-    setOffset(initialEvents.length);
+    setNextCursor(initialNextCursor);
     setHasMore(initialHasMore);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
+    setIsLoading(false);
+    setError(null);
+  }, [
+    searchQuery,
+    typeFilter,
+    categoryFilter,
+    provinceFilter,
+    priceFilter,
+    sortOption,
+    initialEvents,
+    initialHasMore,
+    initialNextCursor,
+  ]);
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div>
-      {/* EventList: pure display, tidak berubah */}
       <EventList events={events} />
 
-      {/* Sentinel: div invisible tepat di bawah list.
-          IntersectionObserver mengawasi div ini.
-          Saat masuk zona rootMargin (400px), loadMore() dipanggil. */}
       <div ref={sentinelRef} className="h-2" aria-hidden="true" />
 
-      {/* Loading spinner: muncul saat fetch batch baru berlangsung */}
       {isLoading && (
         <div className="flex justify-center items-center py-10">
           <Loader2 className="animate-spin text-primary h-7 w-7" />
         </div>
       )}
 
-      {/* End state: semua event sudah dimuat */}
+      {error && !isLoading && (
+        <p className="text-center text-danger text-sm py-6">{error}</p>
+      )}
+
       {!hasMore && !isLoading && events.length > 0 && (
         <p className="text-center text-muted-foreground text-sm py-10">
-          Semua event sudah ditampilkan ✓
+          Semua event sudah ditampilkan
         </p>
       )}
     </div>

@@ -24,7 +24,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { EventService } from "@/services/event-service";
 
 export default function CategoryFilter() {
   const [open, setOpen] = React.useState(false);
@@ -61,6 +60,7 @@ export default function CategoryFilter() {
       params.set("category", currentValue);
     }
     params.delete("offset");
+    params.delete("page");
     router.push(`?${params.toString()}`, { scroll: false });
     setOpen(false);
   };
