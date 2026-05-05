@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { OrganizerService } from "@/services/organizer-service";
 import type { Community } from "@/types/community";
+import { CommunityService } from "@/services/community-service";
 
 const fieldClassName =
     "h-10 rounded-xl border-input bg-gray-50 px-4 text-sm shadow-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
@@ -234,6 +235,19 @@ export default function EditCommunityPage() {
             </main>
         );
     }
+
+    const handleDeleteCommunity = async () => {
+        if (!canConfirmDelete) return;
+        setIsSubmitting(true);
+        try {
+            await CommunityService.deleteCommunity(community.id);
+            router.push("/organizer/communities");
+        } catch (_) {
+            setErrorMessage("Gagal menghapus komunitas.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <main className="min-h-[calc(100vh-136px)] bg-white px-6 py-4 md:-mx-8 md:px-8">
@@ -532,7 +546,7 @@ export default function EditCommunityPage() {
                             <p className="text-xs font-medium uppercase tracking-[0.14em] text-red-500">
                                 Ketik persis
                             </p>
-                            <p className="mt-1 break-words text-sm font-semibold text-slate-950">
+                            <p className="mt-1 wrap-break-words text-sm font-semibold text-slate-950">
                                 {community.name}
                             </p>
                         </div>
@@ -568,6 +582,7 @@ export default function EditCommunityPage() {
                             </Button>
                         </DialogClose>
                         <Button
+                            onClick={handleDeleteCommunity}
                             type="button"
                             variant="outline"
                             disabled={!canConfirmDelete}
