@@ -28,7 +28,7 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
                   />
                   <div>
                     <div className="mb-0.5 flex items-center gap-2.5">
-                      <span className="text-sm font-bold text-slate-900">Budi Santoso</span>
+                      <span className="text-sm font-semibold text-slate-900">Budi Santoso</span>
                       <span className="text-xs font-medium text-slate-400">@budisantoso • 2 jam yang lalu</span>
                     </div>
                     <Link href="/komunitas/fotografi-indonesia" className="text-sm font-semibold text-primary transition-colors hover:text-primary/80 hover:underline">
@@ -43,10 +43,10 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
 
               {/* Content */}
               <div className="mt-2">
-                <h1 className="mb-5 text-3xl font-bold leading-snug tracking-tight text-slate-900">
+                <h1 className="mb-4 text-xl font-semibold leading-7 text-slate-900 sm:text-2xl">
                   Momen Emas di Gunung Bromo: Panduan Komprehensif Menangkap Sunrise
                 </h1>
-                <div className="space-y-4 text-base leading-relaxed text-slate-700">
+                <div className="space-y-4 text-sm leading-6 text-slate-700">
                   <p>
                     Setelah bertahun-tahun merencanakan, akhirnya saya berhasil mengabadikan momen matahari terbit yang sempurna di Gunung Bromo minggu lalu. Cahaya keemasan yang menyapu lautan pasir dan memantul di lereng gunung berapi menciptakan pemandangan yang tak terlupakan.
                   </p>
@@ -90,7 +90,7 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
 
           {/* Comments Section */}
           <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] sm:p-8">
-            <h2 className="mb-6 text-2xl font-bold text-slate-900">Komentar (84)</h2>
+            <h2 className="mb-6 text-lg font-semibold text-slate-900">Komentar (84)</h2>
 
             {/* Comment Input */}
             <div className="mb-8 flex items-start gap-4">
@@ -123,10 +123,10 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
                 />
                 <div className="flex-1">
                   <div className="mb-1 flex items-baseline gap-2">
-                    <span className="text-sm font-bold text-slate-900">Siti Aminah</span>
+                    <span className="text-sm font-semibold text-slate-900">Siti Aminah</span>
                     <span className="text-xs font-medium text-slate-400">45 menit yang lalu</span>
                   </div>
-                  <p className="mb-2 text-sm leading-relaxed text-slate-700">
+                  <p className="mb-2 text-xs leading-5 text-slate-700">
                     Luar biasa! Tone warnanya sangat natural. Apakah Anda menggunakan filter ND untuk menangkap detail awan tersebut?
                   </p>
                   <div className="flex items-center gap-4">
@@ -145,10 +145,10 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
                     />
                     <div className="flex-1">
                       <div className="mb-1 flex items-baseline gap-2">
-                        <span className="text-sm font-bold text-primary">Budi Santoso (Author)</span>
+                        <span className="text-sm font-semibold text-primary">Budi Santoso (Author)</span>
                         <span className="text-xs font-medium text-slate-400">30 menit yang lalu</span>
                       </div>
-                      <p className="mb-2 text-sm leading-relaxed text-slate-700">
+                      <p className="mb-2 text-xs leading-5 text-slate-700">
                         Terima kasih, Siti! Ya, saya menggunakan filter ND gradasi lunak untuk menyeimbangkan eksposur antara langit dan lanskap bawah.
                       </p>
                       <div className="flex items-center gap-4">
@@ -171,10 +171,10 @@ export default function PostDetailPage({ params }: { params: { postId: string } 
                 />
                 <div className="flex-1">
                   <div className="mb-1 flex items-baseline gap-2">
-                    <span className="text-sm font-bold text-slate-900">Rizal F.</span>
+                    <span className="text-sm font-semibold text-slate-900">Rizal F.</span>
                     <span className="text-xs font-medium text-slate-400">1 jam yang lalu</span>
                   </div>
-                  <p className="mb-2 text-sm leading-relaxed text-slate-700">
+                  <p className="mb-2 text-xs leading-5 text-slate-700">
                     Tips yang sangat berguna, Mas Budi. Saya berencana ke sana bulan depan. Spot persisnya di Penanjakan 1 atau 2?
                   </p>
                   <div className="flex items-center gap-4">

@@ -17,10 +17,10 @@ export default function CommunityHubPage() {
           
           {/* Hero Banner */}
           <div className="mb-6 pt-4 text-center">
-            <h1 className="mb-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+            <h1 className="mb-4 text-xl font-semibold leading-7 text-slate-900 sm:text-2xl">
               Post terbaru dari komunitas
             </h1>
-            <p className="mx-auto max-w-2xl text-base md:text-lg leading-relaxed text-slate-500">
+            <p className="mx-auto max-w-2xl text-sm leading-6 text-slate-500">
               Temukan diskusi hangat, wawasan baru, dan cerita menarik dari komunitas yang Anda ikuti.
             </p>
           </div>
@@ -38,7 +38,7 @@ export default function CommunityHubPage() {
                   />
                   <div>
                     <div className="mb-0.5 flex items-center gap-2.5">
-                      <span className="text-sm font-bold text-slate-900">Budi Santoso</span>
+                      <span className="text-sm font-semibold text-slate-900">Budi Santoso</span>
                       <span className="text-xs font-medium text-slate-400">• 2 jam yang lalu</span>
                     </div>
                     <Link href="/komunitas/desain-ui" className="text-sm font-semibold text-primary transition-colors hover:text-primary/80 hover:underline">
@@ -54,11 +54,11 @@ export default function CommunityHubPage() {
               {/* Content */}
               <div className="mt-2">
                 <Link href="/komunitas/post/tren-desain-minimalis" className="group block">
-                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 group-hover:text-primary transition-colors">
+                  <h2 className="mb-2.5 text-lg font-semibold leading-6 text-slate-900 transition-colors group-hover:text-primary sm:text-xl sm:leading-7">
                     Tren Desain Minimalis di 2024: Apakah Masih Relevan?
                   </h2>
-                  <p className="text-base leading-relaxed text-slate-600">
-                    Saya baru saja membaca beberapa artikel tentang bagaimana desain antarmuka mulai bergeser kembali ke arah skeumorphism ringan atau glassmorphism. Namun, banyak platform enterprise yang masih teguh memegang prinsip minimalis ekstrim. Bagaimana pendapat teman-teman desainer di sini? Apakah kita akan melihat akhir dari era 'flat design' murni tahun depan?
+                  <p className="text-sm leading-6 text-slate-600">
+                    Saya baru saja membaca beberapa artikel tentang bagaimana desain antarmuka mulai bergeser kembali ke arah skeumorphism ringan atau glassmorphism. Namun, banyak platform enterprise yang masih teguh memegang prinsip minimalis ekstrim. Bagaimana pendapat teman-teman desainer di sini? Apakah kita akan melihat akhir dari era &apos;flat design&apos; murni tahun depan?
                   </p>
                 </Link>
               </div>
@@ -90,10 +90,10 @@ export default function CommunityHubPage() {
                 />
                 <div className="flex-1 rounded-2xl rounded-tl-sm border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
                   <div className="mb-1.5 flex items-baseline gap-2.5">
-                    <span className="text-sm font-bold text-slate-900">Siti R.</span>
+                  <span className="text-sm font-semibold text-slate-900">Siti R.</span>
                     <span className="text-xs font-medium text-slate-400">1 jam yang lalu</span>
                   </div>
-                  <p className="text-sm leading-relaxed text-slate-600">
+                  <p className="text-xs leading-5 text-slate-600">
                     Menurut saya minimalis akan tetap bertahan karena kebutuhan performa dan aksesibilitas, tapi mungkin dengan tambahan depth seperti shadow yang lebih natural.
                   </p>
                 </div>
@@ -106,10 +106,10 @@ export default function CommunityHubPage() {
                 />
                 <div className="flex-1 rounded-2xl rounded-tl-sm border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
                   <div className="mb-1.5 flex items-baseline gap-2.5">
-                    <span className="text-sm font-bold text-slate-900">Andi Wijaya</span>
+                  <span className="text-sm font-semibold text-slate-900">Andi Wijaya</span>
                     <span className="text-xs font-medium text-slate-400">45 menit yang lalu</span>
                   </div>
-                  <p className="text-sm leading-relaxed text-slate-600">
+                  <p className="text-xs leading-5 text-slate-600">
                     Setuju dengan Siti. Glassmorphism bagus untuk marketing site, tapi untuk dashboard SaaS, flat/minimalist masih juara.
                   </p>
                 </div>
@@ -133,7 +133,7 @@ export default function CommunityHubPage() {
                   />
                   <div>
                     <div className="mb-0.5 flex items-center gap-2.5">
-                      <span className="text-sm font-bold text-slate-900">Rina Melati</span>
+                      <span className="text-sm font-semibold text-slate-900">Rina Melati</span>
                       <span className="text-xs font-medium text-slate-400">• 5 jam yang lalu</span>
                     </div>
                     <Link href="/komunitas/tech-indo" className="text-sm font-semibold text-primary transition-colors hover:text-primary/80 hover:underline">
@@ -149,10 +149,10 @@ export default function CommunityHubPage() {
               {/* Content */}
               <div className="mt-2">
                 <Link href="/komunitas/post/review-singkat" className="group block">
-                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 group-hover:text-primary transition-colors">
+                  <h2 className="mb-2.5 text-lg font-semibold leading-6 text-slate-900 transition-colors group-hover:text-primary sm:text-xl sm:leading-7">
                     Review Singkat Framework Frontend Baru
                   </h2>
-                  <p className="line-clamp-3 text-base leading-relaxed text-slate-600">
+                  <p className="line-clamp-3 text-sm leading-6 text-slate-600">
                     Baru saja mencoba framework X yang sedang ramai dibicarakan. Secara performa memang luar biasa cepat saat initial load. Dokumentasinya juga sangat rapi. Tapi ekosistem library pihak ketiganya masih sangat terbatas dibandingkan React atau Vue. Worth it gak ya untuk project produksi saat ini?
                   </p>
                 </Link>

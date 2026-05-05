@@ -48,19 +48,19 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
               </div>
               
               <div>
-                <h1 className="mb-1 text-3xl font-bold tracking-tight text-slate-900">Kumpul.in Tech</h1>
+                <h1 className="mb-1 text-xl font-semibold leading-7 text-slate-900 sm:text-2xl">Kumpul.in Tech</h1>
                 <p className="text-sm font-medium text-slate-500">k/{params.communityId} • Komunitas Teknologi Terbesar</p>
-                <p className="mt-4 max-w-2xl text-base leading-relaxed text-slate-600">
+                <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
                   Tempat berkumpulnya para antusias teknologi, developer, dan inovator di Indonesia. Diskusikan tren terbaru, bagikan proyekmu, dan belajar bersama.
                 </p>
                 
                 <div className="mt-6 flex items-center gap-8 border-t border-slate-100 pt-6 text-sm text-slate-700">
                   <div className="flex flex-col">
-                    <span className="text-xl font-bold text-slate-900">124K</span>
+                    <span className="text-base font-semibold text-slate-900">124K</span>
                     <span className="text-xs text-slate-500">Anggota</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="flex items-center gap-2 text-xl font-bold text-slate-900">
+                    <span className="flex items-center gap-2 text-base font-semibold text-slate-900">
                       <span className="h-2.5 w-2.5 rounded-full bg-emerald-400"></span> 1.2K
                     </span>
                     <span className="text-xs text-slate-500">Online</span>
@@ -102,7 +102,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
                   />
                   <div>
                     <div className="mb-0.5 flex items-center gap-2.5">
-                      <span className="text-sm font-bold text-slate-900">Budi Santoso</span>
+                      <span className="text-sm font-semibold text-slate-900">Budi Santoso</span>
                       <span className="text-xs font-medium text-slate-400">• 2 jam yang lalu</span>
                     </div>
                   </div>
@@ -115,10 +115,10 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
               {/* Content */}
               <div className="mt-2">
                 <Link href="/komunitas/post/tren-desain-minimalis" className="group block">
-                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-primary">
+                  <h2 className="mb-2.5 text-lg font-semibold leading-6 text-slate-900 transition-colors group-hover:text-primary sm:text-xl sm:leading-7">
                     Diskusi: Framework Front-end apa yang paling cocok untuk proyek skala besar di 2024?
                   </h2>
-                  <p className="text-base leading-relaxed text-slate-600">
+                  <p className="text-sm leading-6 text-slate-600">
                     Tim kami sedang merencanakan migrasi besar-besaran dari arsitektur lama. Kami mempertimbangkan antara React (dengan Next.js) atau Angular, mengingat tim memiliki pengalaman campuran. Apakah ada yang baru saja melakukan migrasi serupa? Faktor apa saja yang paling krusial untuk dipertimbangkan selain learning curve?
                   </p>
                 </Link>
@@ -155,7 +155,7 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
                   />
                   <div>
                     <div className="mb-0.5 flex items-center gap-2.5">
-                      <span className="text-sm font-bold text-slate-900">Rina Melati</span>
+                      <span className="text-sm font-semibold text-slate-900">Rina Melati</span>
                       <span className="text-xs font-medium text-slate-400">• 5 jam yang lalu</span>
                     </div>
                   </div>
@@ -168,10 +168,10 @@ export default function CommunityDetailPage({ params }: { params: { communityId:
               {/* Content */}
               <div className="mt-2">
                 <Link href="/komunitas/post/review-singkat" className="group block">
-                  <h2 className="mb-3 text-2xl font-bold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-primary">
+                  <h2 className="mb-2.5 text-lg font-semibold leading-6 text-slate-900 transition-colors group-hover:text-primary sm:text-xl sm:leading-7">
                     Setup WFH baru akhirnya selesai! 🚀
                   </h2>
-                  <p className="mb-4 text-base leading-relaxed text-slate-600">
+                  <p className="mb-4 text-sm leading-6 text-slate-600">
                     Setelah menabung berbulan-bulan, akhirnya bisa upgrade setup. Monitor ultrawide benar-benar mengubah cara saya koding. Keyboard mekanikal custom juga sangat direkomendasikan.
                   </p>
                   <div className="max-h-[500px] overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
