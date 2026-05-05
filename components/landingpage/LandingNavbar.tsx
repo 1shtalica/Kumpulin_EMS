@@ -92,7 +92,10 @@ export default function LandingNavbar() {
     }, []);
 
     const getNavLinkClass = (path: string) => {
-        const isActive = pathname === path;
+        const isActive =
+            path !== "/"
+                ? pathname.slice(0, path.length) === path
+                : pathname === path;
         return cn(
             "rounded-full px-5 py-2 transition-all duration-300 relative font-semibold text-sm h-9",
             isActive
@@ -194,7 +197,6 @@ export default function LandingNavbar() {
                                             }
                                         >
                                             <Link href="/events">
-                                                <Compass className="h-5 w-5 shrink-0 mr-3" />
                                                 <span>Jelajah</span>
                                             </Link>
                                         </Button>
