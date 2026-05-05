@@ -133,10 +133,12 @@ export const OrganizerService = {
     try {
       const formData = new FormData();
 
-      formData.append("name", payload.name);
-      formData.append("slug", payload.slug);
-      formData.append("description", payload.description ?? "");
-      formData.append("rules", payload.rules ?? "");
+      if (payload.name !== undefined) formData.append("name", payload.name);
+      if (payload.slug !== undefined) formData.append("slug", payload.slug);
+      if (payload.description !== undefined) {
+        formData.append("description", payload.description);
+      }
+      if (payload.rules !== undefined) formData.append("rules", payload.rules);
 
       if (payload.logo) {
         formData.append("logo", payload.logo);

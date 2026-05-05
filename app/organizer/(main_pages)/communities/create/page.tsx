@@ -77,7 +77,7 @@ export default function CreateCommunityPage() {
         const toastId = toast.loading("Sedang membuat komunitas...");
 
         try {
-            await CommunityService.createCommunity({
+            await CommunityService.createOrganizerCommunity({
                 name,
                 slug,
                 description,

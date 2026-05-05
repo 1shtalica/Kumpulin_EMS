@@ -22,7 +22,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { OrganizerService } from "@/services/organizer-service";
 import type { Community } from "@/types/community";
 import { CommunityService } from "@/services/community-service";
 
@@ -125,9 +124,7 @@ export default function EditCommunityPage() {
             }
 
             try {
-                const data = await OrganizerService.getCommunityById(
-                    params.communityId,
-                );
+                const data = await CommunityService.getCommunityByOrganizer();
                 if (!isMounted) return;
 
                 setCommunity(data);
@@ -177,17 +174,15 @@ export default function EditCommunityPage() {
         const toastId = toast.loading("Sedang menyimpan komunitas...");
 
         try {
-            const updatedCommunity = await OrganizerService.updateCommunity(
-                community.id,
-                {
+            const updatedCommunity =
+                await CommunityService.updateOrganizerCommunity({
                     name,
                     slug,
                     description,
                     rules,
                     logo,
                     banner,
-                },
-            );
+                });
 
             setCommunity(updatedCommunity);
             setLogo(null);
@@ -240,9 +235,9 @@ export default function EditCommunityPage() {
         if (!canConfirmDelete) return;
         setIsSubmitting(true);
         try {
-            await CommunityService.deleteCommunity(community.id);
+            await CommunityService.deleteOrganizerCommunity();
             router.push("/organizer/communities");
-        } catch (_) {
+        } catch {
             setErrorMessage("Gagal menghapus komunitas.");
         } finally {
             setIsSubmitting(false);
