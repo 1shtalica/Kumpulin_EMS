@@ -15,7 +15,6 @@ import {
     Pizza,
     ArrowUpRight,
     MapPin,
-    Clock,
     Ticket,
     Users,
     CalendarDays,
@@ -27,19 +26,6 @@ import { Input } from "@/components/ui/input";
 
 // ── Data ──────────────────────────────────────────────────────
 const CYCLING_WORDS = ["Konser", "Workshop", "Festival", "Seminar", "Pameran"];
-
-const MARQUEE_ITEMS = [
-    "Java Jazz Festival",
-    "TEDx Jakarta",
-    "Bali Arts Festival",
-    "DevFest Indonesia",
-    "Jak-Japan Matsuri",
-    "Indonesia Open",
-    "Ubud Writers Fest",
-    "Bandung Culinary",
-    "Jogja Art Week",
-    "Makassar F8",
-];
 
 // Palet warna untuk kartu event (di-assign secara cyclic)
 const CARD_ACCENTS = ["#6366f1", "#10b981", "#f59e0b"];
@@ -53,8 +39,10 @@ function formatEventDate(dateStr: string): string {
 
 function getEventTag(ev: HomeEventCard): { text: string; className: string } {
     const fillRatio = ev.max_capacity > 0 ? ev.total_sold / ev.max_capacity : 0;
-    if (ev.ticket_price === 0) return { text: "Gratis", className: "bg-emerald-50 text-emerald-700" };
-    if (fillRatio >= 0.8) return { text: "Hampir penuh", className: "bg-rose-50 text-rose-600" };
+    if (ev.ticket_price === 0)
+        return { text: "Gratis", className: "bg-emerald-50 text-emerald-700" };
+    if (fillRatio >= 0.8)
+        return { text: "Hampir penuh", className: "bg-rose-50 text-rose-600" };
     return { text: "Tersedia", className: "bg-sky-50 text-sky-700" };
 }
 
@@ -173,7 +161,8 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                 const zIndex = isTop ? 30 : isMid ? 20 : 10;
                 const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
                 const tag = getEventTag(ev);
-                const fillRatio = ev.max_capacity > 0 ? (ev.total_sold / ev.max_capacity) : 0;
+                const fillRatio =
+                    ev.max_capacity > 0 ? ev.total_sold / ev.max_capacity : 0;
                 const slug = ev.slug;
 
                 return (
@@ -184,7 +173,8 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                             transform: `translateY(${translateY}px) scale(${scale})`,
                             opacity,
                             zIndex,
-                            transition: "all 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                            transition:
+                                "all 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)",
                             transformOrigin: "top center",
                         }}
                         onClick={() => setActiveIdx(i)}
@@ -200,7 +190,9 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                             >
                                 {ev.type}
                             </span>
-                            <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${tag.className}`}>
+                            <span
+                                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${tag.className}`}
+                            >
                                 {tag.text}
                             </span>
                         </div>
@@ -210,7 +202,9 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                         <div className="flex flex-col gap-2 mb-5">
                             <div className="flex items-center gap-2 text-slate-500 text-sm">
                                 <MapPin size={14} className="shrink-0" />
-                                <span className="truncate">{ev.is_online ? "Online" : ev.address_title}</span>
+                                <span className="truncate">
+                                    {ev.is_online ? "Online" : ev.address_title}
+                                </span>
                             </div>
                             <div className="flex items-center gap-2 text-slate-500 text-sm">
                                 <CalendarDays size={14} className="shrink-0" />
@@ -221,21 +215,31 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                             <div className="flex justify-between text-xs text-slate-400 mb-1.5">
                                 <span className="flex items-center gap-1">
                                     <Users size={12} />{" "}
-                                    {ev.total_sold.toLocaleString("id-ID")} peserta
+                                    {ev.total_sold.toLocaleString("id-ID")}{" "}
+                                    peserta
                                 </span>
-                                <span>{Math.round(fillRatio * 100)}% terisi</span>
+                                <span>
+                                    {Math.round(fillRatio * 100)}% terisi
+                                </span>
                             </div>
                             <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                 <div
                                     className="h-full rounded-full transition-all duration-700"
-                                    style={{ width: `${fillRatio * 100}%`, background: accent }}
+                                    style={{
+                                        width: `${fillRatio * 100}%`,
+                                        background: accent,
+                                    }}
                                 />
                             </div>
                         </div>
                         <div className="flex items-center justify-between pt-2 border-t border-slate-50">
                             <div className="flex items-center gap-1 text-slate-400 text-xs">
                                 <Ticket size={12} />
-                                <span>{ev.ticket_price === 0 ? "Gratis" : `Rp ${ev.ticket_price.toLocaleString("id-ID")}`}</span>
+                                <span>
+                                    {ev.ticket_price === 0
+                                        ? "Gratis"
+                                        : `Rp ${ev.ticket_price.toLocaleString("id-ID")}`}
+                                </span>
                             </div>
                             <Link
                                 href={`/events/${slug}`}
@@ -290,7 +294,10 @@ function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
                     {events.map((ev, i) => {
                         const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
                         const tag = getEventTag(ev);
-                        const fillRatio = ev.max_capacity > 0 ? ev.total_sold / ev.max_capacity : 0;
+                        const fillRatio =
+                            ev.max_capacity > 0
+                                ? ev.total_sold / ev.max_capacity
+                                : 0;
                         return (
                             <Link
                                 key={ev.event_id ?? ev.slug ?? i}
@@ -304,7 +311,9 @@ function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
                                     >
                                         {ev.type}
                                     </span>
-                                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${tag.className}`}>
+                                    <span
+                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${tag.className}`}
+                                    >
                                         {tag.text}
                                     </span>
                                 </div>
@@ -314,7 +323,11 @@ function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
                                 <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
                                     <span className="flex items-center gap-1">
                                         <MapPin size={11} />
-                                        <span className="truncate max-w-20">{ev.is_online ? "Online" : ev.address_title}</span>
+                                        <span className="truncate max-w-20">
+                                            {ev.is_online
+                                                ? "Online"
+                                                : ev.address_title}
+                                        </span>
                                     </span>
                                     <span className="flex items-center gap-1">
                                         <CalendarDays size={11} />
@@ -324,7 +337,10 @@ function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
                                 <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
                                     <div
                                         className="h-full rounded-full"
-                                        style={{ width: `${fillRatio * 100}%`, background: accent }}
+                                        style={{
+                                            width: `${fillRatio * 100}%`,
+                                            background: accent,
+                                        }}
                                     />
                                 </div>
                                 <p className="text-[10px] text-slate-400 mt-1">

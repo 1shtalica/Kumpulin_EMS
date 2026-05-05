@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import {
     Menu,
     Home,
-    Compass,
     LogOut,
     User,
     LayoutDashboard,
