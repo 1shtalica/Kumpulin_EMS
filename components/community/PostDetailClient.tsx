@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CommunityService } from "@/services/community-service";
 import { useAuthStore } from "@/stores/auth-store";
 import type { Comment, Community, Post } from "@/types/community";
+import PostImageCarousel from "./PostImageCarousel";
 
 type ApiErrorBody = {
     message?: string;
@@ -47,6 +48,9 @@ const formatDate = (value: string) =>
     }).format(new Date(value));
 
 const formatNumber = (value: number) => new Intl.NumberFormat("id-ID").format(value);
+
+const getPostAuthorLabel = (post: Post) =>
+    post.author_name?.trim() || `User ${post.author_user_id}`;
 
 const getStreamUrl = (communityId: string, postId: string) => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -549,6 +553,7 @@ export default function PostDetailClient({
                                 k/{community.slug}
                             </Link>
                             <p className="mt-1 text-xs font-medium text-slate-400">
+                                {getPostAuthorLabel(post)} ·{" "}
                                 {formatDate(post.created_at)}
                             </p>
                         </div>
@@ -561,22 +566,11 @@ export default function PostDetailClient({
                                 {post.body}
                             </p>
 
-                            {post.image_urls?.length ? (
-                                <div className="mt-6 grid gap-3">
-                                    {post.image_urls.map((imageUrl) => (
-                                        <div
-                                            key={imageUrl}
-                                            className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50"
-                                        >
-                                            <img
-                                                alt=""
-                                                className="max-h-[620px] w-full object-cover"
-                                                src={imageUrl}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : null}
+                            <PostImageCarousel
+                                imageUrls={post.image_urls}
+                                className="mt-6"
+                                imageClassName="max-h-[620px]"
+                            />
                         </div>
 
                         <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">

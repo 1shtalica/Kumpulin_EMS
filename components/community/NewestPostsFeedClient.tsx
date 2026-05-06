@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CommunityService } from "@/services/community-service";
 import type { Post } from "@/types/community";
+import PostImageCarousel from "./PostImageCarousel";
 
 const FEED_LIMIT = 20;
 
@@ -50,7 +51,11 @@ const formatDate = (value: string) =>
 
 const formatNumber = (value: number) => new Intl.NumberFormat("id-ID").format(value);
 
-const shortId = (value: string) => value.slice(0, 8);
+const getCommunityLabel = (post: Post) =>
+    post.organizer_name?.trim() || `Community ${post.community_id.slice(0, 8)}`;
+
+const getAuthorLabel = (post: Post) =>
+    post.author_name?.trim() || `User ${post.author_user_id}`;
 
 const dedupePosts = (items: Post[]) => {
     const seen = new Set<string>();
@@ -89,14 +94,14 @@ function FeedPostCard({ post }: { post: Post }) {
                                 href={communityHref}
                                 className="text-sm font-semibold text-primary transition-colors hover:text-primary/80 hover:underline"
                             >
-                                k/{shortId(post.community_id)}
+                                k/{getCommunityLabel(post)}
                             </Link>
                             <span className="text-xs font-medium text-slate-400">
                                 {formatDate(post.created_at)}
                             </span>
                         </div>
                         <p className="mt-1 text-xs font-medium text-slate-400">
-                            User {post.author_user_id}
+                            {getAuthorLabel(post)}
                         </p>
                     </div>
                     <button
@@ -121,22 +126,14 @@ function FeedPostCard({ post }: { post: Post }) {
                     <p className="mt-3 line-clamp-4 whitespace-pre-line text-sm leading-6 text-slate-600">
                         {post.body}
                     </p>
-
-                    {post.image_urls?.length ? (
-                        <div className="mt-5 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
-                            <img
-                                alt=""
-                                src={post.image_urls[0]}
-                                className="max-h-[460px] w-full object-cover"
-                            />
-                            {post.image_urls.length > 1 ? (
-                                <div className="border-t border-slate-100 bg-white px-4 py-3 text-xs font-semibold text-slate-500">
-                                    +{post.image_urls.length - 1} gambar lainnya
-                                </div>
-                            ) : null}
-                        </div>
-                    ) : null}
                 </Link>
+
+                <PostImageCarousel
+                    imageUrls={post.image_urls}
+                    href={postHref}
+                    className="mt-0"
+                    imageClassName="max-h-[460px]"
+                />
 
                 <div className="mt-1 flex items-center gap-2 border-t border-slate-100 pt-5">
                     <Link

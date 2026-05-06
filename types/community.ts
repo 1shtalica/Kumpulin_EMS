@@ -46,6 +46,8 @@ export interface Post {
   id: string;
   community_id: string;
   author_user_id: number;
+  author_name?: string;
+  organizer_name?: string;
   title: string;
   body: string;
   image_urls: string[];

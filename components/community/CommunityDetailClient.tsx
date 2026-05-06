@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CommunityService } from "@/services/community-service";
 import { useAuthStore } from "@/stores/auth-store";
 import type { Community, Post } from "@/types/community";
+import PostImageCarousel from "./PostImageCarousel";
 
 type ApiErrorBody = {
     message?: string;
@@ -56,7 +57,8 @@ const formatDate = (value: string) =>
         year: "numeric",
     }).format(new Date(value));
 
-const formatNumber = (value: number) => new Intl.NumberFormat("id-ID").format(value);
+const formatNumber = (value: number) =>
+    new Intl.NumberFormat("id-ID").format(value);
 
 const getInitials = (name: string) =>
     name
@@ -112,7 +114,9 @@ function PostFormDialog({
         if (!open) return;
         setTitle(post?.title ?? "");
         setBody(post?.body ?? "");
-        setPostType(post?.post_type === "announcement" ? "announcement" : "text");
+        setPostType(
+            post?.post_type === "announcement" ? "announcement" : "text",
+        );
         setImages([]);
         setReplaceImages(false);
     }, [open, post]);
@@ -323,23 +327,13 @@ function PostCard({
                     <p className="whitespace-pre-line text-sm leading-6 text-slate-600">
                         {post.body}
                     </p>
-                    {post.image_urls?.length ? (
-                        <div className="mt-5 grid gap-3">
-                            {post.image_urls.slice(0, 5).map((imageUrl) => (
-                                <div
-                                    key={imageUrl}
-                                    className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50"
-                                >
-                                    <img
-                                        src={imageUrl}
-                                        alt=""
-                                        className="max-h-[520px] w-full object-cover"
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    ) : null}
                 </Link>
+
+                <PostImageCarousel
+                    imageUrls={post.image_urls}
+                    href={`/komunitas/${communityId}/post/${post.id}`}
+                    className="mt-0"
+                />
 
                 <div className="mt-1 flex items-center gap-2 border-t border-slate-100 pt-5">
                     <Link
@@ -378,25 +372,28 @@ export default function CommunityDetailClient({
 
     const canManage = user?.role === "organizer";
 
-    const loadPosts = useCallback(async (targetPage = 1, append = false) => {
-        setIsLoadingPosts(true);
-        try {
-            const result = await CommunityService.listPosts(
-                communityId,
-                targetPage,
-                20,
-            );
-            setPosts((current) =>
-                append ? [...current, ...result.data] : result.data,
-            );
-            setPage(result.page);
-            setHasNext(result.hasNext);
-        } catch (error) {
-            toast.error(getApiErrorMessage(error, "Gagal mengambil post."));
-        } finally {
-            setIsLoadingPosts(false);
-        }
-    }, [communityId]);
+    const loadPosts = useCallback(
+        async (targetPage = 1, append = false) => {
+            setIsLoadingPosts(true);
+            try {
+                const result = await CommunityService.listPosts(
+                    communityId,
+                    targetPage,
+                    10,
+                );
+                setPosts((current) =>
+                    append ? [...current, ...result.data] : result.data,
+                );
+                setPage(result.page);
+                setHasNext(result.hasNext);
+            } catch (error) {
+                toast.error(getApiErrorMessage(error, "Gagal mengambil post."));
+            } finally {
+                setIsLoadingPosts(false);
+            }
+        },
+        [communityId],
+    );
 
     useEffect(() => {
         let mounted = true;
@@ -404,7 +401,8 @@ export default function CommunityDetailClient({
         const loadCommunity = async () => {
             setIsLoading(true);
             try {
-                const data = await CommunityService.getCommunityById(communityId);
+                const data =
+                    await CommunityService.getCommunityById(communityId);
                 if (!mounted) return;
                 setCommunity(data);
                 await loadPosts(1);
@@ -525,7 +523,9 @@ export default function CommunityDetailClient({
         const toastId = toast.loading("Menghapus post...");
         try {
             await CommunityService.deletePost(communityId, post.id);
-            setPosts((current) => current.filter((item) => item.id !== post.id));
+            setPosts((current) =>
+                current.filter((item) => item.id !== post.id),
+            );
             setCommunity((current) =>
                 current
                     ? {

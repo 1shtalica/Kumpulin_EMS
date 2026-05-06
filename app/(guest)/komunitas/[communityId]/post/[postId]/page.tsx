@@ -6,18 +6,17 @@ export const metadata = {
     description: "Detail post dan komentar komunitas.",
 };
 
-export default function CommunityPostDetailPage({
+export default async function CommunityPostDetailPage({
     params,
 }: {
-    params: { communityId: string; postId: string };
+    params: Promise<{ communityId: string; postId: string }>;
 }) {
+    const { communityId, postId } = await params;
+
     return (
         <div className="min-h-screen bg-slate-50">
             <LandingNavbar />
-            <PostDetailClient
-                communityId={params.communityId}
-                postId={params.postId}
-            />
+            <PostDetailClient communityId={communityId} postId={postId} />
         </div>
     );
 }

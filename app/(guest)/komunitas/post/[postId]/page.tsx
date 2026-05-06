@@ -8,20 +8,25 @@ export const metadata = {
     description: "Detail post dan komentar komunitas.",
 };
 
-export default function LegacyPostDetailPage({
+export default async function LegacyPostDetailPage({
     params,
     searchParams,
 }: {
-    params: { postId: string };
-    searchParams: { communityId?: string };
+    params: Promise<{ postId: string }>;
+    searchParams: Promise<{ communityId?: string }>;
 }) {
+    const [{ postId }, { communityId }] = await Promise.all([
+        params,
+        searchParams,
+    ]);
+
     return (
         <div className="min-h-screen bg-slate-50">
             <LandingNavbar />
-            {searchParams.communityId ? (
+            {communityId ? (
                 <PostDetailClient
-                    communityId={searchParams.communityId}
-                    postId={params.postId}
+                    communityId={communityId}
+                    postId={postId}
                 />
             ) : (
                 <main className="mx-auto w-full max-w-[800px] px-4 pb-32 pt-32 text-center sm:px-6">
