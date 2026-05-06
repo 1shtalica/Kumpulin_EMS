@@ -19,7 +19,6 @@ const statusTranslation: Record<string, string> = {
     "registration closed": "Pendaftaran Selesai",
     ongoing: "Berlangsung",
     finished: "Selesai",
-    archived: "Diarsipkan",
     cancelled: "Dibatalkan",
 };
 

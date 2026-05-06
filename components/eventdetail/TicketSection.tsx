@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import {
@@ -120,6 +121,7 @@ function formatBadgeCountdown(diff: number): string {
 // --- 3. KOMPONEN UTAMA ---
 export default function TicketSection({ event }: { event: Event }) {
   const user = useAuthStore((state) => state.user);
+  const router = useRouter();
 
   // Logic tiket gratis (buat tiket virtual jika tidak ada kategori tiket)
   const isPaid = event.ticket_categories?.some((t) => t.price > 0) || false;
@@ -418,7 +420,10 @@ export default function TicketSection({ event }: { event: Event }) {
                 size="lg"
                 onClick={() => {
                   setIsLoading(true);
-                  setTimeout(() => setIsLoading(false), 2000); // TODO: handler asli
+                  setTimeout(() => {
+                    setIsLoading(false);
+                    router.push("/checkout/ORD-12345");
+                  }, 1000); // TODO: handler asli (buat order -> redirect)
                 }}
                 className="cursor-pointer flex-1 h-15 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow"
                 disabled={!selectedTicket || isLoading || !isRegistrationOpen}

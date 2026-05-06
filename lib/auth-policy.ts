@@ -24,6 +24,8 @@ export const protectedRoutes: ProtectedRoutePolicy[] = [
   { path: "/user/following", roles: ["user"] },
   { path: "/user/my-ticket", roles: ["user"] },
   { path: "/user/profile", roles: ["user"] },
+  { path: "/checkout", roles: ["user"] },
+  { path: "/payment", roles: ["user"] },
 ];
 
 /**
