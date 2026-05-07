@@ -1,31 +1,21 @@
 import { ShieldCheck, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-
-interface TicketItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
+import type { CheckoutOrderItem } from "@/types/checkout";
 
 interface OrderSummaryProps {
-  tickets: TicketItem[];
+  items: CheckoutOrderItem[];
   subtotal: number;
-  tax: number;
-  platformFee: number;
   total: number;
   isLoading: boolean;
 }
 
-export function OrderSummarySection({ 
-  tickets, 
-  subtotal, 
-  tax, 
-  platformFee, 
-  total, 
-  isLoading
+export function OrderSummarySection({
+  items,
+  subtotal,
+  total,
+  isLoading,
 }: OrderSummaryProps) {
-  
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -37,16 +27,20 @@ export function OrderSummarySection({
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 sticky top-24">
       <h2 className="text-lg font-semibold text-slate-800 mb-4">Ringkasan Pesanan</h2>
-      
+
       {/* Items */}
       <div className="space-y-4 mb-4">
-        {tickets.map((ticket, idx) => (
+        {items.map((item, idx) => (
           <div key={idx} className="flex justify-between items-start text-sm">
             <div>
-              <p className="font-medium text-slate-800">{ticket.name}</p>
-              <p className="text-slate-500">{ticket.quantity}x @ {formatRupiah(ticket.price)}</p>
+              <p className="font-medium text-slate-800">{item.ticket_category_name}</p>
+              <p className="text-slate-500">
+                {item.quantity}x @ {formatRupiah(item.unit_price)}
+              </p>
             </div>
-            <p className="font-semibold text-slate-800">{formatRupiah(ticket.price * ticket.quantity)}</p>
+            <p className="font-semibold text-slate-800">
+              {formatRupiah(item.subtotal_amount)}
+            </p>
           </div>
         ))}
       </div>
@@ -59,24 +53,18 @@ export function OrderSummarySection({
           <span>Subtotal</span>
           <span className="font-medium text-slate-800">{formatRupiah(subtotal)}</span>
         </div>
-        <div className="flex justify-between">
-          <span>Pajak (11%)</span>
-          <span className="font-medium text-slate-800">{formatRupiah(tax)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Biaya Layanan</span>
-          <span className="font-medium text-slate-800">{formatRupiah(platformFee)}</span>
-        </div>
       </div>
 
-      <div className="p-4 bg-slate-50 rounded-2xl mb-6">
-        <div className="flex justify-between items-center">
-          <span className="font-medium text-slate-800 text-sm">Total</span>
-          <span className="font-bold text-sm text-primary tracking-tight">{formatRupiah(total)}</span>
-        </div>
+      <Separator className="my-4" />
+
+      <div className="my-4 flex justify-between items-center">
+        <span className="font-bold text-slate-800 text-lg">Total</span>
+        <span className="font-bold text-lg text-primary tracking-tight">
+          {formatRupiah(total)}
+        </span>
       </div>
 
-      <Button 
+      <Button
         type="submit"
         disabled={isLoading}
         className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:opacity-90 shadow-lg shadow-primary/30 text-white font-bold text-lg transition-all"
@@ -96,7 +84,7 @@ export function OrderSummarySection({
 
       <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
         <ShieldCheck size={14} className="text-emerald-500" />
-        <span>Transaksi aman & terenkripsi</span>
+        <span>Transaksi aman &amp; terenkripsi</span>
       </div>
     </div>
   );

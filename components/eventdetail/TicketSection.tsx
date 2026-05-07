@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { Event } from "@/types/event";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth-store";
+import { OrderService } from "@/services/order-service";
 
 const TICKET_COLORS = [
   { bg: "bg-pink-100", border: "border-pink-200", ring: "ring-pink-400 border-pink-400", text: "text-pink-600" },
@@ -144,6 +145,7 @@ export default function TicketSection({ event }: { event: Event }) {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(availableTicket?.id ?? null);
   const [qty, setQty] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
   const [isWishlisted, setIsWishlisted] = useState(event.is_wishlisted || false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
@@ -418,18 +420,38 @@ export default function TicketSection({ event }: { event: Event }) {
             <div className="flex gap-2">
               <Button
                 size="lg"
-                onClick={() => {
+                onClick={async () => {
+                  if (!selectedTicket || !event.event_id) return;
                   setIsLoading(true);
-                  setTimeout(() => {
+                  setOrderError(null);
+                  try {
+                    // Generate idempotency key unik per user-event-category-qty
+                    const idempotencyKey = `${event.event_id}-${selectedTicket.id}-${qty}-${Date.now()}`;
+                    const orderData = await OrderService.createOrder(
+                      event.event_id,
+                      {
+                        items: [{
+                          ticket_category_id: selectedTicket.id!,
+                          quantity: qty,
+                        }],
+                      },
+                      idempotencyKey
+                    );
+                    router.push(`/checkout/${orderData.order.id}`);
+                  } catch (err: unknown) {
+                    const error = err as { response?: { data?: { message?: string } } };
+                    const msg = error?.response?.data?.message ?? "Gagal membuat pesanan, coba lagi.";
+                    toast.error(msg);
+                    setOrderError(msg);
+                  } finally {
                     setIsLoading(false);
-                    router.push("/checkout/ORD-12345");
-                  }, 1000); // TODO: handler asli (buat order -> redirect)
+                  }
                 }}
                 className="cursor-pointer flex-1 h-15 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-2xl font-semibold text-md shadow-glow"
-                disabled={!selectedTicket || isLoading || !isRegistrationOpen}
+                disabled={!selectedTicket || isLoading || !isRegistrationOpen || !selectedTicket?.id}
               >
                 {isLoading
-                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Memproses...</>
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Membuat Pesanan...</>
                   : totalPrice === 0 ? "Daftar Sekarang" : "Beli Tiket"}
               </Button>
               <Button
@@ -446,6 +468,11 @@ export default function TicketSection({ event }: { event: Event }) {
                 <Heart size={24} className={cn(isWishlisted && "fill-current")} />
               </Button>
             </div>
+          )}
+
+          {/* Error message jika createOrder gagal */}
+          {orderError && (
+            <p className="text-xs text-red-500 text-center px-2 -mt-1">{orderError}</p>
           )}
 
           <Separator />

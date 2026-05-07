@@ -1,9 +1,9 @@
-import { TicketItem } from "@/services/ticket-service";
+import type { MyTicketItemResponse } from "@/types/ticket";
 import { TicketCard } from "./TicketCard";
 import { Ticket as TicketIcon } from "lucide-react";
 
 interface TicketListProps {
-  tickets: TicketItem[];
+  tickets: MyTicketItemResponse[];
   isLoading: boolean;
 }
 

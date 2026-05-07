@@ -1,4 +1,7 @@
-export type TicketFilterType = "mendatang" | "riwayat";
+import type { TicketFilterType } from "@/types/ticket";
+
+// Re-export for backward compat
+export type { TicketFilterType };
 
 interface TicketFilterProps {
   currentFilter: TicketFilterType;
@@ -10,7 +13,7 @@ export function TicketFilter({ currentFilter, onFilterChange }: TicketFilterProp
     <div className="flex gap-2 mb-6 border-b border-slate-200 pb-px">
       <button
         onClick={() => onFilterChange("mendatang")}
-        className={`px-6 py-3 font-medium text-sm transition-all relative ${
+        className={` cursor-pointer px-6 py-3 font-medium text-sm transition-all relative ${
           currentFilter === "mendatang" 
             ? "text-primary" 
             : "text-slate-500 hover:text-slate-700"
@@ -23,7 +26,7 @@ export function TicketFilter({ currentFilter, onFilterChange }: TicketFilterProp
       </button>
       <button
         onClick={() => onFilterChange("riwayat")}
-        className={`px-6 py-3 font-medium text-sm transition-all relative ${
+        className={` cursor-pointer px-6 py-3 font-medium text-sm transition-all relative ${
           currentFilter === "riwayat" 
             ? "text-primary" 
             : "text-slate-500 hover:text-slate-700"
