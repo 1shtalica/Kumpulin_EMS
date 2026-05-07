@@ -46,8 +46,8 @@ export interface Post {
   id: string;
   community_id: string;
   author_user_id: number;
-  author_name?: string;
-  organizer_name?: string;
+  author_name?: string | null;
+  organizer_name?: string | null;
   title: string;
   body: string;
   image_urls: string[];
@@ -63,6 +63,7 @@ export interface Comment {
   post_id: string;
   parent_comment_id: string | null;
   author_user_id: number;
+  author_name?: string;
   body: string;
   created_at: string;
   updated_at: string;

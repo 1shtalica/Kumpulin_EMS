@@ -265,6 +265,17 @@ export const CommunityService = {
         return normalizePagination(response.data, page, limit);
     },
 
+    async getCommunityPostById(
+        communityId: string,
+        postId: string,
+    ): Promise<Post> {
+        const response = await axiosClient.get<ApiResponse<Post>>(
+            `/communities/${communityId}/posts/${postId}`,
+            { skipAuthFailureRedirect: true },
+        );
+        return response.data.data;
+    },
+
     async createPost(
         communityId: string,
         payload: CreatePostPayload,

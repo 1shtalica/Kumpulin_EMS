@@ -13,12 +13,13 @@ export default async function LegacyPostDetailPage({
     searchParams,
 }: {
     params: Promise<{ postId: string }>;
-    searchParams: Promise<{ communityId?: string }>;
+    searchParams: Promise<{ communityId?: string; community_id?: string }>;
 }) {
-    const [{ postId }, { communityId }] = await Promise.all([
+    const [{ postId }, query] = await Promise.all([
         params,
         searchParams,
     ]);
+    const communityId = query.communityId ?? query.community_id;
 
     return (
         <div className="min-h-screen bg-slate-50">

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AxiosError } from "axios";
 import {
     Loader2,
@@ -21,8 +21,32 @@ import PostImageCarousel from "./PostImageCarousel";
 
 type ApiErrorBody = {
     message?: string;
+    error_code?: string;
     errors?: Array<string | { field?: string; message?: string }>;
 };
+
+type CommentsState = {
+    byId: Record<string, Comment>;
+    order: string[];
+};
+
+type ReplyTarget = {
+    rootId: string;
+    replyToLabel: string;
+};
+
+type CommentReply = {
+    comment: Comment;
+    displayBody: string;
+};
+
+type CommentThread = {
+    root: Comment;
+    replies: CommentReply[];
+};
+
+const EMPTY_COMMENTS_STATE: CommentsState = { byId: {}, order: [] };
+const COLLAPSED_REPLY_PREVIEW_COUNT = 0;
 
 const getApiErrorMessage = (error: unknown, fallback: string) => {
     const axiosError = error as AxiosError<ApiErrorBody>;
@@ -38,6 +62,17 @@ const getApiErrorMessage = (error: unknown, fallback: string) => {
     );
 };
 
+const getTimeValue = (value: string) => {
+    const timestamp = Date.parse(value);
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+const compareComments = (a: Comment, b: Comment) => {
+    const timeDiff = getTimeValue(a.created_at) - getTimeValue(b.created_at);
+    if (timeDiff !== 0) return timeDiff;
+    return a.id.localeCompare(b.id);
+};
+
 const formatDate = (value: string) =>
     new Intl.DateTimeFormat("id-ID", {
         day: "2-digit",
@@ -50,7 +85,14 @@ const formatDate = (value: string) =>
 const formatNumber = (value: number) => new Intl.NumberFormat("id-ID").format(value);
 
 const getPostAuthorLabel = (post: Post) =>
-    post.author_name?.trim() || `User ${post.author_user_id}`;
+    post.author_name?.trim() || "Unknown user";
+
+const getOrganizerLabel = (post: Post) => post.organizer_name?.trim() || null;
+
+const getCommentAuthorLabel = (comment: Comment) =>
+    comment.author_name?.trim() || `User ${comment.author_user_id}`;
+
+const getMentionHandle = (name: string) => name.trim().replace(/\s+/g, "_");
 
 const getStreamUrl = (communityId: string, postId: string) => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -58,32 +100,98 @@ const getStreamUrl = (communityId: string, postId: string) => {
     return `${baseUrl}/communities/${communityId}/posts/${postId}/comments/stream`;
 };
 
+const normalizeComments = (comments: Comment[]): CommentsState => {
+    const sorted = [...comments].sort(compareComments);
+    const byId: Record<string, Comment> = {};
+    const order: string[] = [];
+
+    sorted.forEach((comment) => {
+        byId[comment.id] = comment;
+        order.push(comment.id);
+    });
+
+    return { byId, order };
+};
+
+const mergeCommentsState = (
+    current: CommentsState,
+    incoming: Comment[],
+): CommentsState => {
+    const mergedById = { ...current.byId };
+    incoming.forEach((comment) => {
+        mergedById[comment.id] = comment;
+    });
+
+    return normalizeComments(Object.values(mergedById));
+};
+
+const removeCommentTree = (
+    current: CommentsState,
+    commentId: string,
+): { next: CommentsState; removedCount: number } => {
+    if (!current.byId[commentId]) return { next: current, removedCount: 0 };
+
+    const childrenByParent = new Map<string, string[]>();
+    Object.values(current.byId).forEach((comment) => {
+        if (!comment.parent_comment_id) return;
+        const siblings = childrenByParent.get(comment.parent_comment_id) ?? [];
+        siblings.push(comment.id);
+        childrenByParent.set(comment.parent_comment_id, siblings);
+    });
+
+    const toRemove = new Set<string>();
+    const stack = [commentId];
+    while (stack.length) {
+        const currentId = stack.pop();
+        if (!currentId || toRemove.has(currentId)) continue;
+        toRemove.add(currentId);
+        const children = childrenByParent.get(currentId) ?? [];
+        children.forEach((childId) => stack.push(childId));
+    }
+
+    const nextById: Record<string, Comment> = {};
+    Object.values(current.byId).forEach((comment) => {
+        if (!toRemove.has(comment.id)) {
+            nextById[comment.id] = comment;
+        }
+    });
+
+    const next = normalizeComments(Object.values(nextById));
+    return { next, removedCount: toRemove.size };
+};
+
 function CommentComposer({
     disabled,
     placeholder = "Tulis komentar...",
     submitLabel = "Kirim",
+    value,
+    replyingToLabel,
+    onChange,
+    onCancelReplyTarget,
     onSubmit,
-    onCancel,
+    inputRef,
 }: {
     disabled?: boolean;
     placeholder?: string;
     submitLabel?: string;
+    value: string;
+    replyingToLabel?: string;
+    onChange: (value: string) => void;
+    onCancelReplyTarget?: () => void;
     onSubmit: (body: string) => Promise<void>;
-    onCancel?: () => void;
+    inputRef?: React.RefObject<HTMLTextAreaElement | null>;
 }) {
-    const [body, setBody] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {
-        if (!body.trim()) {
+        if (!value.trim()) {
             toast.error("Komentar tidak boleh kosong.");
             return;
         }
 
         setIsSubmitting(true);
         try {
-            await onSubmit(body.trim());
-            setBody("");
+            await onSubmit(value.trim());
         } finally {
             setIsSubmitting(false);
         }
@@ -91,24 +199,33 @@ function CommentComposer({
 
     return (
         <div className="space-y-3">
+            {replyingToLabel ? (
+                <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                    <span>
+                        Replying to <span className="font-semibold">{replyingToLabel}</span>
+                    </span>
+                    {onCancelReplyTarget ? (
+                        <button
+                            type="button"
+                            onClick={onCancelReplyTarget}
+                            className="font-semibold text-slate-500 transition hover:text-slate-700"
+                        >
+                            Batal
+                        </button>
+                    ) : null}
+                </div>
+            ) : null}
+
             <Textarea
-                value={body}
+                ref={inputRef}
+                value={value}
                 disabled={disabled || isSubmitting}
-                onChange={(event) => setBody(event.target.value)}
-                className="min-h-24 resize-y rounded-2xl border-slate-200 bg-slate-50 p-4 text-sm leading-6"
+                onChange={(event) => onChange(event.target.value)}
+                className="min-h-24 resize-y rounded-2xl border-slate-200 bg-slate-50 text-sm leading-6 text-slate-700 placeholder:text-slate-400"
                 placeholder={placeholder}
             />
-            <div className="flex justify-end gap-2">
-                {onCancel ? (
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        className="rounded-full"
-                        onClick={onCancel}
-                    >
-                        Batal
-                    </Button>
-                ) : null}
+
+            <div className="flex justify-end">
                 <Button
                     type="button"
                     className="rounded-full px-6"
@@ -125,87 +242,105 @@ function CommentComposer({
     );
 }
 
-function CommentItem({
+function ThreadCommentRow({
     comment,
-    replies,
+    displayBody,
     userId,
     canManage,
-    onCreateReply,
+    isReply = false,
+    onReply,
     onUpdate,
     onDelete,
 }: {
     comment: Comment;
-    replies: Comment[];
+    displayBody: string;
     userId?: number;
     canManage: boolean;
-    onCreateReply: (parentCommentId: string, body: string) => Promise<void>;
+    isReply?: boolean;
+    onReply: () => void;
     onUpdate: (commentId: string, body: string) => Promise<void>;
     onDelete: (comment: Comment) => Promise<void>;
 }) {
-    const [isReplying, setIsReplying] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editBody, setEditBody] = useState(comment.body);
     const canEdit = userId === comment.author_user_id;
     const canDelete = canEdit || canManage;
+    const author = getCommentAuthorLabel(comment);
 
     return (
-        <div className="flex gap-4">
-            <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
+        <div className={isReply ? "flex gap-3" : "flex gap-4"}>
+            <div
+                className={
+                    isReply
+                        ? "mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-semibold text-slate-600"
+                        : "mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white"
+                }
+            >
                 U{comment.author_user_id}
             </div>
+
             <div className="min-w-0 flex-1">
-                <div className="mb-1 flex flex-wrap items-baseline gap-2">
-                    <span className="text-sm font-semibold text-slate-900">
-                        User {comment.author_user_id}
-                    </span>
-                    <span className="text-xs font-medium text-slate-400">
-                        {formatDate(comment.created_at)}
-                    </span>
+                <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                    <p
+                        className={
+                            isReply
+                                ? "text-xs font-semibold text-slate-700"
+                                : "text-sm font-semibold text-slate-900"
+                        }
+                    >
+                        {author}
+                    </p>
+
+                    {isEditing ? (
+                        <div className="mt-2 space-y-3">
+                            <Textarea
+                                value={editBody}
+                                onChange={(event) => setEditBody(event.target.value)}
+                                className="min-h-20 rounded-xl border-slate-200 bg-white text-sm text-slate-700"
+                            />
+                            <div className="flex justify-end gap-2">
+                                <Button
+                                    variant="ghost"
+                                    className="rounded-full text-slate-500 hover:text-slate-700"
+                                    onClick={() => {
+                                        setEditBody(comment.body);
+                                        setIsEditing(false);
+                                    }}
+                                >
+                                    Batal
+                                </Button>
+                                <Button
+                                    className="rounded-full"
+                                    onClick={async () => {
+                                        await onUpdate(comment.id, editBody.trim());
+                                        setIsEditing(false);
+                                    }}
+                                >
+                                    Simpan
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p
+                            className={
+                                isReply
+                                    ? "mt-1 whitespace-pre-line text-sm leading-6 text-slate-600"
+                                    : "mt-1 whitespace-pre-line text-sm leading-6 text-slate-700"
+                            }
+                        >
+                            {displayBody}
+                        </p>
+                    )}
                 </div>
 
-                {isEditing ? (
-                    <div className="space-y-3">
-                        <Textarea
-                            value={editBody}
-                            onChange={(event) =>
-                                setEditBody(event.target.value)
-                            }
-                            className="min-h-24 rounded-2xl bg-slate-50 text-sm leading-6"
-                        />
-                        <div className="flex justify-end gap-2">
-                            <Button
-                                variant="ghost"
-                                className="rounded-full"
-                                onClick={() => {
-                                    setEditBody(comment.body);
-                                    setIsEditing(false);
-                                }}
-                            >
-                                Batal
-                            </Button>
-                            <Button
-                                className="rounded-full"
-                                onClick={async () => {
-                                    await onUpdate(comment.id, editBody.trim());
-                                    setIsEditing(false);
-                                }}
-                            >
-                                Simpan
-                            </Button>
-                        </div>
-                    </div>
-                ) : (
-                    <p className="whitespace-pre-line text-sm leading-6 text-slate-700">
-                        {comment.body}
-                    </p>
-                )}
-
                 {!isEditing ? (
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <div className="mt-2 flex flex-wrap items-center gap-4 px-1 text-xs font-medium text-slate-400">
+                        <span>{formatDate(comment.created_at)}</span>
+                        <span>0 suka</span>
                         <button
                             type="button"
-                            onClick={() => setIsReplying(true)}
-                            className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                            onClick={onReply}
+                            className="flex items-center gap-1 text-slate-500 transition hover:text-primary"
                         >
                             <Reply className="h-3.5 w-3.5" />
                             Balas
@@ -217,7 +352,7 @@ function CommentItem({
                                     setEditBody(comment.body);
                                     setIsEditing(true);
                                 }}
-                                className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-primary"
+                                className="flex items-center gap-1 text-slate-500 transition hover:text-primary"
                             >
                                 <Pencil className="h-3.5 w-3.5" />
                                 Edit
@@ -226,44 +361,13 @@ function CommentItem({
                         {canDelete ? (
                             <button
                                 type="button"
-                                onClick={() => onDelete(comment)}
-                                className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-red-600"
+                                onClick={() => void onDelete(comment)}
+                                className="flex items-center gap-1 text-slate-500 transition hover:text-red-600"
                             >
                                 <Trash2 className="h-3.5 w-3.5" />
                                 Hapus
                             </button>
                         ) : null}
-                    </div>
-                ) : null}
-
-                {isReplying ? (
-                    <div className="mt-4">
-                        <CommentComposer
-                            submitLabel="Balas"
-                            placeholder="Tulis balasan..."
-                            onCancel={() => setIsReplying(false)}
-                            onSubmit={async (body) => {
-                                await onCreateReply(comment.id, body);
-                                setIsReplying(false);
-                            }}
-                        />
-                    </div>
-                ) : null}
-
-                {replies.length ? (
-                    <div className="mt-6 space-y-6 border-l border-slate-100 pl-5">
-                        {replies.map((reply) => (
-                            <CommentItem
-                                key={reply.id}
-                                comment={reply}
-                                replies={[]}
-                                userId={userId}
-                                canManage={canManage}
-                                onCreateReply={onCreateReply}
-                                onUpdate={onUpdate}
-                                onDelete={onDelete}
-                            />
-                        ))}
                     </div>
                 ) : null}
             </div>
@@ -281,11 +385,23 @@ export default function PostDetailClient({
     const user = useAuthStore((state) => state.user);
     const [community, setCommunity] = useState<Community | null>(null);
     const [post, setPost] = useState<Post | null>(null);
-    const [comments, setComments] = useState<Comment[]>([]);
+    const [commentsState, setCommentsState] = useState<CommentsState>(
+        EMPTY_COMMENTS_STATE,
+    );
     const [page, setPage] = useState(1);
     const [hasNext, setHasNext] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingComments, setIsLoadingComments] = useState(false);
+    const [postLoadError, setPostLoadError] = useState<{
+        title: string;
+        description: string;
+    } | null>(null);
+    const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
+    const [composerBody, setComposerBody] = useState("");
+    const [expandedRepliesByRootId, setExpandedRepliesByRootId] = useState<
+        Record<string, boolean>
+    >({});
+    const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
     const userId = user?.id ? Number(user.id) : undefined;
     const canManage = user?.role === "organizer";
@@ -300,9 +416,12 @@ export default function PostDetailClient({
                     targetPage,
                     20,
                 );
-                setComments((current) =>
-                    append ? [...current, ...result.data] : result.data,
-                );
+
+                setCommentsState((current) => {
+                    if (!append) return normalizeComments(result.data);
+                    return mergeCommentsState(current, result.data);
+                });
+
                 setPage(result.page);
                 setHasNext(result.hasNext);
             } catch (error) {
@@ -321,21 +440,64 @@ export default function PostDetailClient({
 
         const loadPost = async () => {
             setIsLoading(true);
+
             try {
-                const [communityData, postList] = await Promise.all([
+                const [communityData, postData] = await Promise.all([
                     CommunityService.getCommunityById(communityId),
-                    CommunityService.listPosts(communityId, 1, 100),
+                    CommunityService.getCommunityPostById(communityId, postId),
                 ]);
                 if (!mounted) return;
+
                 setCommunity(communityData);
-                setPost(
-                    postList.data.find((candidate) => candidate.id === postId) ??
-                        null,
-                );
+                setPost(postData);
+                setPostLoadError(null);
                 await loadComments(1);
             } catch (error) {
                 if (!mounted) return;
-                toast.error(getApiErrorMessage(error, "Gagal mengambil post."));
+                const axiosError = error as AxiosError<ApiErrorBody>;
+                const statusCode = axiosError.response?.status;
+                const errorCode =
+                    axiosError.response?.data?.error_code?.toLowerCase() ?? "";
+                const message =
+                    axiosError.response?.data?.message?.toLowerCase() ?? "";
+
+                setCommunity(null);
+                setPost(null);
+
+                if (
+                    statusCode === 400 ||
+                    message.includes("invalid") ||
+                    message.includes("uuid")
+                ) {
+                    setPostLoadError({
+                        title: "ID tidak valid",
+                        description:
+                            "ID komunitas atau post tidak valid. Periksa kembali link yang dibuka.",
+                    });
+                    return;
+                }
+
+                if (
+                    statusCode === 404 ||
+                    errorCode.includes("not_found") ||
+                    message.includes("not found") ||
+                    message.includes("tidak ditemukan")
+                ) {
+                    setPostLoadError({
+                        title: "Post tidak ditemukan",
+                        description:
+                            "Post mungkin sudah dihapus atau tidak berada pada komunitas ini.",
+                    });
+                    return;
+                }
+
+                setPostLoadError({
+                    title: "Gagal memuat post",
+                    description: getApiErrorMessage(
+                        error,
+                        "Terjadi kesalahan saat mengambil detail post.",
+                    ),
+                });
             } finally {
                 if (mounted) setIsLoading(false);
             }
@@ -357,11 +519,7 @@ export default function PostDetailClient({
         const handleCreated = (event: MessageEvent) => {
             try {
                 const created = JSON.parse(event.data) as Comment;
-                setComments((current) =>
-                    current.some((comment) => comment.id === created.id)
-                        ? current
-                        : [created, ...current],
-                );
+                setCommentsState((current) => mergeCommentsState(current, [created]));
                 setPost((current) =>
                     current
                         ? {
@@ -379,20 +537,27 @@ export default function PostDetailClient({
             try {
                 const deleted = JSON.parse(event.data) as { id?: string };
                 if (!deleted.id) return;
-                setComments((current) =>
-                    current.filter((comment) => comment.id !== deleted.id),
-                );
-                setPost((current) =>
-                    current
-                        ? {
-                              ...current,
-                              comment_count: Math.max(
-                                  current.comment_count - 1,
-                                  0,
-                              ),
-                          }
-                        : current,
-                );
+
+                setCommentsState((current) => {
+                    const { next, removedCount } = removeCommentTree(
+                        current,
+                        deleted.id!,
+                    );
+                    if (removedCount > 0) {
+                        setPost((postState) =>
+                            postState
+                                ? {
+                                      ...postState,
+                                      comment_count: Math.max(
+                                          postState.comment_count - removedCount,
+                                          0,
+                                      ),
+                                  }
+                                : postState,
+                        );
+                    }
+                    return next;
+                });
             } catch {
                 // Ignore malformed SSE payloads.
             }
@@ -406,23 +571,167 @@ export default function PostDetailClient({
         };
     }, [communityId, postId]);
 
-    const commentsByParent = useMemo(() => {
-        const map = new Map<string, Comment[]>();
-        comments.forEach((comment) => {
-            const key = comment.parent_comment_id ?? "root";
-            map.set(key, [...(map.get(key) ?? []), comment]);
-        });
-        return map;
-    }, [comments]);
+    const commentThreads = useMemo(() => {
+        const comments = commentsState.order
+            .map((id) => commentsState.byId[id])
+            .filter((comment): comment is Comment => Boolean(comment));
+        const byId = commentsState.byId;
+        const childrenByParent = new Map<string, Comment[]>();
 
-    const handleCreateComment = async (
-        body: string,
-        parentCommentId?: string,
-    ) => {
+        comments.forEach((comment) => {
+            if (!comment.parent_comment_id || !byId[comment.parent_comment_id]) {
+                return;
+            }
+            const siblings = childrenByParent.get(comment.parent_comment_id) ?? [];
+            siblings.push(comment);
+            childrenByParent.set(comment.parent_comment_id, siblings);
+        });
+
+        const rootIdCache = new Map<string, string>();
+        const resolveRootId = (comment: Comment): string => {
+            const cached = rootIdCache.get(comment.id);
+            if (cached) return cached;
+
+            const visited = new Set<string>();
+            let current: Comment | undefined = comment;
+            while (current) {
+                if (visited.has(current.id)) {
+                    rootIdCache.set(comment.id, comment.id);
+                    return comment.id;
+                }
+                visited.add(current.id);
+
+                const parentId: string | null = current.parent_comment_id;
+                if (!parentId || !byId[parentId]) {
+                    rootIdCache.set(comment.id, current.id);
+                    return current.id;
+                }
+                current = byId[parentId];
+            }
+
+            rootIdCache.set(comment.id, comment.id);
+            return comment.id;
+        };
+
+        const rootMap = new Map<string, Comment>();
+        comments.forEach((comment) => {
+            const rootId = resolveRootId(comment);
+            if (!rootMap.has(rootId) && byId[rootId]) {
+                rootMap.set(rootId, byId[rootId]);
+            }
+        });
+
+        const roots = Array.from(rootMap.values()).sort(compareComments);
+
+        return roots.map<CommentThread>((root) => {
+            const replies = comments
+                .filter((comment) => comment.id !== root.id)
+                .filter((comment) => resolveRootId(comment) === root.id)
+                .sort(compareComments)
+                .map((comment) => {
+                    const parentId = comment.parent_comment_id;
+                    const parent = parentId ? byId[parentId] : undefined;
+                    const needsMention =
+                        Boolean(parent) && parent?.id !== root.id;
+                    let displayBody = comment.body;
+
+                    if (needsMention && parent) {
+                        const mentionHandle = getMentionHandle(
+                            getCommentAuthorLabel(parent),
+                        );
+                        const mentionPrefix = `@${mentionHandle}`;
+                        if (
+                            !comment.body
+                                .trimStart()
+                                .toLowerCase()
+                                .startsWith(mentionPrefix.toLowerCase())
+                        ) {
+                            displayBody = `${mentionPrefix} ${comment.body}`;
+                        }
+                    }
+
+                    return { comment, displayBody };
+                });
+
+            return { root, replies };
+        });
+    }, [commentsState]);
+
+    const activateReplyTarget = useCallback(
+        (root: Comment, reply?: Comment) => {
+            if (!user) {
+                toast.error("Silakan login untuk menulis komentar.");
+                return;
+            }
+
+            if (reply) {
+                const mention = `@${getMentionHandle(getCommentAuthorLabel(reply))} `;
+                setComposerBody((current) =>
+                    current.startsWith(mention) ? current : `${mention}${current}`,
+                );
+            }
+
+            setReplyTarget({
+                rootId: root.id,
+                replyToLabel: `@${getMentionHandle(
+                    getCommentAuthorLabel(reply ?? root),
+                )}`,
+            });
+            setExpandedRepliesByRootId((current) => ({
+                ...current,
+                [root.id]: true,
+            }));
+
+            queueMicrotask(() => {
+                composerRef.current?.focus();
+            });
+        },
+        [user],
+    );
+
+    const handleCreateComment = useCallback(async () => {
         if (!user) {
             toast.error("Silakan login untuk menulis komentar.");
             return;
         }
+
+        const body = composerBody.trim();
+        if (!body) {
+            toast.error("Komentar tidak boleh kosong.");
+            return;
+        }
+
+        const parentCommentId = replyTarget?.rootId;
+        const now = new Date().toISOString();
+        const tempId = `temp-${Date.now()}`;
+        const optimisticComment: Comment = {
+            id: tempId,
+            community_id: communityId,
+            post_id: postId,
+            parent_comment_id: parentCommentId ?? null,
+            author_user_id: userId ?? 0,
+            body,
+            created_at: now,
+            updated_at: now,
+        };
+
+        setCommentsState((current) => mergeCommentsState(current, [optimisticComment]));
+        setPost((current) =>
+            current
+                ? { ...current, comment_count: current.comment_count + 1 }
+                : current,
+        );
+
+        if (parentCommentId) {
+            setExpandedRepliesByRootId((current) => ({
+                ...current,
+                [parentCommentId]: true,
+            }));
+        }
+
+        const previousBody = composerBody;
+        setComposerBody("");
+        setReplyTarget(null);
 
         const toastId = toast.loading("Mengirim komentar...");
         try {
@@ -434,81 +743,125 @@ export default function PostDetailClient({
                     parent_comment_id: parentCommentId,
                 },
             );
-            setComments((current) =>
-                current.some((comment) => comment.id === created.id)
-                    ? current
-                    : [created, ...current],
-            );
-            setPost((current) =>
-                current
-                    ? { ...current, comment_count: current.comment_count + 1 }
-                    : current,
-            );
+
+            setCommentsState((current) => {
+                const withoutTemp = removeCommentTree(current, tempId).next;
+                return mergeCommentsState(withoutTemp, [created]);
+            });
+
             toast.success("Komentar terkirim.", { id: toastId });
         } catch (error) {
+            setCommentsState((current) => removeCommentTree(current, tempId).next);
+            setPost((current) =>
+                current
+                    ? {
+                          ...current,
+                          comment_count: Math.max(current.comment_count - 1, 0),
+                      }
+                    : current,
+            );
+            setComposerBody(previousBody);
+
             toast.error(getApiErrorMessage(error, "Gagal mengirim komentar."), {
                 id: toastId,
             });
             throw error;
         }
-    };
+    }, [communityId, composerBody, postId, replyTarget, user, userId]);
 
-    const handleUpdateComment = async (commentId: string, body: string) => {
-        if (!body) {
-            toast.error("Komentar tidak boleh kosong.");
-            return;
-        }
+    const handleUpdateComment = useCallback(
+        async (commentId: string, body: string) => {
+            if (!body) {
+                toast.error("Komentar tidak boleh kosong.");
+                return;
+            }
 
-        const toastId = toast.loading("Menyimpan komentar...");
-        try {
-            const updated = await CommunityService.updateComment(
-                communityId,
-                postId,
-                commentId,
-                { body },
+            const previousComment = commentsState.byId[commentId];
+            if (!previousComment) return;
+
+            setCommentsState((current) =>
+                mergeCommentsState(current, [
+                    {
+                        ...previousComment,
+                        body,
+                        updated_at: new Date().toISOString(),
+                    },
+                ]),
             );
-            setComments((current) =>
-                current.map((comment) =>
-                    comment.id === commentId ? updated : comment,
-                ),
-            );
-            toast.success("Komentar diperbarui.", { id: toastId });
-        } catch (error) {
-            toast.error(getApiErrorMessage(error, "Gagal menyimpan komentar."), {
-                id: toastId,
-            });
-            throw error;
-        }
-    };
 
-    const handleDeleteComment = async (comment: Comment) => {
-        const confirmed = window.confirm("Hapus komentar ini?");
-        if (!confirmed) return;
+            const toastId = toast.loading("Menyimpan komentar...");
+            try {
+                const updated = await CommunityService.updateComment(
+                    communityId,
+                    postId,
+                    commentId,
+                    { body },
+                );
+                setCommentsState((current) => mergeCommentsState(current, [updated]));
+                toast.success("Komentar diperbarui.", { id: toastId });
+            } catch (error) {
+                setCommentsState((current) =>
+                    mergeCommentsState(current, [previousComment]),
+                );
+                toast.error(
+                    getApiErrorMessage(error, "Gagal menyimpan komentar."),
+                    {
+                        id: toastId,
+                    },
+                );
+                throw error;
+            }
+        },
+        [commentsState.byId, communityId, postId],
+    );
 
-        const toastId = toast.loading("Menghapus komentar...");
-        try {
-            await CommunityService.deleteComment(communityId, postId, comment.id);
-            setComments((current) =>
-                current.filter((item) => item.id !== comment.id),
-            );
+    const handleDeleteComment = useCallback(
+        async (comment: Comment) => {
+            const confirmed = window.confirm("Hapus komentar ini?");
+            if (!confirmed) return;
+
+            const snapshotState = commentsState;
+            const snapshotCount = post?.comment_count ?? 0;
+            const { next, removedCount } = removeCommentTree(commentsState, comment.id);
+            if (!removedCount) return;
+
+            setCommentsState(next);
             setPost((current) =>
                 current
                     ? {
                           ...current,
                           comment_count: Math.max(
-                              current.comment_count - 1,
+                              current.comment_count - removedCount,
                               0,
                           ),
                       }
                     : current,
             );
-            toast.success("Komentar dihapus.", { id: toastId });
-        } catch (error) {
-            toast.error(getApiErrorMessage(error, "Gagal menghapus komentar."), {
-                id: toastId,
-            });
-        }
-    };
+
+            if (replyTarget?.rootId === comment.id) {
+                setReplyTarget(null);
+            }
+
+            const toastId = toast.loading("Menghapus komentar...");
+            try {
+                await CommunityService.deleteComment(
+                    communityId,
+                    postId,
+                    comment.id,
+                );
+                toast.success("Komentar dihapus.", { id: toastId });
+            } catch (error) {
+                setCommentsState(snapshotState);
+                setPost((current) =>
+                    current ? { ...current, comment_count: snapshotCount } : current,
+                );
+                toast.error(getApiErrorMessage(error, "Gagal menghapus komentar."), {
+                    id: toastId,
+                });
+            }
+        },
+        [commentsState, communityId, post, postId, replyTarget?.rootId],
+    );
 
     if (isLoading) {
         return (
@@ -523,22 +876,18 @@ export default function PostDetailClient({
         return (
             <main className="mx-auto w-full max-w-[800px] px-4 pb-32 pt-32 text-center sm:px-6">
                 <h1 className="text-xl font-semibold text-slate-950">
-                    Post tidak ditemukan
+                    {postLoadError?.title ?? "Post tidak ditemukan"}
                 </h1>
                 <p className="mt-3 text-sm text-slate-500">
-                    Post mungkin sudah dihapus atau tidak berada pada komunitas
-                    ini.
+                    {postLoadError?.description ??
+                        "Post mungkin sudah dihapus atau tidak berada pada komunitas ini."}
                 </p>
                 <Button asChild className="mt-6 rounded-full">
-                    <Link href={`/komunitas/${communityId}`}>
-                        Kembali ke komunitas
-                    </Link>
+                    <Link href={`/komunitas/${communityId}`}>Kembali ke komunitas</Link>
                 </Button>
             </main>
         );
     }
-
-    const rootComments = commentsByParent.get("root") ?? [];
 
     return (
         <main className="mx-auto w-full max-w-[800px] px-4 pb-32 pt-28 sm:px-6">
@@ -552,9 +901,13 @@ export default function PostDetailClient({
                             >
                                 k/{community.slug}
                             </Link>
+                            {getOrganizerLabel(post) ? (
+                                <p className="mt-1 text-xs font-medium text-slate-500">
+                                    {getOrganizerLabel(post)}
+                                </p>
+                            ) : null}
                             <p className="mt-1 text-xs font-medium text-slate-400">
-                                {getPostAuthorLabel(post)} ·{" "}
-                                {formatDate(post.created_at)}
+                                {getPostAuthorLabel(post)} - {formatDate(post.created_at)}
                             </p>
                         </div>
 
@@ -593,37 +946,103 @@ export default function PostDetailClient({
 
                     <div className="mb-8">
                         <CommentComposer
+                            inputRef={composerRef}
                             disabled={!user}
+                            value={composerBody}
+                            onChange={setComposerBody}
+                            replyingToLabel={replyTarget?.replyToLabel}
+                            onCancelReplyTarget={() => setReplyTarget(null)}
                             placeholder={
                                 user
                                     ? "Tulis komentar..."
                                     : "Login untuk menulis komentar"
                             }
-                            onSubmit={(body) => handleCreateComment(body)}
+                            onSubmit={handleCreateComment}
                         />
                     </div>
 
-                    {rootComments.length ? (
+                    {commentThreads.length ? (
                         <div className="space-y-8">
-                            {rootComments.map((comment) => (
-                                <CommentItem
-                                    key={comment.id}
-                                    comment={comment}
-                                    replies={
-                                        commentsByParent.get(comment.id) ?? []
-                                    }
-                                    userId={userId}
-                                    canManage={canManage}
-                                    onCreateReply={(parentCommentId, body) =>
-                                        handleCreateComment(
-                                            body,
-                                            parentCommentId,
-                                        )
-                                    }
-                                    onUpdate={handleUpdateComment}
-                                    onDelete={handleDeleteComment}
-                                />
-                            ))}
+                            {commentThreads.map((thread) => {
+                                const isExpanded =
+                                    expandedRepliesByRootId[thread.root.id] ?? false;
+                                const visibleReplies = isExpanded
+                                    ? thread.replies
+                                    : thread.replies.slice(
+                                          0,
+                                          COLLAPSED_REPLY_PREVIEW_COUNT,
+                                      );
+
+                                return (
+                                    <article
+                                        key={thread.root.id}
+                                        className="space-y-3 border-b border-slate-100 pb-6 last:border-b-0 last:pb-0"
+                                    >
+                                        <ThreadCommentRow
+                                            comment={thread.root}
+                                            displayBody={thread.root.body}
+                                            userId={userId}
+                                            canManage={canManage}
+                                            onReply={() => activateReplyTarget(thread.root)}
+                                            onUpdate={handleUpdateComment}
+                                            onDelete={handleDeleteComment}
+                                        />
+
+                                        {thread.replies.length ? (
+                                            <div className="pl-10 sm:pl-12">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setExpandedRepliesByRootId(
+                                                            (current) => ({
+                                                                ...current,
+                                                                [thread.root.id]:
+                                                                    !isExpanded,
+                                                            }),
+                                                        )
+                                                    }
+                                                    className="mb-3 text-xs font-semibold text-slate-500 transition hover:text-primary"
+                                                >
+                                                    {isExpanded
+                                                        ? "Sembunyikan balasan"
+                                                        : `Lihat ${formatNumber(
+                                                              thread.replies.length,
+                                                          )} balasan`}
+                                                </button>
+
+                                                {visibleReplies.length ? (
+                                                    <div className="space-y-4">
+                                                        {visibleReplies.map((reply) => (
+                                                            <ThreadCommentRow
+                                                                key={reply.comment.id}
+                                                                comment={reply.comment}
+                                                                displayBody={
+                                                                    reply.displayBody
+                                                                }
+                                                                userId={userId}
+                                                                canManage={canManage}
+                                                                isReply
+                                                                onReply={() =>
+                                                                    activateReplyTarget(
+                                                                        thread.root,
+                                                                        reply.comment,
+                                                                    )
+                                                                }
+                                                                onUpdate={
+                                                                    handleUpdateComment
+                                                                }
+                                                                onDelete={
+                                                                    handleDeleteComment
+                                                                }
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                ) : null}
+                                            </div>
+                                        ) : null}
+                                    </article>
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-8 text-center">
