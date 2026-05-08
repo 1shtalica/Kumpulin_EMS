@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import type { LucideIcon } from "lucide-react";
 import {
+    ArrowUpRight,
     CalendarCheck2,
     FileText,
     Info,
@@ -178,15 +179,26 @@ function CommunityCard({ community }: { community: Community }) {
                             initials
                         )}
                     </div>
-                    <Button
-                        asChild
-                        className="mt-3 h-10 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm hover:bg-white hover:text-primary sm:mt-4"
-                    >
-                        <Link href={`/organizer/communities/${community.id}/edit`}>
-                            <Settings className="mr-2 h-4 w-4" />
-                            Kelola Komunitas
-                        </Link>
-                    </Button>
+                    <div className="mt-3 flex flex-wrap gap-2 sm:mt-4 sm:justify-end">
+                        <Button
+                            asChild
+                            className="h-10 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm hover:bg-white hover:text-primary"
+                        >
+                            <Link href={`/komunitas/${community.id}`}>
+                                <ArrowUpRight className="mr-2 h-4 w-4" />
+                                Lihat Halaman Komunitas
+                            </Link>
+                        </Button>
+                        <Button
+                            asChild
+                            className="h-10 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm hover:bg-white hover:text-primary"
+                        >
+                            <Link href={`/organizer/communities/${community.id}/edit`}>
+                                <Settings className="mr-2 h-4 w-4" />
+                                Kelola Komunitas
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="mt-6 max-w-4xl">

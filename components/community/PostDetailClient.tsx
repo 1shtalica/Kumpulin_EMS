@@ -73,14 +73,18 @@ const compareComments = (a: Comment, b: Comment) => {
     return a.id.localeCompare(b.id);
 };
 
-const formatDate = (value: string) =>
-    new Intl.DateTimeFormat("id-ID", {
+const formatDate = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+
+    return new Intl.DateTimeFormat("id-ID", {
         day: "2-digit",
         month: "short",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-    }).format(new Date(value));
+    }).format(date);
+};
 
 const formatNumber = (value: number) => new Intl.NumberFormat("id-ID").format(value);
 
@@ -89,8 +93,67 @@ const getPostAuthorLabel = (post: Post) =>
 
 const getOrganizerLabel = (post: Post) => post.organizer_name?.trim() || null;
 
-const getCommentAuthorLabel = (comment: Comment) =>
-    comment.author_name?.trim() || `User ${comment.author_user_id}`;
+const normalizeTextField = (value: unknown): string | null => {
+    if (typeof value !== "string") return null;
+    const cleaned = value.trim();
+    if (!cleaned) return null;
+    const lowered = cleaned.toLowerCase();
+    if (lowered === "undefined" || lowered === "null" || lowered === "nan") {
+        return null;
+    }
+    return cleaned;
+};
+
+const isInvalidAuthorName = (value: string) => {
+    const lowered = value.toLowerCase();
+    return lowered === "user undefined" || lowered === "uundefined";
+};
+
+const getCommentAuthorIdText = (comment: Comment): string | null => {
+    const rawAuthorId = comment.author_user_id as unknown;
+
+    if (typeof rawAuthorId === "number" && Number.isFinite(rawAuthorId)) {
+        return String(rawAuthorId);
+    }
+
+    if (typeof rawAuthorId === "string") {
+        const normalized = normalizeTextField(rawAuthorId);
+        return normalized;
+    }
+
+    return null;
+};
+
+const getCommentAuthorIdNumber = (comment: Comment): number | undefined => {
+    const idText = getCommentAuthorIdText(comment);
+    if (!idText) return undefined;
+    const parsed = Number(idText);
+    return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const getCommentAuthorLabel = (comment: Comment) => {
+    const authorName = normalizeTextField(comment.author_name);
+    if (authorName && !isInvalidAuthorName(authorName)) return authorName;
+
+    const authorIdText = getCommentAuthorIdText(comment);
+    return authorIdText ? `User ${authorIdText}` : "Unknown user";
+};
+
+const getCommentAvatarFallback = (comment: Comment) => {
+    const authorName = normalizeTextField(comment.author_name);
+    if (authorName && !isInvalidAuthorName(authorName)) {
+        const initials = authorName
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((word) => word[0]?.toUpperCase() ?? "")
+            .join("");
+        if (initials) return initials;
+    }
+
+    const authorIdText = getCommentAuthorIdText(comment);
+    return authorIdText ? `U${authorIdText}` : "U";
+};
 
 const getMentionHandle = (name: string) => name.trim().replace(/\s+/g, "_");
 
@@ -98,6 +161,25 @@ const getStreamUrl = (communityId: string, postId: string) => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!baseUrl) return null;
     return `${baseUrl}/communities/${communityId}/posts/${postId}/comments/stream`;
+};
+
+const extractCommentFromEventPayload = (payload: unknown): Comment | null => {
+    if (!payload || typeof payload !== "object") return null;
+    const record = payload as Record<string, unknown>;
+
+    if ("id" in record && typeof record.id === "string") {
+        return record as unknown as Comment;
+    }
+
+    const data = record.data;
+    if (data && typeof data === "object") {
+        const dataRecord = data as Record<string, unknown>;
+        if ("id" in dataRecord && typeof dataRecord.id === "string") {
+            return dataRecord as unknown as Comment;
+        }
+    }
+
+    return null;
 };
 
 const normalizeComments = (comments: Comment[]): CommentsState => {
@@ -198,9 +280,9 @@ function CommentComposer({
     };
 
     return (
-        <div className="space-y-3">
+        <div className="space-y-4 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 sm:p-5">
             {replyingToLabel ? (
-                <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-600">
                     <span>
                         Replying to <span className="font-semibold">{replyingToLabel}</span>
                     </span>
@@ -221,7 +303,7 @@ function CommentComposer({
                 value={value}
                 disabled={disabled || isSubmitting}
                 onChange={(event) => onChange(event.target.value)}
-                className="min-h-24 resize-y rounded-2xl border-slate-200 bg-slate-50 text-sm leading-6 text-slate-700 placeholder:text-slate-400"
+                className="min-h-24 resize-y rounded-xl border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-700 placeholder:text-slate-400"
                 placeholder={placeholder}
             />
 
@@ -263,9 +345,11 @@ function ThreadCommentRow({
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editBody, setEditBody] = useState(comment.body);
-    const canEdit = userId === comment.author_user_id;
+    const commentAuthorId = getCommentAuthorIdNumber(comment);
+    const canEdit = userId !== undefined && commentAuthorId === userId;
     const canDelete = canEdit || canManage;
     const author = getCommentAuthorLabel(comment);
+    const avatarFallback = getCommentAvatarFallback(comment);
 
     return (
         <div className={isReply ? "flex gap-3" : "flex gap-4"}>
@@ -283,7 +367,7 @@ function ThreadCommentRow({
                             : "flex h-full w-full items-center justify-center text-xs font-semibold text-white"
                     }
                 >
-                    U{comment.author_user_id}
+                    {avatarFallback}
                 </span>
                 {comment.author_profile_url ? (
                     <img
@@ -301,8 +385,8 @@ function ThreadCommentRow({
                 <div
                     className={
                         isReply
-                            ? "rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
-                            : "rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
+                            ? "rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+                            : "rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
                     }
                 >
                     <p
@@ -358,7 +442,7 @@ function ThreadCommentRow({
                 </div>
 
                 {!isEditing ? (
-                    <div className="mt-2 flex flex-wrap items-center gap-2 px-1 text-xs font-medium text-slate-400">
+                    <div className="mt-2.5 flex flex-wrap items-center gap-2 px-1 text-xs font-medium text-slate-400">
                         <span>{formatDate(comment.created_at)}</span>
                         <button
                             type="button"
@@ -541,7 +625,9 @@ export default function PostDetailClient({
 
         const handleCreated = (event: MessageEvent) => {
             try {
-                const created = JSON.parse(event.data) as Comment;
+                const parsed = JSON.parse(event.data) as unknown;
+                const created = extractCommentFromEventPayload(parsed);
+                if (!created) return;
                 setCommentsState((current) => mergeCommentsState(current, [created]));
                 setPost((current) =>
                     current
@@ -727,12 +813,18 @@ export default function PostDetailClient({
         const parentCommentId = replyTarget?.rootId;
         const now = new Date().toISOString();
         const tempId = `temp-${Date.now()}`;
+        const optimisticAuthorName =
+            [user.first_name, user.last_name].filter(Boolean).join(" ").trim() ||
+            user.username?.trim() ||
+            undefined;
         const optimisticComment: Comment = {
             id: tempId,
             community_id: communityId,
             post_id: postId,
             parent_comment_id: parentCommentId ?? null,
             author_user_id: userId ?? 0,
+            author_name: optimisticAuthorName,
+            author_profile_url: user.profile_url ?? null,
             body,
             created_at: now,
             updated_at: now,
@@ -915,8 +1007,8 @@ export default function PostDetailClient({
     return (
         <main className="mx-auto w-full max-w-[800px] px-4 pb-32 pt-28 sm:px-6">
             <div className="flex w-full flex-col gap-8">
-                <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-                    <div className="flex flex-col gap-5 p-6 sm:p-8">
+                <article className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                    <div className="flex flex-col gap-5 p-5 sm:p-7">
                         <div>
                             <Link
                                 href={`/komunitas/${community.id}`}
@@ -962,12 +1054,12 @@ export default function PostDetailClient({
                     </div>
                 </article>
 
-                <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] sm:p-8">
+                <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] sm:p-7">
                     <h2 className="mb-6 text-lg font-semibold text-slate-900">
                         Komentar ({formatNumber(post.comment_count)})
                     </h2>
 
-                    <div className="mb-8">
+                    <div className="mb-7">
                         <CommentComposer
                             inputRef={composerRef}
                             disabled={!user}
@@ -986,7 +1078,7 @@ export default function PostDetailClient({
 
                     {commentThreads.length ? (
                         <div className="space-y-8">
-                            {commentThreads.map((thread) => {
+                            {commentThreads.map((thread, threadIndex) => {
                                 const isExpanded =
                                     expandedRepliesByRootId[thread.root.id] ?? false;
                                 const visibleReplies = isExpanded
@@ -998,8 +1090,8 @@ export default function PostDetailClient({
 
                                 return (
                                     <article
-                                        key={thread.root.id}
-                                        className="space-y-3 border-b border-slate-100 pb-6 last:border-b-0 last:pb-0"
+                                        key={`${thread.root.id || "thread"}-${threadIndex}`}
+                                        className="space-y-3 border-b border-slate-100 pb-5 last:border-b-0 last:pb-0"
                                     >
                                         <ThreadCommentRow
                                             comment={thread.root}
@@ -1012,7 +1104,7 @@ export default function PostDetailClient({
                                         />
 
                                         {thread.replies.length ? (
-                                            <div className="pl-10 sm:pl-12">
+                                            <div className="pl-9 sm:pl-11">
                                                 <button
                                                     type="button"
                                                     onClick={() =>
@@ -1035,9 +1127,9 @@ export default function PostDetailClient({
 
                                                 {visibleReplies.length ? (
                                                     <div className="space-y-4">
-                                                        {visibleReplies.map((reply) => (
+                                                        {visibleReplies.map((reply, replyIndex) => (
                                                             <ThreadCommentRow
-                                                                key={reply.comment.id}
+                                                                key={`${reply.comment.id || "reply"}-${replyIndex}`}
                                                                 comment={reply.comment}
                                                                 displayBody={
                                                                     reply.displayBody
