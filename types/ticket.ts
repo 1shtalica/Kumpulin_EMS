@@ -39,7 +39,8 @@ export interface MyTicketsListData {
 export interface MyTicketsListResponse {
   success: boolean;
   message: string;
-  data: MyTicketsListData;
+  data: unknown;
+  pagination?: Partial<TicketPagination>;
   error_code?: string;
 }
 
@@ -70,7 +71,7 @@ export interface MyTicketDetail {
 export interface MyTicketDetailResponse {
   success: boolean;
   message: string;
-  data: MyTicketDetail;
+  data: unknown;
   error_code?: string;
 }
 

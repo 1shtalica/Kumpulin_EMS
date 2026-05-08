@@ -1,10 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  type FormEvent,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   RefreshCw,
   Search,
   Ticket as TicketIcon,
@@ -135,32 +143,34 @@ function TicketCard({ item }: { item: MyTicketListItem }) {
   const status = getStatusPresentation(item.status);
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10">
+      <div className="absolute inset-y-0 left-0 w-1 bg-linear-to-b from-primary to-secondary" />
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="line-clamp-1 text-lg font-semibold text-slate-900">
-            {item.event_title}
+            {item.event_title || "Event"}
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            {item.ticket_category_name} · {item.ticket_number}
+            {item.ticket_category_name || "Kategori tiket"} /{" "}
+            {item.ticket_number || "-"}
           </p>
         </div>
         <Badge className={status.className}>{status.label}</Badge>
       </div>
 
-      <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+      <div className="mt-5 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
         <div className="flex items-center gap-2">
-          <UserRound className="h-4 w-4 text-slate-400" />
-          <span className="truncate">{item.participant_name}</span>
+          <UserRound className="h-4 w-4 text-primary" />
+          <span className="truncate">{item.participant_name || "-"}</span>
         </div>
         <div className="flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-slate-400" />
+          <CalendarDays className="h-4 w-4 text-primary" />
           <span className="truncate">{formatDateTime(item.issued_at)}</span>
         </div>
       </div>
 
       <div className="mt-5 flex justify-end border-t border-slate-100 pt-4">
-        <Button asChild className="rounded-full px-6">
+        <Button asChild variant="brand" className="rounded-full px-6">
           <Link href={`/user/my-ticket/${item.id}`}>Lihat Tiket</Link>
         </Button>
       </div>
@@ -168,7 +178,18 @@ function TicketCard({ item }: { item: MyTicketListItem }) {
   );
 }
 
-export default function MyTicketPage() {
+function TicketPageFallback() {
+  return (
+    <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-center rounded-3xl border border-slate-200 bg-white py-20">
+        <RefreshCw className="mr-2 h-4 w-4 animate-spin text-slate-500" />
+        <p className="text-sm text-slate-500">Menyiapkan tiket...</p>
+      </div>
+    </main>
+  );
+}
+
+function MyTicketPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState<MyTicketListItem[]>([]);
@@ -285,20 +306,42 @@ export default function MyTicketPage() {
   return (
     <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
       <div className="mx-auto w-full max-w-5xl">
-        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold text-slate-900">Tiket Saya</h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Kelola tiket dan riwayat event Anda.
-          </p>
+        <header className="overflow-hidden rounded-3xl border border-primary/10 bg-white shadow-sm">
+          <div className="relative bg-linear-to-r from-primary via-primary to-secondary p-6 text-white">
+            <div className="absolute -right-12 -top-16 h-44 w-44 rounded-full bg-white/15 blur-2xl" />
+            <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-white/75">
+                  Ticket wallet
+                </p>
+                <h1 className="mt-1 text-3xl font-bold tracking-tight">
+                  Tiket Saya
+                </h1>
+                <p className="mt-2 max-w-2xl text-sm text-white/75">
+                  Pantau tiket yang sudah diterbitkan, status check-in, dan QR
+                  yang perlu ditunjukkan di lokasi event.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 backdrop-blur">
+                <p className="text-xs font-medium uppercase tracking-[0.2em] text-white/60">
+                  Total
+                </p>
+                <p className="mt-1 text-2xl font-bold">
+                  {pagination.total_items}
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="p-5">
+            <div className="flex flex-wrap gap-2">
             {STATUS_OPTIONS.map((option) => {
               const isActive = option.value === selectedStatus;
               return (
                 <Button
                   key={option.value}
                   type="button"
-                  variant={isActive ? "default" : "outline"}
+                  variant={isActive ? "brand" : "outline"}
                   className="h-9 rounded-full px-5"
                   onClick={() => handleStatusChange(option.value)}
                 >
@@ -306,36 +349,37 @@ export default function MyTicketPage() {
                 </Button>
               );
             })}
-          </div>
-
-          <form
-            onSubmit={handleFilterSubmit}
-            className="mt-4 flex flex-col gap-3 sm:flex-row"
-          >
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                value={eventIdInput}
-                onChange={(event) => setEventIdInput(event.target.value)}
-                placeholder="Filter event_id (UUID)"
-                className="h-11 rounded-xl border-slate-200 pl-10"
-              />
             </div>
-            <Button type="submit" className="h-11 rounded-xl px-6">
-              Terapkan
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 rounded-xl px-6"
-              onClick={clearFilters}
+
+            <form
+              onSubmit={handleFilterSubmit}
+              className="mt-4 flex flex-col gap-3 sm:flex-row"
             >
-              Reset
-            </Button>
-          </form>
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  value={eventIdInput}
+                  onChange={(event) => setEventIdInput(event.target.value)}
+                  placeholder="Filter event_id (UUID)"
+                  className="h-11 rounded-xl border-slate-200 pl-10"
+                />
+              </div>
+              <Button type="submit" variant="brand" className="h-11 rounded-xl px-6">
+                Terapkan
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 rounded-xl px-6"
+                onClick={clearFilters}
+              >
+                Reset
+              </Button>
+            </form>
+          </div>
         </header>
 
-        <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-slate-500">{summaryText}</p>
             <div className="flex items-center gap-2">
@@ -415,11 +459,13 @@ export default function MyTicketPage() {
               <Button
                 type="button"
                 variant="outline"
+                className="rounded-full"
                 disabled={safePage <= 1}
                 onClick={() =>
                   applyQuery({ page: String(Math.max(safePage - 1, 1)) })
                 }
               >
+                <ChevronLeft className="h-4 w-4" />
                 Sebelumnya
               </Button>
               <p className="text-sm text-slate-500">
@@ -428,6 +474,7 @@ export default function MyTicketPage() {
               <Button
                 type="button"
                 variant="outline"
+                className="rounded-full"
                 disabled={safePage >= totalPages}
                 onClick={() =>
                   applyQuery({
@@ -436,11 +483,20 @@ export default function MyTicketPage() {
                 }
               >
                 Berikutnya
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           ) : null}
         </section>
       </div>
     </main>
+  );
+}
+
+export default function MyTicketPage() {
+  return (
+    <Suspense fallback={<TicketPageFallback />}>
+      <MyTicketPageContent />
+    </Suspense>
   );
 }

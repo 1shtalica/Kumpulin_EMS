@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { use, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -128,7 +129,7 @@ export default function MyTicketDetailPage({
   if (isLoading) {
     return (
       <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-center rounded-2xl border border-slate-200 bg-white py-20">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-center rounded-3xl border border-slate-200 bg-white py-20">
           <RefreshCw className="mr-2 h-4 w-4 animate-spin text-slate-500" />
           <p className="text-sm text-slate-500">Memuat detail tiket...</p>
         </div>
@@ -139,7 +140,7 @@ export default function MyTicketDetailPage({
   if (errorMessage) {
     return (
       <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
-        <div className="mx-auto w-full max-w-4xl rounded-2xl border border-slate-200 bg-white p-8 text-center">
+        <div className="mx-auto w-full max-w-4xl rounded-3xl border border-slate-200 bg-white p-8 text-center">
           <p className="text-lg font-semibold text-slate-900">
             {errorCode === "TICKET_NOT_FOUND"
               ? "Tiket tidak ditemukan"
@@ -152,7 +153,7 @@ export default function MyTicketDetailPage({
             <Button variant="outline" onClick={() => setReloadCount((n) => n + 1)}>
               Coba Lagi
             </Button>
-            <Button asChild>
+            <Button asChild variant="brand">
               <Link href="/user/my-ticket">Kembali ke List</Link>
             </Button>
           </div>
@@ -167,6 +168,11 @@ export default function MyTicketDetailPage({
 
   const status = getStatusPresentation(ticket.status);
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(ticket.qr_code)}`;
+  const eventTitle = ticket.event.title || "Event";
+  const categoryName = ticket.category.name || "Kategori tiket";
+  const participantName = ticket.participant.full_name || "-";
+  const participantEmail = ticket.participant.email || "-";
+  const participantPhone = ticket.participant.phone || "-";
 
   return (
     <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
@@ -178,28 +184,34 @@ export default function MyTicketDetailPage({
           </Link>
         </Button>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="relative bg-linear-to-r from-primary via-primary to-secondary p-6 text-white">
+            <div className="absolute -right-10 -top-16 h-44 w-44 rounded-full bg-white/15 blur-2xl" />
+            <div className="relative flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-semibold text-slate-900">
-                {ticket.event.title}
+              <p className="text-sm font-medium text-white/70">
+                Detail tiket
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-white">
+                {eventTitle}
               </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                {ticket.ticket_number} · {ticket.category.name}
+              <p className="mt-1 text-sm text-white/70">
+                {ticket.ticket_number || "-"} / {categoryName}
               </p>
             </div>
             <Badge className={status.className}>{status.label}</Badge>
+            </div>
           </div>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
+          <div className="grid gap-6 p-6 lg:grid-cols-[1fr_280px]">
             <div className="space-y-5">
-              <div className="rounded-xl border border-slate-200 p-4">
+              <div className="rounded-2xl border border-slate-200 p-4">
                 <p className="text-sm font-semibold text-slate-900">
                   Jadwal Event
                 </p>
                 <div className="mt-3 space-y-2 text-sm text-slate-600">
                   <div className="flex items-start gap-2">
-                    <CalendarDays className="mt-0.5 h-4 w-4 text-slate-400" />
+                    <CalendarDays className="mt-0.5 h-4 w-4 text-primary" />
                     <div>
                       <p>Mulai: {formatDateTime(ticket.event.start_time)}</p>
                       <p>Selesai: {formatDateTime(ticket.event.end_time)}</p>
@@ -208,27 +220,27 @@ export default function MyTicketDetailPage({
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 p-4">
+              <div className="rounded-2xl border border-slate-200 p-4">
                 <p className="text-sm font-semibold text-slate-900">
                   Informasi Peserta
                 </p>
                 <div className="mt-3 space-y-2 text-sm text-slate-600">
                   <p className="flex items-center gap-2">
-                    <UserRound className="h-4 w-4 text-slate-400" />
-                    {ticket.participant.full_name}
+                    <UserRound className="h-4 w-4 text-primary" />
+                    {participantName}
                   </p>
                   <p className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-slate-400" />
-                    {ticket.participant.email}
+                    <Mail className="h-4 w-4 text-primary" />
+                    {participantEmail}
                   </p>
                   <p className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-slate-400" />
-                    {ticket.participant.phone}
+                    <Phone className="h-4 w-4 text-primary" />
+                    {participantPhone}
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 p-4">
+              <div className="rounded-2xl border border-slate-200 p-4">
                 <p className="text-sm font-semibold text-slate-900">
                   Status Check-in
                 </p>
@@ -243,20 +255,25 @@ export default function MyTicketDetailPage({
               </div>
             </div>
 
-            <div className="rounded-xl border border-slate-200 p-4">
+            <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
               <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                 <QrCode className="h-4 w-4" />
                 QR Ticket
               </p>
-              <div className="mt-4 overflow-hidden rounded-lg border border-slate-100 bg-slate-50 p-2">
-                <img
-                  src={qrImageUrl}
-                  alt="QR Ticket"
-                  className="h-auto w-full rounded-md"
-                />
-              </div>
+              {ticket.qr_code ? (
+                <div className="mt-4 overflow-hidden rounded-xl border border-white bg-white p-2 shadow-sm">
+                  <Image
+                    src={qrImageUrl}
+                    alt="QR Ticket"
+                    width={280}
+                    height={280}
+                    unoptimized
+                    className="h-auto w-full rounded-md"
+                  />
+                </div>
+              ) : null}
               <p className="mt-3 break-all rounded-md bg-slate-50 p-2 text-xs text-slate-500">
-                {ticket.qr_code}
+                {ticket.qr_code || "QR belum tersedia."}
               </p>
               <p className="mt-3 text-xs text-slate-400">
                 Tunjukkan QR ini saat proses check-in di lokasi event.
