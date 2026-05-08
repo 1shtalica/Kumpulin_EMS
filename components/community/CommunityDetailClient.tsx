@@ -107,6 +107,7 @@ function PostFormDialog({
     const [body, setBody] = useState("");
     const [postType, setPostType] = useState<"text" | "announcement">("text");
     const [images, setImages] = useState<File[]>([]);
+    const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
     const [replaceImages, setReplaceImages] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -120,6 +121,15 @@ function PostFormDialog({
         setImages([]);
         setReplaceImages(false);
     }, [open, post]);
+
+    useEffect(() => {
+        const previewUrls = images.map((image) => URL.createObjectURL(image));
+        setImagePreviewUrls(previewUrls);
+
+        return () => {
+            previewUrls.forEach((url) => URL.revokeObjectURL(url));
+        };
+    }, [images]);
 
     const handleSubmit = async () => {
         if (!title.trim() || !body.trim()) {
@@ -140,6 +150,11 @@ function PostFormDialog({
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedImages = Array.from(event.target.files ?? []);
+        setImages(selectedImages);
     };
 
     return (
@@ -221,10 +236,39 @@ function PostFormDialog({
                             accept="image/*"
                             multiple
                             className="sr-only"
-                            onChange={(event) =>
-                                setImages(Array.from(event.target.files ?? []))
-                            }
+                            onChange={handleImageChange}
                         />
+                        {imagePreviewUrls.length ? (
+                            <div className="grid grid-cols-2 gap-3 pt-1 sm:grid-cols-3">
+                                {imagePreviewUrls.map((url, index) => (
+                                    <div
+                                        key={`${images[index]?.name ?? "preview"}-${index}`}
+                                        className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100"
+                                    >
+                                        <img
+                                            src={url}
+                                            alt={images[index]?.name ?? `Preview ${index + 1}`}
+                                            className="aspect-square h-full w-full object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                setImages((current) =>
+                                                    current.filter(
+                                                        (_, imageIndex) =>
+                                                            imageIndex !== index,
+                                                    ),
+                                                )
+                                            }
+                                            className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white transition hover:bg-black/80"
+                                            aria-label="Hapus gambar"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : null}
                         {post && images.length > 0 ? (
                             <label className="flex items-center gap-2 text-sm text-slate-600">
                                 <input

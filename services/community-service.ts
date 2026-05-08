@@ -103,7 +103,7 @@ const buildPostFormData = (payload: CreatePostPayload) => {
     formData.append("title", payload.title);
     formData.append("body", payload.body);
     if (payload.post_type) formData.append("post_type", payload.post_type);
-    payload.images?.forEach((image) => formData.append("images[]", image));
+    payload.images?.forEach((image) => formData.append("images", image));
     return formData;
 };
 
@@ -287,7 +287,6 @@ export const CommunityService = {
             const response = await axiosClient.post<ApiResponse<Post>>(
                 `/communities/${communityId}/posts`,
                 buildPostFormData(payload),
-                { headers: { "Content-Type": "multipart/form-data" } },
             );
             return response.data.data;
         }
@@ -322,12 +321,11 @@ export const CommunityService = {
     ): Promise<Post> {
         validateImages(images, { min: 1 });
         const formData = new FormData();
-        images.forEach((image) => formData.append("images[]", image));
+        images.forEach((image) => formData.append("images", image));
 
         const response = await axiosClient.patch<ApiResponse<Post>>(
             `/communities/${communityId}/posts/${postId}/images`,
             formData,
-            { headers: { "Content-Type": "multipart/form-data" } },
         );
         return response.data.data;
     },

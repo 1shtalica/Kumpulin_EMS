@@ -14,9 +14,26 @@ import type {
   PatchRundownsPayload,
   PatchEventLocationPayload,
 } from "@/types/event";
+import type {
+  OrganizerApiErrorCode,
+  OrganizerApiErrorResponse,
+  OrganizerCheckInHistoryData,
+  OrganizerCheckInHistoryResponse,
+  OrganizerEventDetailResponse,
+  OrganizerEventListResponse,
+  OrganizerMutationResponse,
+  OrganizerPagingParams,
+  OrganizerParticipantsData,
+  OrganizerParticipantsResponse,
+  OrganizerUpdateTicketCategoriesPayload,
+  OrganizerValidateTicketPayload,
+  OrganizerValidateTicketResponse,
+  OrganizerValidatedTicket,
+} from "@/types/organizer-ticketing";
 
 type ApiErrorBody = {
   message?: string;
+  error_code?: OrganizerApiErrorCode;
 };
 
 export class EventListRequestError extends Error {
@@ -30,6 +47,18 @@ export class EventListRequestError extends Error {
   }
 }
 
+export class OrganizerApiRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly status?: number,
+    public readonly code?: OrganizerApiErrorCode,
+  ) {
+    super(message);
+    this.name = "OrganizerApiRequestError";
+    Object.setPrototypeOf(this, OrganizerApiRequestError.prototype);
+  }
+}
+
 const getApiErrorMessage = (error: unknown, fallback: string) => {
   const axiosError = error as AxiosError<ApiErrorBody>;
 
@@ -37,6 +66,20 @@ const getApiErrorMessage = (error: unknown, fallback: string) => {
     axiosError.response?.data?.message ||
     (error instanceof Error ? error.message : fallback)
   );
+};
+
+const toOrganizerApiRequestError = (
+  error: unknown,
+  fallback: string,
+): OrganizerApiRequestError => {
+  const axiosError = error as AxiosError<OrganizerApiErrorResponse>;
+  const status = axiosError.response?.status;
+  const code = axiosError.response?.data?.error_code;
+  const message =
+    axiosError.response?.data?.message ||
+    (error instanceof Error ? error.message : fallback);
+
+  return new OrganizerApiRequestError(message, status, code);
 };
 
 const normalizeEventPriceFilter = (price = "") => {
@@ -199,11 +242,9 @@ export const EventService = {
   // Endpoint organizer — butuh auth token (pakai axiosClient)
   async getEventByIdFull(id: string): Promise<Event | null> {
     try {
-      const response = await axiosClient.get<{
-        data: Event;
-        message: string;
-        success: boolean;
-      }>(`organizer/events/${id}`);
+      const response = await axiosClient.get<OrganizerEventDetailResponse>(
+        `organizer/events/${id}`,
+      );
       return response.data.data;
     } catch (error) {
       console.error(`Failed to fetch full event details for ${id}:`, error);
@@ -371,10 +412,7 @@ export const EventService = {
         ? `/organizer/events?${queryString}`
         : "/organizer/events";
 
-      const response = await axiosClient.get<{
-        data: OrganizerEventCard[];
-        total: number;
-      }>(url);
+      const response = await axiosClient.get<OrganizerEventListResponse>(url);
       return {
         data: response.data.data ?? [],
         total: response.data.total ?? 0,
@@ -382,6 +420,25 @@ export const EventService = {
     } catch (error) {
       console.error("Failed to fetch organizer events:", error);
       throw error;
+    }
+  },
+
+  /**
+   * GET /api/v1/organizer/events/:eventID
+   * Full event snapshot for organizer ticket management preload.
+   */
+  async getOrganizerEventDetail(eventID: string): Promise<Event> {
+    try {
+      const response = await axiosClient.get<OrganizerEventDetailResponse>(
+        `/organizer/events/${eventID}`,
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Failed to fetch organizer event detail:", error);
+      throw toOrganizerApiRequestError(
+        error,
+        "Gagal mengambil detail event organizer",
+      );
     }
   },
 
@@ -405,6 +462,95 @@ export const EventService = {
         "Gagal menyimpan perubahan tiket",
       );
       throw new Error(msg);
+    }
+  },
+
+  /**
+   * PATCH /api/v1/organizer/events/:id/tickets
+   * Uses backend contract with top-level `actions`.
+   */
+  async updateOrganizerTicketCategories(
+    id: string,
+    payload: OrganizerUpdateTicketCategoriesPayload,
+  ): Promise<OrganizerMutationResponse> {
+    try {
+      const response = await axiosClient.patch<OrganizerMutationResponse>(
+        `/organizer/events/${id}/tickets`,
+        payload,
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to update organizer ticket categories:", error);
+      throw toOrganizerApiRequestError(
+        error,
+        "Gagal memperbarui kategori tiket",
+      );
+    }
+  },
+
+  /**
+   * POST /api/v1/organizer/events/:eventID/tickets/validate
+   * Supports QR and manual validation.
+   */
+  async validateOrganizerTicket(
+    eventID: string,
+    payload: OrganizerValidateTicketPayload,
+  ): Promise<OrganizerValidatedTicket> {
+    try {
+      const response = await axiosClient.post<OrganizerValidateTicketResponse>(
+        `/organizer/events/${eventID}/tickets/validate`,
+        payload,
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Failed to validate organizer ticket:", error);
+      throw toOrganizerApiRequestError(error, "Gagal validasi tiket");
+    }
+  },
+
+  /**
+   * GET /api/v1/organizer/events/:eventID/check-ins?page=&limit=
+   */
+  async getOrganizerCheckInHistory(
+    eventID: string,
+    params: OrganizerPagingParams = {},
+  ): Promise<OrganizerCheckInHistoryData> {
+    try {
+      const page = params.page ?? 1;
+      const limit = params.limit ?? 20;
+      const response = await axiosClient.get<OrganizerCheckInHistoryResponse>(
+        `/organizer/events/${eventID}/check-ins?page=${page}&limit=${limit}`,
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Failed to fetch organizer check-in history:", error);
+      throw toOrganizerApiRequestError(
+        error,
+        "Gagal mengambil riwayat check-in",
+      );
+    }
+  },
+
+  /**
+   * GET /api/v1/organizer/events/:eventID/participants?page=&limit=
+   */
+  async getOrganizerParticipants(
+    eventID: string,
+    params: OrganizerPagingParams = {},
+  ): Promise<OrganizerParticipantsData> {
+    try {
+      const page = params.page ?? 1;
+      const limit = params.limit ?? 20;
+      const response = await axiosClient.get<OrganizerParticipantsResponse>(
+        `/organizer/events/${eventID}/participants?page=${page}&limit=${limit}`,
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error("Failed to fetch organizer participants:", error);
+      throw toOrganizerApiRequestError(
+        error,
+        "Gagal mengambil daftar partisipan",
+      );
     }
   },
 
