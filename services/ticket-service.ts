@@ -4,13 +4,17 @@ import type {
   GetMyTicketsParams,
   MyTicketDetail,
   MyTicketDetailResponse,
+  MyTicketItemResponse,
   MyTicketListItem,
   MyTicketsListData,
   MyTicketsListResponse,
+  TicketApiError,
   TicketPagination,
   TicketStatus,
-  TicketApiError,
 } from "@/types/ticket";
+
+export type { MyTicketDetail, MyTicketItemResponse };
+export type TicketItem = MyTicketItemResponse;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -209,25 +213,61 @@ const normalizeTicketsData = (
   };
 };
 
+const normalizeMyTicketsArgs = (
+  paramsOrPage: GetMyTicketsParams | number = {},
+  limit?: number,
+  status?: string,
+  eventId?: string,
+): Required<Pick<GetMyTicketsParams, "page" | "limit">> &
+  Pick<GetMyTicketsParams, "status" | "event_id"> => {
+  if (typeof paramsOrPage === "number") {
+    return {
+      page: normalizePage(paramsOrPage),
+      limit: normalizeLimit(limit),
+      ...(status ? { status } : {}),
+      ...(eventId ? { event_id: eventId } : {}),
+    };
+  }
+
+  return {
+    page: normalizePage(paramsOrPage.page),
+    limit: normalizeLimit(paramsOrPage.limit),
+    ...(paramsOrPage.status ? { status: paramsOrPage.status } : {}),
+    ...(paramsOrPage.event_id ? { event_id: paramsOrPage.event_id } : {}),
+  };
+};
+
+async function getMyTickets(
+  params?: GetMyTicketsParams,
+): Promise<MyTicketsListData>;
+async function getMyTickets(
+  page?: number,
+  limit?: number,
+  status?: string,
+  eventId?: string,
+): Promise<MyTicketsListData>;
+async function getMyTickets(
+  paramsOrPage: GetMyTicketsParams | number = {},
+  limit?: number,
+  status?: string,
+  eventId?: string,
+): Promise<MyTicketsListData> {
+  const params = normalizeMyTicketsArgs(paramsOrPage, limit, status, eventId);
+
+  const response = await axiosClient.get<MyTicketsListResponse>("/my-tickets", {
+    params: {
+      page: params.page,
+      limit: params.limit,
+      ...(params.status ? { status: params.status } : {}),
+      ...(params.event_id ? { event_id: params.event_id } : {}),
+    },
+  });
+
+  return normalizeTicketsData(response.data, params.page, params.limit);
+}
+
 export const TicketService = {
-  async getMyTickets(params: GetMyTicketsParams = {}): Promise<MyTicketsListData> {
-    const page = normalizePage(params.page);
-    const limit = normalizeLimit(params.limit);
-
-    const response = await axiosClient.get<MyTicketsListResponse>(
-      "/my-tickets",
-      {
-        params: {
-          page,
-          limit,
-          ...(params.status ? { status: params.status } : {}),
-          ...(params.event_id ? { event_id: params.event_id } : {}),
-        },
-      },
-    );
-
-    return normalizeTicketsData(response.data, page, limit);
-  },
+  getMyTickets,
 
   async getMyTicketDetail(ticketId: string): Promise<MyTicketDetail> {
     const response = await axiosClient.get<MyTicketDetailResponse>(

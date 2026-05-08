@@ -32,7 +32,7 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
             const dateObj = parseISO(event.start_date);
             dateStr = format(dateObj, "dd MMM yyyy", { locale: id });
             timeStr = format(dateObj, "HH:mm") + " WIB";
-        } catch (e) { }
+        } catch { }
     }
 
     const isGrid = layout === "grid";

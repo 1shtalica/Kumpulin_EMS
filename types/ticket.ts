@@ -1,9 +1,14 @@
-export type TicketStatus =
-  | "issued"
-  | "checked_in"
-  | "cancelled"
-  | "refunded"
-  | "invalidated";
+export const TICKET_STATUS = {
+  ISSUED: "issued",
+  CHECKED_IN: "checked_in",
+  CANCELLED: "cancelled",
+  REFUNDED: "refunded",
+  INVALIDATED: "invalidated",
+} as const;
+
+export type TicketStatus = (typeof TICKET_STATUS)[keyof typeof TICKET_STATUS];
+
+export type TicketFilterType = "mendatang" | "riwayat";
 
 export interface TicketApiError {
   success?: boolean;
@@ -30,6 +35,8 @@ export interface MyTicketListItem {
   qr_code: string;
   issued_at: string;
 }
+
+export type MyTicketItemResponse = MyTicketListItem;
 
 export interface MyTicketsListData {
   items: MyTicketListItem[];
@@ -67,6 +74,8 @@ export interface MyTicketDetail {
   checked_in_at: string | null;
   issued_at: string;
 }
+
+export type MyTicketDetailItemResponse = MyTicketDetail;
 
 export interface MyTicketDetailResponse {
   success: boolean;

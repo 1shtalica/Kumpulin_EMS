@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { use, useEffect, useMemo, useState } from "react";
+import { type ReactNode, use, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   CalendarDays,
+  CheckCircle2,
   Mail,
   Phone,
   QrCode,
@@ -30,7 +31,7 @@ const formatDateTime = (value: string | null) => {
 
   return new Intl.DateTimeFormat("id-ID", {
     day: "2-digit",
-    month: "long",
+    month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
@@ -42,35 +43,84 @@ const getStatusPresentation = (status: TicketStatus) => {
   switch (status) {
     case "issued":
       return {
-        label: "Issued",
-        className:
+        label: "Aktif",
+        tone: "text-emerald-700",
+        dotClassName: "bg-emerald-500",
+        badgeClassName:
           "border-transparent bg-emerald-50 text-emerald-700 hover:bg-emerald-50",
       };
     case "checked_in":
       return {
         label: "Checked In",
-        className:
+        tone: "text-blue-700",
+        dotClassName: "bg-blue-500",
+        badgeClassName:
           "border-transparent bg-blue-50 text-blue-700 hover:bg-blue-50",
       };
     case "cancelled":
       return {
         label: "Cancelled",
-        className: "border-transparent bg-red-50 text-red-700 hover:bg-red-50",
+        tone: "text-red-700",
+        dotClassName: "bg-red-500",
+        badgeClassName: "border-transparent bg-red-50 text-red-700 hover:bg-red-50",
       };
     case "refunded":
       return {
         label: "Refunded",
-        className:
+        tone: "text-amber-700",
+        dotClassName: "bg-amber-500",
+        badgeClassName:
           "border-transparent bg-amber-50 text-amber-700 hover:bg-amber-50",
       };
     default:
       return {
         label: "Invalidated",
-        className:
+        tone: "text-slate-700",
+        dotClassName: "bg-slate-400",
+        badgeClassName:
           "border-transparent bg-slate-100 text-slate-700 hover:bg-slate-100",
       };
   }
 };
+
+function DetailRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl bg-slate-50 px-3 py-3">
+      <div className="mt-0.5 text-primary">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+          {label}
+        </p>
+        <div className="mt-1 min-w-0 text-sm font-medium text-slate-800">
+          {value}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SectionBlock({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 className="text-sm font-semibold text-slate-950">{title}</h2>
+      <div className="mt-4 grid gap-3">{children}</div>
+    </section>
+  );
+}
 
 export default function MyTicketDetailPage({
   params,
@@ -128,8 +178,8 @@ export default function MyTicketDetailPage({
 
   if (isLoading) {
     return (
-      <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-center rounded-3xl border border-slate-200 bg-white py-20">
+      <main className="min-h-[calc(100vh-136px)] bg-slate-50 p-8 px-6">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-center rounded-[2rem] border border-slate-200 bg-white py-20 shadow-sm">
           <RefreshCw className="mr-2 h-4 w-4 animate-spin text-slate-500" />
           <p className="text-sm text-slate-500">Memuat detail tiket...</p>
         </div>
@@ -139,8 +189,8 @@ export default function MyTicketDetailPage({
 
   if (errorMessage) {
     return (
-      <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
-        <div className="mx-auto w-full max-w-4xl rounded-3xl border border-slate-200 bg-white p-8 text-center">
+      <main className="min-h-[calc(100vh-136px)] bg-slate-50 p-8 px-6">
+        <div className="mx-auto w-full max-w-5xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
           <p className="text-lg font-semibold text-slate-900">
             {errorCode === "TICKET_NOT_FOUND"
               ? "Tiket tidak ditemukan"
@@ -149,7 +199,7 @@ export default function MyTicketDetailPage({
                 : "Detail tiket gagal dimuat"}
           </p>
           <p className="mt-2 text-sm text-slate-500">{errorMessage}</p>
-          <div className="mt-6 flex justify-center gap-2">
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
             <Button variant="outline" onClick={() => setReloadCount((n) => n + 1)}>
               Coba Lagi
             </Button>
@@ -162,130 +212,178 @@ export default function MyTicketDetailPage({
     );
   }
 
-  if (!ticket) {
-    return null;
-  }
+  if (!ticket) return null;
 
   const status = getStatusPresentation(ticket.status);
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(ticket.qr_code)}`;
   const eventTitle = ticket.event.title || "Event";
   const categoryName = ticket.category.name || "Kategori tiket";
   const participantName = ticket.participant.full_name || "-";
   const participantEmail = ticket.participant.email || "-";
   const participantPhone = ticket.participant.phone || "-";
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(ticket.qr_code)}`;
 
   return (
-    <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
-      <div className="mx-auto w-full max-w-4xl space-y-4">
-        <Button variant="ghost" asChild className="w-fit px-0 text-slate-600">
+    <main className="min-h-[calc(100vh-136px)] bg-slate-50 p-8 px-6">
+      <div className="mx-auto w-full max-w-5xl space-y-5">
+        <Button
+          variant="ghost"
+          asChild
+          className="w-fit rounded-full px-0 text-slate-600 hover:px-3"
+        >
           <Link href="/user/my-ticket">
             <ArrowLeft className="h-4 w-4" />
             Kembali ke Tiket Saya
           </Link>
         </Button>
 
-        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-          <div className="relative bg-linear-to-r from-primary via-primary to-secondary p-6 text-white">
-            <div className="absolute -right-10 -top-16 h-44 w-44 rounded-full bg-white/15 blur-2xl" />
-            <div className="relative flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-sm font-medium text-white/70">
-                Detail tiket
-              </p>
-              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-white">
-                {eventTitle}
-              </h1>
-              <p className="mt-1 text-sm text-white/70">
-                {ticket.ticket_number || "-"} / {categoryName}
-              </p>
-            </div>
-            <Badge className={status.className}>{status.label}</Badge>
+        <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+          <div className="relative bg-linear-to-r from-primary via-primary to-secondary p-6 text-white sm:p-8">
+            <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/15 blur-2xl" />
+            <div className="absolute -bottom-24 left-1/3 h-44 w-44 rounded-full bg-black/10 blur-2xl" />
+            <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/65">
+                  E-ticket detail
+                </p>
+                <h1 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                  {eventTitle}
+                </h1>
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-white/75">
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-mono backdrop-blur">
+                    {ticket.ticket_number || "-"}
+                  </span>
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 backdrop-blur">
+                    {categoryName}
+                  </span>
+                </div>
+              </div>
+              <Badge className={status.badgeClassName}>{status.label}</Badge>
             </div>
           </div>
 
-          <div className="grid gap-6 p-6 lg:grid-cols-[1fr_280px]">
-            <div className="space-y-5">
-              <div className="rounded-2xl border border-slate-200 p-4">
-                <p className="text-sm font-semibold text-slate-900">
-                  Jadwal Event
+          <div className="grid gap-5 bg-slate-50/70 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="space-y-4">
+              <SectionBlock title="Ringkasan Tiket">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <DetailRow
+                    icon={<Ticket className="h-4 w-4" />}
+                    label="Kategori"
+                    value={categoryName}
+                  />
+                  <DetailRow
+                    icon={<CheckCircle2 className="h-4 w-4" />}
+                    label="Status"
+                    value={
+                      <span className={`inline-flex items-center gap-2 ${status.tone}`}>
+                        <span className={`h-2 w-2 rounded-full ${status.dotClassName}`} />
+                        {status.label}
+                      </span>
+                    }
+                  />
+                </div>
+              </SectionBlock>
+
+              <SectionBlock title="Jadwal Event">
+                <DetailRow
+                  icon={<CalendarDays className="h-4 w-4" />}
+                  label="Mulai"
+                  value={formatDateTime(ticket.event.start_time)}
+                />
+                <DetailRow
+                  icon={<CalendarDays className="h-4 w-4" />}
+                  label="Selesai"
+                  value={formatDateTime(ticket.event.end_time)}
+                />
+              </SectionBlock>
+
+              <SectionBlock title="Informasi Peserta">
+                <DetailRow
+                  icon={<UserRound className="h-4 w-4" />}
+                  label="Nama"
+                  value={<span className="truncate">{participantName}</span>}
+                />
+                <DetailRow
+                  icon={<Mail className="h-4 w-4" />}
+                  label="Email"
+                  value={<span className="truncate">{participantEmail}</span>}
+                />
+                <DetailRow
+                  icon={<Phone className="h-4 w-4" />}
+                  label="Telepon"
+                  value={<span className="truncate">{participantPhone}</span>}
+                />
+              </SectionBlock>
+
+              <SectionBlock title="Status Check-in">
+                <div className="rounded-2xl bg-slate-50 px-3 py-3 text-sm">
+                  <p className="font-medium text-slate-800">
+                    {isCheckedIn
+                      ? `Sudah check-in (${formatDateTime(ticket.checked_in_at)})`
+                      : "Belum check-in"}
+                  </p>
+                  <p className="mt-1 text-slate-500">
+                    Tiket diterbitkan: {formatDateTime(ticket.issued_at)}
+                  </p>
+                </div>
+              </SectionBlock>
+            </div>
+
+            <aside className="overflow-hidden rounded-3xl border border-primary/15 bg-white shadow-sm lg:sticky lg:top-24 lg:self-start">
+              <div className="border-b border-dashed border-slate-200 p-5">
+                <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <QrCode className="h-4 w-4 text-primary" />
+                  QR Ticket
                 </p>
-                <div className="mt-3 space-y-2 text-sm text-slate-600">
-                  <div className="flex items-start gap-2">
-                    <CalendarDays className="mt-0.5 h-4 w-4 text-primary" />
-                    <div>
-                      <p>Mulai: {formatDateTime(ticket.event.start_time)}</p>
-                      <p>Selesai: {formatDateTime(ticket.event.end_time)}</p>
-                    </div>
+                <p className="mt-1 text-xs text-slate-400">
+                  Tunjukkan kode ini saat check-in.
+                </p>
+              </div>
+
+              <div className="relative p-5">
+                <div className="pointer-events-none absolute -top-3 left-8 h-6 w-6 rounded-full border border-slate-200 bg-slate-50" />
+                <div className="pointer-events-none absolute -top-3 right-8 h-6 w-6 rounded-full border border-slate-200 bg-slate-50" />
+
+                {ticket.qr_code ? (
+                  <div className="overflow-hidden rounded-3xl border border-slate-100 bg-slate-50 p-3">
+                    <Image
+                      src={qrImageUrl}
+                      alt="QR Ticket"
+                      width={320}
+                      height={320}
+                      unoptimized
+                      className="h-auto w-full rounded-2xl bg-white"
+                    />
+                  </div>
+                ) : (
+                  <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-400">
+                    QR belum tersedia.
+                  </div>
+                )}
+
+                <div className="mt-4 space-y-3">
+                  <div className="rounded-2xl bg-slate-50 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                      QR value
+                    </p>
+                    <p className="mt-1 break-all font-mono text-xs text-slate-600">
+                      {ticket.qr_code || "QR belum tersedia."}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 p-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                      ID Tiket
+                    </p>
+                    <p className="mt-1 break-all font-mono text-xs text-slate-600">
+                      {ticket.id}
+                    </p>
                   </div>
                 </div>
               </div>
-
-              <div className="rounded-2xl border border-slate-200 p-4">
-                <p className="text-sm font-semibold text-slate-900">
-                  Informasi Peserta
-                </p>
-                <div className="mt-3 space-y-2 text-sm text-slate-600">
-                  <p className="flex items-center gap-2">
-                    <UserRound className="h-4 w-4 text-primary" />
-                    {participantName}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-primary" />
-                    {participantEmail}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-primary" />
-                    {participantPhone}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 p-4">
-                <p className="text-sm font-semibold text-slate-900">
-                  Status Check-in
-                </p>
-                <p className="mt-2 text-sm text-slate-600">
-                  {isCheckedIn
-                    ? `Sudah check-in (${formatDateTime(ticket.checked_in_at)})`
-                    : "Belum check-in"}
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  Tiket diterbitkan: {formatDateTime(ticket.issued_at)}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
-              <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                <QrCode className="h-4 w-4" />
-                QR Ticket
-              </p>
-              {ticket.qr_code ? (
-                <div className="mt-4 overflow-hidden rounded-xl border border-white bg-white p-2 shadow-sm">
-                  <Image
-                    src={qrImageUrl}
-                    alt="QR Ticket"
-                    width={280}
-                    height={280}
-                    unoptimized
-                    className="h-auto w-full rounded-md"
-                  />
-                </div>
-              ) : null}
-              <p className="mt-3 break-all rounded-md bg-slate-50 p-2 text-xs text-slate-500">
-                {ticket.qr_code || "QR belum tersedia."}
-              </p>
-              <p className="mt-3 text-xs text-slate-400">
-                Tunjukkan QR ini saat proses check-in di lokasi event.
-              </p>
-              <p className="mt-4 flex items-center gap-2 text-xs text-slate-400">
-                <Ticket className="h-3.5 w-3.5" />
-                ID Tiket: {ticket.id}
-              </p>
-            </div>
+            </aside>
           </div>
         </section>
       </div>
     </main>
   );
 }
+

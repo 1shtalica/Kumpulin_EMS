@@ -95,7 +95,14 @@ const initialFormData: CreateEventFormState = {
   start_registration_date: undefined,
   end_registration_date: undefined,
 
-  rundowns: [],
+  rundowns: [
+    {
+      title: "",
+      description: "",
+      start_time: "",
+      end_time: "",
+    }
+  ],
 
   is_online: false,
   address: {
