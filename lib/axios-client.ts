@@ -1,4 +1,8 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, {
+    AxiosError,
+    AxiosHeaders,
+    InternalAxiosRequestConfig,
+} from "axios";
 import { useAuthStore } from "@/stores/auth-store";
 
 declare module "axios" {
@@ -60,6 +64,9 @@ const noAutoRefreshEndpoints = [
 const shouldBypassAutoRefresh = (url?: string) =>
     noAutoRefreshEndpoints.some((endpoint) => url?.includes(endpoint));
 
+const isFormDataPayload = (data: unknown): data is FormData =>
+    typeof FormData !== "undefined" && data instanceof FormData;
+
 /**
  * Resolves or rejects every request that waited while a token refresh was in
  * progress, then clears the queue for the next refresh cycle.
@@ -78,10 +85,16 @@ const processQueue = (error: unknown) => {
 
 axiosClient.interceptors.request.use(
     /**
-     * Leaves outgoing requests unchanged.
+     * Lets the browser set multipart/form-data boundaries for FormData bodies.
      * Cookies are sent by the Axios instance through withCredentials.
      */
     (config: InternalAxiosRequestConfig) => {
+        if (isFormDataPayload(config.data)) {
+            const headers = AxiosHeaders.from(config.headers);
+            headers.delete("Content-Type");
+            config.headers = headers;
+        }
+
         return config;
     },
     /**

@@ -2,7 +2,7 @@ import DashboardStatisticRow from "@/components/organizer/dashboard/DashboardSta
 
 export default function Dashboard() {
   return (
-    <div className="p-8 space-y-8">
+    <div className="px-0 py-2 md:px-2">
       <DashboardStatisticRow />
     </div>
   );

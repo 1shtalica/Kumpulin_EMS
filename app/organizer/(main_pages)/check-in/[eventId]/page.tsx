@@ -76,6 +76,7 @@ function useQrScanner(
   const scannerRef = useRef<import("html5-qrcode").Html5Qrcode | null>(null);
   const onScanRef = useRef(onScan);
   onScanRef.current = onScan;
+  const lastScanTimeRef = useRef<number>(0);
 
   useEffect(() => {
     if (!active || !containerRef.current) return;
@@ -98,7 +99,11 @@ function useQrScanner(
             aspectRatio: 1,
           },
           (decoded) => {
-            onScanRef.current(decoded);
+            const now = Date.now();
+            if (now - lastScanTimeRef.current > 1500) {
+              lastScanTimeRef.current = now;
+              onScanRef.current(decoded);
+            }
           },
           () => { /* ignore errors while scanning */ },
         );
@@ -212,17 +217,17 @@ export default function CheckInDetailPage() {
         const payload: import("@/types/organizer-ticketing").OrganizerValidateTicketPayload =
           method === "qr"
             ? {
-                validation_method: "qr",
-                qr_token: code.trim(),
-                checkpoint_name: "Gate A",
-                device_label: "Scanner Device 1",
-              }
+              validation_method: "qr",
+              qr_token: code.trim(),
+              checkpoint_name: "Gate A",
+              device_label: "Scanner Device 1",
+            }
             : {
-                validation_method: "manual",
-                manual_code: code.trim(),
-                checkpoint_name: "Gate A",
-                device_label: "Scanner Device 1",
-              };
+              validation_method: "manual",
+              manual_code: code.trim(),
+              checkpoint_name: "Gate A",
+              device_label: "Scanner Device 1",
+            };
 
         const ticket = await EventService.validateOrganizerTicket(eventId, payload);
         setLastResult({ ok: true, ticket });
@@ -296,16 +301,6 @@ export default function CheckInDetailPage() {
                   : event.address?.title || event.address?.city || "-"}
               </span>
             </div>
-          </div>
-
-          <div className="flex shrink-0 items-baseline gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5">
-            <span className="text-xs text-muted-foreground">Total Hadir</span>
-            <span className="text-xl font-bold tabular-nums text-primary">
-              {totalCheckedIn.toLocaleString("id-ID")}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              / {totalSold.toLocaleString("id-ID")}
-            </span>
           </div>
         </div>
       </div>

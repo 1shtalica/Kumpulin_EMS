@@ -28,6 +28,9 @@ const hasCommunityFiles = (
 const hasPostFiles = (payload: Pick<CreatePostPayload, "images">) =>
     Boolean(payload.images?.length);
 
+const normalizePostType = (postType?: CreatePostPayload["post_type"]) =>
+    postType ?? "text";
+
 const normalizePagination = <T>(
     payload: PaginatedApiResponse<T>,
     fallbackPage: number,
@@ -102,7 +105,7 @@ const buildPostFormData = (payload: CreatePostPayload) => {
     const formData = new FormData();
     formData.append("title", payload.title);
     formData.append("body", payload.body);
-    if (payload.post_type) formData.append("post_type", payload.post_type);
+    formData.append("post_type", normalizePostType(payload.post_type));
     payload.images?.forEach((image) => formData.append("images", image));
     return formData;
 };
@@ -296,7 +299,7 @@ export const CommunityService = {
             {
                 title: payload.title,
                 body: payload.body,
-                post_type: payload.post_type,
+                post_type: normalizePostType(payload.post_type),
             },
         );
         return response.data.data;
