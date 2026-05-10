@@ -7,7 +7,6 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 import { useViewPreferenceStore } from "@/stores/view-preference-store";
-import { useState, useEffect } from "react";
 
 
 // type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -34,14 +33,7 @@ export default function MyEventFilter() {
 
   const query = searchParams.get("q") ?? "";
   const status = searchParams.get("status") ?? "all";
-  const { layout: rawLayout, setLayout } = useViewPreferenceStore();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const layout = isMounted ? rawLayout : "list";
+  const { layout, setLayout } = useViewPreferenceStore();
 
   const handleURL = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams);

@@ -8,7 +8,7 @@ export interface Event {
   slug: string;
   description: {
     content: string
-  }; // JSON-encoded TipTap doc string dari BE, e.g. '{"type":"doc","content":[...]}'
+  };
   category: string;
   type: string;
   status: string;
@@ -17,10 +17,11 @@ export interface Event {
   total_sold: number;
   is_online: boolean;
   meeting_url?: string;
-  event_start_date: string;  // ISO 8601
-  event_end_date: string;    // ISO 8601
-  start_registration_date: string; // ISO 8601
-  end_registration_date: string;   // ISO 8601
+  event_start_date: string;  
+  event_end_date: string;    
+  start_registration_date: string; 
+  end_registration_date: string;   
+  is_wishlisted?: boolean; //🌟 belum diimplementasi backend
   address: {
     address_id?: string;
     title?: string;
@@ -36,8 +37,8 @@ export interface Event {
     id?: string;
     title?: string;
     description?: string;
-    start_time?: string; // "HH:mm"
-    end_time?: string;   // "HH:mm"
+    start_time?: string;
+    end_time?: string;
     location?: string;
   }[];
   ticket_categories?: {
@@ -45,15 +46,15 @@ export interface Event {
     name: string;
     price: number;
     quota: number;
-    booked: number;           // jumlah yang sudah dipesan
+    booked: number;  
     description: string;
-    start_date_time?: string | null; // ISO 8601 — *time.Time pointer di Go, bisa null
-    end_date_time?: string | null;   // ISO 8601 — *time.Time pointer di Go, bisa null
+    start_date_time?: string | null; 
+    end_date_time?: string | null;  
   }[];
   images?: {
     id: number;
     image_url: string;
-    is_primary: boolean;     // dari domain.EventImage — tersedia di response BE
+    is_primary: boolean;
     event_id?: string;
     created_at?: string;
     updated_at?: string;
@@ -67,6 +68,30 @@ export interface Event {
     description?: string;
     verification_status?: string;
   };
+}
+
+export interface InfiniteEventListProps {
+  initialEvents: HomeEventCard[];
+  initialHasMore: boolean;
+  initialNextCursor: string | null;
+  searchQuery: string;
+  typeFilter: string;
+  categoryFilter: string;
+  provinceFilter: string;
+  priceFilter: string;
+  sortOption: string;
+  limit: number;
+}
+
+export interface EventPagination {
+  limit: number;
+  has_more: boolean;
+  next_cursor: string | null;
+}
+
+export interface EventListResult {
+  data: HomeEventCard[];
+  pagination: EventPagination;
 }
 
 // ============================================================
@@ -86,15 +111,16 @@ export interface EventResponse {
 // Params untuk list events
 // ============================================================
 export interface GetEventsParams {
-  offset?: number;
   limit?: number;
+  cursor?: string | null;
   type?: string;
   q?: string;
+  search?: string;
+  category?: string;
+  province?: string;
+  price?: string;
+  sort?: string;
   // 🌟 tunggu api siap
-  // category?: string;
-  // location?: string;
-  // price_type?: 'gratis' | 'berbayar';
-  // sort?: string;
 }
 
 // ============================================================
@@ -143,34 +169,34 @@ export interface OrganizerEventCard {
 // Payload types untuk PATCH endpoints (organizer)
 // ============================================================
 export interface TicketPayloadItem {
-  id?: string;            // UUID — present for update; omit for add
+  id?: string;
   name: string;
   price: number;
   quota: number;
   description?: string;
-  start_date_time: string; // ISO 8601 full datetime
-  end_date_time: string;   // ISO 8601 full datetime
+  start_date_time: string;
+  end_date_time: string;
 }
 
 export interface PatchTicketsPayload {
   added: TicketPayloadItem[];
   updated: TicketPayloadItem[];
-  deleted_ids: string[];  // UUIDs to delete
+  deleted_ids: string[];
 }
 
 export interface RundownPayloadItem {
-  id?: string;        // UUID — present for update; omit for add
+  id?: string;
   title: string;
   description?: string;
-  start_time: string; // plain "HH:mm"
-  end_time: string;   // plain "HH:mm"
+  start_time: string;
+  end_time: string;
   location?: string;
 }
 
 export interface PatchRundownsPayload {
   added: RundownPayloadItem[];
   updated: RundownPayloadItem[];
-  deleted_ids: string[]; // UUIDs to delete
+  deleted_ids: string[];
 }
 
 export interface PatchEventLocationPayload {

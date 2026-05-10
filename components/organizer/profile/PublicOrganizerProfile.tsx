@@ -19,7 +19,6 @@ import {
   Inbox,
   CalendarDays,
   Check,
-  Settings,
   Image as ImageIcon,
 } from "lucide-react";
 import { EditProfileModal } from "./EditProfileModal";
@@ -87,6 +86,10 @@ function hostingDuration(joinedAt: string): string {
 }
 
 // ─── Event Mode Config ────────────────────────────────────────────────────────
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
+}
+
 const modeConfig: Record<
   string,
   { label: string; icon: React.ElementType; className: string }
@@ -259,8 +262,8 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
       // Optional: Update local state immediately if needed, or rely on a full page reload if we re-fetch profile on component mount
       // For now, refreshing the router and re-running the fetch effect will grab the new data.
       window.location.reload(); // Quick dirty way to refresh page if router.refresh() doesn't immediately refetch the effect for this component.
-    } catch (err: any) {
-      toast.error(err.message || "Gagal mengunggah banner", { id: "upload-banner" });
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Gagal mengunggah banner"), { id: "upload-banner" });
     }
   };
 
@@ -274,8 +277,8 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
       toast.success("Foto profil berhasil diperbarui!", { id: "upload-profile" });
       router.refresh();
       window.location.reload();
-    } catch (err: any) {
-      toast.error(err.message || "Gagal mengunggah foto profil", { id: "upload-profile" });
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Gagal mengunggah foto profil"), { id: "upload-profile" });
     }
   };
 
@@ -313,7 +316,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
         toast.success("Berhasil mengikuti organizer");
         setFollowed(true);
       }
-    } catch (err) {
+    } catch {
       toast.error(followed ? "Gagal berhenti mengikuti organizer" : "Gagal mengikuti organizer");
     } finally {
       setIsLoadingFollow(false);
@@ -324,6 +327,23 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
     if (isLoadingFollow || !profile?.organizer?.id) return;
     setIsLoadingFollow(true);
     debouncedFollowToggle();
+  };
+
+  const handleProfileUpdated = (updates: {
+    name: string;
+    description: string;
+  }) => {
+    setProfile((currentProfile) =>
+      currentProfile
+        ? {
+            ...currentProfile,
+            organizer: {
+              ...currentProfile.organizer,
+              ...updates,
+            },
+          }
+        : currentProfile
+    );
   };
 
   useEffect(() => {
@@ -497,7 +517,10 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                 </>
               ) : (
                 <>
-                  <EditProfileModal organizer={organizer} />
+                  <EditProfileModal
+                    organizer={organizer}
+                    onUpdated={handleProfileUpdated}
+                  />
                 </>
               )}
             </div>

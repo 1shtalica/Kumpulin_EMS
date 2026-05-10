@@ -1,27 +1,13 @@
 import LandingNavbar from "@/components/landingpage/LandingNavbar";
-import { EventCardSkeletonList } from "@/components/reusable/EventCard";
+import { SkeletonEventGrid } from "@/components/reusable/SkeletonElements";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LoadingEvents() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#f9fafb]">
-      <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-            opacity: 0.24,
-          }}
-        />
-        <div className="absolute top-8 right-8 h-[22rem] w-[22rem] rounded-full bg-[#002cee14]" />
-        <div className="absolute bottom-8 left-8 h-[18rem] w-[18rem] rounded-full bg-[#6366f112]" />
-      </div>
-      <div className="relative z-10 flex min-h-screen flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <LandingNavbar />
       <main className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl pb-20 grow">
-
+        
         {/* Search Bar Skeleton */}
         <section className="w-full pt-28 md:pt-36 pb-4 relative z-10">
           <div className="w-full max-w-3xl mx-auto space-y-4 md:space-y-5 text-center">
@@ -84,22 +70,9 @@ export default function LoadingEvents() {
           </section>
         </div>
 
-        {/* "Menampilkan X event" Skeleton */}
-        <div className="mb-6">
-           <Skeleton className="h-6 w-48" />
-        </div>
-
         {/* Event List Skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          <EventCardSkeletonList count={12} />
-        </div>
-
-        {/* Pagination Skeleton */}
-        <div className="mt-12 flex justify-center">
-          <Skeleton className="h-10 w-64 rounded-full" />
-        </div>
+        <SkeletonEventGrid />
       </main>
-      </div>
     </div>
   );
 }

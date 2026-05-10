@@ -1,5 +1,6 @@
 "use client";
 
+import type { HomeEventCard } from "@/types/event";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
@@ -14,7 +15,6 @@ import {
     Pizza,
     ArrowUpRight,
     MapPin,
-    Clock,
     Ticket,
     Users,
     CalendarDays,
@@ -27,60 +27,24 @@ import { Input } from "@/components/ui/input";
 // ── Data ──────────────────────────────────────────────────────
 const CYCLING_WORDS = ["Konser", "Workshop", "Festival", "Seminar", "Pameran"];
 
-const MARQUEE_ITEMS = [
-    "Java Jazz Festival",
-    "TEDx Jakarta",
-    "Bali Arts Festival",
-    "DevFest Indonesia",
-    "Jak-Japan Matsuri",
-    "Indonesia Open",
-    "Ubud Writers Fest",
-    "Bandung Culinary",
-    "Jogja Art Week",
-    "Makassar F8",
-];
+// Palet warna untuk kartu event (di-assign secara cyclic)
+const CARD_ACCENTS = ["#6366f1", "#10b981", "#f59e0b"];
 
-const LIVE_EVENTS = [
-    {
-        id: 1,
-        title: "Jazz Night Immersive",
-        city: "Jakarta",
-        date: "28 Apr",
-        time: "19:00",
-        category: "Musik",
-        attendees: 312,
-        capacity: 400,
-        accent: "#6366f1",
-        tag: "Hampir penuh",
-        tagColor: "bg-rose-50 text-rose-600",
-    },
-    {
-        id: 2,
-        title: "DevFest Indonesia 2026",
-        city: "Bandung",
-        date: "3 Mei",
-        time: "09:00",
-        category: "Teknologi",
-        attendees: 780,
-        capacity: 1200,
-        accent: "#10b981",
-        tag: "Gratis",
-        tagColor: "bg-emerald-50 text-emerald-700",
-    },
-    {
-        id: 3,
-        title: "Ubud Writers & Readers",
-        city: "Bali",
-        date: "10 Mei",
-        time: "10:00",
-        category: "Budaya",
-        attendees: 190,
-        capacity: 500,
-        accent: "#f59e0b",
-        tag: "Populer",
-        tagColor: "bg-amber-50 text-amber-700",
-    },
-];
+function formatEventDate(dateStr: string): string {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+}
+
+function getEventTag(ev: HomeEventCard): { text: string; className: string } {
+    const fillRatio = ev.max_capacity > 0 ? ev.total_sold / ev.max_capacity : 0;
+    if (ev.ticket_price === 0)
+        return { text: "Gratis", className: "bg-emerald-50 text-emerald-700" };
+    if (fillRatio >= 0.8)
+        return { text: "Hampir penuh", className: "bg-rose-50 text-rose-600" };
+    return { text: "Tersedia", className: "bg-sky-50 text-sky-700" };
+}
 
 const CATEGORIES = [
     {
@@ -165,31 +129,45 @@ function CyclingWord() {
 }
 
 /** Desktop only – stacked card deck */
-function EventCardStack() {
+function EventCardStack({ events }: { events: HomeEventCard[] }) {
     const [activeIdx, setActiveIdx] = useState(0);
+    const count = events.length;
 
     useEffect(() => {
+        if (count === 0) return;
         const t = setInterval(() => {
-            setActiveIdx((i) => (i + 1) % LIVE_EVENTS.length);
+            setActiveIdx((i) => (i + 1) % count);
         }, 3200);
         return () => clearInterval(t);
-    }, []);
+    }, [count]);
+
+    if (count === 0) {
+        return (
+            <div className="relative h-85 w-full max-w-85 mx-auto flex items-center justify-center">
+                <div className="text-slate-300 text-sm">Memuat event...</div>
+            </div>
+        );
+    }
 
     return (
-        <div className="relative h-[340px] w-full max-w-[340px] mx-auto">
-            {LIVE_EVENTS.map((ev, i) => {
-                const offset =
-                    (i - activeIdx + LIVE_EVENTS.length) % LIVE_EVENTS.length;
+        <div className="relative h-85 w-full max-w-85 mx-auto">
+            {events.map((ev, i) => {
+                const offset = (i - activeIdx + count) % count;
                 const isTop = offset === 0;
                 const isMid = offset === 1;
                 const translateY = isTop ? 0 : isMid ? 18 : 36;
                 const scale = isTop ? 1 : isMid ? 0.95 : 0.9;
                 const opacity = isTop ? 1 : isMid ? 0.75 : 0.45;
                 const zIndex = isTop ? 30 : isMid ? 20 : 10;
+                const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
+                const tag = getEventTag(ev);
+                const fillRatio =
+                    ev.max_capacity > 0 ? ev.total_sold / ev.max_capacity : 0;
+                const slug = ev.slug;
 
                 return (
                     <div
-                        key={ev.id}
+                        key={ev.event_id ?? ev.slug ?? i}
                         className="absolute inset-x-0 top-0 bg-white rounded-2xl border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.08)] p-5 cursor-pointer"
                         style={{
                             transform: `translateY(${translateY}px) scale(${scale})`,
@@ -203,66 +181,68 @@ function EventCardStack() {
                     >
                         <div
                             className="h-1.5 w-16 rounded-full mb-4"
-                            style={{ background: ev.accent }}
+                            style={{ background: accent }}
                         />
                         <div className="flex items-center justify-between mb-3">
                             <span
                                 className="text-xs font-bold uppercase tracking-widest"
-                                style={{ color: ev.accent }}
+                                style={{ color: accent }}
                             >
-                                {ev.category}
+                                {ev.type}
                             </span>
                             <span
-                                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${ev.tagColor}`}
+                                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${tag.className}`}
                             >
-                                {ev.tag}
+                                {tag.text}
                             </span>
                         </div>
-                        <h3 className="text-lg font-extrabold text-slate-900 leading-tight mb-4">
+                        <h3 className="text-lg font-extrabold text-slate-900 leading-tight mb-4 line-clamp-2">
                             {ev.title}
                         </h3>
                         <div className="flex flex-col gap-2 mb-5">
                             <div className="flex items-center gap-2 text-slate-500 text-sm">
                                 <MapPin size={14} className="shrink-0" />
-                                <span>{ev.city}</span>
+                                <span className="truncate">
+                                    {ev.is_online ? "Online" : ev.address_title}
+                                </span>
                             </div>
                             <div className="flex items-center gap-2 text-slate-500 text-sm">
                                 <CalendarDays size={14} className="shrink-0" />
-                                <span>
-                                    {ev.date} · {ev.time} WIB
-                                </span>
+                                <span>{formatEventDate(ev.start_date)}</span>
                             </div>
                         </div>
                         <div className="mb-3">
                             <div className="flex justify-between text-xs text-slate-400 mb-1.5">
                                 <span className="flex items-center gap-1">
                                     <Users size={12} />{" "}
-                                    {ev.attendees.toLocaleString()} peserta
+                                    {ev.total_sold.toLocaleString("id-ID")}{" "}
+                                    peserta
                                 </span>
                                 <span>
-                                    {Math.round(
-                                        (ev.attendees / ev.capacity) * 100,
-                                    )}
-                                    % terisi
+                                    {Math.round(fillRatio * 100)}% terisi
                                 </span>
                             </div>
                             <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                 <div
                                     className="h-full rounded-full transition-all duration-700"
                                     style={{
-                                        width: `${(ev.attendees / ev.capacity) * 100}%`,
-                                        background: ev.accent,
+                                        width: `${fillRatio * 100}%`,
+                                        background: accent,
                                     }}
                                 />
                             </div>
                         </div>
                         <div className="flex items-center justify-between pt-2 border-t border-slate-50">
                             <div className="flex items-center gap-1 text-slate-400 text-xs">
-                                <Clock size={12} />
-                                <span>Segera</span>
+                                <Ticket size={12} />
+                                <span>
+                                    {ev.ticket_price === 0
+                                        ? "Gratis"
+                                        : `Rp ${ev.ticket_price.toLocaleString("id-ID")}`}
+                                </span>
                             </div>
                             <Link
-                                href="/events"
+                                href={`/events/${slug}`}
                                 className="flex items-center gap-1 text-xs font-bold text-primary hover:gap-2 transition-all"
                             >
                                 Lihat detail <ArrowUpRight size={13} />
@@ -272,7 +252,7 @@ function EventCardStack() {
                 );
             })}
             <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
-                {LIVE_EVENTS.map((_, i) => (
+                {events.map((_, i) => (
                     <button
                         key={i}
                         onClick={() => setActiveIdx(i)}
@@ -291,7 +271,7 @@ function EventCardStack() {
 }
 
 /** Mobile only – horizontal scrolling event cards */
-function MobileEventStrip() {
+function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
     return (
         <div className="w-full lg:hidden">
             <div className="flex items-center justify-between mb-3 px-4 sm:px-6">
@@ -311,55 +291,67 @@ function MobileEventStrip() {
             {/* Horizontally scrollable cards with right-fade mask */}
             <div className="relative">
                 <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 sm:px-6 pb-2">
-                    {LIVE_EVENTS.map((ev) => (
-                        <div
-                            key={ev.id}
-                            className="shrink-0 w-[240px] bg-white rounded-xl border border-slate-100 shadow-sm p-4"
-                        >
-                            <div className="flex items-center justify-between mb-2">
-                                <span
-                                    className="text-[10px] font-bold uppercase tracking-widest"
-                                    style={{ color: ev.accent }}
-                                >
-                                    {ev.category}
-                                </span>
-                                <span
-                                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${ev.tagColor}`}
-                                >
-                                    {ev.tag}
-                                </span>
-                            </div>
-                            <p className="text-sm font-extrabold text-slate-900 leading-tight mb-2">
-                                {ev.title}
-                            </p>
-                            <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
-                                <span className="flex items-center gap-1">
-                                    <MapPin size={11} />
-                                    {ev.city}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <CalendarDays size={11} />
-                                    {ev.date}
-                                </span>
-                            </div>
-                            <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full rounded-full"
-                                    style={{
-                                        width: `${(ev.attendees / ev.capacity) * 100}%`,
-                                        background: ev.accent,
-                                    }}
-                                />
-                            </div>
-                            <p className="text-[10px] text-slate-400 mt-1">
-                                {Math.round((ev.attendees / ev.capacity) * 100)}
-                                % terisi
-                            </p>
-                        </div>
-                    ))}
+                    {events.map((ev, i) => {
+                        const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
+                        const tag = getEventTag(ev);
+                        const fillRatio =
+                            ev.max_capacity > 0
+                                ? ev.total_sold / ev.max_capacity
+                                : 0;
+                        return (
+                            <Link
+                                key={ev.event_id ?? ev.slug ?? i}
+                                href={`/events/${ev.slug}`}
+                                className="shrink-0 w-60 bg-white rounded-xl border border-slate-100 shadow-sm p-4 block hover:shadow-md transition-shadow"
+                            >
+                                <div className="flex items-center justify-between mb-2">
+                                    <span
+                                        className="text-[10px] font-bold uppercase tracking-widest"
+                                        style={{ color: accent }}
+                                    >
+                                        {ev.type}
+                                    </span>
+                                    <span
+                                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${tag.className}`}
+                                    >
+                                        {tag.text}
+                                    </span>
+                                </div>
+                                <p className="text-sm font-extrabold text-slate-900 leading-tight mb-2 line-clamp-2">
+                                    {ev.title}
+                                </p>
+                                <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
+                                    <span className="flex items-center gap-1">
+                                        <MapPin size={11} />
+                                        <span className="truncate max-w-20">
+                                            {ev.is_online
+                                                ? "Online"
+                                                : ev.address_title}
+                                        </span>
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <CalendarDays size={11} />
+                                        {formatEventDate(ev.start_date)}
+                                    </span>
+                                </div>
+                                <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full"
+                                        style={{
+                                            width: `${fillRatio * 100}%`,
+                                            background: accent,
+                                        }}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    {Math.round(fillRatio * 100)}% terisi
+                                </p>
+                            </Link>
+                        );
+                    })}
                 </div>
                 {/* Right fade mask */}
-                <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-[#f9fafb] to-transparent pointer-events-none" />
+                <div className="absolute right-0 top-0 h-full w-12 bg-linear-to-l from-[#f9fafb] to-transparent pointer-events-none" />
             </div>
         </div>
     );
@@ -370,6 +362,24 @@ export default function HeroSection() {
     const router = useRouter();
     const [searchValue, setSearchValue] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
+    const [heroEvents, setHeroEvents] = useState<HomeEventCard[]>([]);
+
+    // Fetch 3 event terbaru untuk ditampilkan di kartu Hero
+    useEffect(() => {
+        const fetchHeroEvents = async () => {
+            try {
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/events?limit=3&offset=0`,
+                );
+                if (!res.ok) return;
+                const json = await res.json();
+                setHeroEvents(json.data ?? []);
+            } catch {
+                // Gagal fetch: biarkan kosong, kartu menampilkan state loading
+            }
+        };
+        fetchHeroEvents();
+    }, []);
 
     const debouncedSearch = useDebouncedCallback((term: string) => {
         if (term.trim())
@@ -577,7 +587,7 @@ export default function HeroSection() {
                                     )}
                                 </div>
                                 {/* Fade hint at right edge */}
-                                <div className="absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-[#f9fafb] to-transparent pointer-events-none" />
+                                <div className="absolute right-0 top-0 h-full w-10 bg-linear-to-l from-[#f9fafb] to-transparent pointer-events-none" />
                             </div>
                         </div>
                     </div>
@@ -590,7 +600,7 @@ export default function HeroSection() {
                                 Event Berlangsung
                             </span>
                         </div>
-                        <EventCardStack />
+                        <EventCardStack events={heroEvents} />
                         <Link
                             href="/events"
                             className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-primary border-b-2 border-primary/30 hover:border-primary transition-all duration-200 pb-0.5"
@@ -603,7 +613,7 @@ export default function HeroSection() {
 
             {/* ── Mobile Event Strip (shows between content & marquee on mobile) ── */}
             <div className="relative z-10 pb-8 lg:hidden">
-                <MobileEventStrip />
+                <MobileEventStrip events={heroEvents} />
             </div>
         </section>
     );

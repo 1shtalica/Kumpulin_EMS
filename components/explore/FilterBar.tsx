@@ -16,32 +16,38 @@ export default function FilterBar() {
   // Cek filter aktif
   const hasCategory = searchParams.has("category");
   const hasLocation = searchParams.has("location");
+  const hasProvince = searchParams.has("province");
   const hasPrice = searchParams.has("price");
   const hasSort = searchParams.has("sort");
-  const isFiltering = hasCategory || hasLocation || hasPrice || hasSort;
+  const hasType = searchParams.has("type");
+  const isFiltering =
+    hasCategory || hasLocation || hasProvince || hasPrice || hasSort || hasType;
 
   const handleReset = () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("category");
     params.delete("location");
+    params.delete("province");
     params.delete("price");
     params.delete("sort");
+    params.delete("type");
     params.delete("page");
+    params.delete("offset");
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
   return (
     <section className="sticky top-20 z-40 py-4 pointer-events-none">
-      <div className="w-full max-w-4xl mx-auto pointer-events-auto">
+      <div className="w-full mx-auto pointer-events-auto">
         <div className="relative w-full bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-[0_8px_40px_rgb(0,0,0,0.06)] rounded-3xl lg:rounded-full p-2 lg:p-1.5 transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
           <div className="flex flex-col lg:flex-row lg:items-center">
 
             {/* Filter Items inside pill */}
-            <div className="grid grid-cols-2 lg:flex w-full flex-1 gap-1 lg:gap-0 lg:divide-x divide-slate-100">
-              <div className="flex-1 w-full"><CategoryFilter /></div>
-              <div className="flex-1 w-full"><LocationFilter /></div>
-              <div className="flex-1 w-full"><PriceFilter /></div>
-              <div className="flex-1 w-full"><SortByFilter /></div>
+            <div className="grid grid-cols-2 lg:flex w-full flex-1 gap-1 lg:gap-0 lg:divide-x divide-slate-100 min-w-0">
+              <div className="flex-1 w-full min-w-0 lg:px-1"><CategoryFilter /></div>
+              <div className="flex-1 w-full min-w-0 lg:px-1"><LocationFilter /></div>
+              <div className="flex-1 w-full min-w-0 lg:px-1"><PriceFilter /></div>
+              <div className="flex-1 w-full min-w-0 lg:px-1"><SortByFilter /></div>
             </div>
 
             {/* Reset Button (End of pill) */}

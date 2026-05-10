@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,14 +25,15 @@ type UpdateProfileForm = z.infer<typeof updateProfileSchema>;
 interface EditProfileModalProps {
   organizer: OrganizerProfileInfo;
   trigger?: React.ReactNode;
+  onUpdated?: (organizer: Pick<OrganizerProfileInfo, "name" | "description">) => void;
 }
 
-export function EditProfileModal({ organizer, trigger }: EditProfileModalProps) {
+export function EditProfileModal({ organizer, trigger, onUpdated }: EditProfileModalProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<UpdateProfileForm>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<UpdateProfileForm>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
       name: organizer.name,
@@ -40,18 +41,32 @@ export function EditProfileModal({ organizer, trigger }: EditProfileModalProps) 
     },
   });
 
+  useEffect(() => {
+    if (!open) {
+      reset({
+        name: organizer.name,
+        description: organizer.description,
+      });
+    }
+  }, [open, organizer.name, organizer.description, reset]);
+
   const onSubmit = async (data: UpdateProfileForm) => {
     setIsLoading(true);
     try {
+      const description = data.description || "";
       await OrganizerService.updateProfile({
         name: data.name,
-        description: data.description || "",
+        description,
+      });
+      onUpdated?.({
+        name: data.name,
+        description,
       });
       toast.success("Profil berhasil diperbarui");
       setOpen(false);
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || "Gagal memperbarui profil");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Gagal memperbarui profil");
     } finally {
       setIsLoading(false);
     }

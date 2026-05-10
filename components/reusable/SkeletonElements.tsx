@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { EventCardSkeletonList } from "@/components/reusable/EventCard";
 
 // --- Explore Page ---
 
@@ -32,10 +33,8 @@ export function SkeletonCard() {
 
 export function SkeletonEventGrid() {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-                <SkeletonCard key={i} />
-            ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <EventCardSkeletonList count={8} />
         </div>
     );
 }
