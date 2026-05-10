@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Users, Heart, ImageOff } from "lucide-react";
+import { MapPin, Users, Heart, ImageOff, Ticket } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +26,23 @@ interface EventCardProps {
     ticketSold?: number;
     maxQuota?: number;
     variant?: "vertical" | "horizontal";
+}
+
+function EventCardGraphic({ variant }: { variant: EventCardProps["variant"] }) {
+    return (
+        <div
+            className="pointer-events-none absolute inset-0 overflow-hidden text-indigo-500"
+            aria-hidden="true"
+        >
+            <Ticket
+                className={cn(
+                    "absolute -bottom-7 -right-5 h-30 w-30 rotate-[-8deg] opacity-[0.08] transition-all duration-300 group-hover:rotate-[-3deg] group-hover:scale-110 group-hover:opacity-[0.13]",
+                    variant === "horizontal" && "h-34 w-34",
+                )}
+                strokeWidth={1.4}
+            />
+        </div>
+    );
 }
 
 export default function EventCard({
@@ -119,8 +136,10 @@ export default function EventCard({
                 </div>
 
                 {/* === CONTENT === */}
-                <CardContent className="flex flex-col p-4 sm:p-5 h-full relative">
-                    <div className="flex gap-4 items-start">
+                <CardContent className="flex flex-col px-4 pb-4 pt-2 sm:pt-2 sm:pb-4 sm:px-5 h-full relative overflow-hidden">
+                    <EventCardGraphic variant={variant} />
+
+                    <div className="relative z-10 flex gap-4 items-start">
                         {/* Date Box */}
                         <div className="flex flex-col items-center justify-center w-14 py-2 min-h-17 bg-indigo-50/80 text-indigo-600 rounded-xl shrink-0 border border-indigo-100/50">
                             <span className="text-xl font-bold leading-none tracking-tight">
@@ -161,7 +180,7 @@ export default function EventCard({
                     </div>
 
                     {/* Price & Quota (Footer Area) */}
-                    <div className="mt-auto pt-6 flex items-end justify-between">
+                    <div className="relative z-10 mt-auto pt-5 flex items-end justify-between">
                         {/* Price */}
                         <div className="flex flex-col">
                             {!!originalPrice &&

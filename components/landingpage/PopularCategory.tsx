@@ -160,6 +160,14 @@ export default function PopularCategory() {
             >
               <div className="absolute inset-x-0 top-0 h-1 bg-[var(--category-color)] opacity-80" />
               <div className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-[var(--category-bg)] transition-transform duration-300 group-hover:scale-125 md:h-24 md:w-24" />
+              <category.icon
+                className={cn(
+                  "absolute -bottom-5 -right-4 h-20 w-20 rotate-[-8deg] text-[var(--category-color)] opacity-[0.075] transition-all duration-300 group-hover:rotate-[-2deg] group-hover:scale-110 group-hover:opacity-[0.11]",
+                  index === 0 && "md:-bottom-8 md:-right-6 md:h-34 md:w-34",
+                )}
+                strokeWidth={1.6}
+                aria-hidden="true"
+              />
               <svg
                 className="absolute inset-0 h-full w-full text-[var(--category-color)] opacity-70 transition-transform duration-300 group-hover:scale-[1.03]"
                 viewBox="0 0 260 180"
