@@ -60,7 +60,11 @@ export default function EventCard({
         : date.split(" ")[2] || new Date().getFullYear();
 
     return (
-        <Link href={`/events/${slug}`} className="group block h-full w-full">
+        <Link
+            href={`/events/${slug}`}
+            prefetch={false}
+            className="group block h-full w-full"
+        >
             <Card
                 className={cn(
                     "h-full flex overflow-hidden transition-all duration-300 transform hover:-translate-y-2 rounded-3xl bg-white border hover:border-primary/50 shadow-sm hover:shadow-lg",

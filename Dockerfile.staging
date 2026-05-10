@@ -14,8 +14,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Staging build uses staging sample env values.
-COPY .env.staging.sample .env.staging
+COPY .env.staging.sample .env.production
 RUN npm run build
 
 FROM base AS runner
@@ -36,4 +35,6 @@ EXPOSE 3000
 
 ENV PORT=3000
 
-CMD HOSTNAME="0.0.0.0" node server.js
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 node server.js"]
+
+FROM runner AS staging

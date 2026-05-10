@@ -155,7 +155,7 @@ axiosClient.interceptors.response.use(
         } catch (refreshError) {
             processQueue(refreshError);
             if (originalRequest.skipAuthFailureRedirect) {
-                useAuthStore.setState({ user: null });
+                useAuthStore.setState({ user: null, isLoading: false });
             } else {
                 await useAuthStore.getState().logout();
             }

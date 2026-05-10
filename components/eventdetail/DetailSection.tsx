@@ -5,7 +5,6 @@ import {
   Clock,
   MapPin,
   Users,
-  Copy,
   Check,
   ExternalLink,
   Loader2,

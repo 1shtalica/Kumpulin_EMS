@@ -39,7 +39,10 @@ export const OrganizerService = {
     try {
       const response = await axiosClient.patch<OrganizerMutationResponse>(
         "/auth/profile",
-        payload,
+        {
+          organizer_name: payload.name,
+          description: payload.description,
+        },
       );
       return response.data;
     } catch (error) {
