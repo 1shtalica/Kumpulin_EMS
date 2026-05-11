@@ -30,10 +30,10 @@ export default async function PublicOrganizerProfilePage({ params }: Props) {
   const { slug } = await params;
 
   return (
-    <div className="min-h-screen bg-[#f8f8fa] flex flex-col">
+    <div className="min-h-screen bg-[#f9fafb] flex flex-col">
       <LandingNavbar />
       <main className="flex-1 pt-16">
-        <PublicOrganizerProfile slug={slug} key={Math.random()} />
+        <PublicOrganizerProfile slug={slug} />
       </main>
       <LandingFooter />
     </div>

@@ -383,6 +383,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
   const { organizer, stats, events = { upcoming: [], past: [] }, reviews } = profile;
   const ratingFull = Math.floor(stats.average_rating);
   const ratingHalf = stats.average_rating - ratingFull >= 0.5;
+  const isPublicProfile = Boolean(slug);
 
   const activeEvents =
     activeTab === "upcoming"
@@ -392,11 +393,26 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
         : [];
 
   return (
-    <div className="min-h-screen bg-[#f8f8fa]">
+    <div
+      className={cn(
+        "min-h-screen bg-[#f9fafb]",
+        isPublicProfile && "px-4 py-6 md:px-8"
+      )}
+    >
       {/* ─── Hero Header ───────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-slate-200">
+      <div
+        className={cn(
+          "overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
+          isPublicProfile && "mx-auto max-w-6xl"
+        )}
+      >
         {/* Cover Banner */}
-        <div className="relative w-full h-32 sm:h-44 overflow-hidden bg-slate-100">
+        <div
+          className={cn(
+            "relative w-full overflow-hidden bg-slate-100",
+            isPublicProfile ? "h-48 sm:h-64" : "h-36 sm:h-48"
+          )}
+        >
           <Image
             src={organizer.banner_image_url || "/organizer-cover-placeholder.png"}
             alt="Organizer cover"
@@ -415,7 +431,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
               />
               <button
                 onClick={() => bannerInputRef.current?.click()}
-                className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-md text-white text-xs font-bold rounded-full transition-colors border border-white/20"
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/20 bg-black/50 px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-slate-950/20 backdrop-blur-md transition-colors hover:bg-black/70"
               >
                 <ImageIcon className="w-3.5 h-3.5" />
                 Ubah Banner
@@ -426,10 +442,17 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
           <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white/50 to-transparent" />
         </div>
 
-        <div className="container max-w-6xl mx-auto px-4 md:px-8 pb-6 relative z-10">
-          <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-6 md:px-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
             {/* Avatar */}
-            <div className="shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-primary/10 border-4 border-white shadow-md flex items-center justify-center overflow-hidden relative -mt-10 sm:-mt-12">
+            <div
+              className={cn(
+                "relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-primary-light shadow-md shadow-slate-900/10",
+                isPublicProfile
+                  ? "-mt-12 h-24 w-24 sm:-mt-16 sm:h-32 sm:w-32"
+                  : "-mt-10 h-20 w-20 sm:-mt-12 sm:h-24 sm:w-24"
+              )}
+            >
               {organizer.profile_image_url ? (
                 <Image
                   src={organizer.profile_image_url}
@@ -453,7 +476,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                   />
                   <div
                     onClick={() => profileInputRef.current?.click()}
-                    className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 hover:opacity-100 cursor-pointer z-20"
+                    className="absolute inset-0 z-20 flex cursor-pointer items-center justify-center bg-black/0 opacity-0 transition-colors hover:bg-black/40 hover:opacity-100"
                   >
                     <ImageIcon className="w-6 h-6 text-white" />
                   </div>
@@ -463,34 +486,46 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
 
 
             {/* Name + description */}
-            <div className="flex-1 min-w-0 pt-2 sm:pt-3">
-              <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+            <div className="min-w-0 flex-1 pt-2 sm:pt-3">
+              <div className="mb-0.5 flex flex-wrap items-center gap-2">
+                <h1
+                  className={cn(
+                    "font-bold leading-tight tracking-normal text-slate-950",
+                    isPublicProfile
+                      ? "text-3xl sm:text-4xl"
+                      : "text-2xl sm:text-3xl"
+                  )}
+                >
                   {organizer.name}
                 </h1>
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 rounded-full px-2 py-0.5">
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary-light px-2.5 py-1 text-[10px] font-semibold text-primary">
                   <CheckCircle2 className="w-3 h-3" />
                   Terverifikasi
                 </span>
               </div>
-              <p className="text-slate-400 text-xs font-medium mb-2">@{organizer.slug}</p>
-              <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 max-w-xl">
-                {organizer.description}
+              <p className="mb-2 text-xs font-medium text-slate-400">@{organizer.slug}</p>
+              <p
+                className={cn(
+                  "max-w-2xl text-sm leading-relaxed text-slate-500",
+                  isPublicProfile ? "line-clamp-3" : "line-clamp-2"
+                )}
+              >
+                {organizer.description || "Belum ada deskripsi organizer."}
               </p>
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex items-center gap-2.5 shrink-0 sm:pt-3">
+            <div className="flex shrink-0 flex-wrap items-center gap-2.5 sm:pt-3">
               {slug ? (
                 <>
                   <button
                     onClick={handleFollowToggle}
                     disabled={isLoadingFollow}
                     className={cn(
-                      "cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300",
+                      "flex h-11 cursor-pointer items-center gap-2 rounded-xl px-5 text-sm font-semibold transition-all duration-300",
                       followed
-                        ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                        : "bg-primary text-white hover:bg-primary/90 shadow-md hover:shadow-lg hover:-translate-y-0.5",
+                        ? "border border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        : "bg-primary text-white shadow-md shadow-primary/15 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20",
                       isLoadingFollow && "opacity-70 cursor-not-allowed"
                     )}
                   >
@@ -507,11 +542,11 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                         ? "Mengikuti"
                         : "Ikuti"}
                   </button>
-                  <button className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 shadow-sm transition-all duration-300">
+                  <button className="flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary">
                     <Mail className="w-4 h-4" />
                     Hubungi
                   </button>
-                  <button className="cursor-pointer flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 shadow-sm transition-all duration-300" onClick={handleShareableLink}>
+                  <button className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary" onClick={handleShareableLink}>
                     <Share2 className="w-4 h-4" />
                   </button>
                 </>
@@ -529,11 +564,16 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
       </div>
 
       {/* ─── Stats Row ─────────────────────────────────────────────────────── */}
-      <div className="border-b border-slate-200 bg-white">
-        <div className="container max-w-6xl mx-auto px-4 md:px-8">
-          <div className="flex items-center gap-0 py-4 overflow-x-auto scrollbar-hide">
+      <div
+        className={cn(
+          "mt-5 rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
+          isPublicProfile && "mx-auto max-w-6xl"
+        )}
+      >
+        <div className="mx-auto max-w-6xl px-4 md:px-8">
+          <div className="scrollbar-hide flex items-center gap-0 overflow-x-auto py-4">
             {/* Followers */}
-            <div className="flex flex-col items-center sm:items-start px-6 first:pl-0 border-r border-slate-200 last:border-0">
+            <div className="flex min-w-32 flex-col items-center border-r border-slate-200 px-6 first:pl-0 last:border-0 sm:items-start">
               <span className="text-lg sm:text-xl font-bold text-slate-900">
                 {formatStat(stats.followers)}
               </span>
@@ -543,7 +583,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
             </div>
 
             {/* Hosting duration */}
-            <div className="flex flex-col items-center sm:items-start px-6 border-r border-slate-200">
+            <div className="flex min-w-36 flex-col items-center border-r border-slate-200 px-6 sm:items-start">
               <span className="text-lg sm:text-xl font-bold text-slate-900">
                 {hostingDuration(organizer.joined_at)}
               </span>
@@ -553,7 +593,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
             </div>
 
             {/* Total events */}
-            <div className="flex flex-col items-center sm:items-start px-6 border-r border-slate-200">
+            <div className="flex min-w-32 flex-col items-center border-r border-slate-200 px-6 sm:items-start">
               <span className="text-lg sm:text-xl font-bold text-slate-900">
                 {stats.total_events}
               </span>
@@ -563,7 +603,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
             </div>
 
             {/* Total attendees */}
-            <div className="flex flex-col items-center sm:items-start px-6 border-r border-slate-200">
+            <div className="flex min-w-36 flex-col items-center border-r border-slate-200 px-6 sm:items-start">
               <span className="text-lg sm:text-xl font-bold text-slate-900">
                 {formatStat(stats.total_event_attendees)}
               </span>
@@ -573,7 +613,7 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
             </div>
 
             {/* Rating */}
-            <div className="flex flex-col items-center sm:items-start px-6">
+            <div className="flex min-w-40 flex-col items-center px-6 sm:items-start">
               <div className="flex items-center gap-1.5">
                 <span className="text-lg sm:text-xl font-bold text-amber-500">
                   {stats.average_rating.toFixed(1)}
@@ -603,27 +643,29 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
       </div>
 
       {/* ─── Body ──────────────────────────────────────────────────────────── */}
-      <div className="container max-w-6xl mx-auto px-4 md:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div
+        className={cn(
+          "mx-auto max-w-6xl px-4 py-8 md:px-8",
+          isPublicProfile && "px-0 md:px-0"
+        )}
+      >
+        <div className="flex flex-col gap-6 lg:flex-row">
           {/* ── Left Main ── */}
-          <div className="flex-1 min-w-0">
+          <div id="events" className="flex-1 min-w-0 scroll-mt-24">
             {/* Tabs */}
-            <div className="flex items-center gap-0 border-b border-slate-200 mb-7">
+            <div className="mb-6 flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-1 shadow-sm shadow-slate-900/5">
               {(slug ? TABS : TABS.filter(t => t.id === "reviews")).map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "cursor-pointer relative pb-3 px-5 text-sm font-bold transition-colors",
+                    "relative flex h-10 cursor-pointer items-center rounded-xl px-4 text-sm font-semibold transition-colors",
                     activeTab === tab.id
-                      ? "text-primary"
+                      ? "bg-primary-light text-primary"
                       : "text-slate-400 hover:text-slate-700"
                   )}
                 >
                   {tab.label}
-                  {activeTab === tab.id && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
-                  )}
                   {/* Count badge */}
                   {tab.id === "upcoming" && (
                     <span className="ml-1.5 text-[10px] font-bold bg-primary/10 text-primary rounded-full px-1.5 py-0.5">
@@ -648,8 +690,8 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
             {activeTab !== "reviews" && (
               <>
                 {activeEvents.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 gap-4 text-slate-400 border border-dashed border-slate-200 rounded-2xl bg-white">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center">
+                  <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-20 text-slate-400 shadow-sm shadow-slate-900/5">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50">
                       <Inbox className="w-7 h-7 text-slate-300" />
                     </div>
                     <div className="text-center">
@@ -659,12 +701,12 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
                           : "Belum ada event selesai"}
                       </p>
                       <p className="text-sm text-slate-400">
-                        Pantau terus untuk update event berikutnya
+                        Pantau halaman ini untuk update event berikutnya.
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
                     {activeEvents.map((event) => (
                       <OrganizerEventCard key={event.id} event={event} />
                     ))}
@@ -677,11 +719,15 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
             {activeTab === "reviews" && (
               <>
                 {reviews.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 gap-4 text-slate-400 border border-dashed border-slate-200 rounded-2xl bg-white">
+                  <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-20 text-center text-slate-400 shadow-sm shadow-slate-900/5">
+                    <Star className="h-8 w-8 text-slate-300" />
                     <p className="font-bold text-slate-600">Belum ada ulasan</p>
+                    <p className="text-sm text-slate-400">
+                      Ulasan peserta akan muncul setelah event selesai.
+                    </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {reviews.map((review) => (
                       <ReviewCard key={review.id} review={review} />
                     ))}
@@ -692,16 +738,23 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
           </div>
 
           {/* ── Right Sidebar ── */}
-          <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-5">
+          <aside className="flex w-full shrink-0 flex-col gap-5 lg:w-80">
             {/* About */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-              <h2 className="text-sm font-bold text-slate-800 mb-3">
-                Tentang Organizer
-              </h2>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                {organizer.description}
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="text-sm font-bold text-slate-900">
+                  Tentang Organizer
+                </h2>
+                {isPublicProfile && (
+                  <span className="rounded-full bg-primary-light px-2.5 py-1 text-[10px] font-semibold text-primary">
+                    @{organizer.slug}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm leading-relaxed text-slate-500">
+                {organizer.description || "Belum ada deskripsi organizer."}
               </p>
-              <div className="mt-4 pt-4 border-t border-slate-100 space-y-2.5">
+              <div className="mt-4 space-y-2.5 border-t border-slate-100 pt-4">
                 <div className="flex items-center gap-2.5 text-sm text-slate-500">
                   <CalendarDays className="w-4 h-4 text-slate-400 shrink-0" />
                   <span>
@@ -730,18 +783,26 @@ export default function PublicOrganizerProfile({ slug }: PublicOrganizerProfileP
 
             {/* Next event spotlight */}
             {events.upcoming[0] && (
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                <h2 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-primary" />
-                  Event Terdekat
-                </h2>
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h2 className="flex items-center gap-1.5 text-sm font-bold text-slate-900">
+                    <Clock className="w-4 h-4 text-primary" />
+                    Event Terdekat
+                  </h2>
+                  <Link
+                    href="#events"
+                    className="text-xs font-semibold text-primary hover:text-primary/80"
+                  >
+                    Lihat semua
+                  </Link>
+                </div>
                 <OrganizerEventCard event={events.upcoming[0]} />
               </div>
             )}
 
             {/* Quick rating widget */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-              <div className="flex items-center justify-between mb-2">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-bold text-slate-700">
                   Rating Keseluruhan
                 </span>
