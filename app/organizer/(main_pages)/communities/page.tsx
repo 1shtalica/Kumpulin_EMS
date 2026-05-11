@@ -6,9 +6,11 @@ import {
     ArrowUpRight,
     CalendarCheck2,
     FileText,
+    Globe2,
     Info,
     Plus,
     Settings,
+    ShieldCheck,
     UsersRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,6 +85,17 @@ function formatNumber(value?: number) {
     return new Intl.NumberFormat("id-ID").format(value ?? 0);
 }
 
+function formatDate(value?: string) {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+}
+
 function getInitials(name: string) {
     return name
         .split(" ")
@@ -90,6 +103,46 @@ function getInitials(name: string) {
         .slice(0, 2)
         .map((word) => word[0]?.toUpperCase())
         .join("");
+}
+
+function PageSurface({ children }: { children: React.ReactNode }) {
+    return (
+        <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
+            <div
+                className="pointer-events-none absolute inset-0"
+                aria-hidden="true"
+                style={{
+                    backgroundImage:
+                        "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+                    backgroundSize: "28px 28px",
+                    opacity: 0.18,
+                }}
+            />
+            <svg
+                className="pointer-events-none absolute inset-0 h-full w-full text-primary"
+                viewBox="0 0 1440 640"
+                preserveAspectRatio="none"
+                fill="none"
+                aria-hidden="true"
+            >
+                <path
+                    d="M92 420C246 300 356 486 512 350C652 228 760 306 920 210C1086 111 1205 218 1362 98"
+                    stroke="currentColor"
+                    strokeOpacity="0.07"
+                    strokeWidth="2"
+                />
+                <path
+                    d="M122 176C292 250 408 96 566 172C708 240 812 144 966 210C1110 272 1218 392 1360 318"
+                    stroke="#10b981"
+                    strokeOpacity="0.055"
+                    strokeWidth="2"
+                />
+            </svg>
+            <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5">
+                {children}
+            </div>
+        </main>
+    );
 }
 
 function StatCard({
@@ -102,15 +155,15 @@ function StatCard({
     value: string;
 }) {
     return (
-        <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-primary">
-                <Icon className="h-5 w-5" strokeWidth={2.4} />
+        <div className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm shadow-slate-900/5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary">
+                <Icon className="h-5 w-5" strokeWidth={2.2} />
             </div>
-            <div className="min-w-0 text-left">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="min-w-0">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
                     {label}
                 </p>
-                <p className="mt-1 text-lg font-semibold leading-none text-slate-950">
+                <p className="mt-1 text-2xl font-semibold leading-none text-slate-950">
                     {value}
                 </p>
             </div>
@@ -120,29 +173,35 @@ function StatCard({
 
 function EmptyCommunityState({ message }: { message?: string }) {
     return (
-        <main className="flex min-h-[calc(100vh-136px)] items-center justify-center bg-white px-6 py-4 md:-mx-8 md:px-8">
-            <div className="mx-auto flex max-w-md flex-col items-center text-center">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-50 text-primary">
-                    <UsersRound className="h-9 w-9" strokeWidth={2.2} />
+        <PageSurface>
+            <div className="flex min-h-[calc(100vh-196px)] items-center justify-center">
+                <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-md shadow-slate-900/5">
+                    <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-primary-light" />
+                    <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-light text-primary">
+                        <UsersRound className="h-8 w-8" strokeWidth={2.2} />
+                    </div>
+                    <p className="mt-6 text-[11px] font-medium uppercase tracking-wider text-primary">
+                        Komunitas organizer
+                    </p>
+                    <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950">
+                        Belum ada komunitas
+                    </h1>
+                    <p className="mx-auto mt-3 max-w-md text-sm md:text-base leading-relaxed text-slate-600">
+                        {message ??
+                            "Buat ruang komunitas untuk mengumpulkan peserta, membagikan informasi, dan menjaga hubungan setelah event selesai."}
+                    </p>
+                    <Button
+                        asChild
+                        className="mt-6 h-11 rounded-xl px-5 text-sm font-semibold shadow-md shadow-primary/20"
+                    >
+                        <Link href="/organizer/communities/create">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Buat Komunitas
+                        </Link>
+                    </Button>
                 </div>
-                <h1 className="mt-6 text-xl font-semibold text-slate-950">
-                    Belum ada komunitas
-                </h1>
-                <p className="mt-3 text-sm leading-6 text-slate-500">
-                    {message ??
-                        "Anda saat ini belum mengelola komunitas apa pun."}
-                </p>
-                <Button
-                    asChild
-                    className="mt-6 h-10 rounded-full px-5 text-sm font-semibold"
-                >
-                    <Link href="/organizer/communities/create">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Buat Komunitas
-                    </Link>
-                </Button>
             </div>
-        </main>
+        </PageSurface>
     );
 }
 
@@ -152,8 +211,8 @@ function CommunityCard({ community }: { community: Community }) {
     const initials = getInitials(community.name) || "K";
 
     return (
-        <article className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm transition-all duration-300 hover:shadow-md">
-            <div className="relative m-3 h-32 overflow-hidden rounded-[12px] bg-slate-900 sm:h-36">
+        <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5">
+            <div className="relative h-44 overflow-hidden bg-slate-900 sm:h-56 lg:h-64">
                 <Image
                     src={bannerSrc}
                     alt=""
@@ -162,76 +221,116 @@ function CommunityCard({ community }: { community: Community }) {
                     className="object-cover"
                     sizes="(max-width: 1280px) 100vw, 1200px"
                 />
+                <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                <div className="absolute bottom-5 left-5 right-5">
+                    <div className="max-w-3xl">
+                        <p className="text-[11px] font-medium uppercase tracking-wider text-white/75">
+                            k/{community.slug}
+                        </p>
+                        <h2 className="mt-1 text-3xl font-bold leading-[1.08] text-white md:text-5xl">
+                            {community.name}
+                        </h2>
+                    </div>
+                </div>
             </div>
 
-            <div className="relative px-5 pb-6 pt-0 sm:px-7">
-                <div className="-mt-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border-4 border-white bg-slate-950 text-base font-semibold text-cyan-300 shadow-md">
-                        {community.logo_url ? (
-                            <Image
-                                src={community.logo_url}
-                                alt={community.name}
-                                fill
-                                className="object-cover"
-                                sizes="80px"
-                            />
-                        ) : (
-                            initials
-                        )}
+            <div className="grid gap-6 p-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="min-w-0">
+                    <div className="-mt-14 mb-5 flex items-end gap-4">
+                        <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-slate-950 text-xl font-semibold text-cyan-300 shadow-lg shadow-slate-900/10">
+                            {community.logo_url ? (
+                                <Image
+                                    src={community.logo_url}
+                                    alt={community.name}
+                                    fill
+                                    className="object-cover"
+                                    sizes="96px"
+                                />
+                            ) : (
+                                initials
+                            )}
+                        </div>
+                        <div className="pb-1">
+                            <div className="inline-flex items-center gap-2 rounded-xl border border-primary/10 bg-primary-light px-3 py-1 text-xs font-medium text-primary">
+                                <ShieldCheck className="h-3.5 w-3.5" />
+                                Komunitas aktif
+                            </div>
+                            <p className="mt-2 text-xs font-normal text-slate-500">
+                                Dibuat {formatDate(community.created_at)}
+                            </p>
+                        </div>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-2 sm:mt-4 sm:justify-end">
-                        <Button
-                            asChild
-                            className="h-10 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm hover:bg-white hover:text-primary"
-                        >
-                            <Link href={`/komunitas/${community.id}`}>
-                                <ArrowUpRight className="mr-2 h-4 w-4" />
-                                Lihat Halaman Komunitas
-                            </Link>
-                        </Button>
-                        <Button
-                            asChild
-                            className="h-10 rounded-full bg-primary px-5 text-sm font-semibold text-white shadow-sm hover:bg-white hover:text-primary"
-                        >
-                            <Link href={`/organizer/communities/${community.id}/edit`}>
-                                <Settings className="mr-2 h-4 w-4" />
-                                Kelola Komunitas
-                            </Link>
-                        </Button>
+
+                    <div className="max-w-3xl">
+                        <h3 className="text-xl font-semibold text-slate-950">
+                            Ringkasan komunitas
+                        </h3>
+                        <p className="mt-2 text-sm md:text-base leading-relaxed text-slate-600">
+                            {community.description ||
+                                "Komunitas ini belum memiliki deskripsi. Tambahkan deskripsi agar calon anggota memahami tujuan dan aktivitas komunitas."}
+                        </p>
+                    </div>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                        <StatCard
+                            icon={UsersRound}
+                            label="Anggota"
+                            value={formatNumber(community.member_count)}
+                        />
+                        <StatCard
+                            icon={CalendarCheck2}
+                            label="Event"
+                            value={formatNumber(community.event_count)}
+                        />
+                        <StatCard
+                            icon={FileText}
+                            label="Postingan"
+                            value={formatNumber(community.post_count)}
+                        />
                     </div>
                 </div>
 
-                <div className="mt-6 max-w-4xl">
-                    <h2 className="text-xl font-semibold leading-tight text-slate-950">
-                        {community.name}
-                    </h2>
-                    <p className="mt-3 max-w-4xl text-sm leading-6 text-slate-500">
-                        {community.description ||
-                            "Komunitas ini belum memiliki deskripsi."}
+                <aside className="rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                        Aksi cepat
                     </p>
-                </div>
-
-                <div className="my-6 h-px bg-slate-200" />
-
-                <div className="grid gap-4 sm:grid-cols-3">
-                    <StatCard
-                        icon={UsersRound}
-                        label="Anggota"
-                        value={formatNumber(community.member_count)}
-                    />
-                    <StatCard
-                        icon={CalendarCheck2}
-                        label="Event"
-                        value={formatNumber(community.event_count)}
-                    />
-                    <StatCard
-                        icon={FileText}
-                        label="Postingan"
-                        value={formatNumber(community.post_count)}
-                    />
-                </div>
+                    <div className="mt-3 grid gap-2">
+                        <Link
+                            href={`/organizer/communities/${community.id}/edit`}
+                            className="group flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-sm transition-all hover:border-primary/30 hover:text-primary hover:shadow-md"
+                        >
+                            <span className="flex items-center gap-2">
+                                <Settings className="h-4 w-4 text-primary" />
+                                Edit profil komunitas
+                            </span>
+                            <ArrowUpRight className="h-4 w-4 text-slate-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
+                        </Link>
+                        <Link
+                            href={`/komunitas/${community.id}`}
+                            className="group flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-sm transition-all hover:border-primary/30 hover:text-primary hover:shadow-md"
+                        >
+                            <span className="flex items-center gap-2">
+                                <Globe2 className="h-4 w-4 text-primary" />
+                                Buka halaman publik
+                            </span>
+                            <ArrowUpRight className="h-4 w-4 text-slate-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
+                        </Link>
+                    </div>
+                    <div className="mt-4 rounded-xl border border-primary/10 bg-primary-light/70 p-3">
+                        <div className="flex gap-2">
+                            <Info
+                                className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                                strokeWidth={2.3}
+                            />
+                            <p className="text-xs leading-relaxed text-slate-600">
+                                Saat ini satu akun organizer hanya dapat
+                                mengelola satu komunitas.
+                            </p>
+                        </div>
+                    </div>
+                </aside>
             </div>
-        </article>
+        </section>
     );
 }
 
@@ -243,32 +342,31 @@ export default async function Communities() {
     }
 
     return (
-        <main className="min-h-[calc(100vh-136px)] bg-white px-6 py-3 md:-mx-8 md:px-8">
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-                <div className="flex justify-end">
-                    <Button
-                        variant="outline"
-                        disabled
-                        className="h-10 rounded-full border-slate-200 bg-white px-4 text-sm font-medium text-slate-400 disabled:opacity-70"
-                    >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Buat Komunitas
-                    </Button>
-                </div>
-
-                <div className="flex items-center gap-4 rounded-xl border border-indigo-100 bg-indigo-50/70 px-5 py-4 text-slate-800">
-                    <Info
-                        className="h-4 w-4 shrink-0 text-primary"
-                        strokeWidth={2.4}
-                    />
-                    <p className="text-sm">
-                        Saat ini, akun Organizer hanya dapat mengelola{" "}
-                        <span className="font-semibold">satu komunitas.</span>
+        <PageSurface>
+            <header className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                        Organizer workspace
+                    </p>
+                    <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
+                        Komunitas
+                    </h1>
+                    <p className="mt-2 max-w-2xl text-sm md:text-base leading-relaxed text-slate-600">
+                        Kelola identitas komunitas, pantau aktivitas, dan buka
+                        halaman publik dari satu tempat.
                     </p>
                 </div>
+                <Button
+                    variant="outline"
+                    disabled
+                    className="h-10 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-400 disabled:opacity-80"
+                >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Buat Komunitas
+                </Button>
+            </header>
 
-                <CommunityCard community={community} />
-            </div>
-        </main>
+            <CommunityCard community={community} />
+        </PageSurface>
     );
 }
