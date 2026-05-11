@@ -72,26 +72,50 @@ export default function ImageSection({ event }: { event: Event }) {
             zIndex: 1,
           }}
         >
-          {/* Base gradient */}
-          <div className="absolute inset-0 bg-linear-to-br from-slate-50/80 via-blue-50/60 to-purple-50/60" />
-
-          {/* Floating orbs for depth */}
-          <div className="absolute top-20 left-20 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl" />
-          <div className="absolute top-40 right-32 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-40 left-1/3 w-72 h-72 bg-pink-300/20 rounded-full blur-3xl" />
+          {/* Base surface */}
+          <div className="absolute inset-0 bg-[#f9fafb]" />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+              backgroundSize: "28px 28px",
+              opacity: 0.18,
+            }}
+          />
+          <svg
+            className="absolute inset-0 h-full w-full text-primary"
+            viewBox="0 0 1440 720"
+            preserveAspectRatio="none"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M80 476C238 348 346 548 510 400C650 274 754 346 910 242C1078 130 1200 254 1370 134"
+              stroke="currentColor"
+              strokeOpacity="0.08"
+              strokeWidth="2"
+            />
+            <path
+              d="M128 170C292 238 398 92 564 164C714 230 820 142 972 206C1118 268 1212 372 1360 310"
+              stroke="#10b981"
+              strokeOpacity="0.06"
+              strokeWidth="2"
+            />
+          </svg>
 
           {/* Fade to slate-50 */}
-          <div className="absolute inset-0 bg-linear-to-b from-slate-50/50 via-transparent to-slate-50" />
+          <div className="absolute inset-0 bg-linear-to-b from-[#f9fafb]/30 via-transparent to-[#f9fafb]" />
         </div>
       )}
 
       {/* Main Content */}
-      <div className="relative z-10 py-5 md:py-8">
+      <div className="relative z-10 py-5 md:py-7">
         <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
             <div className="xl:col-span-12">
               <Carousel
-                className="w-full overflow-hidden rounded-2xl"
+                className="w-full overflow-hidden rounded-2xl border border-white/70 bg-white shadow-lg shadow-slate-900/10"
                 plugins={[
                   Autoplay({
                     delay: 4000,
@@ -107,12 +131,12 @@ export default function ImageSection({ event }: { event: Event }) {
 
                       <div
                         className="relative w-full 
-                                      h-50 
-                                      sm:h-75 
-                                      md:h-100 
-                                      lg:h-112.5 
-                                      xl:h-125
-                                      max-h-125"
+                                      h-54 
+                                      sm:h-76 
+                                      md:h-96 
+                                      lg:h-108 
+                                      xl:h-120
+                                      max-h-120"
                       >
                         <Image
                           src={src}
@@ -129,8 +153,8 @@ export default function ImageSection({ event }: { event: Event }) {
                 </CarouselContent>
                 {images.length > 1 && (
                   <>
-                    <CarouselPrevious className="left-4 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md" />
-                    <CarouselNext className="right-4 bg-white/10 hover:bg-white/20 text-white border-0 backdrop-blur-md" />
+                    <CarouselPrevious className="left-4 bg-white/85 hover:bg-white text-slate-900 border-0 shadow-md backdrop-blur-md" />
+                    <CarouselNext className="right-4 bg-white/85 hover:bg-white text-slate-900 border-0 shadow-md backdrop-blur-md" />
                   </>
                 )}
               </Carousel>

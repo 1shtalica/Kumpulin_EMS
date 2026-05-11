@@ -67,9 +67,9 @@ export default function HeaderSection() {
   return (
     <nav
       className={cn(
-        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out py-4",
-        "bg-slate-50/80 backdrop-blur-md border-b border-slate-200/50",
-        isScrolled ? "shadow-md" : "shadow-xs",
+        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out py-3.5",
+        "bg-[#f9fafb]/85 backdrop-blur-xl border-b border-slate-200/70",
+        isScrolled ? "shadow-md shadow-slate-900/5" : "shadow-xs",
       )}
     >
       <div className="container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl flex flex-row items-center justify-between">
@@ -110,7 +110,7 @@ export default function HeaderSection() {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-56 rounded-2xl border-border/60 bg-white/90 backdrop-blur-xl shadow-xl shadow-primary/10 p-2"
+                className="w-56 rounded-xl border-border/60 bg-white/95 backdrop-blur-xl shadow-xl shadow-primary/10 p-2"
                 align="end"
                 forceMount
               >
@@ -167,14 +167,14 @@ export default function HeaderSection() {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" size="sm" className="rounded-full font-bold h-9 bg-white hover:bg-slate-100 border border-slate-200 shadow-sm" asChild>
+              <Button variant="ghost" size="sm" className="rounded-xl font-bold h-9 bg-white hover:bg-slate-100 border border-slate-200 shadow-sm" asChild>
                 <Link href="/login">Masuk</Link>
               </Button>
               <Button
                 variant="brand"
                 size="sm"
                 asChild
-                className="hidden md:inline-flex rounded-full font-bold h-9 shadow-[0_4px_14px_0_rgb(0,44,238,0.39)] hover:shadow-[0_6px_20px_rgba(0,44,238,0.23)] hover:-translate-y-0.5 transition-all"
+                className="hidden md:inline-flex rounded-xl font-bold h-9 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 transition-all"
               >
                 <Link href="/register">Daftar</Link>
               </Button>

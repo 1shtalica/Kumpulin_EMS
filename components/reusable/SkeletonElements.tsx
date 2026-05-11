@@ -50,61 +50,55 @@ export function SkeletonOrganizerEventCard({
 
     return (
         <div
-            className={`flex bg-card relative text-card-foreground border border-border rounded-2xl overflow-hidden shadow-sm h-full ${isGrid ? "flex-col" : "flex-col sm:flex-row"}`}
+            className={`flex h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-card-foreground shadow-sm shadow-slate-900/5 ${isGrid ? "flex-col" : "flex-col lg:flex-row"}`}
         >
-            {/* Image Skeleton */}
             <div
-                className={`relative shrink-0 flex justify-center items-center z-10 overflow-hidden ${isGrid ? "m-3 rounded-[12px] w-[calc(100%-24px)] h-48" : "m-3 sm:m-4 sm:mr-0 rounded-[12px] w-[calc(100%-24px)] sm:w-70 h-48 sm:min-h-55"}`}
+                className={`relative z-10 flex shrink-0 items-center justify-center overflow-hidden ${isGrid ? "m-3 h-44 w-[calc(100%-24px)] rounded-xl sm:h-48" : "m-3 h-48 w-[calc(100%-24px)] rounded-xl lg:m-4 lg:mr-0 lg:h-auto lg:min-h-52 lg:w-72"}`}
             >
-                <Skeleton className="w-full h-full rounded-none" />
+                <Skeleton className="h-full w-full rounded-none" />
             </div>
 
-            {/* Content Skeleton */}
             <div
-                className={`flex flex-col flex-1 z-10 relative bg-card justify-between gap-4 ${isGrid ? "p-5 pt-2" : "p-5 sm:p-6"}`}
+                className={`relative z-10 flex flex-1 flex-col justify-between gap-4 bg-white ${isGrid ? "px-5 pb-5 pt-2" : "p-5 pt-2 lg:p-6"}`}
             >
-                {/* Top-Right Badge Skeleton */}
-                <div className="absolute top-5 right-5 z-20">
-                    <Skeleton className="h-5 w-16 md:w-20 rounded-full" />
-                </div>
-
-                {/* Top: Category and Title Skeleton */}
-                <div className="space-y-1.5 mt-2 md:mt-0 pr-20">
-                    <Skeleton className="h-3 w-12" />
-                    <div className="mt-1">
-                        <Skeleton className="h-5 w-3/4 mb-1.5" />
-                        <Skeleton className="h-4 w-1/2" />
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                            <Skeleton className="h-3 w-14" />
+                            <Skeleton className="mt-2 h-5 w-3/4" />
+                            <Skeleton className="mt-1.5 h-5 w-1/2" />
+                        </div>
+                        <Skeleton className="h-7 w-24 rounded-full" />
                     </div>
-                    <div className="flex items-center gap-5 mt-3 pt-1">
+
+                    <div className="grid gap-2 sm:grid-cols-3">
                         <Skeleton className="h-3 w-20" />
                         <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-24" />
                     </div>
                 </div>
 
-                <Skeleton className="w-full h-px my-1" />
-
-                {/* Bottom: Stats and Actions Skeleton */}
-                <div
-                    className={`flex justify-between gap-4 flex-col sm:flex-row sm:items-end mt-auto ${!isGrid && "w-full"}`}
-                >
-                    <div className="flex gap-10">
-                        <div className="flex flex-col gap-1">
-                            <Skeleton className="h-4 w-10" />
-                            <Skeleton className="h-3 w-14" />
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                    <div className="min-w-0">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                            <Skeleton className="h-4 w-28" />
+                            <Skeleton className="h-3 w-8" />
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <Skeleton className="h-4 w-10" />
-                            <Skeleton className="h-3 w-14" />
-                        </div>
+                        <Skeleton className="h-2 w-full rounded-full" />
                     </div>
 
-                    <div
-                        className={`flex items-center gap-2 mt-2 sm:mt-0 w-full sm:w-auto`}
-                    >
-                        {/* 34px is approx h-8.5 */}
-                        <Skeleton className="h-8.5 w-8.5 shrink-0 rounded-full" />
-                        <Skeleton className="h-8.5 flex-1 sm:w-20 rounded-full" />
+                    <div className="flex flex-col items-end gap-1">
+                        <Skeleton className="h-4 w-12" />
+                        <Skeleton className="h-3 w-20" />
                     </div>
+                </div>
+
+                <Skeleton className="h-px w-full" />
+
+                <div className="flex items-center justify-end gap-2">
+                    <Skeleton className="h-9 w-9 shrink-0 rounded-xl" />
+                    <Skeleton className="h-9 w-16 rounded-xl" />
+                    <Skeleton className="h-9 w-16 rounded-xl" />
                 </div>
             </div>
         </div>
@@ -120,8 +114,8 @@ export function SkeletonOrganizerEvents({
         <div
             className={
                 layout === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5"
-                    : "flex flex-col gap-5"
+                    ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"
+                    : "flex flex-col gap-4"
             }
         >
             {Array.from({ length: 6 }).map((_, i) => (

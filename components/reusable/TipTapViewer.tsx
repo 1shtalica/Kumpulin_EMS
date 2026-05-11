@@ -51,7 +51,7 @@ export default function TipTapViewer({ content }: TipTapViewerProps) {
         immediatelyRender: false,
         editorProps: {
             attributes: {
-                class: "tiptap prose prose-slate prose-sm max-w-none text-foreground/90 leading-relaxed focus:outline-none cursor-default",
+                class: "tiptap prose prose-slate prose-sm md:prose-base max-w-none text-slate-600 leading-relaxed focus:outline-none cursor-default prose-headings:text-slate-950 prose-headings:font-bold prose-p:my-2 prose-li:my-1 prose-strong:text-slate-900",
             },
         },
     });

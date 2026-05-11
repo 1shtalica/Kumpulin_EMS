@@ -46,7 +46,7 @@ function getInitials(name: string) {
 
 function EditPageLoading() {
     return (
-        <main className="min-h-[calc(100vh-136px)] bg-white px-6 py-4 md:-mx-8 md:px-8">
+        <main className="min-h-[calc(100vh-136px)] bg-[#f9fafb] px-6 py-4 md:-mx-8 md:px-8">
             <div className="mx-auto w-full max-w-5xl space-y-6">
                 <Skeleton className="h-61.5 rounded-2xl" />
                 <Skeleton className="h-75 rounded-2xl" />
@@ -209,7 +209,7 @@ export default function EditCommunityPage() {
 
     if (!community) {
         return (
-            <main className="flex min-h-[calc(100vh-136px)] items-center justify-center bg-white px-6 py-4 md:-mx-8 md:px-8">
+        <main className="flex min-h-[calc(100vh-136px)] items-center justify-center bg-[#f9fafb] px-6 py-4 md:-mx-8 md:px-8">
                 <div className="max-w-md text-center">
                     <h1 className="text-xl font-semibold text-slate-950">
                         Komunitas tidak ditemukan
@@ -220,7 +220,7 @@ export default function EditCommunityPage() {
                     </p>
                     <Button
                         asChild
-                        className="mt-6 h-10 rounded-full px-5 text-sm font-semibold"
+                        className="mt-6 h-10 rounded-xl px-5 text-sm font-semibold"
                     >
                         <Link href="/organizer/communities">
                             Kembali ke Komunitas
@@ -245,7 +245,7 @@ export default function EditCommunityPage() {
     };
 
     return (
-        <main className="min-h-[calc(100vh-136px)] bg-white px-6 py-4 md:-mx-8 md:px-8">
+        <main className="min-h-[calc(100vh-136px)] bg-[#f9fafb] px-6 py-4 md:-mx-8 md:px-8">
             <form
                 onSubmit={handleSubmit}
                 className="mx-auto w-full max-w-5xl space-y-6"
@@ -257,7 +257,7 @@ export default function EditCommunityPage() {
                     />
 
                     <div className="mt-5">
-                        <div className="relative h-40 overflow-hidden rounded-xl border border-border bg-slate-100 sm:h-44">
+                        <div className="relative h-40 overflow-hidden rounded-2xl border border-border bg-slate-100 sm:h-44">
                             {bannerPreviewUrl ? (
                                 <div
                                     className="absolute inset-0 bg-cover bg-center"
@@ -284,7 +284,7 @@ export default function EditCommunityPage() {
                             )}
                             <label
                                 htmlFor="community-banner"
-                                className="absolute right-3 top-3 inline-flex h-9 cursor-pointer items-center justify-center rounded-full border border-border bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                                className="absolute right-3 top-3 inline-flex h-9 cursor-pointer items-center justify-center rounded-xl border border-border bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
                             >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Ubah Banner
@@ -306,7 +306,7 @@ export default function EditCommunityPage() {
                         ) : null}
 
                         <div className="-mt-8 flex items-end gap-4 px-5">
-                            <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl border-4 border-white bg-slate-950 text-base font-semibold text-cyan-300 shadow-md">
+                            <div className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-slate-950 text-base font-semibold text-cyan-300 shadow-md">
                                 {logoPreviewUrl ? (
                                     <div
                                         className="absolute inset-0 bg-cover bg-center"
@@ -327,7 +327,7 @@ export default function EditCommunityPage() {
                                 )}
                                 <label
                                     htmlFor="community-logo"
-                                    className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white shadow-sm"
+                                    className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-white shadow-sm"
                                     aria-label="Ubah logo komunitas"
                                 >
                                     <Pencil className="h-3.5 w-3.5" />
@@ -463,7 +463,7 @@ export default function EditCommunityPage() {
                         Anda benar-benar yakin sebelum melanjutkannya.
                     </p>
 
-                    <div className="mt-5 flex flex-col gap-4 rounded-xl border border-red-100 bg-white/70 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="mt-5 flex flex-col gap-4 rounded-2xl border border-red-100 bg-white/70 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <p className="text-sm font-medium text-slate-950">
                                 Hapus Komunitas
@@ -480,7 +480,7 @@ export default function EditCommunityPage() {
                                 setDeleteConfirmation("");
                                 setIsDeleteDialogOpen(true);
                             }}
-                            className="h-10 rounded-full border-red-300 bg-white px-5 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
+                            className="h-10 rounded-xl border-red-300 bg-white px-5 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
                         >
                             <AlertTriangle className="mr-2 h-4 w-4" />
                             Hapus Komunitas
@@ -493,14 +493,14 @@ export default function EditCommunityPage() {
                         type="button"
                         variant="outline"
                         asChild
-                        className="h-10 rounded-full px-6 text-sm font-semibold"
+                        className="h-10 rounded-xl px-6 text-sm font-semibold"
                     >
                         <Link href="/organizer/communities">Batal</Link>
                     </Button>
                     <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="h-10 rounded-full px-6 text-sm font-semibold"
+                        className="h-10 rounded-xl px-6 text-sm font-semibold"
                     >
                         {isSubmitting ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -571,7 +571,7 @@ export default function EditCommunityPage() {
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="h-10 rounded-full px-5 text-sm font-semibold"
+                                className="h-10 rounded-xl px-5 text-sm font-semibold"
                             >
                                 Batal
                             </Button>
@@ -581,7 +581,7 @@ export default function EditCommunityPage() {
                             type="button"
                             variant="outline"
                             disabled={!canConfirmDelete}
-                            className="h-10 rounded-full border-red-300 bg-white px-5 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
+                            className="h-10 rounded-xl border-red-300 bg-white px-5 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
                         >
                             Hapus Komunitas
                         </Button>

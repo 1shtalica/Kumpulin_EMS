@@ -129,6 +129,67 @@ function CyclingWord() {
 }
 
 /** Desktop only – stacked card deck */
+function HeroEventCardGraphic({
+    accent,
+    compact = false,
+}: {
+    accent: string;
+    compact?: boolean;
+}) {
+    return (
+        <div
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+            style={{ color: accent }}
+            aria-hidden="true"
+        >
+            <svg
+                className="absolute inset-0 h-full w-full opacity-80 transition-transform duration-500 group-hover:scale-[1.02]"
+                viewBox="0 0 320 240"
+                preserveAspectRatio="none"
+                fill="none"
+            >
+                <path
+                    d="M28 174C72 128 108 194 154 143C198 94 228 116 296 62"
+                    stroke="currentColor"
+                    strokeOpacity="0.1"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                />
+                <path
+                    d="M22 202C78 160 118 218 174 168C218 130 250 144 302 110"
+                    stroke="currentColor"
+                    strokeOpacity="0.055"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                />
+                <path
+                    d="M34 58h72M34 76h46M34 94h58"
+                    stroke="currentColor"
+                    strokeOpacity="0.075"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                />
+                <g
+                    stroke="currentColor"
+                    strokeOpacity="0.12"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                >
+                    <path d="M182 42h18M191 33v18" />
+                    <path d="M58 126h14M65 119v14" />
+                    <path d="M276 154h18M285 145v18" />
+                </g>
+            </svg>
+            <Ticket
+                className={`absolute -bottom-6 -right-5 rotate-[-8deg] opacity-[0.07] transition-all duration-500 group-hover:rotate-[-3deg] group-hover:scale-110 group-hover:opacity-[0.12] ${
+                    compact ? "h-24 w-24" : "h-32 w-32"
+                }`}
+                strokeWidth={1.4}
+            />
+        </div>
+    );
+}
+
 function EventCardStack({ events }: { events: HomeEventCard[] }) {
     const [activeIdx, setActiveIdx] = useState(0);
     const count = events.length;
@@ -168,7 +229,7 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                 return (
                     <div
                         key={ev.event_id ?? ev.slug ?? i}
-                        className="absolute inset-x-0 top-0 bg-white rounded-2xl border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.08)] p-5 cursor-pointer"
+                        className="group absolute inset-x-0 top-0 overflow-hidden bg-white rounded-2xl border border-slate-100 shadow-[0_8px_40px_rgba(0,0,0,0.08)] p-5 cursor-pointer"
                         style={{
                             transform: `translateY(${translateY}px) scale(${scale})`,
                             opacity,
@@ -179,11 +240,12 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                         }}
                         onClick={() => setActiveIdx(i)}
                     >
+                        <HeroEventCardGraphic accent={accent} />
                         <div
-                            className="h-1.5 w-16 rounded-full mb-4"
+                            className="relative h-1.5 w-16 rounded-full mb-4"
                             style={{ background: accent }}
                         />
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="relative flex items-center justify-between mb-3">
                             <span
                                 className="text-xs font-bold uppercase tracking-widest"
                                 style={{ color: accent }}
@@ -196,10 +258,10 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                                 {tag.text}
                             </span>
                         </div>
-                        <h3 className="text-lg font-extrabold text-slate-900 leading-tight mb-4 line-clamp-2">
+                        <h3 className="relative text-lg font-extrabold text-slate-900 leading-tight mb-4 line-clamp-2">
                             {ev.title}
                         </h3>
-                        <div className="flex flex-col gap-2 mb-5">
+                        <div className="relative flex flex-col gap-2 mb-5">
                             <div className="flex items-center gap-2 text-slate-500 text-sm">
                                 <MapPin size={14} className="shrink-0" />
                                 <span className="truncate">
@@ -211,7 +273,7 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                                 <span>{formatEventDate(ev.start_date)}</span>
                             </div>
                         </div>
-                        <div className="mb-3">
+                        <div className="relative mb-3">
                             <div className="flex justify-between text-xs text-slate-400 mb-1.5">
                                 <span className="flex items-center gap-1">
                                     <Users size={12} />{" "}
@@ -232,7 +294,7 @@ function EventCardStack({ events }: { events: HomeEventCard[] }) {
                                 />
                             </div>
                         </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+                        <div className="relative flex items-center justify-between pt-2 border-t border-slate-50">
                             <div className="flex items-center gap-1 text-slate-400 text-xs">
                                 <Ticket size={12} />
                                 <span>
@@ -302,9 +364,13 @@ function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
                             <Link
                                 key={ev.event_id ?? ev.slug ?? i}
                                 href={`/events/${ev.slug}`}
-                                className="shrink-0 w-60 bg-white rounded-xl border border-slate-100 shadow-sm p-4 block hover:shadow-md transition-shadow"
+                                className="group relative shrink-0 w-60 overflow-hidden bg-white rounded-xl border border-slate-100 shadow-sm p-4 block hover:shadow-md transition-shadow"
                             >
-                                <div className="flex items-center justify-between mb-2">
+                                <HeroEventCardGraphic
+                                    accent={accent}
+                                    compact
+                                />
+                                <div className="relative flex items-center justify-between mb-2">
                                     <span
                                         className="text-[10px] font-bold uppercase tracking-widest"
                                         style={{ color: accent }}
@@ -317,10 +383,10 @@ function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
                                         {tag.text}
                                     </span>
                                 </div>
-                                <p className="text-sm font-extrabold text-slate-900 leading-tight mb-2 line-clamp-2">
+                                <p className="relative text-sm font-extrabold text-slate-900 leading-tight mb-2 line-clamp-2">
                                     {ev.title}
                                 </p>
-                                <div className="flex items-center gap-3 text-xs text-slate-400 mb-3">
+                                <div className="relative flex items-center gap-3 text-xs text-slate-400 mb-3">
                                     <span className="flex items-center gap-1">
                                         <MapPin size={11} />
                                         <span className="truncate max-w-20">
@@ -334,7 +400,7 @@ function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
                                         {formatEventDate(ev.start_date)}
                                     </span>
                                 </div>
-                                <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="relative h-1 bg-slate-100 rounded-full overflow-hidden">
                                     <div
                                         className="h-full rounded-full"
                                         style={{
@@ -343,7 +409,7 @@ function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
                                         }}
                                     />
                                 </div>
-                                <p className="text-[10px] text-slate-400 mt-1">
+                                <p className="relative text-[10px] text-slate-400 mt-1">
                                     {Math.round(fillRatio * 100)}% terisi
                                 </p>
                             </Link>
