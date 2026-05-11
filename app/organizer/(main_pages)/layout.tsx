@@ -5,11 +5,16 @@ import OrganizerHeader from "@/components/organizer/layout/OrganizerHeader";
 import OrganizerNavBar, {
     NavContent,
     menuItems,
-    accountItems,
 } from "@/components/organizer/layout/OrganizerNavBar";
 import { useAuthStore } from "@/stores/auth-store";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     Sheet,
     SheetContent,
@@ -27,7 +32,19 @@ export default function MainPagesLayout({
     const [isOpen, setIsOpen] = useState(true);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const router = useRouter();
-    const { logout } = useAuthStore();
+    const { logout, user } = useAuthStore();
+    const displayName =
+        [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
+        user?.username ||
+        user?.email ||
+        "Organizer";
+    const initials =
+        displayName
+            .split(" ")
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((word) => word[0]?.toUpperCase())
+            .join("") || "K";
 
     return (
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -72,26 +89,63 @@ export default function MainPagesLayout({
                             />
                         </div>
 
-                        <div className="flex flex-col gap-1 overflow-hidden">
-                            <NavContent
-                                showLabel={true}
-                                onClose={() => setIsSheetOpen(false)}
-                                items={accountItems}
-                            />
-                            <Button
-                                variant="ghost"
-                                className="w-full justify-start h-10 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200 text-slate-500 font-medium hover:text-slate-900 hover:bg-slate-50"
-                                onClick={() => {
-                                    setIsSheetOpen(false);
-                                    logout();
-                                }}
-                            >
-                                <LogOut className="h-4.5 w-4.5 shrink-0 text-slate-400 mr-3" />
-                                <span>Keluar</span>
-                            </Button>
-                        </div>
-
                         <div className="flex-1" />
+
+                        <div className="border-t border-slate-100 pt-4">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        type="button"
+                                        className="flex h-15 w-full min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-left shadow-sm shadow-slate-900/5 transition-colors hover:border-primary/20 hover:bg-primary-light/60"
+                                    >
+                                        <Avatar className="h-10 w-10 shrink-0 rounded-full ring-2 ring-white">
+                                            <AvatarImage
+                                                src={user?.profile_url}
+                                                alt={displayName}
+                                            />
+                                            <AvatarFallback className="rounded-full bg-primary-light text-xs font-semibold text-primary">
+                                                {initials}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-semibold leading-tight text-slate-950">
+                                                {displayName}
+                                            </p>
+                                            <p className="mt-1 truncate text-xs font-medium text-slate-500">
+                                                {user?.email || "Organizer"}
+                                            </p>
+                                        </div>
+                                        <ChevronsUpDown className="h-4 w-4 shrink-0 text-slate-400" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    side="top"
+                                    className="w-56 rounded-2xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10"
+                                >
+                                    <DropdownMenuItem
+                                        className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium"
+                                        onClick={() => {
+                                            setIsSheetOpen(false);
+                                            router.push("/organizer/profile");
+                                        }}
+                                    >
+                                        <User className="mr-2 h-4 w-4 text-primary" />
+                                        Organizer Profile
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700"
+                                        onClick={() => {
+                                            setIsSheetOpen(false);
+                                            logout();
+                                        }}
+                                    >
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Keluar
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
                 </SheetContent>
 

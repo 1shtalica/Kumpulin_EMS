@@ -12,10 +12,13 @@ import {
     User,
     LogOut,
     LayoutDashboard,
+    ChevronsUpDown,
     LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth-store";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { User as AuthUser } from "@/types/user";
 
 import {
     Tooltip,
@@ -23,6 +26,12 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavItem {
     title: string;
@@ -56,17 +65,35 @@ export const menuItems: NavItem[] = [
         href: "/organizer/communities",
         icon: Users,
     },
-];
-
-export const accountItems: NavItem[] = [
     {
-        title: "Profile",
+        title: "Organizer Profile",
         href: "/organizer/profile",
         icon: User,
     },
 ];
 
 // ─── NavContent (shared) ─────────────────────────────────────────────────────
+
+function getUserDisplayName(user: AuthUser | null) {
+    if (!user) return "Organizer";
+
+    const fullName = [user.first_name, user.last_name]
+        .filter(Boolean)
+        .join(" ");
+
+    return fullName || user.username || user.email || "Organizer";
+}
+
+function getUserInitials(name: string) {
+    return (
+        name
+            .split(" ")
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((word) => word[0]?.toUpperCase())
+            .join("") || "K"
+    );
+}
 
 interface NavContentProps {
     showLabel?: boolean;
@@ -144,25 +171,57 @@ export default function OrganizerNavBar({
     isOpen,
     toggleSidebar,
 }: OrganizerNavBarProps) {
-    const { logout } = useAuthStore();
+    const { logout, user } = useAuthStore();
+    const displayName = getUserDisplayName(user);
+    const fallback = getUserInitials(displayName);
 
-    const logoutButton = (
+    const profileTrigger = (
         <Button
             variant="ghost"
             className={cn(
-                "w-full justify-start h-10 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200 text-slate-500 font-medium hover:text-slate-900 hover:bg-slate-50",
-                !isOpen && "justify-center px-2",
+                "min-w-0 justify-start  text-left  transition-all hover:border-primary/20 hover:bg-primary-light/60 hover:text-slate-950",
+                isOpen ? "h-15 w-full p-2.5" : "h-11 w-11 justify-center p-0",
             )}
-            onClick={logout}
         >
-            <LogOut
-                className={cn(
-                    "h-4.5 w-4.5 shrink-0 text-slate-400",
-                    isOpen && "mr-3",
-                )}
-            />
-            {isOpen && <span className="whitespace-nowrap">Keluar</span>}
+            <Avatar className="h-10 w-10 shrink-0 rounded-full ring-2 ring-white">
+                <AvatarImage src={user?.profile_url} alt={displayName} />
+                <AvatarFallback className="rounded-full bg-primary-light text-xs font-semibold text-primary">
+                    {fallback}
+                </AvatarFallback>
+            </Avatar>
+            {isOpen && (
+                <div className="ml-3 min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold leading-tight text-slate-950">
+                        {displayName}
+                    </p>
+                    <p className="mt-1 truncate text-xs font-medium text-slate-500">
+                        {user?.email || "Organizer"}
+                    </p>
+                </div>
+            )}
+            {isOpen && (
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
+            )}
         </Button>
+    );
+
+    const accountMenu = (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>{profileTrigger}</DropdownMenuTrigger>
+            <DropdownMenuContent
+                align={isOpen ? "end" : "start"}
+                side={isOpen ? "top" : "right"}
+                className="w-56 rounded-2xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10"
+            >
+                <DropdownMenuItem
+                    className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700"
+                    onClick={logout}
+                >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Keluar
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 
     return (
@@ -184,7 +243,7 @@ export default function OrganizerNavBar({
                 >
                     <div
                         className={cn(
-                            "flex items-center gap-3 overflow-hidden transition-all",
+                            "flex items-center gap-3 overflow-hidden transition-all pt-2 ps-2",
                             !isOpen && "w-0 opacity-0",
                         )}
                     >
@@ -224,23 +283,18 @@ export default function OrganizerNavBar({
                         <NavContent showLabel={isOpen} items={menuItems} />
                     </div>
 
-                    <div className="flex flex-col gap-1 overflow-hidden">
-                        <NavContent showLabel={isOpen} items={accountItems} />
-                        {isOpen ? (
-                            logoutButton
-                        ) : (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    {logoutButton}
-                                </TooltipTrigger>
-                                <TooltipContent side="right">
-                                    Keluar
-                                </TooltipContent>
-                            </Tooltip>
-                        )}
-                    </div>
-
                     <div className="flex-1" />
+
+                    <div
+                        className={cn(
+                            "border-t border-slate-100 pt-4",
+                            isOpen
+                                ? "flex items-center gap-2"
+                                : "flex flex-col items-center gap-2",
+                        )}
+                    >
+                        {accountMenu}
+                    </div>
                 </div>
             </aside>
         </TooltipProvider>

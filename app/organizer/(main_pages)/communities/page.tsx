@@ -343,8 +343,84 @@ export default async function Communities() {
 
     return (
         <PageSurface>
-            <header className="flex flex-col gap-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5 md:flex-row md:items-end md:justify-between">
-                <div>
+            <header className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
+                <svg
+                    className="pointer-events-none absolute -right-8 -top-8 h-48 w-72 text-primary md:right-2 md:top-1/2 md:-translate-y-1/2"
+                    viewBox="0 0 288 192"
+                    fill="none"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M34 126C72 78 109 95 143 62C178 28 217 44 254 18"
+                        stroke="currentColor"
+                        strokeOpacity="0.1"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                    />
+                    <path
+                        d="M48 52C85 89 116 78 149 114C180 148 219 141 252 166"
+                        stroke="#10b981"
+                        strokeOpacity="0.1"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                    />
+                    <path
+                        d="M86 150C119 128 132 87 176 86C210 85 228 68 248 45"
+                        stroke="currentColor"
+                        strokeOpacity="0.07"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                    />
+                    {[
+                        [34, 126, 12],
+                        [143, 62, 16],
+                        [254, 18, 12],
+                        [48, 52, 13],
+                        [149, 114, 18],
+                        [252, 166, 13],
+                        [176, 86, 11],
+                    ].map(([cx, cy, r]) => (
+                        <g key={`${cx}-${cy}`}>
+                            <circle
+                                cx={cx}
+                                cy={cy}
+                                r={r}
+                                fill="white"
+                                stroke="currentColor"
+                                strokeOpacity="0.13"
+                                strokeWidth="2"
+                            />
+                            <circle
+                                cx={cx}
+                                cy={cy}
+                                r={Math.max(3, r / 3)}
+                                fill="currentColor"
+                                fillOpacity="0.12"
+                            />
+                        </g>
+                    ))}
+                    <rect
+                        x="193"
+                        y="105"
+                        width="34"
+                        height="34"
+                        rx="10"
+                        fill="#10b981"
+                        fillOpacity="0.08"
+                    />
+                    <rect
+                        x="94"
+                        y="24"
+                        width="24"
+                        height="24"
+                        rx="8"
+                        fill="currentColor"
+                        fillOpacity="0.08"
+                    />
+                </svg>
+
+                <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                    <div>
                     <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
                         Organizer workspace
                     </p>
@@ -355,15 +431,16 @@ export default async function Communities() {
                         Kelola identitas komunitas, pantau aktivitas, dan buka
                         halaman publik dari satu tempat.
                     </p>
+                    </div>
+                    <Button
+                        variant="outline"
+                        disabled
+                        className="h-10 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-400 disabled:opacity-80"
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Buat Komunitas
+                    </Button>
                 </div>
-                <Button
-                    variant="outline"
-                    disabled
-                    className="h-10 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-400 disabled:opacity-80"
-                >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Buat Komunitas
-                </Button>
             </header>
 
             <CommunityCard community={community} />
