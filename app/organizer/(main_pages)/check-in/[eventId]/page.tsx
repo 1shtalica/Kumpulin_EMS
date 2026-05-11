@@ -305,7 +305,7 @@ function useQrScanner(active: boolean, onScan: (text: string) => void) {
                 console.error("QR scanner start failed:", err);
                 const message = cameraErrMsg(err);
                 setCameraError(message);
-                toast.error(message);
+                toast.error(message, { id: "qr-camera-error", duration: 5000 });
             }
         };
 
@@ -440,10 +440,19 @@ export default function CheckInDetailPage() {
                 setManualCode("");
                 void refreshHistory();
             } catch (err) {
-                setLastResult({
-                    ok: false,
-                    error: errMsg(err, "Validasi tiket gagal."),
-                });
+                const message = errMsg(err, "Validasi tiket gagal.");
+                if (method === "qr") {
+                    toast.error(message, {
+                        id: "qr-validation-error",
+                        duration: 5000,
+                    });
+                } else {
+                    toast.error(message, {
+                        id: "manual-validation-error",
+                        duration: 5000,
+                    });
+                }
+                setLastResult(null);
             } finally {
                 setValidating(false);
             }
@@ -460,10 +469,6 @@ export default function CheckInDetailPage() {
             }
         },
     );
-    const qrScanError =
-        mode === "qr" && lastResult?.ok === false
-            ? (lastResult.error ?? "Validasi tiket gagal.")
-            : null;
 
     /* ── Derived ── */
     const totalSold = useMemo(
@@ -709,7 +714,8 @@ export default function CheckInDetailPage() {
                                                         Kamera ditutup
                                                     </p>
                                                     <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-300">
-                                                        Buka kamera untuk mulai scan QR lagi.
+                                                        Buka kamera untuk mulai
+                                                        scan QR lagi.
                                                     </p>
                                                 </div>
                                                 <Button
@@ -749,23 +755,6 @@ export default function CheckInDetailPage() {
                                                 >
                                                     Gunakan manual
                                                 </Button>
-                                            </div>
-                                        )}
-                                        {cameraEnabled &&
-                                            !cameraError &&
-                                            qrScanError && (
-                                            <div className="absolute inset-x-4 bottom-4 z-10 rounded-2xl border border-danger/30 bg-danger/95 px-4 py-3 text-white shadow-lg shadow-danger/20">
-                                                <div className="flex items-start gap-2.5">
-                                                    <XCircle className="mt-0.5 h-5 w-5 shrink-0" />
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold">
-                                                            QR tidak valid
-                                                        </p>
-                                                        <p className="mt-0.5 text-xs leading-relaxed text-white/90">
-                                                            {qrScanError}
-                                                        </p>
-                                                    </div>
-                                                </div>
                                             </div>
                                         )}
                                         <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10" />
@@ -822,9 +811,7 @@ export default function CheckInDetailPage() {
                         </div>
 
                         {/* Result card */}
-                        {lastResult && !qrScanError && (
-                            <ResultCard result={lastResult} />
-                        )}
+                        {lastResult && <ResultCard result={lastResult} />}
                     </div>
 
                     {/* Right – recent history */}
@@ -1053,7 +1040,7 @@ function FullHistory({ eventId }: { eventId: string }) {
 
     if (loading) {
         return (
-            <div className="flex min-h-[220px] items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5">
+            <div className="flex min-h-55 items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5">
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
             </div>
         );

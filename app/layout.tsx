@@ -30,7 +30,7 @@ export default async function RootLayout({
             >
                 <AuthInitializer user={user} />
                 {children}
-                <Toaster position="bottom-right" duration={2500} />
+                <Toaster position="bottom-right" duration={4000} richColors />
             </body>
         </html>
     );
