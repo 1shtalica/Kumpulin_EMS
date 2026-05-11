@@ -22,7 +22,7 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function MainPagesLayout({
     children,
@@ -32,7 +32,12 @@ export default function MainPagesLayout({
     const [isOpen, setIsOpen] = useState(true);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const { logout, user } = useAuthStore();
+    const scannerOnly =
+        pathname.startsWith("/organizer/check-in/") &&
+        searchParams.get("scanner") === "1";
     const displayName =
         [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
         user?.username ||
@@ -45,6 +50,10 @@ export default function MainPagesLayout({
             .slice(0, 2)
             .map((word) => word[0]?.toUpperCase())
             .join("") || "K";
+
+    if (scannerOnly) {
+        return <div className="min-h-screen bg-[#f9fafb]">{children}</div>;
+    }
 
     return (
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>

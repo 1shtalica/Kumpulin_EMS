@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import {
+    useParams,
+    usePathname,
+    useRouter,
+    useSearchParams,
+} from "next/navigation";
 import { format, parseISO, formatDistanceToNow } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import {
@@ -286,8 +291,22 @@ function useQrScanner(active: boolean, onScan: (text: string) => void) {
                 await scanner.start(
                     { facingMode: "environment" },
                     {
-                        fps: 20,
-                        qrbox: { width: 280, height: 280 },
+                        fps: 15,
+                        qrbox: (viewfinderWidth, viewfinderHeight) => {
+                            const shortestSide = Math.min(
+                                viewfinderWidth,
+                                viewfinderHeight,
+                            );
+                            const size = Math.min(
+                                Math.floor(shortestSide * 0.82),
+                                520,
+                            );
+
+                            return {
+                                width: size,
+                                height: size,
+                            };
+                        },
                         aspectRatio: 1,
                     },
                     (decoded) => {
@@ -338,13 +357,24 @@ function useQrScanner(active: boolean, onScan: (text: string) => void) {
 
 /* ─── Types ───────────────────────────────────────────────────────────────── */
 
+const CHECK_IN_BROADCAST_CHANNEL = "kumpulin-check-in";
+
 type ValidationMode = "qr" | "manual";
 type TabKey = "validate" | "history" | "participants";
+
+type CheckInBroadcastMessage = {
+    type: "ticket-validated";
+    eventId: string;
+};
 
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 
 export default function CheckInDetailPage() {
     const { eventId } = useParams<{ eventId: string }>();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const scannerOnly = searchParams.get("scanner") === "1";
+    const scannerTabHref = `${pathname}?scanner=1`;
 
     // Event
     const [event, setEvent] = useState<Event | null>(null);
@@ -410,6 +440,75 @@ export default function CheckInDetailPage() {
         void refreshHistory();
     }, [refreshHistory]);
 
+    const broadcastTicketValidated = useCallback(() => {
+        if (typeof window === "undefined" || !("BroadcastChannel" in window)) {
+            return;
+        }
+
+        const channel = new BroadcastChannel(CHECK_IN_BROADCAST_CHANNEL);
+        channel.postMessage({
+            type: "ticket-validated",
+            eventId,
+        } satisfies CheckInBroadcastMessage);
+        channel.close();
+    }, [eventId]);
+
+    useEffect(() => {
+        if (typeof window === "undefined" || !("BroadcastChannel" in window)) {
+            return;
+        }
+
+        const channel = new BroadcastChannel(CHECK_IN_BROADCAST_CHANNEL);
+        channel.onmessage = (event: MessageEvent<CheckInBroadcastMessage>) => {
+            if (
+                event.data?.type === "ticket-validated" &&
+                event.data.eventId === eventId
+            ) {
+                void refreshHistory();
+            }
+        };
+
+        return () => {
+            channel.close();
+        };
+    }, [eventId, refreshHistory]);
+
+    const handleOpenScannerPopup = useCallback(() => {
+        const width = Math.min(1600, window.screen.availWidth - 64);
+        const height = Math.min(920, window.screen.availHeight - 64);
+        const left = Math.max((window.screen.width - width) / 2, 0);
+        const top = Math.max((window.screen.height - height) / 2, 0);
+        const popup = window.open(
+            scannerTabHref,
+            "kumpulin-check-in-scanner",
+            [
+                "popup=yes",
+                `width=${width}`,
+                `height=${height}`,
+                `left=${left}`,
+                `top=${top}`,
+                "resizable=yes",
+                "scrollbars=yes",
+            ].join(","),
+        );
+
+        if (!popup) {
+            toast.error(
+                "Browser memblokir pop-up scanner. Izinkan pop-up lalu coba lagi.",
+                {
+                    id: "scanner-popup-open-failed",
+                    duration: 5000,
+                },
+            );
+            return;
+        }
+
+        popup.opener = null;
+        popup.focus();
+        setCameraEnabled(false);
+        setLastResult(null);
+    }, [scannerTabHref]);
+
     /* ── Validate ── */
     const handleValidate = useCallback(
         async (code: string, method: ValidationMode) => {
@@ -439,6 +538,7 @@ export default function CheckInDetailPage() {
                 setLastResult({ ok: true, ticket });
                 setManualCode("");
                 void refreshHistory();
+                broadcastTicketValidated();
             } catch (err) {
                 const message = errMsg(err, "Validasi tiket gagal.");
                 if (method === "qr") {
@@ -457,12 +557,12 @@ export default function CheckInDetailPage() {
                 setValidating(false);
             }
         },
-        [eventId, refreshHistory],
+        [broadcastTicketValidated, eventId, refreshHistory],
     );
 
     /* ── QR scanner ── */
     const { containerRef: qrContainerRef, cameraError } = useQrScanner(
-        mode === "qr" && tab === "validate" && cameraEnabled,
+        mode === "qr" && (tab === "validate" || scannerOnly) && cameraEnabled,
         (decoded) => {
             if (!validating) {
                 void handleValidate(decoded, "qr");
@@ -516,6 +616,106 @@ export default function CheckInDetailPage() {
                     </div>
                 </section>
             </PageSurface>
+        );
+    }
+
+    if (scannerOnly) {
+        return (
+            <main className="h-screen overflow-hidden bg-[#f9fafb] px-4 py-4">
+                <div className="mx-auto grid h-full w-full max-w-[1600px] grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_450px]">
+                    <section className="flex min-h-0 flex-col rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="min-w-0">
+                                <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                                    Scanner check-in
+                                </p>
+                                <h1 className="mt-1 truncate text-xl font-semibold text-slate-950">
+                                    {event.title}
+                                </h1>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-9 w-fit rounded-xl border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm shadow-slate-900/5 hover:border-primary/30 hover:text-primary"
+                                onClick={() => {
+                                    setCameraEnabled((enabled) => !enabled);
+                                    setLastResult(null);
+                                }}
+                            >
+                                {cameraEnabled ? (
+                                    <CameraOff className="h-4 w-4" />
+                                ) : (
+                                    <Camera className="h-4 w-4" />
+                                )}
+                                {cameraEnabled ? "Tutup kamera" : "Buka kamera"}
+                            </Button>
+                        </div>
+
+                        <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-slate-900/10 bg-slate-950 shadow-md shadow-slate-900/10">
+                            <div
+                                id="qr-reader"
+                                ref={qrContainerRef}
+                                className="h-full min-h-full w-full [&_video]:h-full! [&_video]:object-cover!"
+                            />
+                            <div className="pointer-events-none absolute left-4 top-4 z-10 rounded-full border border-white/10 bg-slate-950/60 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-slate-950/20 backdrop-blur">
+                                Arahkan QR ke area scan
+                            </div>
+                            {!cameraEnabled && (
+                                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-slate-950/90 px-6 text-center">
+                                    <CameraOff className="h-10 w-10 text-slate-300" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-white">
+                                            Kamera ditutup
+                                        </p>
+                                        <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-300">
+                                            Buka kamera untuk mulai scan QR
+                                            lagi.
+                                        </p>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-9 rounded-xl border-white/20 bg-white/10 px-4 text-xs font-semibold text-white hover:bg-white/15 hover:text-white"
+                                        onClick={() => setCameraEnabled(true)}
+                                    >
+                                        <Camera className="h-4 w-4" />
+                                        Buka kamera
+                                    </Button>
+                                </div>
+                            )}
+                            {cameraEnabled && cameraError && (
+                                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-slate-950/90 px-6 text-center">
+                                    <XCircle className="h-10 w-10 text-danger" />
+                                    <div>
+                                        <p className="text-sm font-semibold text-white">
+                                            Kamera tidak tersedia
+                                        </p>
+                                        <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-300">
+                                            {cameraError}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                            <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10" />
+                            <div className="pointer-events-none absolute inset-8 rounded-2xl border border-white/15" />
+                            <div className="pointer-events-none absolute left-8 top-8 h-12 w-12 rounded-tl-2xl border-l-4 border-t-4 border-primary" />
+                            <div className="pointer-events-none absolute right-8 top-8 h-12 w-12 rounded-tr-2xl border-r-4 border-t-4 border-primary" />
+                            <div className="pointer-events-none absolute bottom-8 left-8 h-12 w-12 rounded-bl-2xl border-b-4 border-l-4 border-primary" />
+                            <div className="pointer-events-none absolute bottom-8 right-8 h-12 w-12 rounded-br-2xl border-b-4 border-r-4 border-primary" />
+                        </div>
+
+                        {lastResult && (
+                            <div className="mt-4">
+                                <ResultCard result={lastResult} />
+                            </div>
+                        )}
+                    </section>
+
+                    <HistorySidebar history={history} total={totalCheckedIn} />
+                </div>
+            </main>
         );
     }
 
@@ -694,9 +894,10 @@ export default function CheckInDetailPage() {
                                                 variant="outline"
                                                 size="sm"
                                                 className="h-9 rounded-xl border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm shadow-slate-900/5 hover:border-primary/30 hover:text-primary"
+                                                onClick={handleOpenScannerPopup}
                                             >
                                                 <ExternalLink className="h-4 w-4" />
-                                                Buka tab baru
+                                                Buka pop-up
                                             </Button>
                                         </div>
                                     </div>
