@@ -145,9 +145,9 @@ export default function DetailSection({
     };
 
     return (
-        <section className="w-full flex flex-col items-center justify-between relative ">
-            <div className="w-full h-fit p-10 bg-white shadow-xs border-slate-200 rounded-3xl">
-                <div className="flex flex-col gap-5">
+        <section className="w-full flex flex-col items-center justify-between relative">
+            <div className="w-full h-fit p-5 sm:p-6 lg:p-7 bg-white shadow-md shadow-slate-900/5 border border-slate-200/80 rounded-2xl">
+                <div className="flex flex-col gap-5 md:gap-6">
                     {/* Baris Kategori */}
                     <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="brand">{event.category}</Badge>
@@ -155,7 +155,7 @@ export default function DetailSection({
                         <Badge
                             className={
                                 event.is_online
-                                    ? "bg-linear-to-r from-blue-600 to-blue-800 text-white font-bold border-none px-3 rounded-full uppercase text-[10px] tracking-wide shadow-sm"
+                                    ? "bg-linear-to-r from-blue-600 to-blue-800 text-white font-semibold border-none px-3 rounded-full uppercase text-[10px] tracking-wide shadow-sm"
                                     : "bg-muted text-white shadow-sm"
                             }
                         >
@@ -185,9 +185,9 @@ export default function DetailSection({
                     </div>
 
                     {/* Judul event */}
-                    <div className="flex items-center gap-3 py-5">
-                        <div className="h-8 w-1 bg-primary rounded-full"></div>
-                        <h1 className="text-xl md:text-2xl font-bold text-accent leading-tight">
+                    <div className="flex items-start gap-3 py-3 md:py-4">
+                        <div className="mt-1 h-9 w-1 bg-primary rounded-full shrink-0"></div>
+                        <h1 className="text-3xl md:text-4xl font-bold text-slate-950 leading-[1.12] tracking-normal">
                             {event.title}
                         </h1>
                         {isEditable && (
@@ -196,16 +196,16 @@ export default function DetailSection({
                     </div>
 
                     {/* Detail Event Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                         {/* 1. Jadwal Event */}
-                        <div className="flex flex-row items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary-light text-primary">
+                        <div className="flex flex-row items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
+                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary-light text-primary">
                                 <Calendar size={16} />
                             </div>
                             <div className="flex flex-col ">
                                 <div className="flex items-center gap-1">
-                                    <span className="text-[11px] tracking-wide font-medium text-muted">
-                                        Jadwal Event
+                                    <span className="text-[11px] tracking-wider font-semibold text-slate-500">
+                                        JADWAL EVENT
                                     </span>
                                     {isEditable && (
                                         <EditSectionModal
@@ -214,24 +214,24 @@ export default function DetailSection({
                                         />
                                     )}
                                 </div>
-                                <p className="text-sm font-semibold text-accent mt-0.5">
+                                <p className="text-sm md:text-base font-semibold text-slate-900 mt-0.5 leading-snug">
                                     {eventDateString}
                                 </p>
-                                <p className="text-xs text-slate-400">
+                                <p className="text-xs text-slate-500">
                                     {eventTimeString}
                                 </p>
                             </div>
                         </div>
 
                         {/* 2. Masa Registrasi */}
-                        <div className="flex flex-row items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary-light text-primary">
+                        <div className="flex flex-row items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
+                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary-light text-primary">
                                 <Clock size={16} />
                             </div>
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-1">
-                                    <span className="text-[11px] tracking-wide font-medium text-muted">
-                                        Masa Registrasi
+                                    <span className="text-[11px] tracking-wider font-semibold text-slate-500">
+                                        MASA REGISTRASI
                                     </span>
                                     {isEditable && (
                                         <EditSectionModal
@@ -240,11 +240,11 @@ export default function DetailSection({
                                         />
                                     )}
                                 </div>
-                                <p className="text-sm font-semibold text-accent mt-0.5">
+                                <p className="text-sm md:text-base font-semibold text-slate-900 mt-0.5 leading-snug">
                                     {regDateString}
                                 </p>
                                 {regTimeString && (
-                                    <p className="text-xs text-slate-400">
+                                    <p className="text-xs text-slate-500">
                                         {regTimeString}
                                     </p>
                                 )}
@@ -252,14 +252,14 @@ export default function DetailSection({
                         </div>
 
                         {/* 3. Lokasi */}
-                        <div className="flex flex-row items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary-light text-primary">
+                        <div className="flex flex-row items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
+                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary-light text-primary">
                                 <MapPin size={16} />
                             </div>
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-1">
-                                    <span className="text-[11px] tracking-wide font-medium text-muted">
-                                        Lokasi
+                                    <span className="text-[11px] tracking-wider font-semibold text-slate-500">
+                                        LOKASI
                                     </span>
                                     {isEditable && (
                                         <EditSectionModal
@@ -269,7 +269,7 @@ export default function DetailSection({
                                     )}
                                 </div>
                                 <p
-                                    className="font-semibold text-accent line-clamp-2"
+                                    className="text-sm md:text-base font-semibold text-slate-900 line-clamp-2 leading-snug"
                                     title={event.address?.raw_address}
                                 >
                                     {event.is_online
@@ -279,7 +279,7 @@ export default function DetailSection({
                                 </p>
                                 {event.address?.city &&
                                     event.address?.province && (
-                                        <p className="text-xs text-slate-400">
+                                        <p className="text-xs text-slate-500">
                                             {event.address.city},{" "}
                                             {event.address.province}
                                         </p>
@@ -290,7 +290,7 @@ export default function DetailSection({
                                             href={event.address.maps_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 mt-1.5 text-[11px] font-medium text-primary hover:text-primary-hover transition-colors bg-primary-light hover:bg-primary/10 px-2.5 py-1 rounded-full w-fit"
+                                            className="inline-flex items-center gap-1 mt-1.5 text-[11px] font-semibold text-primary hover:text-primary-hover transition-colors bg-primary-light hover:bg-primary/10 px-2.5 py-1 rounded-xl w-fit"
                                         >
                                             <MapPin size={11} />
                                             Lihat di Peta
@@ -301,14 +301,14 @@ export default function DetailSection({
                         </div>
 
                         {/* 4. Partisipan */}
-                        <div className="flex flex-row items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-primary-light text-primary mt-0.5">
+                        <div className="flex flex-row items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
+                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary-light text-primary mt-0.5">
                                 <Users size={16} />
                             </div>
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-1">
-                                    <span className="text-[11px] tracking-wide font-medium text-muted">
-                                        Partisipan
+                                    <span className="text-[11px] tracking-wider font-semibold text-slate-500">
+                                        PARTISIPAN
                                     </span>
                                     {isEditable && (
                                         <EditSectionModal
@@ -317,7 +317,7 @@ export default function DetailSection({
                                         />
                                     )}
                                 </div>
-                                <p className="font-semibold text-accent">
+                                <p className="text-sm md:text-base font-semibold text-slate-900">
                                     {event.total_sold}/
                                     {event.max_capacity || "-"} terdaftar
                                 </p>
@@ -328,7 +328,7 @@ export default function DetailSection({
                     {/* Pemisah  */}
                     <Separator orientation="horizontal" />
 
-                    <div className="bg-primary-light py-4 px-6 rounded-3xl">
+                    <div className="bg-primary-light/70 py-4 px-4 sm:px-5 rounded-2xl border border-primary/10">
                         {event.organizer && (
                             <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
                                 <div className="flex flex-row items-center gap-5 w-full md:w-auto">
@@ -341,7 +341,7 @@ export default function DetailSection({
                                             }
                                             className="hover:opacity-80 transition-opacity"
                                         >
-                                            <Avatar className="h-12 w-12">
+                                            <Avatar className="h-12 w-12 ring-2 ring-white shadow-sm">
                                                 <AvatarImage
                                                     src={
                                                         event.organizer
@@ -358,7 +358,7 @@ export default function DetailSection({
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="flex flex-row items-center gap-1">
-                                            <p className="font-semibold text-accent">
+                                            <p className="font-semibold text-slate-900 leading-tight">
                                                 {event.organizer.name}
                                             </p>
                                             {event.organizer
@@ -370,8 +370,8 @@ export default function DetailSection({
                                                 />
                                             )}
                                         </div>
-                                        <div className="text-sm text-muted">
-                                            <p className="line-clamp-2">
+                                        <div className="pt-1 text-slate-600 leading-relaxed">
+                                            <p className="text-sm line-clamp-2">
                                                 {event.organizer.description}
                                             </p>
                                         </div>
@@ -384,7 +384,7 @@ export default function DetailSection({
                                         asChild
                                         variant="outline"
                                         size="sm"
-                                        className="rounded-full px-6 shrink-0"
+                                        className="rounded-xl px-5 shrink-0"
                                     >
                                         <Link href="/organizer/profile">
                                             <Pencil
@@ -401,7 +401,7 @@ export default function DetailSection({
                                             hasFollowed ? "outline" : "default"
                                         }
                                         size="sm"
-                                        className="rounded-full px-6 shrink-0"
+                                        className="rounded-xl px-5 shrink-0"
                                         onClick={handleFollowToggle}
                                         disabled={isLoadingFollow}
                                     >
@@ -427,10 +427,10 @@ export default function DetailSection({
                     </div>
 
                     {/* Bagian Deskripsi Event  */}
-                    <div className="pt-5">
+                    <div className="pt-2 md:pt-3">
                         <div className="flex items-center gap-2 mb-4">
-                            <div className="h-8 w-1 bg-primary rounded-full"></div>
-                            <h4 className="text-lg font-bold text-accent">
+                            <div className="h-7 w-1 bg-primary rounded-full"></div>
+                            <h4 className="text-xl md:text-2xl font-bold text-slate-950 leading-tight">
                                 Tentang Event
                             </h4>
                             {isEditable && (
@@ -447,10 +447,10 @@ export default function DetailSection({
 
                     {/* Bagian Rundown Acara  */}
                     {event.rundowns && event.rundowns.length > 0 && (
-                        <div className="pt-5">
+                        <div className="pt-2 md:pt-3">
                             <div className="flex items-center gap-2 mb-4">
-                                <div className="h-8 w-1 bg-primary rounded-full"></div>
-                                <h4 className="text-lg font-bold text-accent">
+                                <div className="h-7 w-1 bg-primary rounded-full"></div>
+                                <h4 className="text-xl md:text-2xl font-bold text-slate-950 leading-tight">
                                     Rundown Acara
                                 </h4>
                                 {isEditable && (
@@ -465,11 +465,11 @@ export default function DetailSection({
                                 {event.rundowns.map((item, index) => (
                                     <div
                                         key={item.id ?? index}
-                                        className="group flex flex-col md:flex-row gap-3 md:gap-6 p-5 rounded-3xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 transition-all duration-300"
+                                        className="group flex flex-col md:flex-row gap-3 md:gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 hover:shadow-sm transition-all duration-300"
                                     >
                                         {/* Waktu (Kiri) */}
                                         <div className=" shrink-0 flex flex-col justify-start md:justify-center pt-1">
-                                            <div className="flex items-center gap-2 text-sm font-bold text-primary bg-white border border-primary/10 px-3 py-1.5 rounded-xl w-fit">
+                                            <div className="flex items-center gap-2 text-sm font-semibold text-primary bg-white border border-primary/10 px-3 py-1.5 rounded-xl shadow-sm w-fit">
                                                 <Clock
                                                     size={14}
                                                     className="md:w-5 md:h-5"
@@ -485,12 +485,12 @@ export default function DetailSection({
                                         <div
                                             className={`flex flex-col w-full ${item.location || item.description ? "gap-2" : "justify-center"}`}
                                         >
-                                            <h5 className="font-bold text-accent text-lg leading-tight group-hover:text-primary transition-colors">
+                                            <h5 className="font-semibold text-slate-950 text-base md:text-lg leading-tight group-hover:text-primary transition-colors">
                                                 {item.title}
                                             </h5>
 
                                             {item.location && (
-                                                <div className="flex items-center gap-2 text-sm text-slate-500">
+                                                <div className="flex items-center gap-2 text-sm text-slate-600">
                                                     <MapPin
                                                         size={16}
                                                         className="text-primary shrink-0"
@@ -503,7 +503,7 @@ export default function DetailSection({
 
                                             {item.description && (
                                                 <div className="mt-1 pb-1 border-l-2 border-slate-200 pl-3 ml-1">
-                                                    <p className="text-sm text-muted leading-relaxed">
+                                                    <p className="text-sm text-slate-600 leading-relaxed">
                                                         {item.description}
                                                     </p>
                                                 </div>
