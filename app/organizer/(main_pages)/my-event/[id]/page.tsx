@@ -73,25 +73,45 @@ export default function OrganizerEventDetail() {
     const isPublished = event.status?.toLowerCase() === "published";
 
     return (
-        <div className="p-8 space-y-8 px-6">
+        <div className="min-h-[calc(100vh-136px)] space-y-6 bg-[#f8fafc] px-4 py-6 md:-mx-8 md:px-8">
             {/* Header & Back Button */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon" asChild className="rounded-full shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 md:p-6">
+                <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                    <div className="flex min-w-0 items-center gap-4">
+                        <Button variant="outline" size="icon" asChild className="h-10 w-10 shrink-0 rounded-xl border-slate-200 bg-white shadow-sm shadow-slate-900/5">
                         <Link href="/organizer/my-event">
                             <ChevronLeft className="w-5 h-5" />
                         </Link>
                     </Button>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Detail Management</h1>
+                        <div className="min-w-0">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                Edit event
+                            </p>
+                            <h1 className="mt-1 truncate text-2xl font-bold tracking-tight text-slate-950">
+                                {event.title}
+                            </h1>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Badge className={isPublished ? "rounded-full bg-success px-3 py-1 text-white" : "rounded-full bg-slate-700 px-3 py-1 text-white"}>
+                            {event.status || "Draft"}
+                        </Badge>
+                        <Badge variant="secondary" className="rounded-full bg-primary/10 px-3 py-1 text-primary">
+                            {event.type}
+                        </Badge>
+                    </div>
                 </div>
+                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-500">
+                    Kelola detail event per bagian. Klik tombol Edit pada kartu yang ingin diperbarui.
+                </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 {/* Main Column */}
-                <div className="md:col-span-2 space-y-8">
+                <div className="space-y-6 md:col-span-2">
                     {/* Core Info Card */}
-                    <div className="bg-card border border-border shadow-sm rounded-3xl p-6 sm:p-8">
-                        <div className="relative w-full aspect-video rounded-2xl overflow-hidden mb-8 bg-slate-100">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-6">
+                        <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-2xl bg-slate-100">
                             {event.images && event.images.length > 0 ? (
                                 <Image src={event.images[0].image_url} alt="Banner" fill className="object-cover" unoptimized />
                             ) : (
@@ -102,19 +122,19 @@ export default function OrganizerEventDetail() {
                         </div>
 
                         <div className="space-y-4">
-                            <div className="flex items-start justify-between">
+                            <div className="flex items-start justify-between gap-4">
                                 <div className="flex items-center gap-3">
-                                    <Badge className={isPublished ? "bg-success text-white" : "bg-muted-foreground text-white"}>
+                                    <Badge className={isPublished ? "rounded-full bg-success px-3 py-1 text-white" : "rounded-full bg-slate-700 px-3 py-1 text-white"}>
                                         {event.status || "Draft"}
                                     </Badge>
-                                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                                    <Badge variant="secondary" className="rounded-full bg-primary/10 px-3 py-1 text-primary">
                                         {event.type}
                                     </Badge>
                                 </div>
                                 <EditSectionModal event={event} section="core" />
                             </div>
 
-                            <h2 className="text-3xl font-bold tracking-tight text-foreground">{event.title}</h2>
+                            <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">{event.title}</h2>
 
                             <div className="space-y-1 text-muted-foreground">
                                 {event.description
@@ -143,11 +163,13 @@ export default function OrganizerEventDetail() {
                     </div>
 
                     {/* Address / Location Section */}
-                    <div className="bg-card border border-border shadow-sm rounded-3xl p-6 sm:p-8">
+                    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-6">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-primary" />
-                                Location Details
+                            <h3 className="flex items-center gap-2 text-xl font-bold text-slate-950">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-light text-primary">
+                                    <MapPin className="w-5 h-5" />
+                                </span>
+                                Lokasi
                             </h3>
                             <EditSectionModal event={event} section="location" />
                         </div>
@@ -192,11 +214,13 @@ export default function OrganizerEventDetail() {
                     </div>
 
                     {/* Rundown Section */}
-                    <div className="bg-card border border-border shadow-sm rounded-3xl p-6 sm:p-8">
+                    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-6">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold flex items-center gap-2">
-                                <List className="w-5 h-5 text-primary" />
-                                Event Rundowns
+                            <h3 className="flex items-center gap-2 text-xl font-bold text-slate-950">
+                                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-light text-primary">
+                                    <List className="w-5 h-5" />
+                                </span>
+                                Rundown
                             </h3>
                             <EditSectionModal event={event} section="rundown" />
                         </div>
@@ -225,12 +249,14 @@ export default function OrganizerEventDetail() {
                 </div>
 
                 {/* Sidebar / Tickets Column */}
-                <div className="space-y-8">
-                    <div className="bg-card border border-border shadow-sm rounded-3xl p-6">
+                <div className="space-y-6">
+                    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
                         <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-lg font-bold flex items-center gap-2">
-                                <Calendar className="w-5 h-5 text-primary" />
-                                Time constraints
+                            <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950">
+                                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-light text-primary">
+                                    <Calendar className="w-5 h-5" />
+                                </span>
+                                Jadwal
                             </h3>
                             <EditSectionModal event={event} section="datetime" />
                         </div>
@@ -255,11 +281,13 @@ export default function OrganizerEventDetail() {
                         </div>
                     </div>
 
-                    <div className="bg-card border border-border shadow-sm rounded-3xl p-6">
+                    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
                         <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-lg font-bold flex items-center gap-2">
-                                <Users className="w-5 h-5 text-primary" />
-                                Capacity &amp; Load
+                            <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950">
+                                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-light text-primary">
+                                    <Users className="w-5 h-5" />
+                                </span>
+                                Kapasitas
                             </h3>
                         </div>
 
@@ -275,11 +303,13 @@ export default function OrganizerEventDetail() {
                         </div>
                     </div>
 
-                    <div className="bg-card border border-border shadow-sm rounded-3xl p-6">
+                    <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold flex items-center gap-2">
-                                <Ticket className="w-5 h-5 text-primary" />
-                                Ticket Categories
+                            <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950">
+                                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-light text-primary">
+                                    <Ticket className="w-5 h-5" />
+                                </span>
+                                Tiket
                             </h3>
                             <EditSectionModal event={event} section="tickets" />
                         </div>

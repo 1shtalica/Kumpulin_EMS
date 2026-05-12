@@ -5,7 +5,16 @@ import {
     Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetFooter
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Loader2, Pencil } from "lucide-react";
+import {
+    CalendarClock,
+    FileText,
+    Loader2,
+    MapPin,
+    Pencil,
+    Route,
+    Ticket,
+    type LucideIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Event } from "@/types/event";
 import type { ReactNode } from "react";
@@ -24,10 +33,50 @@ interface EditModalProps {
     section: 'core' | 'location' | 'rundown' | 'datetime' | 'tickets';
 }
 
+const sectionMeta: Record<EditModalProps["section"], {
+    title: string;
+    description: string;
+    badge: string;
+    Icon: LucideIcon;
+}> = {
+    core: {
+        title: "Edit Informasi Event",
+        description: "Perbarui judul, kategori, deskripsi, status, dan materi visual utama.",
+        badge: "Informasi",
+        Icon: FileText,
+    },
+    location: {
+        title: "Edit Lokasi Event",
+        description: "Atur tipe event, link online, detail alamat, kota, provinsi, dan tautan maps.",
+        badge: "Lokasi",
+        Icon: MapPin,
+    },
+    datetime: {
+        title: "Edit Jadwal Event",
+        description: "Sesuaikan tanggal event dan periode registrasi tanpa mengubah bagian lain.",
+        badge: "Jadwal",
+        Icon: CalendarClock,
+    },
+    tickets: {
+        title: "Kelola Tiket",
+        description: "Tambah, ubah, atau hapus kategori tiket, harga, kuota, dan periode penjualan.",
+        badge: "Tiket",
+        Icon: Ticket,
+    },
+    rundown: {
+        title: "Kelola Rundown",
+        description: "Rapikan susunan agenda, durasi, deskripsi, dan lokasi tiap sesi.",
+        badge: "Rundown",
+        Icon: Route,
+    },
+};
+
 export function EditSectionModal({ event, section }: EditModalProps): ReactNode {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const meta = sectionMeta[section];
+    const SectionIcon = meta.Icon;
 
     // Initialize React Hook Form with mapped data from existing event
     const methods = useForm<CreateEventSchema>({
@@ -422,52 +471,92 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
         }
     };
 
-    const titles = {
-        core: "Edit Core Information",
-        location: "Edit Location Details",
-        datetime: "Edit Time Constraints",
-        tickets: "Manage Ticket Categories",
-        rundown: "Manage Rundowns"
-    };
-
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary shrink-0 transition-colors">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label={`Edit ${meta.badge}`}
+                    title={`Edit ${meta.badge}`}
+                    className="h-9 shrink-0 rounded-xl border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm shadow-slate-900/5 transition-all hover:border-primary/20 hover:bg-primary-light/50 hover:text-primary"
+                >
                     <Pencil className="w-4 h-4" />
+                    <span>Edit</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="max-w-2xl! w-screen p-0 gap-0 overflow-hidden bg-background border-l border-border/50 shadow-2xl pointer-events-auto">
+            <SheetContent
+                side="right"
+                className="w-screen max-w-3xl! gap-0 overflow-hidden border-l border-slate-200/80 bg-[#f8fafc] p-0 shadow-2xl shadow-slate-950/15 pointer-events-auto"
+            >
                 <FormProvider {...methods}>
-                    <form onSubmit={methods.handleSubmit(handleSubmit as any)} className="flex flex-col h-dvh">
+                    <form onSubmit={methods.handleSubmit(handleSubmit as any)} className="flex h-dvh flex-col">
                         {/* Sticky Header */}
-                        <SheetHeader className="px-6 py-5 md:px-8 md:py-6 border-b border-border/40 bg-background/60 backdrop-blur-lg shrink-0 text-left">
-                            <SheetTitle className="text-xl tracking-tight font-bold">{titles[section]}</SheetTitle>
-                            <SheetDescription className="text-sm">
-                                Make changes to this section. Click save when you're done.
+                        <SheetHeader className="shrink-0 border-b border-slate-200/80 bg-white/95 px-5 py-5 pr-14 text-left shadow-sm shadow-slate-900/[0.03] backdrop-blur-lg md:px-8 md:py-6">
+                            <div className="mb-3 flex items-center gap-3">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-light text-primary ring-1 ring-primary/10">
+                                    <SectionIcon className="h-5 w-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <span className="inline-flex rounded-full border border-primary/10 bg-primary-light px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                                        {meta.badge}
+                                    </span>
+                                    <SheetTitle className="mt-2 text-xl font-bold tracking-tight text-slate-950 md:text-2xl">
+                                        {meta.title}
+                                    </SheetTitle>
+                                </div>
+                            </div>
+                            <SheetDescription className="max-w-2xl text-sm leading-relaxed text-slate-500">
+                                {meta.description}
                             </SheetDescription>
+                            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                    Event yang diedit
+                                </p>
+                                <p className="mt-1 line-clamp-1 text-sm font-semibold text-slate-900">
+                                    {event.title || "Untitled event"}
+                                </p>
+                            </div>
                         </SheetHeader>
 
                         {/* Scrollable Content Zone */}
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 custom-scrollbar">
+                        <div className="custom-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:px-8 md:py-8">
                             {/* Inner Wrapper for safe padding on very long content */}
-                            <div className="max-w-xl mx-auto w-full pb-8">
+                            <div className="mx-auto w-full max-w-2xl rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 md:p-6">
                                 {renderContent()}
                             </div>
                         </div>
 
                         {/* Sticky Footer */}
-                        <SheetFooter className="px-6 py-5 md:px-8 md:py-5 border-t border-border/40 bg-slate-50/50 backdrop-blur-lg shrink-0 flex flex-row items-center justify-end gap-3">
-                            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isLoading} className="rounded-full shadow-sm m-0 border-border">
-                                Cancel
-                            </Button>
-                            <Button type="submit" disabled={isLoading} className="rounded-full m-0 bg-primary hover:bg-primary-hover shadow-md text-white">
-                                {isLoading ? (
-                                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
-                                ) : (
-                                  "Save Changes"
-                                )}
-                            </Button>
+                        <SheetFooter className="flex shrink-0 flex-row items-center justify-between gap-3 border-t border-slate-200/80 bg-white/95 px-5 py-4 shadow-[0_-8px_24px_rgba(15,23,42,0.04)] backdrop-blur-lg md:px-8">
+                            <p className="hidden text-xs text-slate-500 sm:block">
+                                Perubahan hanya diterapkan ke section ini.
+                            </p>
+                            <div className="ml-auto flex items-center gap-3">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setOpen(false)}
+                                    disabled={isLoading}
+                                    className="m-0 h-10 rounded-xl border-slate-200 bg-white px-5 text-sm font-semibold text-slate-600 shadow-sm shadow-slate-900/5 hover:border-primary/20 hover:text-primary"
+                                >
+                                    Batal
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="m-0 h-10 min-w-34 rounded-xl bg-primary px-5 text-sm font-semibold text-white shadow-md shadow-primary/20 hover:bg-primary-hover"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Menyimpan...
+                                        </>
+                                    ) : (
+                                        "Simpan"
+                                    )}
+                                </Button>
+                            </div>
                         </SheetFooter>
                     </form>
                 </FormProvider>
