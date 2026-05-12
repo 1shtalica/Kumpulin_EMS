@@ -30,7 +30,7 @@ import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import type { CreateEventSchema } from "@/lib/validator/create-event.schema";
 import DateTimePicker from "@/components/reusable/DateTimePicker";
 import TimePicker from "@/components/reusable/TimePicker";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function EventScheduleStep({
   hideHeader,
@@ -54,6 +54,8 @@ export default function EventScheduleStep({
 
   const is_online = watch("is_online");
   const watchProvince = watch("address.province");
+  const [openProvince, setOpenProvince] = useState(false);
+  const [openCity, setOpenCity] = useState(false);
 
   // Watch for progressive date selection
   const start_registration_date = watch("start_registration_date");
@@ -570,7 +572,10 @@ export default function EventScheduleStep({
                     control={control}
                     name="address.province"
                     render={({ field }) => (
-                      <Popover>
+                      <Popover
+                        open={openProvince}
+                        onOpenChange={setOpenProvince}
+                      >
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
@@ -601,6 +606,8 @@ export default function EventScheduleStep({
                                     onSelect={() => {
                                       field.onChange(region.name);
                                       setValue("address.city", "");
+                                      setOpenProvince(false);
+                                      setOpenCity(false);
                                     }}
                                   >
                                     <Check
@@ -637,7 +644,7 @@ export default function EventScheduleStep({
                     control={control}
                     name="address.city"
                     render={({ field }) => (
-                      <Popover>
+                      <Popover open={openCity} onOpenChange={setOpenCity}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
@@ -665,7 +672,10 @@ export default function EventScheduleStep({
                                   <CommandItem
                                     key={city.name}
                                     value={city.name}
-                                    onSelect={() => field.onChange(city.name)}
+                                    onSelect={() => {
+                                      field.onChange(city.name);
+                                      setOpenCity(false);
+                                    }}
                                   >
                                     <Check
                                       className={cn(
