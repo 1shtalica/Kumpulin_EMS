@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,7 +76,6 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
   } = useFormContext<CreateEventSchema>();
 
   const title = watch("title");
-  const description = watch("description");
   const images = watch("images") || [];
   const image_previews = watch("image_previews") || [];
 
@@ -142,7 +141,11 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
       toast.info("Banner akan dihapus saat Anda menekan tombol simpan.");
     }
 
-    setValue("banner_image", null as any, { shouldValidate: true });
+    setValue(
+      "banner_image",
+      null as unknown as CreateEventSchema["banner_image"],
+      { shouldValidate: true },
+    );
     setValue("banner_image_preview", null);
     setBannerError("");
     if (bannerInputRef.current) bannerInputRef.current.value = "";
@@ -290,11 +293,14 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       {!hideHeader && (
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-accent">Informasi Event</h2>
-          <p className="mt-2 text-muted">Lengkapi Informasi tentang event Anda</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
+          <h2 className="text-xl font-semibold text-slate-950">
+            Informasi Event
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-slate-600">
+            Lengkapi nama, kategori, deskripsi, dan aset visual event.
+          </p>
         </div>
       )}
 
@@ -436,7 +442,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
                             className="rounded-lg group flex items-center pr-2"
                             key={opt.value}
                             value={opt.value}
-                            onSelect={(currentValue) => {
+                            onSelect={() => {
                               setValue("status", opt.value as CreateEventSchema["status"], { shouldValidate: true });
                               setOpenStatus(false);
                             }}
@@ -494,7 +500,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
           Banner Event <span className="text-danger">*</span>
         </Label>
         <p className="text-xs text-muted">
-          1 gambar utama yang tampil di card event. Format: PNG, JPEG • Maks 5MB • Ukuran ideal: 1920x1080 (16:9)
+          1 gambar utama yang tampil di card event. Format: PNG, JPEG. Maks 5MB. Ukuran ideal: 1920x1080 (16:9)
         </p>
 
         {!banner_image ? (
@@ -575,7 +581,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
           Poster/Galeri Event <span className="text-danger">*</span>
         </Label>
         <p className="text-xs text-muted">
-          Upload hingga {MAX_FILES} poster. Format: PNG, JPEG • Maks 5MB per file • Ukuran ideal: 1920x1080 (16:9)
+          Upload hingga {MAX_FILES} poster. Format: PNG, JPEG. Maks 5MB per file. Ukuran ideal: 1920x1080 (16:9)
         </p>
 
         {/* Drop Zone - always visible when under limit */}

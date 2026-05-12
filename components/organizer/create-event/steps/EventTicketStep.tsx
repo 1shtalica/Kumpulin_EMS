@@ -103,12 +103,13 @@ export default function EventTicketStep({
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       {!hideHeader && (
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground">Pengaturan Tiket</h2>
-          <p className="mt-2 text-muted-foreground">
-            Atur kapasitas event, batas pembelian, dan jenis tiket
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
+          <h2 className="text-xl font-semibold text-slate-950">
+            Pengaturan Tiket
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-slate-600">
+            Atur kapasitas event, batas pembelian, dan jenis tiket.
           </p>
         </div>
       )}
@@ -146,8 +147,9 @@ export default function EventTicketStep({
               )}
             />
             <p className="text-xs text-muted-foreground">
-              Batas total tiket yang dapat dibeli oleh 1 user. <br />• Contoh: Jika batas 3, user hanya bisa membeli
-              maksimal 3 tiket. <br />• Isi <strong>0</strong> untuk{" "}
+              Batas total tiket yang dapat dibeli oleh 1 user. <br />Contoh:
+              Jika batas 3, user hanya bisa membeli maksimal 3 tiket. <br />Isi{" "}
+              <strong>0</strong> untuk{" "}
               <strong>tanpa batas pembelian</strong>.
             </p>
             {errors.max_ticket_per_user && (
@@ -232,7 +234,17 @@ export default function EventTicketStep({
                   type="button"
                   variant="outline"
                   onClick={() =>
-                    append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "free" })
+                    append({
+                      name: "",
+                      price: 0,
+                      quota: 0,
+                      description: "",
+                      start_date_time:
+                        undefined as unknown as CreateEventSchema["tickets"][number]["start_date_time"],
+                      end_date_time:
+                        undefined as unknown as CreateEventSchema["tickets"][number]["end_date_time"],
+                      type: "free",
+                    })
                   }
                 >
                   <Plus className="h-4 w-4 shrink-0 mr-1" />
@@ -243,7 +255,17 @@ export default function EventTicketStep({
                   type="button"
                   variant="default"
                   onClick={() =>
-                    append({ name: "", price: 0, quota: 0, description: "", start_date_time: undefined as any, end_date_time: undefined as any, type: "paid" })
+                    append({
+                      name: "",
+                      price: 0,
+                      quota: 0,
+                      description: "",
+                      start_date_time:
+                        undefined as unknown as CreateEventSchema["tickets"][number]["start_date_time"],
+                      end_date_time:
+                        undefined as unknown as CreateEventSchema["tickets"][number]["end_date_time"],
+                      type: "paid",
+                    })
                   }
                 >
                   <Plus className="h-4 w-4 shrink-0 mr-1" />
@@ -372,7 +394,7 @@ export default function EventTicketStep({
                       <Label>
                         Harga (Rp) <span className="text-danger">*</span>
                       </Label>
-                      <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-sm text-muted-foreground ring-offset-background disabled:cursor-not-allowed disabled:opacity-50">
+                      <div className="flex h-10 w-full rounded-xl border border-input bg-gray-50 px-3 py-2 text-sm text-muted-foreground ring-offset-background disabled:cursor-not-allowed disabled:opacity-50">
                         Gratis (Rp 0)
                       </div>
                     </div>
@@ -461,12 +483,12 @@ export default function EventTicketStep({
                       </span>
                       {followRegistration[index] && start_registration_date && end_registration_date && (
                         <span className="ml-auto text-xs font-normal text-primary/80 hidden sm:block">
-                          {formatDateShort(start_registration_date)} – {formatDateShort(end_registration_date)}
+                          {formatDateShort(start_registration_date)} - {formatDateShort(end_registration_date)}
                         </span>
                       )}
                       {followRegistration[index] && (!start_registration_date || !end_registration_date) && (
                         <span className="ml-auto text-xs font-normal text-amber-600">
-                          ⚠ Isi jadwal pendaftaran di step sebelumnya
+                          Isi jadwal pendaftaran di step sebelumnya
                         </span>
                       )}
                     </label>

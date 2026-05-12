@@ -63,23 +63,46 @@ export default function EventScheduleStep({
 
   // Auto-clear dependent fields when prerequisite is cleared (cascade)
   useEffect(() => {
-    // If Start Registration is cleared → clear everything below
+    // If Start Registration is cleared, clear everything below.
     if (!start_registration_date) {
       if (end_registration_date)
-        setValue("end_registration_date", undefined as any);
-      if (event_start_date) setValue("event_start_date", undefined as any);
-      if (event_end_date) setValue("event_end_date", undefined as any);
+        setValue(
+          "end_registration_date",
+          undefined as unknown as CreateEventSchema["end_registration_date"],
+        );
+      if (event_start_date)
+        setValue(
+          "event_start_date",
+          undefined as unknown as CreateEventSchema["event_start_date"],
+        );
+      if (event_end_date)
+        setValue(
+          "event_end_date",
+          undefined as unknown as CreateEventSchema["event_end_date"],
+        );
       return;
     }
-    // If End Registration is cleared → clear event fields
+    // If End Registration is cleared, clear event fields.
     if (!end_registration_date) {
-      if (event_start_date) setValue("event_start_date", undefined as any);
-      if (event_end_date) setValue("event_end_date", undefined as any);
+      if (event_start_date)
+        setValue(
+          "event_start_date",
+          undefined as unknown as CreateEventSchema["event_start_date"],
+        );
+      if (event_end_date)
+        setValue(
+          "event_end_date",
+          undefined as unknown as CreateEventSchema["event_end_date"],
+        );
       return;
     }
-    // If Start Event is cleared → clear End Event
+    // If Start Event is cleared, clear End Event.
     if (!event_start_date) {
-      if (event_end_date) setValue("event_end_date", undefined as any);
+      if (event_end_date)
+        setValue(
+          "event_end_date",
+          undefined as unknown as CreateEventSchema["event_end_date"],
+        );
     }
   }, [
     start_registration_date,
@@ -98,12 +121,13 @@ export default function EventScheduleStep({
 
   return (
     <div className="space-y-10">
-      {/* Header */}
       {!hideHeader && (
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground">Jadwal & Lokasi</h2>
-          <p className="mt-2 text-muted-foreground">
-            Atur waktu acara, pendaftaran, dan lokasi event
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
+          <h2 className="text-xl font-semibold text-slate-950">
+            Jadwal & Lokasi
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-slate-600">
+            Atur waktu pendaftaran, waktu pelaksanaan, rundown, dan lokasi.
           </p>
         </div>
       )}
@@ -552,7 +576,7 @@ export default function EventScheduleStep({
                             variant="outline"
                             role="combobox"
                             className={cn(
-                              "w-full justify-between shadow-none font-normal",
+                              "h-10 w-full justify-between rounded-xl border-slate-200 bg-white font-normal shadow-none hover:border-primary/30 hover:bg-white",
                               !field.value && "text-muted-foreground",
                               errors.address?.province && "border-danger",
                             )}
@@ -620,7 +644,7 @@ export default function EventScheduleStep({
                             role="combobox"
                             disabled={!watchProvince}
                             className={cn(
-                              "w-full justify-between shadow-none font-normal",
+                              "h-10 w-full justify-between rounded-xl border-slate-200 bg-white font-normal shadow-none hover:border-primary/30 hover:bg-white",
                               !field.value && "text-muted-foreground",
                               errors.address?.city && "border-danger",
                             )}

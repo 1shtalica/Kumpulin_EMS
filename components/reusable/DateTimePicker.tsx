@@ -69,7 +69,6 @@ export default function DateTimePicker({
       } else {
         // Set to current time if no time set yet
         const newDate = new Date(selectedDate);
-        const now = new Date();
         newDate.setHours(0);
         newDate.setMinutes(0);
         newDate.setSeconds(0);
@@ -102,7 +101,7 @@ export default function DateTimePicker({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-normal shadow-xs bg-white",
+            "h-10 w-full justify-start rounded-xl border-slate-200 bg-white text-left font-normal shadow-none hover:border-primary/30 hover:bg-white",
             !value && "text-muted-foreground",
             className
           )}
@@ -111,7 +110,7 @@ export default function DateTimePicker({
           {value ? formatDateTime(value) : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto rounded-xl p-0" align="start">
         <div className="sm:flex">
           <Calendar
             mode="single"
@@ -148,7 +147,7 @@ export default function DateTimePicker({
                     variant={
                       value && value.getHours() === hour ? "default" : "ghost"
                     }
-                    className="sm:w-full shrink-0 aspect-square"
+                    className="aspect-square shrink-0 rounded-lg sm:w-full"
                     onClick={() => handleTimeChange("hour", hour)}
                   >
                     {hour.toString().padStart(2, "0")}
@@ -169,7 +168,7 @@ export default function DateTimePicker({
                         ? "default"
                         : "ghost"
                     }
-                    className="sm:w-full shrink-0 aspect-square"
+                    className="aspect-square shrink-0 rounded-lg sm:w-full"
                     onClick={() => handleTimeChange("minute", minute)}
                   >
                     {minute.toString().padStart(2, "0")}
