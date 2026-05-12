@@ -53,7 +53,7 @@ export default function CreateEventClient() {
     defaultValues: storeFormData as Partial<CreateEventSchema>,
   });
 
-  const { trigger, handleSubmit, watch, getValues } = methods;
+  const { trigger, handleSubmit, watch, getValues, setError } = methods;
 
   // Sync form data to store whenever it changes
   useEffect(() => {
@@ -158,10 +158,24 @@ export default function CreateEventClient() {
       methods.reset();
       router.push("/organizer/my-event");
     } catch (error) {
-      const axiosError = error as AxiosError<{ message: string }>;
-      const errorMessage =
-        axiosError.response?.data?.message ||
-        "Gagal membuat event.";
+      const axiosError = error as AxiosError<{
+        message?: string;
+        error_code?: string;
+      }>;
+      const responseData = axiosError.response?.data;
+      const errorMessage = responseData?.message || "Gagal membuat event.";
+
+      if (
+        responseData?.error_code === "INVALID_INPUT" &&
+        responseData.message === "Kategori event tidak valid"
+      ) {
+        setError("category", {
+          type: "server",
+          message: responseData.message,
+        });
+        setStep(2);
+        window.scrollTo(0, 0);
+      }
 
       toast.error(errorMessage, { id: toastId });
     } finally {

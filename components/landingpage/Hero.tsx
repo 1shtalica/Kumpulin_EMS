@@ -7,7 +7,7 @@ import { useDebouncedCallback } from "use-debounce";
 import Link from "next/link";
 import {
     Search,
-    Music,
+    Clapperboard,
     Laptop,
     Trophy,
     Palette,
@@ -48,39 +48,39 @@ function getEventTag(ev: HomeEventCard): { text: string; className: string } {
 
 const CATEGORIES = [
     {
-        name: "Musik",
-        icon: Music,
-        href: "/events?category=musik",
+        name: "Hiburan",
+        icon: Clapperboard,
+        href: `/events?category=${encodeURIComponent("Hiburan")}`,
         color: "#6366f1",
     },
     {
         name: "Teknologi",
         icon: Laptop,
-        href: "/events?category=teknologi",
+        href: `/events?category=${encodeURIComponent("Teknologi")}`,
         color: "#10b981",
     },
     {
         name: "Olahraga",
         icon: Trophy,
-        href: "/events?category=olahraga",
+        href: `/events?category=${encodeURIComponent("Olahraga")}`,
         color: "#f59e0b",
     },
     {
-        name: "Desain",
+        name: "Workshop",
         icon: Palette,
-        href: "/events?category=desain",
+        href: `/events?category=${encodeURIComponent("Workshop")}`,
         color: "#ec4899",
     },
     {
         name: "Bisnis",
         icon: Briefcase,
-        href: "/events?category=bisnis",
+        href: `/events?category=${encodeURIComponent("Bisnis")}`,
         color: "#3b82f6",
     },
     {
         name: "Kuliner",
         icon: Pizza,
-        href: "/events?category=kuliner",
+        href: `/events?category=${encodeURIComponent("Kuliner")}`,
         color: "#ef4444",
     },
 ];
@@ -366,10 +366,7 @@ function MobileEventStrip({ events }: { events: HomeEventCard[] }) {
                                 href={`/events/${ev.slug}`}
                                 className="group relative shrink-0 w-60 overflow-hidden bg-white rounded-xl border border-slate-100 shadow-sm p-4 block hover:shadow-md transition-shadow"
                             >
-                                <HeroEventCardGraphic
-                                    accent={accent}
-                                    compact
-                                />
+                                <HeroEventCardGraphic accent={accent} compact />
                                 <div className="relative flex items-center justify-between mb-2">
                                     <span
                                         className="text-[10px] font-bold uppercase tracking-widest"
@@ -473,7 +470,7 @@ export default function HeroSection() {
     };
 
     return (
-        <section className="relative w-full overflow-hidden bg-[#f9fafb] pt-12">
+        <section className="relative w-full overflow-hidden bg-[#f9fafb] pt-4">
             {/* ── Dot Pattern Background ── */}
             <div className="absolute inset-0 z-0 pointer-events-none">
                 <div

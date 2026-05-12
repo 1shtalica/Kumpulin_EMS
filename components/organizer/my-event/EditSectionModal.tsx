@@ -17,6 +17,7 @@ import EventTicketStep from "@/components/organizer/create-event/steps/EventTick
 import axiosClient from "@/lib/axios-client";
 import { EventService } from "@/services/event-service";
 import { useRouter } from "next/navigation";
+import { toApprovedEventCategory } from "@/constants/event-categories";
 
 interface EditModalProps {
     event: Event;
@@ -34,7 +35,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
         defaultValues: {
             title: event.title || "",
             type: (event.type as any) || "public",
-            category: event.category || "Umum",
+            category: toApprovedEventCategory(event.category),
             description: (() => {
                 const text = event.description as any;
                 if (!text) return "";
@@ -389,8 +390,15 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
 
         } catch (error: any) {
             console.error("Failed to update section:", error);
+            const message = error instanceof Error ? error.message : "Gagal menyimpan perubahan";
+            if (message === "Kategori event tidak valid") {
+                methods.setError("category", {
+                    type: "server",
+                    message,
+                });
+            }
             if (error instanceof Error) {
-                toast.error(error.message);
+                toast.error(message);
             } else {
                 toast.error("Gagal menyimpan perubahan");
             }

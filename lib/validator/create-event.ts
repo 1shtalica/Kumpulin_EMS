@@ -1,5 +1,5 @@
-import { error } from "console";
 import z from "zod";
+import { isApprovedEventCategory } from "@/constants/event-categories";
 
 // 🌟 Step 1
 export const step1Schema = z.object({
@@ -21,7 +21,9 @@ export const step2Schema = z.object({
   category: z
     .string()
     .min(1, { error: "Kategori event wajib diisi" })
-    .max(30, { error: "Kategori event maksimal 30 karakter" }),
+    .refine(isApprovedEventCategory, {
+      error: "Kategori event tidak valid",
+    }),
   description: z
     .string()
     .min(1, { error: "Deskripsi event wajib diisi" })
