@@ -5,6 +5,7 @@ import PopularCategory from "@/components/landingpage/PopularCategory";
 import UpcomingEvents from "@/components/landingpage/UpcomingEvents";
 import CallToAction from "@/components/landingpage/CallToAction";
 import LandingFooter from "@/components/landingpage/LandingFooter";
+import GoToTopButton from "@/components/reusable/GoToTopButton";
 
 export default function LandingPage() {
   return (
@@ -18,6 +19,7 @@ export default function LandingPage() {
         <CallToAction />
       </main>
       <LandingFooter />
+      <GoToTopButton />
     </div>
   );
 }

@@ -175,13 +175,55 @@ function CountdownDisplay({
     );
 }
 
-// Format singkat HH:MM:SS untuk badge di dalam kartu tiket
-function formatBadgeCountdown(diff: number): string {
-    if (diff <= 0) return "00:00:00";
-    const h = Math.floor(diff / (1000 * 60 * 60));
-    const m = Math.floor((diff / 1000 / 60) % 60);
-    const s = Math.floor((diff / 1000) % 60);
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+// Komponen badge countdown tiket dengan 2 mode: Santai (>24 jam) dan FOMO (<24 jam)
+function TicketCountdownBadge({ diff, type }: { diff: number; type: "starts" | "ends" }) {
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const totalSeconds = Math.max(0, Math.floor(diff / 1000));
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const isFomo = diff < 1000 * 60 * 60 * 24; // < 24 jam = mode FOMO
+    const label = type === "starts" ? "Dimulai" : "Berakhir";
+
+    if (isFomo) {
+        return (
+            <div className="mb-2 flex justify-center">
+                <div className="flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-2.5 py-1">
+                    <Flame size={12} className="animate-bounce text-rose-500" />
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-500">
+                        {label}
+                    </span>
+                    <span className="ml-0.5 animate-pulse font-mono text-[10px] font-bold text-rose-600">
+                        {pad(hours)}:{pad(minutes)}:{pad(seconds)}
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="mb-2 flex justify-center">
+            <div className="flex items-center gap-1.5 rounded-xl border border-primary/15 bg-primary/5 px-2.5 py-1">
+                <Clock size={12} className="text-primary" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">
+                    {label}
+                </span>
+                <div className="ml-0.5 flex items-center gap-0.5 font-mono text-[10px] font-bold text-primary">
+                    {days > 0 && (
+                        <>
+                            <span>{days}h</span>
+                            <span className="opacity-40">·</span>
+                        </>
+                    )}
+                    <span>{pad(hours)}j</span>
+                    <span className="opacity-40">:</span>
+                    <span>{pad(minutes)}m</span>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 // --- 3. KOMPONEN UTAMA ---
@@ -237,10 +279,10 @@ export default function TicketSection({ event }: { event: Event }) {
         ? new Date(event.end_registration_date).getTime()
         : Infinity;
 
-    const isRegistrationUpcoming = startReg > 0 && now > 0 && now < startReg;
-    const isRegistrationClosed = now > 0 && now > endReg;
+    const isRegistrationUpcoming = event.status === "published" && startReg > 0 && now > 0 && now < startReg;
+    const isRegistrationClosed = event.status !== "published" || (now > 0 && now > endReg);
     const isRegistrationOpen =
-        now > 0 && !isRegistrationUpcoming && !isRegistrationClosed;
+        event.status === "published" && now > 0 && !isRegistrationUpcoming && !isRegistrationClosed;
 
     const selectedTicket = effectiveTickets.find(
         (t) => t.id === selectedTicketId,
@@ -441,35 +483,16 @@ export default function TicketSection({ event }: { event: Event }) {
 
                                     {/* Ticket Content */}
                                     <div className="flex-1 p-3.5 flex flex-col justify-between">
-                                        {/* Badge countdown tiket (inline, tidak absolute agar tidak terpotong) */}
-                                        {isTicketUpcoming && currentTime && (
-                                            <div className="mb-2 flex justify-center">
-                                                <span className="text-[10px] font-semibold text-white px-3 py-1 rounded-xl bg-slate-700 whitespace-nowrap font-mono">
-                                                    Dimulai{" "}
-                                                    {formatBadgeCountdown(
-                                                        ticketStart - now,
-                                                    )}
-                                                </span>
-                                            </div>
+                                        {/* Badge countdown tiket – 2 mode: Santai & FOMO */}
+                                        {isTicketUpcoming && currentTime && event.status === "published" && !isActuallySoldOut && (
+                                            <TicketCountdownBadge diff={ticketStart - now} type="starts" />
                                         )}
                                         {isTicketOpen &&
                                             currentTime &&
-                                            ticketEnd !== Infinity && (
-                                                <div className="mb-2 flex justify-center">
-                                                    <span
-                                                        className={cn(
-                                                            "text-[10px] font-semibold text-white px-3 py-1 rounded-xl whitespace-nowrap font-mono",
-                                                            isFomoTicket
-                                                                ? "bg-rose-500 animate-pulse"
-                                                                : "bg-amber-500",
-                                                        )}
-                                                    >
-                                                        Berakhir{" "}
-                                                        {formatBadgeCountdown(
-                                                            ticketEnd - now,
-                                                        )}
-                                                    </span>
-                                                </div>
+                                            ticketEnd !== Infinity &&
+                                            event.status === "published" &&
+                                            !isActuallySoldOut && (
+                                                <TicketCountdownBadge diff={ticketEnd - now} type="ends" />
                                             )}
 
                                         {/* Header */}

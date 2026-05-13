@@ -76,11 +76,10 @@ export default function OrganizerEventsList() {
     replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  if (loading) {
-    return <SkeletonOrganizerEvents layout={layout as "list" | "grid"} />;
-  }
+  // Tampilkan empty state hanya jika tidak sedang loading DAN data memang kosong
+  const showEmpty = !loading && events.length === 0 && offset === 0;
 
-  if (!loading && events.length === 0 && offset === 0) {
+  if (showEmpty) {
     // Bedakan antara "tidak ada event sama sekali" vs "filter tidak ada hasil"
     const isFiltering = search !== "" || status !== "all";
     return (
@@ -96,12 +95,19 @@ export default function OrganizerEventsList() {
     );
   }
 
+  // Loading awal (belum ada data sama sekali) — tampilkan skeleton penuh
+  if (loading && events.length === 0) {
+    return <SkeletonOrganizerEvents layout={layout as "list" | "grid"} />;
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <div className={layout === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" : "flex flex-col gap-4"}>
-        {events.map((event) => (
-          <OrganizerEventCard key={event.id || event.event_id} event={event} layout={layout as "list" | "grid"} />
-        ))}
+      <div className={`relative transition-opacity duration-200 ${loading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
+        <div className={layout === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" : "flex flex-col gap-4"}>
+          {events.map((event) => (
+            <OrganizerEventCard key={event.id || event.event_id} event={event} layout={layout as "list" | "grid"} />
+          ))}
+        </div>
       </div>
 
       {totalPages > 0 && (
