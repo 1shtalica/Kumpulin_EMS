@@ -182,7 +182,7 @@ export default function MyTicketDetailPage({
 
     if (isLoading) {
         return (
-            <main className="min-h-[calc(100vh-136px)] bg-slate-50 p-8 px-6">
+            <main className="min-h-[calc(100vh-136px)] bg-slate-50 -mx-6 md:-mx-8 px-6 md:px-8 py-8">
                 <div className="mx-auto flex w-full max-w-5xl items-center justify-center rounded-4xl border border-slate-200 bg-white py-20 shadow-sm">
                     <RefreshCw className="mr-2 h-4 w-4 animate-spin text-slate-500" />
                     <p className="text-sm text-slate-500">
@@ -195,7 +195,7 @@ export default function MyTicketDetailPage({
 
     if (errorMessage) {
         return (
-            <main className="min-h-[calc(100vh-136px)] bg-slate-50 p-8 px-6">
+            <main className="min-h-[calc(100vh-136px)] bg-slate-50 -mx-6 md:-mx-8 px-6 md:px-8 py-8">
                 <div className="mx-auto w-full max-w-5xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
                     <p className="text-lg font-semibold text-slate-900">
                         {errorCode === "TICKET_NOT_FOUND"
@@ -234,7 +234,7 @@ export default function MyTicketDetailPage({
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(ticket.qr_code)}`;
 
     return (
-        <main className="min-h-[calc(100vh-136px)] bg-slate-50 p-8 px-6">
+        <main className="min-h-[calc(100vh-136px)] bg-slate-50 -mx-6 md:-mx-8 px-6 md:px-8 py-8">
             <div className="mx-auto w-full max-w-6xl space-y-5">
                 <Button
                     variant="ghost"

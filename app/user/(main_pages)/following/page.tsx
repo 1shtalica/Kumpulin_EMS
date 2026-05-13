@@ -35,7 +35,7 @@ export default function FollowingPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 space-y-12 bg-background">
+    <div className="flex flex-col items-center justify-center py-12 space-y-12 bg-background">
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Testing Interstitial Screen</h1>
         <p className="text-muted-foreground">
@@ -92,7 +92,7 @@ export default function FollowingPage() {
         isOpen={paymentState.isOpen}
         status={paymentState.status}
         orderNumber="ORD-8X912-2026"
-        customerName="john.doe@example.com"
+        customerName="John"
         onClose={() => setPaymentState(prev => ({ ...prev, isOpen: false }))}
         onPrimaryAction={() => {
           console.log("[Simulasi] Tombol Aksi Payment Ditekan.");
@@ -103,7 +103,7 @@ export default function FollowingPage() {
       <CheckInInterstitial
         isOpen={checkInState.isOpen}
         status={checkInState.status}
-        participantName="Rhein Rhein"
+        participantName="Rhein"
         ticketCategory="VIP - Early Bird"
         errorMessage="Tiket sudah digunakan pada 10:45 AM"
         onClose={() => setCheckInState(prev => ({ ...prev, isOpen: false }))}

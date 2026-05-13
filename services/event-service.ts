@@ -614,4 +614,16 @@ export const EventService = {
       throw new Error(msg);
     }
   },
+
+  async publishEvent(eventId: string): Promise<void> {
+    try {
+      await axiosClient.patch(`/organizer/events/${eventId}/status`, {
+        status: "published",
+      });
+    } catch (error) {
+      console.error("Failed to publish event:", error);
+      const msg = getApiErrorMessage(error, "Gagal menerbitkan event");
+      throw new Error(msg);
+    }
+  },
 };

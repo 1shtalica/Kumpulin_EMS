@@ -34,7 +34,7 @@ export default function CheckInInterstitial({
       // Waktu sukses lebih singkat (1.5s) agar flow antrean cepat, gagal agak lama (3s) agar sempat dibaca
       const timer = setTimeout(() => {
         onClose();
-      }, isSuccess ? 1500 : 3000); 
+      }, isSuccess ? 2000 : 3000); 
       return () => clearTimeout(timer);
     }
   }, [isOpen, isSuccess, onClose]);

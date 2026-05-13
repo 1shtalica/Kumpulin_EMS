@@ -96,6 +96,13 @@ export default function EventScheduleStep({
     return result;
   };
 
+  // Helper: awal hari ini (jam 00:00:00) agar organizer boleh pilih tanggal hari ini
+  const startOfToday = (): Date => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
   return (
     <div className="space-y-10">
       {/* Header */}
@@ -130,7 +137,7 @@ export default function EventScheduleStep({
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Pilih waktu buka pendaftaran"
-                    minDate={new Date()}
+                    minDate={startOfToday()}
                     className={cn(
                       errors.start_registration_date && "border-danger",
                       "shadow-none"
@@ -159,7 +166,7 @@ export default function EventScheduleStep({
                     value={field.value}
                     onChange={field.onChange}
                     placeholder="Pilih waktu tutup pendaftaran"
-                    minDate={start_registration_date || new Date()}
+                    minDate={start_registration_date || startOfToday()}
                     disabled={!start_registration_date}
                     className={cn(
                       errors.end_registration_date && "border-danger",
@@ -208,7 +215,7 @@ export default function EventScheduleStep({
                     minDate={
                       end_registration_date
                         ? addDays(end_registration_date, 1)
-                        : new Date()
+                        : startOfToday()
                     }
                     disabled={!end_registration_date}
                     className={cn(errors.event_start_date && "border-danger", "shadow-none")}

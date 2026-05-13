@@ -40,6 +40,10 @@ export default function OrganizerEventsList() {
   const [events, setEvents] = useState<OrganizerEventCardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
+  const [refreshCount, setRefreshCount] = useState(0);
+
+  const handleStatusChange = () => setRefreshCount((n) => n + 1);
+
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
@@ -60,7 +64,7 @@ export default function OrganizerEventsList() {
       }
     };
     fetchEvents();
-  }, [search, status, offset, limit]);
+  }, [search, status, offset, limit, refreshCount]);
 
   const totalPages = Math.max(1, Math.ceil(totalItems / limit));
   const currentPage = Math.floor(offset / limit) + 1;
@@ -105,7 +109,7 @@ export default function OrganizerEventsList() {
       <div className={`relative transition-opacity duration-200 ${loading ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
         <div className={layout === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" : "flex flex-col gap-4"}>
           {events.map((event) => (
-            <OrganizerEventCard key={event.id || event.event_id} event={event} layout={layout as "list" | "grid"} />
+            <OrganizerEventCard key={event.id || event.event_id} event={event} layout={layout as "list" | "grid"} onStatusChange={handleStatusChange} />
           ))}
         </div>
       </div>

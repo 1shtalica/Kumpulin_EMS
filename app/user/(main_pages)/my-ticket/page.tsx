@@ -211,7 +211,7 @@ function TicketCard({ item }: { item: MyTicketListItem }) {
 
 function TicketPageFallback() {
     return (
-        <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
+        <main className="min-h-[calc(100vh-136px)] bg-slate-50 -mx-6 md:-mx-8 px-6 md:px-8 py-6">
             <div className="mx-auto flex w-full max-w-6xl items-center justify-center rounded-[1.75rem] border border-slate-200 bg-white py-20">
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin text-slate-500" />
                 <p className="text-sm text-slate-500">Menyiapkan tiket...</p>
@@ -340,7 +340,7 @@ function MyTicketPageContent() {
     };
 
     return (
-        <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
+        <main className="min-h-[calc(100vh-136px)] bg-slate-50 -mx-6 md:-mx-8 px-6 md:px-8 py-6">
             <div className="mx-auto w-full max-w-6xl space-y-6">
                 <header className="overflow-hidden rounded-[2rem] border border-primary/10 bg-white shadow-sm">
                     <div className="relative bg-linear-to-r from-primary via-primary to-secondary p-6 text-white sm:p-8">

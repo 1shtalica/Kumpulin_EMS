@@ -1,16 +1,22 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Clock, Copy, Eye, MapPin, Pencil, Users } from "lucide-react";
+import { Calendar, Clock, Copy, Eye, Globe, MapPin, Pencil, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import type { OrganizerEventCard as OrganizerEventCardType } from "@/types/event";
 import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
+import { useState } from "react";
+import { EventService } from "@/services/event-service";
+import { toast } from "sonner";
 
 interface Props {
     event: OrganizerEventCardType;
     layout?: "list" | "grid";
+    onStatusChange?: () => void;
 }
 
 const statusTranslation: Record<string, string> = {
@@ -33,7 +39,32 @@ const statusStyles: Record<string, string> = {
     cancelled: "border-danger/15 bg-danger-light text-danger",
 };
 
-export default function OrganizerEventCard({ event, layout = "list" }: Props) {
+export default function OrganizerEventCard({ event, layout = "list", onStatusChange }: Props) {
+    const [isPublishing, setIsPublishing] = useState(false);
+
+    const handlePublish = async () => {
+        setIsPublishing(true);
+        try {
+            const eventId = event.id || event.event_id;
+            if (!eventId) throw new Error("Event ID tidak ditemukan");
+
+            // Fetch full event data to preserve category & description
+            const fullEvent = await EventService.getOrganizerEventDetail(eventId);
+
+            await EventService.updateEventCore(eventId, {
+                title: fullEvent.title,
+                category: fullEvent.category || "",
+                description: fullEvent.description,
+                status: "published",
+            });
+            toast.success("Event berhasil diterbitkan!");
+            onStatusChange?.();
+        } catch {
+            toast.error("Gagal menerbitkan event. Coba lagi.");
+        } finally {
+            setIsPublishing(false);
+        }
+    };
     let dateStr = "TBA";
     let timeStr = "TBA";
 
@@ -144,6 +175,19 @@ export default function OrganizerEventCard({ event, layout = "list" }: Props) {
                 <Separator className="bg-slate-200/80" />
 
                 <div className="flex w-full flex-wrap items-center justify-end gap-2">
+                    {normalizedStatus === "draft" && (
+                        <Button
+                            type="button"
+                            size="icon"
+                            disabled={isPublishing}
+                            onClick={handlePublish}
+                            title="Terbitkan Event"
+                            className="h-9 w-9 shrink-0 rounded-xl border border-success/30 bg-success-light px-0 text-success shadow-none transition-all hover:bg-success/10 sm:w-auto sm:px-3"
+                        >
+                            <Globe className="h-4 w-4 stroke-[1.5] sm:mr-1.5" />
+                            <span className="hidden sm:inline">{isPublishing ? "Menerbitkan..." : "Terbitkan"}</span>
+                        </Button>
+                    )}
                     <Button
                         variant="outline"
                         size="icon"

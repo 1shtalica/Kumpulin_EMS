@@ -1,5 +1,7 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,13 +14,19 @@ interface UserHeaderProps {
 }
 
 export default function UserHeader({ className }: UserHeaderProps) {
-  const { user, isLoading } = useAuthStore();
-  const initials = user?.username?.charAt(0)?.toUpperCase() ?? "U";
+  const pathname = usePathname();
+
+  const getPageTitle = () => {
+    if (pathname.startsWith("/user/my-ticket")) return "Tiket Saya";
+    if (pathname.startsWith("/user/following")) return "Mengikuti";
+    if (pathname.startsWith("/user/profile")) return "Profil Saya";
+    return "User Account";
+  };
 
   return (
     <header
       className={cn(
-        "fixed top-0 z-30 h-16 bg-white border-b flex items-center gap-4 px-6 shadow-xs",
+        "fixed top-0 z-30 h-18 bg-white border-b border-slate-100 flex items-center gap-4 px-6 md:px-8",
         "left-0 right-0",
         className
       )}
@@ -35,18 +43,15 @@ export default function UserHeader({ className }: UserHeaderProps) {
         </Button>
       </SheetTrigger>
 
+      {/* Page Title */}
+      <div className="hidden md:block">
+        <h1 className="text-[22px] font-semibold tracking-tight text-slate-900">
+          {getPageTitle()}
+        </h1>
+      </div>
+
       {/* Spacer */}
       <div className="flex-1" />
-
-      {/* Avatar — tanpa dropdown, klik ke profile */}
-      {isLoading ? (
-        <div className="h-10 w-10 rounded-full bg-muted animate-pulse" aria-hidden />
-      ) : (
-        <Avatar>
-          <AvatarImage src={user?.profile_url ?? undefined} />
-          <AvatarFallback className="bg-primary text-white font-bold">{initials}</AvatarFallback>
-        </Avatar>
-      )}
     </header>
   );
 }
