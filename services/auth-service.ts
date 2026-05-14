@@ -121,6 +121,31 @@ export const AuthService = {
         }
     },
     /**
+     * Sends an email verification code for the authenticated user's email.
+     */
+    async sendEmailVerificationCode(email: string) {
+        try {
+            const response = await axiosClient.post("/auth/send-code", {
+                email,
+                type: "email_verification",
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+    /**
+     * Verifies the email code sent to the authenticated user's email address.
+     */
+    async verifyEmailCode(payload: { email: string; code: string }) {
+        try {
+            const response = await axiosClient.post("/auth/verify-email", payload);
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    },
+    /**
      * Requests a password reset token for the supplied email address.
      */
     async forgotPassword(email: string) {

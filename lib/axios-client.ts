@@ -53,6 +53,7 @@ const noAutoRefreshEndpoints = [
     "/auth/refresh",
     "/auth/logout",
     "/auth/send-code",
+    "/auth/verify-email",
     "/auth/forgot-password",
     "/auth/register-organizer",
 ];
