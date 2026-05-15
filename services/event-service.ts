@@ -603,4 +603,27 @@ export const EventService = {
       throw new Error(msg);
     }
   },
+
+  async updateOrganizerEventStatus(
+    eventId: string,
+    status: string,
+  ): Promise<void> {
+    const event = await this.getEventByIdFull(eventId);
+
+    if (!event) {
+      throw new Error("Event tidak ditemukan");
+    }
+
+    const description =
+      typeof event.description === "string"
+        ? event.description
+        : JSON.stringify(event.description ?? { content: "" });
+
+    await this.updateEventCore(event.event_id || eventId, {
+      title: event.title,
+      category: event.category,
+      description,
+      status,
+    });
+  },
 };

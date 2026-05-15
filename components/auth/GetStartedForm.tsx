@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import * as z from "zod";
@@ -42,8 +42,11 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         initialUser?.phone_number ?? "",
     );
     const [otpCode, setOtpCode] = useState("");
-    const [isEmailVerified, setIsEmailVerified] = useState(false);
+    const [isEmailVerified, setIsEmailVerified] = useState(
+        initialUser?.email_verified ?? false,
+    );
     const [hasSentCode, setHasSentCode] = useState(false);
+    const [resendCooldown, setResendCooldown] = useState(0);
     const [isSendingCode, setIsSendingCode] = useState(false);
     const [isVerifyingCode, setIsVerifyingCode] = useState(false);
     const [selectedRole, setSelectedRole] = useState<
@@ -66,7 +69,24 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
 
     const accountEmail = initialUser?.email ?? "";
 
+    useEffect(() => {
+        if (resendCooldown <= 0) return;
+
+        const timer = window.setInterval(() => {
+            setResendCooldown((current) => Math.max(current - 1, 0));
+        }, 1000);
+
+        return () => window.clearInterval(timer);
+    }, [resendCooldown]);
+
     const handleSendEmailCode = async () => {
+        if (isEmailVerified) {
+            const organizerData = await getOrganizerData();
+            if (organizerData === null) return;
+            await handleFinalSubmit(organizerData);
+            return;
+        }
+
         if (!accountEmail) {
             toast.error("Email akun tidak ditemukan");
             return;
@@ -78,6 +98,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         try {
             await AuthService.sendEmailVerificationCode(accountEmail);
             setHasSentCode(true);
+            setResendCooldown(60);
             toast.success("Kode verifikasi dikirim ke email Anda", {
                 id: toastId,
             });
@@ -146,8 +167,8 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         setPhoneNumber(`+62${phone}`);
         setSelectedRole(null);
         setOtpCode("");
-        setIsEmailVerified(false);
         setHasSentCode(false);
+        setResendCooldown(0);
         setStep(2);
     };
 
@@ -211,10 +232,10 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     };
 
     return (
-        <section className="relative w-full overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/95 p-5 shadow-xl shadow-slate-900/[0.07] backdrop-blur sm:p-6">
+        <section className="relative w-full overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 p-5 shadow-xl shadow-slate-900/[0.07] backdrop-blur sm:p-6">
             <span className="absolute -left-3 top-28 size-6 rounded-full bg-[#f7f8fb]" />
             <span className="absolute -right-3 top-28 size-6 rounded-full bg-[#f7f8fb]" />
-            <div className="absolute inset-x-0 top-0 h-1.5 bg-linear-to-r from-primary via-[#10b981] to-primary" />
+            <div className="absolute inset-x-0 top-0 h-1.5 bg-primary" />
 
             <div className="mb-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3.5">
                 <div className="flex items-center justify-between gap-3">
@@ -498,11 +519,14 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="space-y-1">
                         <h2 className="text-base font-semibold text-slate-950">
-                            Verifikasi email
+                            {isEmailVerified
+                                ? "Email sudah terverifikasi"
+                                : "Verifikasi email"}
                         </h2>
                         <p className="text-sm text-slate-500">
-                            Kirim kode OTP ke email akun Anda sebagai langkah
-                            terakhir.
+                            {isEmailVerified
+                                ? "Selesaikan setup untuk menyimpan profil Anda."
+                                : "Kirim kode OTP ke email akun Anda sebagai langkah terakhir."}
                         </p>
                     </div>
 
@@ -532,6 +556,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                                         isSendingCode ||
                                         isEmailVerified ||
                                         isLoading ||
+                                        resendCooldown > 0 ||
                                         !accountEmail
                                     }
                                     className={cn(
@@ -547,14 +572,24 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                                             Mengirim
                                         </>
                                     ) : hasSentCode ? (
-                                        "Kirim ulang"
+                                        resendCooldown > 0 ? (
+                                            `Kirim ulang ${resendCooldown}s`
+                                        ) : (
+                                            "Kirim ulang"
+                                        )
+                                    ) : isEmailVerified ? (
+                                        "Terverifikasi"
                                     ) : (
                                         "Kirim kode"
                                     )}
                                 </Button>
                             </div>
 
-                            {hasSentCode && (
+                            {isEmailVerified ? (
+                                <span className="mt-3 inline-flex rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2.5 py-1 text-[11px] font-semibold text-[#047857]">
+                                    Email akun ini sudah terverifikasi.
+                                </span>
+                            ) : hasSentCode && (
                                 <span className="mt-3 inline-flex rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2.5 py-1 text-[11px] font-semibold text-[#047857]">
                                     Kode sudah dikirim. Cek inbox atau spam.
                                 </span>
@@ -573,9 +608,11 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                                 inputMode="text"
                                 autoComplete="one-time-code"
                                 placeholder={
-                                    hasSentCode
-                                        ? "Masukkan kode dari email"
-                                        : "Kirim kode dulu"
+                                    isEmailVerified
+                                        ? "Email sudah terverifikasi"
+                                        : hasSentCode
+                                          ? "Masukkan kode dari email"
+                                          : "Kirim kode dulu"
                                 }
                                 value={otpCode}
                                 disabled={
@@ -591,9 +628,11 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                                 }
                                 className="h-11 rounded-xl border-slate-200 bg-slate-50 text-center text-base font-semibold tracking-[0.35em] focus-visible:border-primary/40 focus-visible:ring-primary/20 disabled:opacity-70"
                             />
-                            <p className="text-xs text-slate-400">
-                                Masukkan 6 karakter kode verifikasi dari email.
-                            </p>
+                            {!isEmailVerified && (
+                                <p className="text-xs text-slate-400">
+                                    Masukkan 6 karakter kode verifikasi dari email.
+                                </p>
+                            )}
                         </div>
 
                         <div className="flex gap-3">
@@ -612,9 +651,8 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                                 disabled={
                                     isVerifyingCode ||
                                     isLoading ||
-                                    isEmailVerified ||
-                                    !hasSentCode ||
-                                    !otpCode.trim()
+                                    (!isEmailVerified &&
+                                        (!hasSentCode || !otpCode.trim()))
                                 }
                                 className="h-10 flex-1 rounded-xl bg-primary text-sm font-semibold shadow-glow hover:bg-primary-hover"
                             >
@@ -625,7 +663,9 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                                     </>
                                 ) : (
                                     <>
-                                        Verifikasi & selesai
+                                        {isEmailVerified
+                                            ? "Selesai"
+                                            : "Verifikasi & selesai"}
                                         <ArrowRight className="size-4" />
                                     </>
                                 )}

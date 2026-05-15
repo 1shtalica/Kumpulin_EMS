@@ -26,7 +26,6 @@ import EventTicketStep from "@/components/organizer/create-event/steps/EventTick
 import axiosClient from "@/lib/axios-client";
 import { EventService } from "@/services/event-service";
 import { useRouter } from "next/navigation";
-import { toApprovedEventCategory } from "@/constants/event-categories";
 
 interface EditModalProps {
     event: Event;
@@ -84,7 +83,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
         defaultValues: {
             title: event.title || "",
             type: (event.type as any) || "public",
-            category: toApprovedEventCategory(event.category),
+            category: event.category || "",
             description: (() => {
                 const text = event.description as any;
                 if (!text) return "";

@@ -54,8 +54,6 @@ const STATUS_OPTIONS: StatusOption[] = [
     { label: "Semua tiket", shortLabel: "Semua", value: "all" },
     { label: "Aktif", shortLabel: "Aktif", value: "issued" },
     { label: "Sudah check-in", shortLabel: "Hadir", value: "checked_in" },
-    { label: "Dibatalkan", shortLabel: "Batal", value: "cancelled" },
-    { label: "Direfund", shortLabel: "Refund", value: "refunded" },
 ];
 
 const DEFAULT_PAGINATION: TicketPagination = {
@@ -65,12 +63,7 @@ const DEFAULT_PAGINATION: TicketPagination = {
     total_pages: 1,
 };
 
-const VALID_STATUSES = new Set<TicketStatus>([
-    "issued",
-    "checked_in",
-    "cancelled",
-    "refunded",
-]);
+const VALID_STATUSES = new Set<TicketStatus>(["issued", "checked_in"]);
 
 const parsePositiveInt = (value: string | null, fallback: number) => {
     if (!value) return fallback;
@@ -115,22 +108,6 @@ const getStatusPresentation = (status: TicketStatus) => {
                 dotClassName: "bg-blue-500",
                 badgeClassName:
                     "border-blue-100 bg-blue-50 text-blue-700 hover:bg-blue-50",
-            };
-        case "cancelled":
-            return {
-                label: "Dibatalkan",
-                Icon: X,
-                dotClassName: "bg-red-500",
-                badgeClassName:
-                    "border-red-100 bg-red-50 text-red-700 hover:bg-red-50",
-            };
-        case "refunded":
-            return {
-                label: "Direfund",
-                Icon: RefreshCw,
-                dotClassName: "bg-amber-500",
-                badgeClassName:
-                    "border-amber-100 bg-amber-50 text-amber-700 hover:bg-amber-50",
             };
         default:
             return {
