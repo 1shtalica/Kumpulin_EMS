@@ -5,15 +5,19 @@ import Link from "next/link";
 import { type ReactNode, use, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+    AlertCircle,
     ArrowLeft,
     CalendarDays,
     CheckCircle2,
+    Clock3,
+    Hash,
     Mail,
     Phone,
     QrCode,
     RefreshCw,
-    Ticket,
+    Ticket as TicketIcon,
     UserRound,
+    X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,47 +48,111 @@ const getStatusPresentation = (status: TicketStatus) => {
         case "issued":
             return {
                 label: "Aktif",
+                Icon: CheckCircle2,
                 tone: "text-emerald-700",
                 dotClassName: "bg-emerald-500",
+                stripClassName: "bg-emerald-500",
                 badgeClassName:
-                    "border-transparent bg-emerald-50 text-emerald-700 hover:bg-emerald-50",
+                    "border-emerald-100 bg-emerald-50 text-emerald-700 hover:bg-emerald-50",
             };
         case "checked_in":
             return {
-                label: "Checked In",
+                label: "Sudah check-in",
+                Icon: CheckCircle2,
                 tone: "text-blue-700",
                 dotClassName: "bg-blue-500",
+                stripClassName: "bg-blue-500",
                 badgeClassName:
-                    "border-transparent bg-blue-50 text-blue-700 hover:bg-blue-50",
+                    "border-blue-100 bg-blue-50 text-blue-700 hover:bg-blue-50",
             };
         case "cancelled":
             return {
-                label: "Cancelled",
+                label: "Dibatalkan",
+                Icon: X,
                 tone: "text-red-700",
                 dotClassName: "bg-red-500",
+                stripClassName: "bg-red-500",
                 badgeClassName:
-                    "border-transparent bg-red-50 text-red-700 hover:bg-red-50",
+                    "border-red-100 bg-red-50 text-red-700 hover:bg-red-50",
             };
         case "refunded":
             return {
-                label: "Refunded",
+                label: "Direfund",
+                Icon: RefreshCw,
                 tone: "text-amber-700",
                 dotClassName: "bg-amber-500",
+                stripClassName: "bg-amber-500",
                 badgeClassName:
-                    "border-transparent bg-amber-50 text-amber-700 hover:bg-amber-50",
+                    "border-amber-100 bg-amber-50 text-amber-700 hover:bg-amber-50",
             };
         default:
             return {
-                label: "Invalidated",
+                label: "Tidak valid",
+                Icon: AlertCircle,
                 tone: "text-slate-700",
                 dotClassName: "bg-slate-400",
+                stripClassName: "bg-slate-400",
                 badgeClassName:
-                    "border-transparent bg-slate-100 text-slate-700 hover:bg-slate-100",
+                    "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-100",
             };
     }
 };
 
-function DetailRow({
+function TicketPassBackground() {
+    return (
+        <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden opacity-90 lg:block"
+        >
+            <div className="absolute inset-y-0 right-0 w-80 bg-linear-to-l from-primary/8 via-primary/4 to-transparent" />
+            <div className="absolute -right-10 top-5 h-34 w-56 rotate-6 rounded-[1.75rem] border border-primary/15 bg-primary/8" />
+            <div className="absolute right-12 top-8 h-32 w-56 -rotate-3 rounded-2xl border border-slate-200 bg-white/85 shadow-sm">
+                <div className="absolute inset-y-4 left-16 border-l border-dashed border-slate-300" />
+                <div className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full border border-slate-200 bg-white" />
+                <div className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full border border-slate-200 bg-white" />
+                <div className="absolute left-5 top-5 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/12 text-primary">
+                    <TicketIcon className="h-5 w-5" />
+                </div>
+                <div className="absolute left-22 top-6 h-2 w-24 rounded-full bg-slate-300" />
+                <div className="absolute left-22 top-12 h-1.5 w-16 rounded-full bg-slate-200" />
+                <div className="absolute left-22 top-17 h-1.5 w-20 rounded-full bg-primary/25" />
+                <div className="absolute bottom-5 left-22 flex h-8 items-end gap-1">
+                    <span className="h-4 w-1 rounded-full bg-slate-300" />
+                    <span className="h-7 w-1 rounded-full bg-slate-400" />
+                    <span className="h-5 w-1 rounded-full bg-slate-300" />
+                    <span className="h-8 w-1 rounded-full bg-primary/40" />
+                    <span className="h-4 w-1 rounded-full bg-slate-300" />
+                    <span className="h-6 w-1 rounded-full bg-slate-400" />
+                    <span className="h-5 w-1 rounded-full bg-primary/30" />
+                </div>
+            </div>
+            <div className="absolute bottom-7 right-24 h-px w-56 rotate-[-5deg] border-t border-dashed border-slate-300" />
+        </div>
+    );
+}
+
+function HeaderLeftGraphic() {
+    return (
+        <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+        >
+            <div className="absolute left-0 top-0 h-full w-24 bg-linear-to-r from-slate-50/80 via-slate-50/35 to-transparent" />
+            <div className="absolute -left-14 -top-10 h-32 w-32 rotate-12 rounded-[1.75rem] border border-primary/10 bg-primary/8" />
+            <div className="absolute -bottom-12 left-18 h-24 w-36 -rotate-6 rounded-2xl border border-slate-200/70 bg-white/55" />
+            <div className="absolute bottom-5 left-7 flex h-9 items-end gap-1.5 opacity-70">
+                <span className="h-4 w-1.5 rounded-full bg-slate-300" />
+                <span className="h-8 w-1.5 rounded-full bg-slate-400" />
+                <span className="h-5 w-1.5 rounded-full bg-primary/35" />
+                <span className="h-7 w-1.5 rounded-full bg-slate-300" />
+                <span className="h-4 w-1.5 rounded-full bg-primary/25" />
+            </div>
+            <div className="absolute left-36 top-8 h-px w-36 rotate-[-6deg] border-t border-dashed border-slate-300/80" />
+        </div>
+    );
+}
+
+function DetailItem({
     icon,
     label,
     value,
@@ -94,15 +162,13 @@ function DetailRow({
     value: ReactNode;
 }) {
     return (
-        <div className="flex items-start gap-3 rounded-2xl bg-slate-50 px-3 py-3">
-            <div className="mt-0.5 text-primary">{icon}</div>
-            <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    {label}
-                </p>
-                <div className="mt-1 min-w-0 text-sm font-medium text-slate-800">
-                    {value}
-                </div>
+        <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-3">
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                {label}
+            </p>
+            <div className="flex min-w-0 items-center gap-2 text-sm font-medium text-slate-800">
+                <span className="shrink-0 text-slate-400">{icon}</span>
+                <span className="min-w-0 truncate">{value}</span>
             </div>
         </div>
     );
@@ -116,10 +182,43 @@ function SectionBlock({
     children: ReactNode;
 }) {
     return (
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/5">
             <h2 className="text-sm font-semibold text-slate-950">{title}</h2>
             <div className="mt-4 grid gap-3">{children}</div>
         </section>
+    );
+}
+
+function LoadingState() {
+    return (
+        <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
+            <div className="mx-auto w-full max-w-6xl space-y-4">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                    <div className="h-4 w-32 animate-pulse rounded-full bg-slate-100" />
+                    <div className="mt-4 h-8 w-3/5 animate-pulse rounded-lg bg-slate-100" />
+                    <div className="mt-3 h-4 w-1/3 animate-pulse rounded-md bg-slate-100" />
+                </div>
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+                    <div className="space-y-4">
+                        {[1, 2, 3].map((item) => (
+                            <div
+                                key={item}
+                                className="rounded-2xl border border-slate-200 bg-white p-4"
+                            >
+                                <div className="h-4 w-28 animate-pulse rounded-md bg-slate-100" />
+                                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                                    <div className="h-16 animate-pulse rounded-xl bg-slate-100" />
+                                    <div className="h-16 animate-pulse rounded-xl bg-slate-100" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="h-96 rounded-2xl border border-slate-200 bg-white p-5">
+                        <div className="h-full animate-pulse rounded-xl bg-slate-100" />
+                    </div>
+                </div>
+            </div>
+        </main>
     );
 }
 
@@ -180,42 +279,35 @@ export default function MyTicketDetailPage({
         return ticket.status === "checked_in" || Boolean(ticket.checked_in_at);
     }, [ticket]);
 
-    if (isLoading) {
-        return (
-            <main className="min-h-[calc(100vh-136px)] bg-slate-50 -mx-6 md:-mx-8 px-6 md:px-8 py-8">
-                <div className="mx-auto flex w-full max-w-5xl items-center justify-center rounded-4xl border border-slate-200 bg-white py-20 shadow-sm">
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin text-slate-500" />
-                    <p className="text-sm text-slate-500">
-                        Memuat detail tiket...
-                    </p>
-                </div>
-            </main>
-        );
-    }
+    if (isLoading) return <LoadingState />;
 
     if (errorMessage) {
         return (
-            <main className="min-h-[calc(100vh-136px)] bg-slate-50 -mx-6 md:-mx-8 px-6 md:px-8 py-8">
-                <div className="mx-auto w-full max-w-5xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
-                    <p className="text-lg font-semibold text-slate-900">
+            <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
+                <div className="mx-auto w-full max-w-4xl rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm shadow-slate-900/5">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+                        <AlertCircle className="h-6 w-6" />
+                    </div>
+                    <p className="mt-4 text-lg font-semibold text-slate-950">
                         {errorCode === "TICKET_NOT_FOUND"
                             ? "Tiket tidak ditemukan"
                             : errorCode === "INVALID_INPUT"
                               ? "Permintaan tidak valid"
                               : "Detail tiket gagal dimuat"}
                     </p>
-                    <p className="mt-2 text-sm text-slate-500">
+                    <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
                         {errorMessage}
                     </p>
                     <div className="mt-6 flex flex-wrap justify-center gap-2">
                         <Button
                             variant="outline"
+                            className="rounded-lg"
                             onClick={() => setReloadCount((n) => n + 1)}
                         >
                             Coba Lagi
                         </Button>
-                        <Button asChild variant="brand">
-                            <Link href="/user/my-ticket">Kembali ke List</Link>
+                        <Button asChild variant="brand" className="rounded-lg">
+                            <Link href="/user/my-ticket">Kembali ke Tiket</Link>
                         </Button>
                     </div>
                 </div>
@@ -226,6 +318,7 @@ export default function MyTicketDetailPage({
     if (!ticket) return null;
 
     const status = getStatusPresentation(ticket.status);
+    const StatusIcon = status.Icon;
     const eventTitle = ticket.event.title || "Event";
     const categoryName = ticket.category.name || "Kategori tiket";
     const participantName = ticket.participant.full_name || "-";
@@ -234,12 +327,12 @@ export default function MyTicketDetailPage({
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(ticket.qr_code)}`;
 
     return (
-        <main className="min-h-[calc(100vh-136px)] bg-slate-50 -mx-6 md:-mx-8 px-6 md:px-8 py-8">
+        <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
             <div className="mx-auto w-full max-w-6xl space-y-5">
                 <Button
                     variant="ghost"
                     asChild
-                    className="w-fit rounded-full px-0 text-slate-600 hover:px-3"
+                    className="h-10 w-fit rounded-lg px-2 text-slate-600 hover:bg-white hover:text-slate-950"
                 >
                     <Link href="/user/my-ticket">
                         <ArrowLeft className="h-4 w-4" />
@@ -247,178 +340,237 @@ export default function MyTicketDetailPage({
                     </Link>
                 </Button>
 
-                <section className="overflow-hidden rounded-4xl border border-slate-200 bg-white shadow-sm">
-                    <div className="relative bg-linear-to-r from-primary via-primary to-secondary p-6 text-white sm:p-8">
-                        <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-white/15 blur-2xl" />
-                        <div className="absolute -bottom-24 left-1/3 h-44 w-44 rounded-full bg-black/10 blur-2xl" />
-                        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                            <div className="max-w-3xl">
-                                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/65">
-                                    E-ticket detail
-                                </p>
-                                <h1 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                                    {eventTitle}
-                                </h1>
-                                <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-white/75">
-                                    <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 font-mono backdrop-blur">
-                                        {ticket.ticket_number || "-"}
-                                    </span>
-                                    <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 backdrop-blur">
-                                        {categoryName}
-                                    </span>
+                <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5">
+                    <div
+                        className={`absolute inset-y-0 left-0 w-1.5 ${status.stripClassName}`}
+                        aria-hidden="true"
+                    />
+                    <TicketPassBackground />
+                    <div className="relative z-10 grid gap-0 lg:grid-cols-[minmax(0,1fr)_280px]">
+                        <div className="relative overflow-hidden p-5 pl-8 sm:pl-10">
+                            <HeaderLeftGraphic />
+                            <div className="relative z-10 flex flex-col gap-4">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="min-w-0">
+                                        <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                            <span
+                                                className={`h-2 w-2 rounded-full ${status.dotClassName}`}
+                                            />
+                                            E-ticket detail
+                                        </div>
+                                        <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+                                            {eventTitle}
+                                        </h1>
+                                    </div>
+                                    <Badge
+                                        variant="outline"
+                                        className={`w-fit shrink-0 gap-1.5 rounded-lg px-2.5 py-1 ${status.badgeClassName}`}
+                                    >
+                                        <StatusIcon className="h-3.5 w-3.5" />
+                                        {status.label}
+                                    </Badge>
+                                </div>
+
+                                <div className="grid gap-2 text-sm text-slate-600 md:grid-cols-2">
+                                    <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2">
+                                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                                            Kode
+                                        </p>
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <Hash className="h-4 w-4 shrink-0 text-slate-400" />
+                                            <span className="truncate font-mono text-xs">
+                                                {ticket.ticket_number || "-"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="min-w-0 rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2">
+                                        <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                                            Kategori
+                                        </p>
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <TicketIcon className="h-4 w-4 shrink-0 text-slate-400" />
+                                            <span className="truncate">
+                                                {categoryName}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <Badge className={status.badgeClassName}>
-                                {status.label}
-                            </Badge>
+                        </div>
+
+                        <div className="relative flex flex-col gap-4 border-t border-dashed border-slate-200 bg-white/70 p-4 backdrop-blur-[2px] lg:border-l lg:border-t-0 lg:bg-slate-50/80 lg:p-5">
+                            <div className="pointer-events-none absolute -left-3 top-5 hidden h-6 w-6 rounded-full border border-slate-200 bg-white lg:block" />
+                            <div className="pointer-events-none absolute -left-3 bottom-5 hidden h-6 w-6 rounded-full border border-slate-200 bg-white lg:block" />
+
+                            <div className="min-w-0">
+                                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                    <TicketIcon className="h-4 w-4 text-primary" />
+                                    Akses masuk
+                                </div>
+                                <p className="truncate text-lg font-semibold text-slate-950">
+                                    {categoryName}
+                                </p>
+                                <p className="mt-1 text-sm text-slate-500">
+                                    QR tersedia di panel kanan.
+                                </p>
+                            </div>
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="mt-auto h-10 w-full rounded-lg border-slate-200 bg-white text-slate-700 hover:border-primary/25 hover:bg-slate-50 hover:text-slate-950"
+                                onClick={() => setReloadCount((n) => n + 1)}
+                            >
+                                <RefreshCw className="h-4 w-4" />
+                                Refresh
+                            </Button>
                         </div>
                     </div>
+                </header>
 
-                    <div className="grid gap-5 bg-slate-50/70 p-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-                        <div className="space-y-4">
-                            <SectionBlock title="Ringkasan Tiket">
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    <DetailRow
-                                        icon={<Ticket className="h-4 w-4" />}
-                                        label="Kategori"
-                                        value={categoryName}
-                                    />
-                                    <DetailRow
-                                        icon={
-                                            <CheckCircle2 className="h-4 w-4" />
-                                        }
-                                        label="Status"
-                                        value={
+                <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+                    <div className="space-y-4">
+                        <SectionBlock title="Ringkasan Tiket">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <DetailItem
+                                    icon={<TicketIcon className="h-4 w-4" />}
+                                    label="Kategori"
+                                    value={categoryName}
+                                />
+                                <DetailItem
+                                    icon={<StatusIcon className="h-4 w-4" />}
+                                    label="Status"
+                                    value={
+                                        <span
+                                            className={`inline-flex items-center gap-2 ${status.tone}`}
+                                        >
                                             <span
-                                                className={`inline-flex items-center gap-2 ${status.tone}`}
-                                            >
-                                                <span
-                                                    className={`h-2 w-2 rounded-full ${status.dotClassName}`}
-                                                />
-                                                {status.label}
-                                            </span>
-                                        }
-                                    />
-                                </div>
-                            </SectionBlock>
+                                                className={`h-2 w-2 rounded-full ${status.dotClassName}`}
+                                            />
+                                            {status.label}
+                                        </span>
+                                    }
+                                />
+                            </div>
+                        </SectionBlock>
 
-                            <SectionBlock title="Jadwal Event">
-                                <DetailRow
-                                    icon={<CalendarDays className="h-4 w-4" />}
+                        <SectionBlock title="Jadwal Event">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <DetailItem
+                                    icon={
+                                        <CalendarDays className="h-4 w-4" />
+                                    }
                                     label="Mulai"
                                     value={formatDateTime(
                                         ticket.event.start_time,
                                     )}
                                 />
-                                <DetailRow
-                                    icon={<CalendarDays className="h-4 w-4" />}
+                                <DetailItem
+                                    icon={<Clock3 className="h-4 w-4" />}
                                     label="Selesai"
                                     value={formatDateTime(
                                         ticket.event.end_time,
                                     )}
                                 />
-                            </SectionBlock>
+                            </div>
+                        </SectionBlock>
 
-                            <SectionBlock title="Informasi Peserta">
-                                <DetailRow
+                        <SectionBlock title="Informasi Peserta">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <DetailItem
                                     icon={<UserRound className="h-4 w-4" />}
                                     label="Nama"
-                                    value={
-                                        <span className="truncate">
-                                            {participantName}
-                                        </span>
-                                    }
+                                    value={participantName}
                                 />
-                                <DetailRow
+                                <DetailItem
                                     icon={<Mail className="h-4 w-4" />}
                                     label="Email"
-                                    value={
-                                        <span className="truncate">
-                                            {participantEmail}
-                                        </span>
-                                    }
+                                    value={participantEmail}
                                 />
-                                <DetailRow
+                                <DetailItem
                                     icon={<Phone className="h-4 w-4" />}
                                     label="Telepon"
-                                    value={
-                                        <span className="truncate">
-                                            {participantPhone}
-                                        </span>
-                                    }
+                                    value={participantPhone}
                                 />
-                            </SectionBlock>
+                                <DetailItem
+                                    icon={<Hash className="h-4 w-4" />}
+                                    label="ID Tiket"
+                                    value={ticket.id}
+                                />
+                            </div>
+                        </SectionBlock>
 
-                            <SectionBlock title="Status Check-in">
-                                <div className="rounded-2xl bg-slate-50 px-3 py-3 text-sm">
-                                    <p className="font-medium text-slate-800">
-                                        {isCheckedIn
-                                            ? `Sudah check-in (${formatDateTime(ticket.checked_in_at)})`
-                                            : "Belum check-in"}
-                                    </p>
-                                    <p className="mt-1 text-slate-500">
-                                        Tiket diterbitkan:{" "}
-                                        {formatDateTime(ticket.issued_at)}
-                                    </p>
-                                </div>
-                            </SectionBlock>
-                        </div>
+                        <SectionBlock title="Status Check-in">
+                            <div className="rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-3">
+                                <p className="font-medium text-slate-900">
+                                    {isCheckedIn
+                                        ? `Sudah check-in (${formatDateTime(ticket.checked_in_at)})`
+                                        : "Belum check-in"}
+                                </p>
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Tiket diterbitkan pada{" "}
+                                    {formatDateTime(ticket.issued_at)}.
+                                </p>
+                            </div>
+                        </SectionBlock>
+                    </div>
 
-                        <aside className="overflow-hidden rounded-3xl border border-primary/15 bg-white shadow-sm lg:sticky lg:top-24 lg:self-start">
-                            <div className="border-b border-dashed border-slate-200 p-5">
-                                <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    <aside className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 lg:sticky lg:top-24 lg:self-start">
+                        <div className="relative overflow-hidden border-b border-dashed border-slate-200 p-5">
+                            <div className="absolute -right-8 -top-10 h-28 w-28 rotate-12 rounded-2xl border border-primary/15 bg-primary/8" />
+                            <div className="relative z-10">
+                                <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
                                     <QrCode className="h-4 w-4 text-primary" />
                                     QR Ticket
                                 </p>
-                                <p className="mt-1 text-xs text-slate-400">
+                                <p className="mt-1 text-xs text-slate-500">
                                     Tunjukkan kode ini saat check-in.
                                 </p>
                             </div>
+                        </div>
 
-                            <div className="relative p-5">
-                                <div className="pointer-events-none absolute -top-3 left-8 h-6 w-6 rounded-full border border-slate-200 bg-slate-50" />
-                                <div className="pointer-events-none absolute -top-3 right-8 h-6 w-6 rounded-full border border-slate-200 bg-slate-50" />
+                        <div className="relative p-5">
+                            <div className="pointer-events-none absolute -top-3 left-8 h-6 w-6 rounded-full border border-slate-200 bg-slate-50" />
+                            <div className="pointer-events-none absolute -top-3 right-8 h-6 w-6 rounded-full border border-slate-200 bg-slate-50" />
 
-                                {ticket.qr_code ? (
-                                    <div className="overflow-hidden rounded-3xl border border-slate-100 bg-slate-50 p-3">
-                                        <Image
-                                            src={qrImageUrl}
-                                            alt="QR Ticket"
-                                            width={320}
-                                            height={320}
-                                            unoptimized
-                                            className="h-auto w-full rounded-2xl bg-white"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-400">
-                                        QR belum tersedia.
-                                    </div>
-                                )}
+                            {ticket.qr_code ? (
+                                <div className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                                    <Image
+                                        src={qrImageUrl}
+                                        alt="QR Ticket"
+                                        width={320}
+                                        height={320}
+                                        unoptimized
+                                        className="h-auto w-full rounded-xl bg-white"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm text-slate-400">
+                                    QR belum tersedia.
+                                </div>
+                            )}
 
-                                <div className="mt-4 space-y-3">
-                                    <div className="rounded-2xl bg-slate-50 p-3">
-                                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                                            QR value
-                                        </p>
-                                        <p className="mt-1 break-all font-mono text-xs text-slate-600">
-                                            {ticket.qr_code ||
-                                                "QR belum tersedia."}
-                                        </p>
-                                    </div>
-                                    <div className="rounded-2xl bg-slate-50 p-3">
-                                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                                            ID Tiket
-                                        </p>
-                                        <p className="mt-1 break-all font-mono text-xs text-slate-600">
-                                            {ticket.id}
-                                        </p>
-                                    </div>
+                            <div className="mt-4 space-y-3">
+                                <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                                        Nomor tiket
+                                    </p>
+                                    <p className="mt-1 break-all font-mono text-xs text-slate-600">
+                                        {ticket.ticket_number || "-"}
+                                    </p>
+                                </div>
+                                <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                                        QR value
+                                    </p>
+                                    <p className="mt-1 break-all font-mono text-xs text-slate-600">
+                                        {ticket.qr_code || "QR belum tersedia."}
+                                    </p>
                                 </div>
                             </div>
-                        </aside>
-                    </div>
-                </section>
+                        </div>
+                    </aside>
+                </div>
             </div>
         </main>
     );

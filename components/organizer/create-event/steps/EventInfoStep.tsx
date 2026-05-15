@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,7 +37,7 @@ const MAX_FILES = 5;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 
 export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: boolean; eventId?: string }) {
-  const [dynamicCategories, setDynamicCategories] = useState<string[]>([]);
+  const [eventCategories, setEventCategories] = useState<string[]>([]);
   const [openCategory, setOpenCategory] = useState(false);
   const [openStatus, setOpenStatus] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,7 +58,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
       try {
         const fetched = await EventService.getEventCategories();
         if (fetched && fetched.length > 0) {
-          setDynamicCategories(fetched);
+          setEventCategories(fetched);
         }
       } catch (error) {
         console.error("Failed to load event categories:", error);
@@ -76,7 +76,6 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
   } = useFormContext<CreateEventSchema>();
 
   const title = watch("title");
-  const description = watch("description");
   const images = watch("images") || [];
   const image_previews = watch("image_previews") || [];
 
@@ -142,7 +141,11 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
       toast.info("Banner akan dihapus saat Anda menekan tombol simpan.");
     }
 
-    setValue("banner_image", null as any, { shouldValidate: true });
+    setValue(
+      "banner_image",
+      null as unknown as CreateEventSchema["banner_image"],
+      { shouldValidate: true },
+    );
     setValue("banner_image_preview", null);
     setBannerError("");
     if (bannerInputRef.current) bannerInputRef.current.value = "";
@@ -284,46 +287,20 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
     setOpenCategory(false);
   };
 
-  const handleAddCategory = async (currentValue: string) => {
-    const newCat = currentValue.trim();
-    if (!dynamicCategories.includes(newCat)) {
-      try {
-        await EventService.createEventCategory(newCat);
-        setDynamicCategories(prev => [...prev, newCat]);
-        handleSelectCategory(newCat);
-      } catch (error) {
-        console.error("Failed to create event category:", error);
-      }
-    } else {
-      handleSelectCategory(newCat);
-    }
-  };
-
-  const handleDeleteCategory = async (e: React.MouseEvent, categoryName: string) => {
-    e.stopPropagation();
-    try {
-      await EventService.deleteEventCategory(categoryName);
-      setDynamicCategories(prev => prev.filter(cat => cat !== categoryName));
-      const currentCategory = control._formValues.category;
-      if (currentCategory === categoryName) {
-        setValue("category", "", { shouldValidate: true });
-      }
-    } catch (error) {
-      console.error("Failed to delete event category:", error);
-    }
-  };
-
   const currentImages = images as File[];
   const currentPreviews = image_previews as string[];
   const hasImages = currentImages.length > 0;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       {!hideHeader && (
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-accent">Informasi Event</h2>
-          <p className="mt-2 text-muted">Lengkapi Informasi tentang event Anda</p>
+        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
+          <h2 className="text-xl font-semibold text-slate-950">
+            Informasi Event
+          </h2>
+          <p className="mt-1 text-sm leading-relaxed text-slate-600">
+            Lengkapi nama, kategori, deskripsi, dan aset visual event.
+          </p>
         </div>
       )}
 
@@ -375,7 +352,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
                   )}
                 >
                   {field.value
-                    ? (dynamicCategories.find((cat) => cat === field.value) || field.value)
+                    ? (eventCategories.find((cat) => cat === field.value) || field.value)
                     : "Pilih kategori event"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -386,20 +363,20 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
               >
                 <Command className="rounded-xl">
                   <CommandInput
-                    placeholder="Cari atau tambah kategori baru..."
+                    placeholder="Cari kategori..."
                     value={searchQuery}
                     onValueChange={setSearchQuery}
                   />
                   <CommandList>
                     <CommandEmpty>Kategori tidak ditemukan.</CommandEmpty>
                     <CommandGroup>
-                      {dynamicCategories.map((cat) => (
+                      {eventCategories.map((cat) => (
                         <CommandItem
-                          className="rounded-lg group flex items-center pr-2"
+                          className="rounded-lg flex items-center pr-2"
                           key={cat}
                           value={cat}
-                          onSelect={(currentValue) => {
-                            handleSelectCategory(currentValue);
+                          onSelect={() => {
+                            handleSelectCategory(cat);
                           }}
                         >
                           <Check
@@ -409,32 +386,9 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
                             )}
                           />
                           <span className="flex-1 truncate">{cat}</span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:bg-danger/10 hover:text-danger rounded-full transition-opacity ml-2 shrink-0"
-                            onClick={(e) => handleDeleteCategory(e, cat)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
                         </CommandItem>
                       ))}
                     </CommandGroup>
-                    {searchQuery.trim() !== "" && !dynamicCategories.some(c => c.toLowerCase() === searchQuery.trim().toLowerCase()) && (
-                      <CommandGroup>
-                        <CommandItem
-                          className="rounded-lg"
-                          value={searchQuery}
-                          onSelect={() => {
-                            handleAddCategory(searchQuery);
-                          }}
-                        >
-                          <Check className="mr-2 h-4 w-4 opacity-0" />
-                          Tambah <b>&quot;{searchQuery}&quot;</b>
-                        </CommandItem>
-                      </CommandGroup>
-                    )}
                   </CommandList>
                 </Command>
               </PopoverContent>
@@ -488,7 +442,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
                             className="rounded-lg group flex items-center pr-2"
                             key={opt.value}
                             value={opt.value}
-                            onSelect={(currentValue) => {
+                            onSelect={() => {
                               setValue("status", opt.value as CreateEventSchema["status"], { shouldValidate: true });
                               setOpenStatus(false);
                             }}
@@ -546,7 +500,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
           Banner Event <span className="text-danger">*</span>
         </Label>
         <p className="text-xs text-muted">
-          1 gambar utama yang tampil di card event. Format: PNG, JPEG • Maks 5MB • Ukuran ideal: 1920x1080 (16:9)
+          1 gambar utama yang tampil di card event. Format: PNG, JPEG. Maks 5MB. Ukuran ideal: 1920x1080 (16:9)
         </p>
 
         {!banner_image ? (
@@ -627,7 +581,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
           Poster/Galeri Event <span className="text-danger">*</span>
         </Label>
         <p className="text-xs text-muted">
-          Upload hingga {MAX_FILES} poster. Format: PNG, JPEG • Maks 5MB per file • Ukuran ideal: 1920x1080 (16:9)
+          Upload hingga {MAX_FILES} poster. Format: PNG, JPEG. Maks 5MB per file. Ukuran ideal: 1920x1080 (16:9)
         </p>
 
         {/* Drop Zone - always visible when under limit */}

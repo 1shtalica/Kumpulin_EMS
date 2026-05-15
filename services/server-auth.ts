@@ -6,6 +6,22 @@ const getApiBaseUrl = () =>
     process.env.API_URL ||
     process.env.NEXT_PUBLIC_API_URL;
 
+const readBoolean = (
+    data: Record<string, unknown>,
+    keys: string[],
+): boolean | undefined => {
+    for (const key of keys) {
+        const value = data[key];
+        if (typeof value === "boolean") return value;
+        if (typeof value === "string") {
+            if (value.toLowerCase() === "true") return true;
+            if (value.toLowerCase() === "false") return false;
+        }
+    }
+
+    return undefined;
+};
+
 export async function getServerUser(): Promise<User | null> {
     const cookieStore = await cookies();
     const refreshToken = cookieStore.get("refresh_token");
@@ -37,6 +53,11 @@ export async function getServerUser(): Promise<User | null> {
         if (res.ok) {
             const payload = await res.json();
             const data = payload?.data ?? payload;
+            const emailVerified = readBoolean(data, [
+                "email_verified",
+                "is_email_verified",
+            ]);
+
             return {
                 id: String(data.user_id ?? data.id ?? ""),
                 email: data.email ?? "",
@@ -44,6 +65,7 @@ export async function getServerUser(): Promise<User | null> {
                 role: data.role ?? "",
                 profile_url: data.profile_url ?? undefined,
                 phone_number: data.phone_number ?? undefined,
+                email_verified: emailVerified ?? false,
                 first_name: data.first_name ?? undefined,
                 last_name: data.last_name ?? undefined,
             } as User;

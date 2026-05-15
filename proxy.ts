@@ -6,6 +6,8 @@ type SessionClaims = {
     exp?: number;
     role?: string;
     phone_number?: string | null;
+    email_verified?: boolean | string;
+    is_email_verified?: boolean | string;
     [key: string]: unknown;
 };
 
@@ -69,11 +71,35 @@ const extractSessionClaims = (value: unknown): SessionClaims | null => {
     return root as SessionClaims;
 };
 
+const readBooleanClaim = (
+    user: SessionClaims,
+    keys: Array<keyof SessionClaims>,
+): boolean | undefined => {
+    for (const key of keys) {
+        const value = user[key];
+        if (typeof value === "boolean") return value;
+        if (typeof value === "string") {
+            if (value.toLowerCase() === "true") return true;
+            if (value.toLowerCase() === "false") return false;
+        }
+    }
+
+    return undefined;
+};
+
+const isEmailVerified = (user: SessionClaims): boolean => {
+    const explicitValue = readBooleanClaim(user, [
+        "email_verified",
+        "is_email_verified",
+    ]);
+    return explicitValue ?? false;
+};
+
 const isProfileIncomplete = (user: SessionClaims | null): boolean => {
     if (!user) return false;
-    if (!Object.prototype.hasOwnProperty.call(user, "phone_number"))
-        return false;
-    return user.phone_number === "" || user.phone_number === null;
+    const phoneNumber =
+        typeof user.phone_number === "string" ? user.phone_number.trim() : "";
+    return phoneNumber.length === 0 || !isEmailVerified(user);
 };
 
 export async function proxy(req: NextRequest) {

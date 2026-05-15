@@ -11,6 +11,22 @@ const asAuthPayloadRecord = (value: unknown): AuthPayloadRecord | null => {
   return value as AuthPayloadRecord;
 };
 
+const readBoolean = (
+  payload: AuthPayloadRecord,
+  keys: string[],
+): boolean | undefined => {
+  for (const key of keys) {
+    const value = payload[key];
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") {
+      if (value.toLowerCase() === "true") return true;
+      if (value.toLowerCase() === "false") return false;
+    }
+  }
+
+  return undefined;
+};
+
 // Only keep whitelisted profile fields in client store.
 // This prevents accidental persistence of token-like fields from API responses.
 const sanitizeUserPayload = (value: unknown): User | null => {
@@ -27,6 +43,10 @@ const sanitizeUserPayload = (value: unknown): User | null => {
   const email = typeof payload.email === "string" ? payload.email : "";
   const username = typeof payload.username === "string" ? payload.username : "";
   const role = typeof payload.role === "string" ? payload.role : "";
+  const emailVerified = readBoolean(payload, [
+    "email_verified",
+    "is_email_verified",
+  ]);
 
   return {
     id: String(idRaw),
@@ -37,6 +57,7 @@ const sanitizeUserPayload = (value: unknown): User | null => {
       typeof payload.profile_url === "string" ? payload.profile_url : undefined,
     phone_number:
       typeof payload.phone_number === "string" ? payload.phone_number : undefined,
+    email_verified: emailVerified ?? false,
     first_name:
       typeof payload.first_name === "string" ? payload.first_name : undefined,
     last_name:

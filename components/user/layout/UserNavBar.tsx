@@ -6,20 +6,18 @@ import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
   ChevronRight,
-  Ticket,
-  Heart,
-  User,
-  LogOut,
-  Home,
   ChevronsUpDown,
-  Settings,
-  type LucideIcon,
+  Heart,
+  Home,
+  LogOut,
+  LucideIcon,
+  Ticket,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-
+import type { User as AuthUser } from "@/types/user";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +30,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavItem {
   title: string;
@@ -54,8 +58,35 @@ export const menuItems: NavItem[] = [
     title: "Mengikuti",
     href: "/user/following",
     icon: Heart,
-  }
+  },
 ];
+
+export const accountItems: NavItem[] = [
+  {
+    title: "Profil",
+    href: "/user/profile",
+    icon: User,
+  },
+];
+
+function getUserDisplayName(user: AuthUser | null) {
+  if (!user) return "Pengguna";
+
+  const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
+
+  return fullName || user.username || user.email || "Pengguna";
+}
+
+function getUserInitials(name: string) {
+  return (
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((word) => word[0]?.toUpperCase())
+      .join("") || "U"
+  );
+}
 
 interface NavContentProps {
   showLabel?: boolean;
@@ -63,11 +94,15 @@ interface NavContentProps {
   items: NavItem[];
 }
 
-export function NavContent({ showLabel = true, onClose, items }: NavContentProps) {
+export function NavContent({
+  showLabel = true,
+  onClose,
+  items,
+}: NavContentProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-3 overflow-hidden">
+    <nav className="flex flex-col gap-1 overflow-hidden">
       {items.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -78,20 +113,20 @@ export function NavContent({ showLabel = true, onClose, items }: NavContentProps
             asChild
             variant="ghost"
             className={cn(
-              "w-full justify-start h-12 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200",
+              "h-10 w-full justify-start overflow-hidden whitespace-nowrap rounded-lg transition-all duration-200",
               !showLabel && "justify-center px-2",
               isActive
-                ? "bg-primary/10 text-primary font-semibold shadow-none hover:bg-primary/20 hover:text-primary"
-                : "text-slate-500 font-medium hover:bg-slate-100 hover:text-slate-900",
+                ? "bg-primary/10 font-semibold text-primary shadow-none hover:bg-primary/20 hover:text-primary"
+                : "font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900",
             )}
             onClick={onClose}
           >
             <Link href={item.href}>
               <Icon
                 className={cn(
-                  "h-4.5 w-4.5 shrink-0",
+                  "h-[18px] w-[18px] shrink-0",
                   isActive ? "text-primary" : "text-slate-400",
-                  showLabel && "mr-3"
+                  showLabel && "mr-3",
                 )}
               />
               {showLabel && (
@@ -119,51 +154,35 @@ export function NavContent({ showLabel = true, onClose, items }: NavContentProps
 export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
   const router = useRouter();
   const { logout, user } = useAuthStore();
-
-  const displayName =
-    [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
-    user?.username ||
-    user?.email ||
-    "User";
-
-  const initials =
-    displayName
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((word) => word[0]?.toUpperCase())
-      .join("") || "U";
+  const displayName = getUserDisplayName(user);
+  const fallback = getUserInitials(displayName);
 
   const profileTrigger = (
     <Button
       variant="ghost"
       className={cn(
-        "min-w-0 justify-start text-left transition-all overflow-hidden",
-        isOpen
-          ? "h-15 w-full p-2.5 rounded-xl border border-white/40 bg-gradient-to-br from-primary/15 to-secondary/15 backdrop-blur-md shadow-sm hover:from-primary/25 hover:to-secondary/25 hover:shadow-md" 
-          : "h-11 w-11 justify-center p-0 mx-auto hover:bg-transparent hover:text-current"
+        "min-w-0 justify-start text-left transition-all hover:border-primary/20 hover:bg-primary-light/60 hover:text-slate-950",
+        isOpen ? "h-15 w-full p-2.5" : "h-11 w-11 justify-center p-0",
       )}
     >
-      <Avatar className="h-10 w-10 shrink-0 rounded-full ring-2 ring-white/80 shadow-sm">
+      <Avatar className="h-10 w-10 shrink-0 rounded-full ring-2 ring-white">
         <AvatarImage src={user?.profile_url} alt={displayName} />
         <AvatarFallback className="rounded-full bg-primary-light text-xs font-semibold text-primary">
-          {initials}
+          {fallback}
         </AvatarFallback>
       </Avatar>
-      
       {isOpen && (
-        <div className="ml-3 min-w-0 flex-1 flex flex-col justify-center">
-          <p className="truncate text-sm font-semibold leading-tight text-slate-900">
+        <div className="ml-3 min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold leading-tight text-slate-950">
             {displayName}
           </p>
-          <p className="mt-1 truncate text-xs font-medium text-slate-600">
+          <p className="mt-1 truncate text-xs font-medium text-slate-500">
             {user?.email || "User"}
           </p>
         </div>
       )}
-      
       {isOpen && (
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-500" />
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
       )}
     </Button>
   );
@@ -174,19 +193,10 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
       <DropdownMenuContent
         align={isOpen ? "end" : "start"}
         side={isOpen ? "top" : "right"}
-        className="w-56 rounded-xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10"
+        className="w-56 rounded-2xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10"
       >
         <DropdownMenuItem
-          className="cursor-pointer rounded-lg p-3 text-sm font-medium !text-slate-500 focus:!bg-slate-100 focus:!text-slate-500 transition-colors"
-          asChild
-        >
-          <Link href="/user/account">
-            <Settings className="mr-2 h-4 w-4" />
-            Pengaturan Akun
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer rounded-lg p-3 text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700 transition-colors"
+          className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700"
           onClick={logout}
         >
           <LogOut className="mr-2 h-4 w-4" />
@@ -200,31 +210,39 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-screen bg-white border-r border-slate-100",
-          "transition-all duration-300 ease-in-out flex-col",
-          "hidden md:flex",
+          "fixed top-0 left-0 z-40 h-screen border-r border-slate-100 bg-white",
+          "hidden flex-col transition-all duration-300 ease-in-out md:flex",
           isOpen ? "w-64" : "w-20",
         )}
       >
         {/* Header sidebar: Logo + toggle */}
         <div
           className={cn(
-            "h-18 flex items-center px-4 shrink-0 border-b border-slate-100",
+            "flex h-18 shrink-0 items-center border-b border-slate-100 px-4",
             isOpen ? "justify-between" : "justify-center",
           )}
         >
           <div
             className={cn(
-              "flex items-center gap-3 overflow-hidden transition-all pt-2 ps-2",
+              "flex items-center gap-3 overflow-hidden ps-2 pt-2 transition-all",
               !isOpen && "w-0 opacity-0",
             )}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white font-bold text-lg">
-              K
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="font-bold text-slate-900 leading-tight whitespace-nowrap">
-                kumpul.in
+            <button
+              type="button"
+              onClick={() => router.refresh()}
+              className="group flex items-center gap-3 text-left focus-visible:outline-none"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-lg font-bold text-white transition-transform group-hover:scale-105">
+                K
+              </span>
+              <span className="flex min-w-0 flex-col">
+                <span className="whitespace-nowrap font-bold leading-tight text-slate-900">
+                  kumpul.in
+                </span>
+                <span className="whitespace-nowrap text-[13px] font-medium text-slate-500">
+                  User
+                </span>
               </span>
               <span className="text-[13px] text-slate-500 font-medium whitespace-nowrap">
                 Akun Saya
@@ -237,7 +255,7 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
             variant="ghost"
             size="icon"
             className={cn(
-              "rounded-full shrink-0 text-slate-400 hover:text-slate-600 hover:bg-slate-50",
+              "shrink-0 rounded-full text-slate-400 hover:bg-slate-50 hover:text-slate-600",
               isOpen && "ml-auto",
             )}
           >
@@ -249,43 +267,49 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
           </Button>
         </div>
 
-        {/* Konten utama */}
-        <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-4 gap-6">
-          <div className="flex flex-col gap-1 overflow-hidden">
+        <div className="flex flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden p-4">
+          <div className="flex flex-col gap-2 overflow-hidden">
+            {isOpen && (
+              <h2 className="px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                Aktivitas
+              </h2>
+            )}
             <NavContent showLabel={isOpen} items={menuItems} />
+          </div>
+
+          <div className="flex flex-col gap-2 overflow-hidden">
+            {isOpen && (
+              <h2 className="px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                Akun
+              </h2>
+            )}
+            <NavContent showLabel={isOpen} items={accountItems} />
           </div>
 
           <div className="flex-1" />
 
-          <div>
-            {/* Tombol Beranda */}
-            <div className="pt-2">
-              <Button
-                variant="ghost"
-                className={cn(
-                  "w-full justify-start h-12 rounded-lg text-slate-500 font-medium hover:bg-slate-100 hover:text-slate-900",
-                  !isOpen && "justify-center px-2"
-                )}
-                asChild
-              >
-                <Link href="/">
-                  <Home className={cn("h-4.5 w-4.5 shrink-0", isOpen && "mr-3")} />
-                  {isOpen && <span>Beranda</span>}
-                </Link>
-              </Button>
-            </div>
+          <div
+            className={cn(
+              "border-t border-slate-100 pt-4",
+              isOpen ? "flex flex-col gap-2" : "flex flex-col items-center gap-2",
+            )}
+          >
+            {accountMenu}
 
-            <Separator orientation="horizontal" className="my-3" />
-
-            {/* Kontainer Account Menu */}
-            <div
+            <Button
+              variant="ghost"
+              size={isOpen ? "default" : "icon"}
               className={cn(
-                "pt-2 flex items-center",
-                isOpen ? "justify-start" : "justify-center"
+                "w-full whitespace-nowrap rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                !isOpen && "h-10 w-10",
               )}
+              asChild
             >
-              {accountMenu}
-            </div>
+              <Link href="/">
+                <Home className={cn("h-4 w-4 shrink-0", isOpen && "mr-2")} />
+                {isOpen && <span>Kembali ke Beranda</span>}
+              </Link>
+            </Button>
           </div>
         </div>
       </aside>

@@ -1,87 +1,124 @@
 "use client";
 
-import { Check } from "lucide-react";
+import {
+  CalendarClock,
+  Check,
+  Eye,
+  Info,
+  Shapes,
+  Ticket,
+  type LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const steps = [
-  { number: 1, title: "Tipe Event" },
-  { number: 2, title: "Informasi" },
-  { number: 3, title: "Jadwal & Lokasi" },
-  { number: 4, title: "Tiket" },
-  { number: 5, title: "Preview" },
+export const createEventSteps: {
+  number: number;
+  title: string;
+  description: string;
+  Icon: LucideIcon;
+}[] = [
+  {
+    number: 1,
+    title: "Tipe Event",
+    description: "Tentukan akses dan jangkauan event.",
+    Icon: Shapes,
+  },
+  {
+    number: 2,
+    title: "Informasi",
+    description: "Isi identitas, kategori, dan materi visual.",
+    Icon: Info,
+  },
+  {
+    number: 3,
+    title: "Jadwal & Lokasi",
+    description: "Atur periode, rundown, dan tempat.",
+    Icon: CalendarClock,
+  },
+  {
+    number: 4,
+    title: "Tiket",
+    description: "Kelola kapasitas dan jenis tiket.",
+    Icon: Ticket,
+  },
+  {
+    number: 5,
+    title: "Preview",
+    description: "Periksa detail sebelum publikasi.",
+    Icon: Eye,
+  },
 ];
 
 interface CreateEventStepperProps {
   currentStep: number;
 }
 
-export default function CreateEventStepper({ currentStep }: CreateEventStepperProps) {
+export default function CreateEventStepper({
+  currentStep,
+}: CreateEventStepperProps) {
   return (
-    <div className="w-full max-w-4xl mx-auto py-6">
-      <div className="flex items-center justify-between w-full">
-        {steps.map((step, index) => {
+    <div className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm shadow-slate-900/5">
+      <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+        {createEventSteps.map((step) => {
           const isCompleted = currentStep > step.number;
           const isActive = currentStep === step.number;
-          const isLastStep = index === steps.length - 1;
+          const Icon = step.Icon;
 
           return (
-            <div key={step.number} className={cn("flex items-center", !isLastStep && "flex-1")}>
+            <div
+              key={step.number}
+              className={cn(
+                "group flex min-w-[210px] items-start gap-3 rounded-xl border p-3 transition-all duration-200 lg:min-w-0",
+                isActive
+                  ? "border-primary/30 bg-primary-light/60 shadow-sm shadow-primary/10"
+                  : isCompleted
+                  ? "border-emerald-200 bg-emerald-50/70"
+                  : "border-transparent bg-transparent hover:border-slate-200 hover:bg-slate-50",
+              )}
+            >
+              <div
+                className={cn(
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-colors",
+                  isCompleted
+                    ? "border-emerald-200 bg-emerald-500 text-white"
+                    : isActive
+                    ? "border-primary/30 bg-white text-primary"
+                    : "border-slate-200 bg-white text-slate-400",
+                )}
+              >
+                {isCompleted ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Icon className="h-4 w-4" />
+                )}
+              </div>
 
-              {/* 1. STEP CIRCLE & LABEL WRAPPER */}
-              <div className="relative flex flex-col items-center z-10">
-                <div
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
-                    // Kondisi Completed: Biru Penuh
-                    isCompleted
-                      ? "border-primary bg-primary text-white"
-                      : // Kondisi Active: Lingkaran Putih, Border Biru
-                      isActive
-                        ? "border-primary bg-white text-primary ring-2 ring-primary/20"
-                        : // Kondisi Inactive: Abu-abu
-                        "border-slate-200 bg-white text-slate-400"
-                  )}
-                >
-                  {isCompleted ? (
-                    <Check className="h-5 w-5" />
-                  ) : (
-                    <span className="text-sm font-bold">{step.number}</span>
-                  )}
-                </div>
-
-                {/* Label Judul (Absolute biar ga ganggu layout flex) */}
-                <div className="absolute top-12 left-1/2 -translate-x-1/2 w-32 text-center hidden md:block">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
                   <span
                     className={cn(
-                      "text-xs font-semibold transition-colors duration-300",
-                      isActive ? "text-primary" : "text-slate-500"
+                      "text-sm font-semibold",
+                      isActive
+                        ? "text-primary"
+                        : isCompleted
+                        ? "text-emerald-700"
+                        : "text-slate-700",
                     )}
                   >
                     {step.title}
                   </span>
+                  <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-400 ring-1 ring-slate-200">
+                    {step.number}/5
+                  </span>
                 </div>
+                <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">
+                  {step.description}
+                </p>
               </div>
-
-              {/* 2. CONNECTOR LINE (Garis Penghubung) */}
-              {/* Hanya render garis jika BUKAN step terakhir */}
-              {!isLastStep && (
-                <div className="flex-1 h-0.5 mx-2 bg-slate-200 relative">
-                  {/* Garis Biru (Progress) yang mengisi di atas garis abu-abu */}
-                  <div
-                    className={cn(
-                      "absolute left-0 top-0 h-full bg-primary transition-all duration-500 ease-in-out",
-                      isCompleted ? "w-full" : "w-0" // Kuncinya di sini: Kalo step ini selesai, garis kanannya biru full
-                    )}
-                  />
-                </div>
-              )}
             </div>
           );
         })}
       </div>
-
-      {/* Spacer bawah untuk menampung teks label yang absolute tadi */}
-      <div className="h-8" />
     </div>
   );
 }
