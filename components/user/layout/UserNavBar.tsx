@@ -19,12 +19,6 @@ import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User as AuthUser } from "@/types/user";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -102,7 +96,7 @@ export function NavContent({
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-1 overflow-hidden">
+    <nav className="flex flex-col gap-3 overflow-hidden">
       {items.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -113,7 +107,7 @@ export function NavContent({
             asChild
             variant="ghost"
             className={cn(
-              "h-10 w-full justify-start overflow-hidden whitespace-nowrap rounded-lg transition-all duration-200",
+              "h-12 w-full justify-start overflow-hidden whitespace-nowrap rounded-lg transition-all duration-200",
               !showLabel && "justify-center px-2",
               isActive
                 ? "bg-primary/10 font-semibold text-primary shadow-none hover:bg-primary/20 hover:text-primary"
@@ -215,7 +209,6 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
           isOpen ? "w-64" : "w-20",
         )}
       >
-        {/* Header sidebar: Logo + toggle */}
         <div
           className={cn(
             "flex h-18 shrink-0 items-center border-b border-slate-100 px-4",
@@ -244,10 +237,7 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
                   User
                 </span>
               </span>
-              <span className="text-[13px] text-slate-500 font-medium whitespace-nowrap">
-                Akun Saya
-              </span>
-            </div>
+            </button>
           </div>
 
           <Button
@@ -300,8 +290,8 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
               variant="ghost"
               size={isOpen ? "default" : "icon"}
               className={cn(
-                "w-full whitespace-nowrap rounded-lg text-slate-500 hover:bg-slate-50 hover:text-slate-900",
-                !isOpen && "h-10 w-10",
+                "h-12 w-full justify-start whitespace-nowrap rounded-lg font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                !isOpen && "h-12 w-12 justify-center",
               )}
               asChild
             >

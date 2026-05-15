@@ -43,7 +43,6 @@ import type {
     OrganizerCheckInHistoryItem,
     OrganizerValidatedTicket,
 } from "@/types/organizer-ticketing";
-import CheckInInterstitial, { type CheckInStatus } from "@/components/Interstitial/CheckInInterstitial";
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 
@@ -368,6 +367,12 @@ type CheckInBroadcastMessage = {
     eventId: string;
 };
 
+type ScannerFeedback = {
+    status: "checking" | "success" | "error";
+    title: string;
+    message: string;
+};
+
 /* ─── Page ────────────────────────────────────────────────────────────────── */
 
 export default function CheckInDetailPage() {
@@ -394,22 +399,15 @@ export default function CheckInDetailPage() {
         ticket?: OrganizerValidatedTicket;
         error?: string;
     } | null>(null);
+    const [scannerFeedback, setScannerFeedback] =
+        useState<ScannerFeedback | null>(null);
+    const scannerFeedbackTimeoutRef = useRef<ReturnType<
+        typeof setTimeout
+    > | null>(null);
 
     // History sidebar
     const [history, setHistory] = useState<OrganizerCheckInHistoryItem[]>([]);
     const [totalCheckedIn, setTotalCheckedIn] = useState(0);
-
-    // Check-in interstitial state
-    const [checkInInterstitial, setCheckInInterstitial] = useState<{
-        isOpen: boolean;
-        status: CheckInStatus;
-        participantName?: string;
-        ticketCategory?: string;
-        errorMessage?: string;
-    }>({
-        isOpen: false,
-        status: "success",
-    });
 
     /* ── Fetch event ── */
     useEffect(() => {
@@ -520,14 +518,52 @@ export default function CheckInDetailPage() {
         popup.focus();
         setCameraEnabled(false);
         setLastResult(null);
+        setScannerFeedback(null);
     }, [scannerTabHref]);
 
     /* ── Validate ── */
+    const showScannerFeedback = useCallback(
+        (feedback: ScannerFeedback, autoHide = true) => {
+            if (scannerFeedbackTimeoutRef.current) {
+                clearTimeout(scannerFeedbackTimeoutRef.current);
+                scannerFeedbackTimeoutRef.current = null;
+            }
+
+            setScannerFeedback(feedback);
+
+            if (autoHide) {
+                scannerFeedbackTimeoutRef.current = setTimeout(() => {
+                    setScannerFeedback(null);
+                    scannerFeedbackTimeoutRef.current = null;
+                }, feedback.status === "success" ? 2200 : 2600);
+            }
+        },
+        [],
+    );
+
+    useEffect(() => {
+        return () => {
+            if (scannerFeedbackTimeoutRef.current) {
+                clearTimeout(scannerFeedbackTimeoutRef.current);
+            }
+        };
+    }, []);
+
     const handleValidate = useCallback(
         async (code: string, method: ValidationMode) => {
             if (!eventId || !code.trim()) return;
             setValidating(true);
             setLastResult(null);
+            if (method === "qr") {
+                showScannerFeedback(
+                    {
+                        status: "checking",
+                        title: "Memvalidasi tiket",
+                        message: "QR terbaca. Mencocokkan data tiket...",
+                    },
+                    false,
+                );
+            }
             try {
                 const payload: import("@/types/organizer-ticketing").OrganizerValidateTicketPayload =
                     method === "qr"
@@ -550,15 +586,15 @@ export default function CheckInDetailPage() {
                 );
                 setLastResult({ ok: true, ticket });
                 setManualCode("");
+                if (method === "qr") {
+                    showScannerFeedback({
+                        status: "success",
+                        title: "Check-in berhasil",
+                        message: `${ticket.participant_name} - ${ticket.ticket_number}`,
+                    });
+                }
                 void refreshHistory();
                 broadcastTicketValidated();
-                // Trigger interstitial
-                setCheckInInterstitial({
-                    isOpen: true,
-                    status: "success",
-                    participantName: ticket.participant_name,
-                    ticketCategory: ticket.ticket_number,
-                });
             } catch (err) {
                 const message = errMsg(err, "Validasi tiket gagal.");
                 if (method === "qr") {
@@ -566,24 +602,23 @@ export default function CheckInDetailPage() {
                         id: "qr-validation-error",
                         duration: 5000,
                     });
+                    showScannerFeedback({
+                        status: "error",
+                        title: "Validasi gagal",
+                        message,
+                    });
                 } else {
                     toast.error(message, {
                         id: "manual-validation-error",
                         duration: 5000,
                     });
                 }
-                setLastResult(null);
-                // Trigger interstitial gagal
-                setCheckInInterstitial({
-                    isOpen: true,
-                    status: "failed",
-                    errorMessage: message,
-                });
+                setLastResult({ ok: false, error: message });
             } finally {
                 setValidating(false);
             }
         },
-        [broadcastTicketValidated, eventId, refreshHistory],
+        [broadcastTicketValidated, eventId, refreshHistory, showScannerFeedback],
     );
 
     /* ── QR scanner ── */
@@ -667,6 +702,7 @@ export default function CheckInDetailPage() {
                                 onClick={() => {
                                     setCameraEnabled((enabled) => !enabled);
                                     setLastResult(null);
+                                    setScannerFeedback(null);
                                 }}
                             >
                                 {cameraEnabled ? (
@@ -723,6 +759,9 @@ export default function CheckInDetailPage() {
                                         </p>
                                     </div>
                                 </div>
+                            )}
+                            {cameraEnabled && !cameraError && scannerFeedback && (
+                                <ScannerFeedbackOverlay feedback={scannerFeedback} />
                             )}
                             <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10" />
                             <div className="pointer-events-none absolute inset-8 rounded-2xl border border-white/15" />
@@ -869,6 +908,7 @@ export default function CheckInDetailPage() {
                                         onClick={() => {
                                             setMode(key);
                                             setLastResult(null);
+                                            setScannerFeedback(null);
                                             setManualCode("");
                                         }}
                                         className={cn(
@@ -904,6 +944,7 @@ export default function CheckInDetailPage() {
                                                         (enabled) => !enabled,
                                                     );
                                                     setLastResult(null);
+                                                    setScannerFeedback(null);
                                                 }}
                                             >
                                                 {cameraEnabled ? (
@@ -978,12 +1019,20 @@ export default function CheckInDetailPage() {
                                                     onClick={() => {
                                                         setMode("manual");
                                                         setLastResult(null);
+                                                        setScannerFeedback(null);
                                                     }}
                                                 >
                                                     Gunakan manual
                                                 </Button>
                                             </div>
                                         )}
+                                        {cameraEnabled &&
+                                            !cameraError &&
+                                            scannerFeedback && (
+                                                <ScannerFeedbackOverlay
+                                                    feedback={scannerFeedback}
+                                                />
+                                            )}
                                         <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10" />
                                         <div className="pointer-events-none absolute inset-8 rounded-2xl border border-white/15" />
                                         <div className="pointer-events-none absolute left-8 top-8 h-10 w-10 rounded-tl-2xl border-l-4 border-t-4 border-primary" />
@@ -1049,18 +1098,6 @@ export default function CheckInDetailPage() {
             {tab === "history" && <FullHistory eventId={eventId} />}
 
             {tab === "participants" && <ParticipantsTab eventId={eventId} />}
-
-            {/* CheckIn Interstitial Overlay */}
-            <CheckInInterstitial
-                isOpen={checkInInterstitial.isOpen}
-                status={checkInInterstitial.status}
-                participantName={checkInInterstitial.participantName}
-                ticketCategory={checkInInterstitial.ticketCategory}
-                errorMessage={checkInInterstitial.errorMessage}
-                onClose={() =>
-                    setCheckInInterstitial((prev) => ({ ...prev, isOpen: false }))
-                }
-            />
         </PageSurface>
     );
 }
@@ -1082,6 +1119,52 @@ function BackButton() {
 }
 
 /* ── Result card ── */
+
+function ScannerFeedbackOverlay({ feedback }: { feedback: ScannerFeedback }) {
+    const isSuccess = feedback.status === "success";
+    const isError = feedback.status === "error";
+    const Icon = isSuccess ? CheckCircle2 : isError ? XCircle : Loader2;
+
+    return (
+        <div
+            className={cn(
+                "pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6 text-center backdrop-blur-[2px] animate-in fade-in duration-200",
+                isSuccess && "bg-success/85",
+                isError && "bg-danger/85",
+                feedback.status === "checking" && "bg-slate-950/75",
+            )}
+        >
+            <div
+                className={cn(
+                    "flex max-w-sm flex-col items-center rounded-2xl border border-white/20 bg-white/12 px-6 py-6 text-white shadow-xl shadow-slate-950/20 ring-1 ring-white/10 backdrop-blur-md",
+                    "animate-in zoom-in-95 duration-200",
+                )}
+            >
+                <div
+                    className={cn(
+                        "mb-4 flex h-18 w-18 items-center justify-center rounded-full bg-white text-slate-950 shadow-lg shadow-slate-950/20",
+                        isSuccess && "text-success",
+                        isError && "text-danger",
+                        feedback.status === "checking" && "text-primary",
+                    )}
+                >
+                    <Icon
+                        className={cn(
+                            "h-10 w-10",
+                            feedback.status === "checking" && "animate-spin",
+                        )}
+                    />
+                </div>
+                <p className="text-xl font-semibold leading-tight">
+                    {feedback.title}
+                </p>
+                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-white/85">
+                    {feedback.message}
+                </p>
+            </div>
+        </div>
+    );
+}
 
 function ResultCard({
     result,
