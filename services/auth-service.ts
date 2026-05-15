@@ -14,6 +14,7 @@ export interface AuthResponse {
     last_name: string;
     role: string;
     phone_number: string;
+    email_verified?: boolean;
     provider: string;
     profile_url?: string;
 }
@@ -25,6 +26,7 @@ export interface MeResponse {
     role: string;
     profile_url?: string;
     phone_number?: string;
+    email_verified?: boolean;
     first_name?: string;
     last_name?: string;
 }
@@ -64,9 +66,14 @@ export const AuthService = {
      * Registers a new organizer account through the shared register endpoint.
      * The role is passed as a query parameter because that is the backend contract.
      */
-    async registerOrganizer(payload: RegisterOrganizerPayload): Promise<AuthResponse> {
+    async registerOrganizer(
+        payload: RegisterOrganizerPayload,
+    ): Promise<AuthResponse> {
         try {
-            const response = await axiosClient.post("/auth/register?role=organizer", payload);
+            const response = await axiosClient.post(
+                "/auth/register?role=organizer",
+                payload,
+            );
             return response.data;
         } catch (error) {
             throw error;
@@ -103,7 +110,10 @@ export const AuthService = {
      */
     async updateProfile(payload: { phone_number?: string; role?: string }) {
         try {
-            const response = await axiosClient.patch(`/auth/profile?role=${payload.role}`, payload);
+            const response = await axiosClient.patch(
+                `/auth/profile?role=${payload.role}`,
+                payload,
+            );
             return response.data;
         } catch (error) {
             throw error;
@@ -114,12 +124,35 @@ export const AuthService = {
      */
     async createOrganizer(payload: { name: string; slug: string }) {
         try {
-            const response = await axiosClient.post("/auth/register-organizer", payload);
+            const response = await axiosClient.post(
+                "/auth/register-organizer",
+                payload,
+            );
             return response.data;
         } catch (error) {
             throw error;
         }
     },
+    /**
+     * Sends an email verification code for the authenticated user's email.
+     */
+    async sendEmailVerificationCode(email: string) {
+        await axiosClient.post("/auth/send-verification-code", {
+            email,
+            type: "email_verification",
+        });
+    },
+
+    /**
+     * Verifies the email code sent to the authenticated user's email address.
+     */
+    async verifyEmailCode(payload: { email: string; code: string }) {
+        await axiosClient.post("/auth/verify-otp", {
+            email: payload.email,
+            code: payload.code,
+        });
+    },
+
     /**
      * Requests a password reset token for the supplied email address.
      */
@@ -149,4 +182,3 @@ export const AuthService = {
         }
     },
 };
-

@@ -1,4 +1,8 @@
 import axiosClient from "@/lib/axios-client";
+import {
+  APPROVED_EVENT_CATEGORIES,
+  normalizeEventCategoryList,
+} from "@/constants/event-categories";
 import { CreateEventFormState } from "@/types/create-event";
 import type { AxiosError } from "axios";
 import type {
@@ -346,11 +350,13 @@ export const EventService = {
 
   async getEventCategories(): Promise<string[]> {
     try {
-      const response = await axiosClient.get<{ data: string[] }>("/categories");
-      return response.data.data;
+      const response = await axiosClient.get<{ data: unknown }>("/categories", {
+        skipAuthFailureRedirect: true,
+      });
+      return normalizeEventCategoryList(response.data.data);
     } catch (error) {
       console.error("Failed to fetch event categories:", error);
-      throw error;
+      return [...APPROVED_EVENT_CATEGORIES];
     }
   },
 
@@ -377,23 +383,6 @@ export const EventService = {
     }
   },
 
-  async createEventCategory(name: string): Promise<void> {
-    try {
-      await axiosClient.post("/categories", { name });
-    } catch (error) {
-      console.error("Failed to create event category:", error);
-      throw error;
-    }
-  },
-
-  async deleteEventCategory(name: string): Promise<void> {
-    try {
-      await axiosClient.delete(`/categories?name=${name}`);
-    } catch (error) {
-      console.error("Failed to delete event category:", error);
-      throw error;
-    }
-  },
   async getOrganizerEvents(
     params: GetOrganizerEventsParams = {},
   ): Promise<{ data: OrganizerEventCard[]; total: number }> {
@@ -613,5 +602,28 @@ export const EventService = {
       );
       throw new Error(msg);
     }
+  },
+
+  async updateOrganizerEventStatus(
+    eventId: string,
+    status: string,
+  ): Promise<void> {
+    const event = await this.getEventByIdFull(eventId);
+
+    if (!event) {
+      throw new Error("Event tidak ditemukan");
+    }
+
+    const description =
+      typeof event.description === "string"
+        ? event.description
+        : JSON.stringify(event.description ?? { content: "" });
+
+    await this.updateEventCore(event.event_id || eventId, {
+      title: event.title,
+      category: event.category,
+      description,
+      status,
+    });
   },
 };

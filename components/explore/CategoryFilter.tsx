@@ -24,6 +24,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { APPROVED_EVENT_CATEGORIES } from "@/constants/event-categories";
+import { EventService } from "@/services/event-service";
 
 export default function CategoryFilter() {
   const [open, setOpen] = React.useState(false);
@@ -39,12 +41,13 @@ export default function CategoryFilter() {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const catList = ['Rapat', 'Konser', 'Workshop', 'Lomba', 'Pameran', 'Seminar', 'Networking', 'Kompetisi', 'Festival', 'Olahraga', 'Lainnya'];
+        const catList = await EventService.getEventCategories();
         if (catList && catList.length > 0) {
           setDynamicCategories(catList);
         }
       } catch (error) {
         console.error("Gagal load kategori untuk filter explore:", error);
+        setDynamicCategories([...APPROVED_EVENT_CATEGORIES]);
       } finally {
         setLoading(false);
       }
@@ -115,12 +118,11 @@ export default function CategoryFilter() {
                     key={catString}
                     value={catString}
                     onSelect={() => onSelectCategory(catString)}
-                    className="capitalize"
                   >
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        currentCategory?.toLowerCase() === catString.toLowerCase()
+                        currentCategory === catString
                           ? "opacity-100"
                           : "opacity-0"
                       )}

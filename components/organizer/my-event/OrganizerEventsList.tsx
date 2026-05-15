@@ -76,6 +76,24 @@ export default function OrganizerEventsList() {
     replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
+  const handleStatusChange = (eventId: string, nextStatus: string) => {
+    setEvents((currentEvents) => {
+      if (status !== "all" && status !== nextStatus) {
+        return currentEvents.filter((event) => (event.id || event.event_id) !== eventId);
+      }
+
+      return currentEvents.map((event) =>
+        (event.id || event.event_id) === eventId
+          ? { ...event, status: nextStatus }
+          : event,
+      );
+    });
+
+    if (status !== "all" && status !== nextStatus) {
+      setTotalItems((currentTotal) => Math.max(0, currentTotal - 1));
+    }
+  };
+
   if (loading) {
     return <SkeletonOrganizerEvents layout={layout as "list" | "grid"} />;
   }
@@ -100,7 +118,12 @@ export default function OrganizerEventsList() {
     <div className="flex flex-col gap-4">
       <div className={layout === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" : "flex flex-col gap-4"}>
         {events.map((event) => (
-          <OrganizerEventCard key={event.id || event.event_id} event={event} layout={layout as "list" | "grid"} />
+          <OrganizerEventCard
+            key={event.id || event.event_id}
+            event={event}
+            layout={layout as "list" | "grid"}
+            onStatusChange={handleStatusChange}
+          />
         ))}
       </div>
 

@@ -1,4 +1,3 @@
-import { error } from "console";
 import z from "zod";
 
 // 🌟 Step 1
@@ -20,8 +19,9 @@ export const step2Schema = z.object({
     .max(50, { error: "Judul event maksimal 50 karakter" }),
   category: z
     .string()
+    .trim()
     .min(1, { error: "Kategori event wajib diisi" })
-    .max(30, { error: "Kategori event maksimal 30 karakter" }),
+    .max(50, { error: "Kategori event maksimal 50 karakter" }),
   description: z
     .string()
     .min(1, { error: "Deskripsi event wajib diisi" })

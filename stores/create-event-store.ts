@@ -349,7 +349,7 @@ export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
         ...initialFormData,
         title: `${event.title} (Copy)`,
         type: (event.type as EventType) || "public",
-        category: event.category || "Umum",
+        category: event.category || "",
         description: typeof event.description === 'string' ? event.description : "",
 
         

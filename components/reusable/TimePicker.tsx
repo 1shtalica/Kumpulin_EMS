@@ -54,7 +54,7 @@ export default function TimePicker({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-normal px-2.5",
+            "h-10 w-full justify-start rounded-xl border-slate-200 bg-white px-2.5 text-left font-normal shadow-none hover:border-primary/30 hover:bg-white",
             !value && "text-muted-foreground",
             className,
           )}
@@ -63,7 +63,7 @@ export default function TimePicker({
           <span className="truncate">{value || placeholder}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto rounded-xl p-0" align="start">
         <div className="flex">
           {/* Hours Column */}
           <ScrollArea className="h-60 w-20">
@@ -73,7 +73,7 @@ export default function TimePicker({
                   key={h}
                   onClick={() => handleTimeSelect(h, minute || "00")}
                   className={cn(
-                    "cursor-pointer rounded px-2 py-1 text-center text-sm hover:bg-slate-200 transition-colors",
+                    "cursor-pointer rounded-lg px-2 py-1 text-center text-sm transition-colors hover:bg-slate-200",
                     h === hour &&
                     "bg-primary text-primary-foreground font-medium",
                   )}
@@ -97,7 +97,7 @@ export default function TimePicker({
                   key={m}
                   onClick={() => handleTimeSelect(hour || "00", m)}
                   className={cn(
-                    "cursor-pointer rounded px-2 py-1 text-center text-sm hover:bg-slate-200 transition-colors",
+                    "cursor-pointer rounded-lg px-2 py-1 text-center text-sm transition-colors hover:bg-slate-200",
                     m === minute &&
                     "bg-primary text-primary-foreground font-medium",
                   )}

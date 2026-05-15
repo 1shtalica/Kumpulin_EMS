@@ -5,6 +5,7 @@ export interface User {
   role: string;
   profile_url?: string;
   phone_number?: string;
+  email_verified?: boolean;
   first_name?: string;
   last_name?: string;
 }
