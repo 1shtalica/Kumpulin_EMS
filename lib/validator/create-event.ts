@@ -182,23 +182,28 @@ export const step3Schema = z
     }),
   })
   .superRefine((data, ctx) => {
-    // Prevent past dates
-    const now = new Date();
+    // Bandingkan hanya tanggal (bukan jam/menit) agar organizer bisa memilih hari ini
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    if (data.event_start_date < now) {
+    const eventStartDay = new Date(data.event_start_date);
+    eventStartDay.setHours(0, 0, 0, 0);
+    if (eventStartDay < today) {
       ctx.addIssue({
         code: "custom",
         input: data,
-        message: "Waktu mulai event tidak boleh di masa lalu",
+        message: "Tanggal mulai event tidak boleh di masa lalu",
         path: ["event_start_date"],
       });
     }
 
-    if (data.start_registration_date < now) {
+    const regStartDay = new Date(data.start_registration_date);
+    regStartDay.setHours(0, 0, 0, 0);
+    if (regStartDay < today) {
       ctx.addIssue({
         code: "custom",
         input: data,
-        message: "Waktu buka pendaftaran tidak boleh di masa lalu",
+        message: "Tanggal buka pendaftaran tidak boleh di masa lalu",
         path: ["start_registration_date"],
       });
     }

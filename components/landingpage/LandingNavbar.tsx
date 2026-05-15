@@ -16,6 +16,7 @@ import {
     Users,
     Ticket,
     Heart,
+    Settings,
 } from "lucide-react";
 import {
     Sheet,
@@ -64,8 +65,13 @@ export default function LandingNavbar() {
                   },
                   {
                       href: "/organizer/communities",
-                      label: "Komunitas",
+                      label: "Komunitas Saya",
                       icon: Users,
+                  },
+                  {
+                      href: "/organizer/profile",
+                      label: "Profil Organizer",
+                      icon: User,
                   },
               ]
             : [
@@ -79,8 +85,8 @@ export default function LandingNavbar() {
 
     const accountItemsByRole =
         user?.role === "organizer"
-            ? [{ href: "/organizer/profile", label: "Profile", icon: User }]
-            : [{ href: "/user/profile", label: "Profile", icon: User }];
+            ? [{ href: "/organizer/account", label: "Pengaturan Akun", icon: Settings }]
+            : [{ href: "/user/account", label: "Pengaturan Akun", icon: Settings }];
 
     useEffect(() => {
         const handleScroll = () => {
@@ -270,7 +276,7 @@ export default function LandingNavbar() {
                                     </Avatar>
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuContent align="end" className="w-56">
                                 {/* Info user */}
                                 <div className="px-3 py-2">
                                     <p className="text-sm font-semibold text-accent truncate">

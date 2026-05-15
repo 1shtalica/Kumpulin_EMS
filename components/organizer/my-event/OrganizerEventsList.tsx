@@ -40,6 +40,10 @@ export default function OrganizerEventsList() {
   const [events, setEvents] = useState<OrganizerEventCardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
+  const [refreshCount, setRefreshCount] = useState(0);
+
+  const handleStatusChange = () => setRefreshCount((n) => n + 1);
+
   useEffect(() => {
     const fetchEvents = async () => {
       setLoading(true);
@@ -60,7 +64,7 @@ export default function OrganizerEventsList() {
       }
     };
     fetchEvents();
-  }, [search, status, offset, limit]);
+  }, [search, status, offset, limit, refreshCount]);
 
   const totalPages = Math.max(1, Math.ceil(totalItems / limit));
   const currentPage = Math.floor(offset / limit) + 1;
@@ -98,7 +102,7 @@ export default function OrganizerEventsList() {
     return <SkeletonOrganizerEvents layout={layout as "list" | "grid"} />;
   }
 
-  if (!loading && events.length === 0 && offset === 0) {
+  if (showEmpty) {
     // Bedakan antara "tidak ada event sama sekali" vs "filter tidak ada hasil"
     const isFiltering = search !== "" || status !== "all";
     return (
@@ -112,6 +116,11 @@ export default function OrganizerEventsList() {
         }
       />
     );
+  }
+
+  // Loading awal (belum ada data sama sekali) — tampilkan skeleton penuh
+  if (loading && events.length === 0) {
+    return <SkeletonOrganizerEvents layout={layout as "list" | "grid"} />;
   }
 
   return (

@@ -19,6 +19,12 @@ import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User as AuthUser } from "@/types/user";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -209,6 +215,7 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
           isOpen ? "w-64" : "w-20",
         )}
       >
+        {/* Header sidebar: Logo + toggle */}
         <div
           className={cn(
             "flex h-18 shrink-0 items-center border-b border-slate-100 px-4",
@@ -237,7 +244,10 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
                   User
                 </span>
               </span>
-            </button>
+              <span className="text-[13px] text-slate-500 font-medium whitespace-nowrap">
+                Akun Saya
+              </span>
+            </div>
           </div>
 
           <Button

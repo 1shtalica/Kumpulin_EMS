@@ -7,7 +7,7 @@ import OrganizerNavBar, {
     menuItems,
 } from "@/components/organizer/layout/OrganizerNavBar";
 import { useAuthStore } from "@/stores/auth-store";
-import { ChevronsUpDown, LogOut, User } from "lucide-react";
+import { ChevronsUpDown, LogOut, User, Home } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     DropdownMenu,
@@ -99,6 +99,21 @@ export default function MainPagesLayout({
                         </div>
 
                         <div className="flex-1" />
+
+                        {/* Tombol Beranda */}
+                        <div className="pt-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsSheetOpen(false);
+                                    router.push("/");
+                                }}
+                                className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                            >
+                                <Home className="h-4 w-4 shrink-0 text-slate-400" />
+                                Beranda
+                            </button>
+                        </div>
 
                         <div className="border-t border-slate-100 pt-4">
                             <DropdownMenu>

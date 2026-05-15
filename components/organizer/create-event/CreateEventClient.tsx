@@ -152,6 +152,10 @@ export default function CreateEventClient() {
     if (isStepValid) {
       storeNextStep();
       window.scrollTo(0, 0);
+    } else {
+      toast.error("Ada isian yang belum lengkap atau tidak valid. Silakan periksa kembali.", {
+        duration: 4000,
+      });
     }
   };
 

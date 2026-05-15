@@ -1,5 +1,6 @@
 import LandingNavbar from "@/components/landingpage/LandingNavbar";
 import NewestPostsFeedClient from "@/components/community/NewestPostsFeedClient";
+import GoToTopButton from "@/components/reusable/GoToTopButton";
 
 export const metadata = {
     title: "Komunitas - Kumpulin",
@@ -11,6 +12,7 @@ export default function CommunityHubPage() {
         <div className="min-h-screen bg-slate-50">
             <LandingNavbar />
             <NewestPostsFeedClient />
+            <GoToTopButton />
         </div>
     );
 }
