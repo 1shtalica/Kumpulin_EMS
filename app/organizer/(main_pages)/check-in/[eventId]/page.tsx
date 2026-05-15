@@ -43,6 +43,7 @@ import type {
     OrganizerCheckInHistoryItem,
     OrganizerValidatedTicket,
 } from "@/types/organizer-ticketing";
+import CheckInInterstitial, { type CheckInStatus } from "@/components/Interstitial/CheckInInterstitial";
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 
@@ -398,6 +399,18 @@ export default function CheckInDetailPage() {
     const [history, setHistory] = useState<OrganizerCheckInHistoryItem[]>([]);
     const [totalCheckedIn, setTotalCheckedIn] = useState(0);
 
+    // Check-in interstitial state
+    const [checkInInterstitial, setCheckInInterstitial] = useState<{
+        isOpen: boolean;
+        status: CheckInStatus;
+        participantName?: string;
+        ticketCategory?: string;
+        errorMessage?: string;
+    }>({
+        isOpen: false,
+        status: "success",
+    });
+
     /* ── Fetch event ── */
     useEffect(() => {
         if (!eventId) return;
@@ -539,6 +552,13 @@ export default function CheckInDetailPage() {
                 setManualCode("");
                 void refreshHistory();
                 broadcastTicketValidated();
+                // Trigger interstitial
+                setCheckInInterstitial({
+                    isOpen: true,
+                    status: "success",
+                    participantName: ticket.participant_name,
+                    ticketCategory: ticket.ticket_number,
+                });
             } catch (err) {
                 const message = errMsg(err, "Validasi tiket gagal.");
                 if (method === "qr") {
@@ -553,6 +573,12 @@ export default function CheckInDetailPage() {
                     });
                 }
                 setLastResult(null);
+                // Trigger interstitial gagal
+                setCheckInInterstitial({
+                    isOpen: true,
+                    status: "failed",
+                    errorMessage: message,
+                });
             } finally {
                 setValidating(false);
             }
@@ -1023,6 +1049,18 @@ export default function CheckInDetailPage() {
             {tab === "history" && <FullHistory eventId={eventId} />}
 
             {tab === "participants" && <ParticipantsTab eventId={eventId} />}
+
+            {/* CheckIn Interstitial Overlay */}
+            <CheckInInterstitial
+                isOpen={checkInInterstitial.isOpen}
+                status={checkInInterstitial.status}
+                participantName={checkInInterstitial.participantName}
+                ticketCategory={checkInInterstitial.ticketCategory}
+                errorMessage={checkInInterstitial.errorMessage}
+                onClose={() =>
+                    setCheckInInterstitial((prev) => ({ ...prev, isOpen: false }))
+                }
+            />
         </PageSurface>
     );
 }

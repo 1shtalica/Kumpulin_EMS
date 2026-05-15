@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 
 import { PaymentTimer } from "@/components/payment/PaymentTimer";
 import { PaymentInstruction } from "@/components/payment/PaymentInstruction";
-import { PaymentStatusUI } from "@/components/payment/PaymentStatusUI";
+import PaymentInterstitial from "@/components/Interstitial/PaymentInterstitial";
+import type { PaymentStatus as InterstitialStatus } from "@/components/Interstitial/PaymentInterstitial";
 
 import { OrderService } from "@/services/order-service";
 import type { OrderDataResponse } from "@/types/order";
@@ -119,22 +120,26 @@ export default function PaymentPage({
     );
   }
 
-  // ── Status result page ──
-  if (paymentStatus) {
-    return (
-      <PaymentStatusUI
-        status={paymentStatus}
-        orderId={order.order.order_number}
-        tickets={order.tickets}
-      />
-    );
-  }
-
   const totalAmount = Number(order.order.total_amount);
+  const interstitialStatus: InterstitialStatus =
+    paymentStatus === "success" ? "success" : "failed";
 
   // ── Main payment page ──
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+      <PaymentInterstitial
+        isOpen={!!paymentStatus}
+        status={interstitialStatus}
+        orderNumber={order.order.order_number}
+        onClose={() => setPaymentStatus(null)}
+        onPrimaryAction={() => {
+          if (paymentStatus === "success") {
+            router.push("/user/my-ticket");
+          } else {
+            setPaymentStatus(null);
+          }
+        }}
+      />
       <div className="max-w-2xl mx-auto">
         <PaymentTimer
           expiresAt={order.order.expires_at}
