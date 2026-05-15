@@ -109,6 +109,7 @@ export async function proxy(req: NextRequest) {
         isProtectedRoute,
         isPublicRoute,
         isAuthRoute,
+        isGuestOnlyAuthRoute,
         protectedRoute,
     } = resolveRoutePolicy(pathname);
 
@@ -154,7 +155,7 @@ export async function proxy(req: NextRequest) {
         optimisticUser?.exp !== undefined &&
         optimisticUser.exp * 1000 > Date.now();
 
-    if (hasValidAccessToken && isAuthRoute) {
+    if (hasValidAccessToken && isGuestOnlyAuthRoute) {
         const homePage = roleHomePages[optimisticUser.role ?? ""] || "/";
         if (isProfileIncomplete(optimisticUser) && !isOnboardingRoute) {
             logAuthDecision(
@@ -275,7 +276,7 @@ export async function proxy(req: NextRequest) {
             return NextResponse.redirect(new URL(homePage, req.nextUrl));
         }
 
-        if (isAuthRoute) {
+        if (isGuestOnlyAuthRoute) {
             logAuthDecision(
                 pathname,
                 `redirect:${homePage}`,
