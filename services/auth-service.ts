@@ -158,10 +158,12 @@ export const AuthService = {
      */
     async forgotPassword(email: string) {
         try {
-            const response = await axiosClient.post("/auth/send-code", {
-                email,
-                type: "password_reset",
-            });
+            const response = await axiosClient.post(
+                "/auth/forgot-password/request",
+                {
+                    email,
+                },
+            );
             return response.data;
         } catch (error) {
             throw error;
