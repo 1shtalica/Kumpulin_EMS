@@ -42,6 +42,7 @@ import {
 } from "@/services/user-service";
 import { useAuthStore } from "@/stores/auth-store";
 import type { User as AuthUser } from "@/types/user";
+import { AuthService } from "@/services/auth-service";
 
 const profileSchema = z.object({
     username: z
@@ -551,10 +552,17 @@ export default function UserProfilePage() {
         }));
     };
 
-    const onChangePasswordSubmit = () => {
-        toast.info(
-            "UI ubah password sudah siap. Endpoint backend belum tersedia.",
-        );
+    const onChangePasswordSubmit = async (values: ChangePasswordFormValues) => {
+        try {
+            await AuthService.changePassword({
+                currentPassword: values.current_password,
+                newPassword: values.new_password,
+            });
+            closeChangePasswordPanel();
+            toast.success("Berhasil mengubah password");
+        } catch {
+            toast.error("Gagal mengubah password");
+        }
     };
 
     if (isLoading) {
@@ -984,7 +992,7 @@ export default function UserProfilePage() {
                         </form>
                     ) : (
                         <div className="grid gap-3 p-5 md:p-6">
-                            <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/[0.03]">
+                            <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/3">
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                     <div className="flex gap-3">
                                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary">
@@ -1008,7 +1016,12 @@ export default function UserProfilePage() {
                                                 (current) => !current,
                                             )
                                         }
-                                        className="h-10 rounded-xl border-slate-200 px-4 text-sm font-semibold text-slate-400"
+                                        className={cn(
+                                            isChangePasswordOpen
+                                                ? "text-red-500 border-red-200"
+                                                : "text-primary border-slate-200",
+                                            "h-10 rounded-xl  px-4 text-sm font-semibold",
+                                        )}
                                     >
                                         {isChangePasswordOpen ? (
                                             <X className="h-4 w-4" />

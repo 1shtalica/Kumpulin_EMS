@@ -109,7 +109,7 @@ export function NavContent({
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-3 overflow-hidden">
+    <nav className="flex flex-col gap-1.5 overflow-hidden">
       {items.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -120,8 +120,8 @@ export function NavContent({
             asChild
             variant="ghost"
             className={cn(
-              "w-full justify-start h-12 rounded-lg whitespace-nowrap overflow-hidden transition-all duration-200",
-              !showLabel && "justify-center px-2",
+              "h-10 w-full justify-start overflow-hidden whitespace-nowrap rounded-lg px-4 text-sm transition-all duration-200",
+              !showLabel && "justify-center px-0",
               isActive
                 ? "bg-primary/10 text-primary font-semibold shadow-none hover:bg-primary/20 hover:text-primary"
                 : "text-slate-500 font-medium hover:bg-slate-100 hover:text-slate-500",
@@ -131,9 +131,9 @@ export function NavContent({
             <Link href={item.href}>
               <Icon
                 className={cn(
-                  "h-4.5 w-4.5 shrink-0",
+                  "h-4 w-4 shrink-0",
                   isActive ? "text-primary" : "text-slate-400",
-                  showLabel && "mr-3",
+                  showLabel && "mr-2.5",
                 )}
               />
               {showLabel && (
@@ -174,11 +174,11 @@ export default function OrganizerNavBar({
       className={cn(
         "min-w-0 justify-start text-left transition-all overflow-hidden",
         isOpen
-          ? "h-15 w-full p-2.5 rounded-xl border border-transparent hover:bg-slate-100 hover:text-slate-900" 
-          : "h-11 w-11 justify-center p-0 mx-auto hover:bg-transparent hover:text-current"
+          ? "h-13 w-full rounded-xl border border-transparent p-2 hover:bg-slate-100 hover:text-slate-900"
+          : "mx-auto h-10 w-10 justify-center p-0 hover:bg-transparent hover:text-current",
       )}
     >
-      <Avatar className="h-10 w-10 shrink-0 rounded-full ring-2 ring-white">
+      <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
         <AvatarImage src={user?.profile_url} alt={displayName} />
         <AvatarFallback className="rounded-full bg-primary-light text-xs font-semibold text-primary">
           {fallback}
@@ -186,7 +186,7 @@ export default function OrganizerNavBar({
       </Avatar>
       
       {isOpen && (
-        <div className="ml-3 min-w-0 flex-1 flex flex-col justify-center">
+        <div className="ml-2.5 min-w-0 flex-1 flex flex-col justify-center">
           {/* Teks nama ikut berubah gelap (inherit) karena ada hover:text-slate-900 di parent */}
           <p className="truncate text-sm font-semibold leading-tight text-slate-900">
             {displayName}
@@ -238,23 +238,23 @@ export default function OrganizerNavBar({
           "fixed top-0 left-0 z-40 h-screen bg-white border-r border-slate-100",
           "transition-all duration-300 ease-in-out flex-col",
           "hidden md:flex",
-          isOpen ? "w-64" : "w-20",
+          isOpen ? "w-60" : "w-18",
         )}
       >
         {/* Header sidebar: Logo + toggle */}
         <div
           className={cn(
-            "h-18 flex items-center px-4 shrink-0 border-b border-slate-100",
+            "h-18 flex items-center px-3 shrink-0 border-b border-slate-100",
             isOpen ? "justify-between" : "justify-center",
           )}
         >
           <div
             className={cn(
-              "flex items-center gap-3 overflow-hidden transition-all pt-2 ps-2",
+              "flex items-center gap-2.5 overflow-hidden transition-all pt-2 ps-1.5",
               !isOpen && "w-0 opacity-0",
             )}
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white font-bold text-lg">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-white font-bold text-base">
               K
             </div>
             <div className="flex flex-col">
@@ -285,7 +285,7 @@ export default function OrganizerNavBar({
         </div>
 
         {/* Konten utama */}
-        <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-4 gap-6">
+        <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden px-4 py-3 gap-5">
           <div className="flex flex-col gap-1 overflow-hidden">
             <NavContent showLabel={isOpen} items={menuItems} />
           </div>
@@ -298,26 +298,26 @@ export default function OrganizerNavBar({
               <Button
                 variant="ghost"
                 className={cn(
-                  "w-full justify-start h-12 rounded-lg text-slate-500 font-medium hover:bg-slate-100 hover:text-slate-500",
-                  !isOpen && "justify-center px-2",
+                  "h-10 w-full justify-start rounded-lg px-4 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-500",
+                  !isOpen && "justify-center px-0",
                 )}
                 asChild
               >
                 <Link href="/">
                   <Home
-                    className={cn("h-4.5 w-4.5 shrink-0", isOpen && "mr-3")}
+                    className={cn("h-4 w-4 shrink-0", isOpen && "mr-2.5")}
                   />
                   {isOpen && <span>Beranda</span>}
                 </Link>
               </Button>
             </div>
 
-            <Separator orientation="horizontal" className="my-3" />
+            <Separator orientation="horizontal" className="my-2.5" />
 
             {/* Kontainer Account Menu */}
                         <div
                             className={cn(
-                                "border-slate-100 pt-2", // Hapus 'border-' yang typo
+                                "border-slate-100 pt-2",
                                 // Selalu gunakan flex row, atur justify-center jika minimize, justify-start jika open
                                 "flex items-center",
                                 isOpen ? "justify-start" : "justify-center"

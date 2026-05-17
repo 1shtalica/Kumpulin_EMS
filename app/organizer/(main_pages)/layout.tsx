@@ -61,7 +61,7 @@ export default function MainPagesLayout({
                 {/* ── Mobile Sheet ── */}
                 <SheetContent
                     side="left"
-                    className="w-64 flex flex-col gap-0 p-0"
+                    className="w-68 flex flex-col gap-0 p-0"
                     aria-describedby={undefined}
                 >
                     <SheetHeader className="h-18 flex flex-row items-center border-b border-slate-100 shrink-0 p-0">
@@ -74,7 +74,7 @@ export default function MainPagesLayout({
                                     router.refresh();
                                 }}
                             >
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white font-bold text-lg">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-white font-bold text-base">
                                     K
                                 </div>
                                 <div className="flex flex-col text-left">
@@ -89,7 +89,7 @@ export default function MainPagesLayout({
                         </SheetTitle>
                     </SheetHeader>
 
-                    <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-4 gap-6">
+                    <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden p-3 gap-5">
                         <div className="flex flex-col gap-1 overflow-hidden">
                             <NavContent
                                 showLabel={true}
@@ -108,21 +108,21 @@ export default function MainPagesLayout({
                                     setIsSheetOpen(false);
                                     router.push("/");
                                 }}
-                                className="flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                                className="flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-sm font-medium text-slate-500 hover:bg-slate-100 transition-colors"
                             >
                                 <Home className="h-4 w-4 shrink-0 text-slate-400" />
                                 Beranda
                             </button>
                         </div>
 
-                        <div className="border-t border-slate-100 pt-4">
+                        <div className="border-t border-slate-100 pt-3">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <button
                                         type="button"
-                                        className="flex h-15 w-full min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-left shadow-sm shadow-slate-900/5 transition-colors hover:border-primary/20 hover:bg-primary-light/60"
+                                        className="flex h-13 w-full min-w-0 items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-2 text-left shadow-sm shadow-slate-900/5 transition-colors hover:border-primary/20 hover:bg-primary-light/60"
                                     >
-                                        <Avatar className="h-10 w-10 shrink-0 rounded-full ring-2 ring-white">
+                                        <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
                                             <AvatarImage
                                                 src={user?.profile_url}
                                                 alt={displayName}
@@ -183,15 +183,15 @@ export default function MainPagesLayout({
                 <div
                     className={cn(
                         "px-6 md:px-8 pb-8 flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden",
-                        "md:ml-20",
-                        isOpen ? "md:ml-64" : "md:ml-20",
+                        "md:ml-18",
+                        isOpen ? "md:ml-60" : "md:ml-18",
                         "pt-26",
                     )}
                 >
                     <OrganizerHeader
                         className={cn(
                             "transition-all duration-300 ease-in-out",
-                            isOpen ? "md:left-64" : "md:left-20",
+                            isOpen ? "md:left-60" : "md:left-18",
                         )}
                     />
                     {children}

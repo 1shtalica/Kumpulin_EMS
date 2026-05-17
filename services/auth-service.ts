@@ -183,4 +183,14 @@ export const AuthService = {
             throw error;
         }
     },
+
+    async changePassword(payload: {
+        currentPassword: string;
+        newPassword: string;
+    }) {
+        await axiosClient.post("/auth/change-password", {
+            current_password: payload.currentPassword,
+            new_password: payload.newPassword,
+        });
+    },
 };

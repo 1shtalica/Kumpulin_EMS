@@ -96,7 +96,7 @@ export function NavContent({
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-3 overflow-hidden">
+    <nav className="flex flex-col gap-1.5 overflow-hidden">
       {items.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -107,8 +107,8 @@ export function NavContent({
             asChild
             variant="ghost"
             className={cn(
-              "h-12 w-full justify-start overflow-hidden whitespace-nowrap rounded-lg transition-all duration-200",
-              !showLabel && "justify-center px-2",
+              "h-10 w-full justify-start overflow-hidden whitespace-nowrap rounded-lg px-4 text-sm transition-all duration-200",
+              !showLabel && "justify-center px-0",
               isActive
                 ? "bg-primary/10 font-semibold text-primary shadow-none hover:bg-primary/20 hover:text-primary"
                 : "font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900",
@@ -118,9 +118,9 @@ export function NavContent({
             <Link href={item.href}>
               <Icon
                 className={cn(
-                  "h-[18px] w-[18px] shrink-0",
+                  "h-4 w-4 shrink-0",
                   isActive ? "text-primary" : "text-slate-400",
-                  showLabel && "mr-3",
+                  showLabel && "mr-2.5",
                 )}
               />
               {showLabel && (
@@ -156,17 +156,17 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
       variant="ghost"
       className={cn(
         "min-w-0 justify-start text-left transition-all hover:border-primary/20 hover:bg-primary-light/60 hover:text-slate-950",
-        isOpen ? "h-15 w-full p-2.5" : "h-11 w-11 justify-center p-0",
+        isOpen ? "h-13 w-full p-2" : "h-10 w-10 justify-center p-0",
       )}
     >
-      <Avatar className="h-10 w-10 shrink-0 rounded-full ring-2 ring-white">
+      <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
         <AvatarImage src={user?.profile_url} alt={displayName} />
         <AvatarFallback className="rounded-full bg-primary-light text-xs font-semibold text-primary">
           {fallback}
         </AvatarFallback>
       </Avatar>
       {isOpen && (
-        <div className="ml-3 min-w-0 flex-1">
+        <div className="ml-2.5 min-w-0 flex-1">
           <p className="truncate text-sm font-semibold leading-tight text-slate-950">
             {displayName}
           </p>
@@ -206,18 +206,18 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
         className={cn(
           "fixed top-0 left-0 z-40 h-screen border-r border-slate-100 bg-white",
           "hidden flex-col transition-all duration-300 ease-in-out md:flex",
-          isOpen ? "w-64" : "w-20",
+          isOpen ? "w-60" : "w-18",
         )}
       >
         <div
           className={cn(
-            "flex h-18 shrink-0 items-center border-b border-slate-100 px-4",
+            "flex h-18 shrink-0 items-center border-b border-slate-100 px-3",
             isOpen ? "justify-between" : "justify-center",
           )}
         >
           <div
             className={cn(
-              "flex items-center gap-3 overflow-hidden ps-2 pt-2 transition-all",
+              "flex items-center gap-2.5 overflow-hidden ps-1.5 pt-2 transition-all",
               !isOpen && "w-0 opacity-0",
             )}
           >
@@ -226,7 +226,7 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
               onClick={() => router.refresh()}
               className="group flex items-center gap-3 text-left focus-visible:outline-none"
             >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-lg font-bold text-white transition-transform group-hover:scale-105">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-base font-bold text-white transition-transform group-hover:scale-105">
                 K
               </span>
               <span className="flex min-w-0 flex-col">
@@ -257,10 +257,10 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
           </Button>
         </div>
 
-        <div className="flex flex-1 flex-col gap-6 overflow-y-auto overflow-x-hidden p-4">
+        <div className="flex flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden px-4 py-3">
           <div className="flex flex-col gap-2 overflow-hidden">
             {isOpen && (
-              <h2 className="px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+              <h2 className="px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                 Aktivitas
               </h2>
             )}
@@ -269,7 +269,7 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
 
           <div className="flex flex-col gap-2 overflow-hidden">
             {isOpen && (
-              <h2 className="px-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+              <h2 className="px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                 Akun
               </h2>
             )}
@@ -280,7 +280,7 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
 
           <div
             className={cn(
-              "border-t border-slate-100 pt-4",
+              "border-t border-slate-100 pt-3",
               isOpen ? "flex flex-col gap-2" : "flex flex-col items-center gap-2",
             )}
           >
@@ -290,8 +290,8 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
               variant="ghost"
               size={isOpen ? "default" : "icon"}
               className={cn(
-                "h-12 w-full justify-start whitespace-nowrap rounded-lg font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900",
-                !isOpen && "h-12 w-12 justify-center",
+                "h-10 w-full justify-start whitespace-nowrap rounded-lg px-4 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                !isOpen && "h-10 w-10 justify-center px-0",
               )}
               asChild
             >
