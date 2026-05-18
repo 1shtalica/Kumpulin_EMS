@@ -175,7 +175,7 @@ export default function OrganizerEventsList() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 align="start"
-                                className="w-[80px] rounded-xl border-slate-200 p-1.5 shadow-lg"
+                                className="w-20 rounded-xl border-slate-200 p-1.5 shadow-lg"
                             >
                                 {[5, 10, 20, 50].map((pageSize) => (
                                     <DropdownMenuItem
