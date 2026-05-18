@@ -123,6 +123,21 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     };
 
     const handleVerifyEmailCode = async () => {
+        if (initialUser?.email_verified) {
+            try {
+                await handleFinalSubmit();
+            } catch (error) {
+                const axiosError = error as AxiosError<{ message: string }>;
+                const errorMessage =
+                    axiosError.response?.data?.message ||
+                    "Kode verifikasi tidak valid atau sudah kedaluwarsa";
+                toast.error(errorMessage);
+            } finally {
+                setIsVerifyingCode(false);
+            }
+            return;
+        }
+
         const code = otpCode.trim();
         if (!accountEmail) {
             toast.error("Email akun tidak ditemukan");
@@ -144,9 +159,13 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         const toastId = toast.loading("Memverifikasi kode...");
 
         try {
-            await AuthService.verifyEmailCode({ email: accountEmail, code });
+            await AuthService.verifyEmailCode({
+                email: accountEmail,
+                code,
+            });
             setIsEmailVerified(true);
             toast.success("Email berhasil diverifikasi", { id: toastId });
+
             await handleFinalSubmit(organizerData);
         } catch (error) {
             const axiosError = error as AxiosError<{ message: string }>;
@@ -589,10 +608,12 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                                 <span className="mt-3 inline-flex rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2.5 py-1 text-[11px] font-semibold text-[#047857]">
                                     Email akun ini sudah terverifikasi.
                                 </span>
-                            ) : hasSentCode && (
-                                <span className="mt-3 inline-flex rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2.5 py-1 text-[11px] font-semibold text-[#047857]">
-                                    Kode sudah dikirim. Cek inbox atau spam.
-                                </span>
+                            ) : (
+                                hasSentCode && (
+                                    <span className="mt-3 inline-flex rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-2.5 py-1 text-[11px] font-semibold text-[#047857]">
+                                        Kode sudah dikirim. Cek inbox atau spam.
+                                    </span>
+                                )
                             )}
                         </div>
 
@@ -630,7 +651,8 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                             />
                             {!isEmailVerified && (
                                 <p className="text-xs text-slate-400">
-                                    Masukkan 6 karakter kode verifikasi dari email.
+                                    Masukkan 6 karakter kode verifikasi dari
+                                    email.
                                 </p>
                             )}
                         </div>
