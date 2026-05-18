@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SheetTrigger } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuthStore } from "@/stores/auth-store";
 
 interface UserHeaderProps {
   className?: string;
@@ -19,6 +17,7 @@ export default function UserHeader({ className }: UserHeaderProps) {
   const getPageTitle = () => {
     if (pathname.startsWith("/user/my-ticket")) return "Tiket Saya";
     if (pathname.startsWith("/user/following")) return "Mengikuti";
+    if (pathname.startsWith("/user/wishlist")) return "Wishlist Saya";
     if (pathname.startsWith("/user/profile")) return "Profil Saya";
     return "User Account";
   };

@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsUpDown,
+  BookmarkCheck,
   Heart,
   Home,
   LogOut,
@@ -52,6 +53,11 @@ export const menuItems: NavItem[] = [
     title: "Mengikuti",
     href: "/user/following",
     icon: Heart,
+  },
+  {
+    title: "Wishlist",
+    href: "/user/wishlist",
+    icon: BookmarkCheck,
   },
 ];
 

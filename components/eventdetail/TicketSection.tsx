@@ -22,6 +22,7 @@ import { Event } from "@/types/event";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth-store";
 import { OrderService } from "@/services/order-service";
+import { UserService } from "@/services/user-service";
 
 const TICKET_COLORS = [
     {
@@ -263,7 +264,12 @@ export default function TicketSection({ event }: { event: Event }) {
     const [isWishlisted, setIsWishlisted] = useState(
         event.is_wishlisted || false,
     );
+    const [isWishlistLoading, setIsWishlistLoading] = useState(false);
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+    useEffect(() => {
+        setIsWishlisted(event.is_wishlisted || false);
+    }, [event.event_id, event.is_wishlisted]);
 
     useEffect(() => {
         setCurrentTime(new Date());
@@ -356,6 +362,36 @@ export default function TicketSection({ event }: { event: Event }) {
         }
     };
 
+    const handleToggleWishlist = async () => {
+        if (!event.event_id || isWishlistLoading) return;
+
+        setIsWishlistLoading(true);
+        try {
+            if (isWishlisted) {
+                await UserService.unwishlistEvent(event.event_id);
+                setIsWishlisted(false);
+                toast.success("Event dihapus dari wishlist.");
+                return;
+            }
+
+            await UserService.wishlistEvent(event.event_id);
+            setIsWishlisted(true);
+            toast.success("Event ditambahkan ke wishlist.");
+        } catch (err: unknown) {
+            const error = err as {
+                response?: {
+                    data?: { message?: string };
+                };
+            };
+            toast.error(
+                error.response?.data?.message ??
+                    "Gagal memperbarui wishlist event.",
+            );
+        } finally {
+            setIsWishlistLoading(false);
+        }
+    };
+
     return (
         <section className="w-full flex flex-col relative z-20">
             {/*
@@ -429,10 +465,6 @@ export default function TicketSection({ event }: { event: Event }) {
                             const isSelected = selectedTicketId === ticket.id;
                             const color =
                                 TICKET_COLORS[index % TICKET_COLORS.length];
-                            const isFomoTicket =
-                                ticketEnd !== Infinity &&
-                                ticketEnd - now < 1000 * 60 * 60 * 24;
-
                             return (
                                 <div
                                     key={ticket.id}
@@ -726,14 +758,19 @@ export default function TicketSection({ event }: { event: Event }) {
                                         ? "bg-danger border-danger text-white hover:bg-danger-light hover:border-danger hover:text-danger"
                                         : "text-slate-500 hover:text-danger hover:border-danger hover:bg-danger-light",
                                 )}
-                                onClick={() => setIsWishlisted(!isWishlisted)}
+                                disabled={isWishlistLoading}
+                                onClick={handleToggleWishlist}
                             >
-                                <Heart
-                                    size={24}
-                                    className={cn(
-                                        isWishlisted && "fill-current",
-                                    )}
-                                />
+                                {isWishlistLoading ? (
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    <Heart
+                                        size={24}
+                                        className={cn(
+                                            isWishlisted && "fill-current",
+                                        )}
+                                    />
+                                )}
                             </Button>
                         </div>
                     )}

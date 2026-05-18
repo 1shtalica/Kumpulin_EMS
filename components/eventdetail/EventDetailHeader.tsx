@@ -16,6 +16,7 @@ import {
   Users,
   Ticket,
   Heart,
+  BookmarkCheck,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -45,6 +46,7 @@ export default function HeaderSection() {
       : [
           { href: "/user/my-ticket", label: "Tiket Saya", icon: Ticket },
           { href: "/user/following", label: "Mengikuti", icon: Heart },
+          { href: "/user/wishlist", label: "Wishlist", icon: BookmarkCheck },
         ];
 
   const accountItemsByRole =

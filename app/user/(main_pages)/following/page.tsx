@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
   CalendarDays,
   Check,
   Heart,
+  Loader2,
   Search,
-  SlidersHorizontal,
   Sparkles,
   Users,
   X,
@@ -17,15 +17,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-
-type CategoryFilter = "all" | "community" | "music" | "workshop" | "education";
+import {
+  UserService,
+  type FollowedOrganizerItem,
+} from "@/services/user-service";
 
 interface FollowedOrganizer {
   id: string;
+  organizerId: string;
   slug: string;
   name: string;
   category: string;
-  categoryKey: Exclude<CategoryFilter, "all">;
   followers: number;
   totalEvents: number;
   upcomingEvents: number;
@@ -38,118 +40,123 @@ interface FollowedOrganizer {
   eventTint: string;
 }
 
-const FOLLOWED_ORGANIZERS: FollowedOrganizer[] = [
+const ORGANIZER_THEME_PRESETS: Pick<
+  FollowedOrganizer,
+  "accent" | "tint" | "textAccent" | "eventTint"
+>[] = [
   {
-    id: "1",
-    slug: "jakarta-event-co",
-    name: "Jakarta Event Co.",
-    category: "Konferensi & Seminar",
-    categoryKey: "community",
-    followers: 12_450,
-    totalEvents: 48,
-    upcomingEvents: 4,
-    avatarInitial: "JE",
-    recentEvent: "Tech Summit 2026",
-    recentDate: "10 Jun 2026",
     accent: "bg-primary text-white",
     tint: "border-l-primary",
     textAccent: "text-primary",
     eventTint: "border-slate-200/80 bg-white",
   },
   {
-    id: "2",
-    slug: "komunitas-startup-id",
-    name: "Komunitas Startup ID",
-    category: "Networking & Komunitas",
-    categoryKey: "community",
-    followers: 8_210,
-    totalEvents: 31,
-    upcomingEvents: 2,
-    avatarInitial: "KS",
-    recentEvent: "Startup Pitch Night Vol.7",
-    recentDate: "22 Jun 2026",
     accent: "bg-[#10b981] text-white",
     tint: "border-l-[#10b981]",
     textAccent: "text-slate-700",
     eventTint: "border-slate-200/80 bg-white",
   },
   {
-    id: "3",
-    slug: "soundwave-productions",
-    name: "Soundwave Productions",
-    category: "Musik & Hiburan",
-    categoryKey: "music",
-    followers: 24_800,
-    totalEvents: 93,
-    upcomingEvents: 7,
-    avatarInitial: "SW",
-    recentEvent: "Malam Akustik - Open Stage",
-    recentDate: "15 Jul 2026",
     accent: "bg-slate-950 text-cyan-300",
     tint: "border-l-info",
     textAccent: "text-slate-700",
     eventTint: "border-slate-200/80 bg-white",
   },
   {
-    id: "4",
-    slug: "bumi-kreatif-studio",
-    name: "Bumi Kreatif Studio",
-    category: "Workshop & Seni",
-    categoryKey: "workshop",
-    followers: 3_540,
-    totalEvents: 17,
-    upcomingEvents: 1,
-    avatarInitial: "BK",
-    recentEvent: "Workshop Fotografi Urban",
-    recentDate: "28 Jun 2026",
     accent: "bg-warning text-slate-950",
     tint: "border-l-warning",
     textAccent: "text-slate-700",
     eventTint: "border-slate-200/80 bg-white",
   },
-  {
-    id: "5",
-    slug: "edunusantara",
-    name: "EduNusantara",
-    category: "Pendidikan & Pelatihan",
-    categoryKey: "education",
-    followers: 6_780,
-    totalEvents: 62,
-    upcomingEvents: 5,
-    avatarInitial: "EN",
-    recentEvent: "Bootcamp Data Science 2026",
-    recentDate: "5 Agu 2026",
-    accent: "bg-info text-white",
-    tint: "border-l-success",
-    textAccent: "text-slate-700",
-    eventTint: "border-slate-200/80 bg-white",
-  },
-];
-
-const FILTERS: Array<{ label: string; value: CategoryFilter }> = [
-  { label: "Semua", value: "all" },
-  { label: "Komunitas", value: "community" },
-  { label: "Musik", value: "music" },
-  { label: "Workshop", value: "workshop" },
-  { label: "Edukasi", value: "education" },
 ];
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("id-ID").format(value);
 }
 
-export default function FollowingPage() {
-  const [query, setQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<CategoryFilter>("all");
-  const [hiddenOrganizerIds, setHiddenOrganizerIds] = useState<string[]>([]);
+function formatEventDate(value?: string | null) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
 
-  const followedOrganizers = useMemo(
-    () =>
-      FOLLOWED_ORGANIZERS.filter(
-        (organizer) => !hiddenOrganizerIds.includes(organizer.id),
-      ),
-    [hiddenOrganizerIds],
+function buildInitial(name: string) {
+  const words = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+  if (words.length === 0) return "OR";
+  return words.map((word) => word[0]?.toUpperCase() ?? "").join("");
+}
+
+function mapFollowedOrganizer(
+  organizer: FollowedOrganizerItem,
+  index: number,
+): FollowedOrganizer {
+  const theme = ORGANIZER_THEME_PRESETS[index % ORGANIZER_THEME_PRESETS.length];
+
+  return {
+    id: organizer.id,
+    organizerId: organizer.organizer_id,
+    slug: organizer.organizer_slug || organizer.organizer_id,
+    name: organizer.organizer_name,
+    category: organizer.organizer_description || "-",
+    followers: organizer.followers ?? 0,
+    totalEvents: organizer.total_events ?? 0,
+    upcomingEvents: organizer.active_events ?? 0,
+    avatarInitial: buildInitial(organizer.organizer_name),
+    recentEvent: organizer.latest_event_title || "Belum ada event terbaru",
+    recentDate: formatEventDate(organizer.latest_event_start_date),
+    ...theme,
+  };
+}
+
+export default function FollowingPage() {
+  const [organizers, setOrganizers] = useState<FollowedOrganizer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [reloadCount, setReloadCount] = useState(0);
+  const [query, setQuery] = useState("");
+  const [unfollowingOrganizerIds, setUnfollowingOrganizerIds] = useState<string[]>(
+    [],
   );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadFollowedOrganizers = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
+      setUnfollowingOrganizerIds([]);
+
+      try {
+        const data = await UserService.getFollowedOrganizers();
+        if (!isMounted) return;
+        setOrganizers(data.map(mapFollowedOrganizer));
+      } catch (error) {
+        console.error("Failed to fetch followed organizers", error);
+        if (!isMounted) return;
+        setOrganizers([]);
+        setErrorMessage("Gagal memuat organizer yang diikuti.");
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    void loadFollowedOrganizers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [reloadCount]);
+
+  const followedOrganizers = useMemo(() => organizers, [organizers]);
 
   const filteredOrganizers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -160,12 +167,23 @@ export default function FollowingPage() {
         organizer.name.toLowerCase().includes(normalizedQuery) ||
         organizer.category.toLowerCase().includes(normalizedQuery) ||
         organizer.recentEvent.toLowerCase().includes(normalizedQuery);
-      const matchesFilter =
-        activeFilter === "all" || organizer.categoryKey === activeFilter;
-
-      return matchesQuery && matchesFilter;
+      return matchesQuery;
     });
-  }, [activeFilter, followedOrganizers, query]);
+  }, [followedOrganizers, query]);
+
+  const handleUnfollow = async (organizer: FollowedOrganizer) => {
+    setUnfollowingOrganizerIds((current) => [...current, organizer.id]);
+    try {
+      await UserService.unfollowOrganizer(organizer.organizerId);
+      setOrganizers((current) => current.filter((item) => item.id !== organizer.id));
+    } catch (error) {
+      console.error(`Failed to unfollow organizer ${organizer.organizerId}`, error);
+    } finally {
+      setUnfollowingOrganizerIds((current) =>
+        current.filter((id) => id !== organizer.id),
+      );
+    }
+  };
 
   const totalUpcomingEvents = followedOrganizers.reduce(
     (sum, organizer) => sum + organizer.upcomingEvents,
@@ -238,7 +256,7 @@ export default function FollowingPage() {
 
           <div className="grid grid-cols-3 gap-2 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-2">
             <HeaderMetric
-              label="Diikuti"
+              label="Ikuti"
               value={followedOrganizers.length}
               tone="primary"
             />
@@ -285,38 +303,37 @@ export default function FollowingPage() {
                   </button>
                 )}
               </div>
-
-              <div className="flex items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-1">
-                <SlidersHorizontal className="ml-2 hidden h-4 w-4 shrink-0 text-slate-400 sm:block" />
-                {FILTERS.map((filter) => (
-                  <button
-                    key={filter.value}
-                    type="button"
-                    onClick={() => setActiveFilter(filter.value)}
-                    className={cn(
-                      "h-8 shrink-0 rounded-lg px-3 text-xs font-semibold transition-all",
-                      activeFilter === filter.value
-                        ? "bg-white text-primary shadow-sm shadow-slate-900/5"
-                        : "text-slate-500 hover:bg-white/70 hover:text-slate-800",
-                    )}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
         </div>
 
-        {filteredOrganizers.length > 0 ? (
+        {isLoading ? (
+          <div className="flex min-h-80 items-center justify-center px-6 py-12">
+            <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Memuat organizer...
+            </div>
+          </div>
+        ) : errorMessage ? (
+          <div className="flex min-h-80 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+            <p className="text-sm font-medium text-danger">{errorMessage}</p>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10 rounded-xl border-slate-200 px-4 text-sm font-semibold"
+              onClick={() => setReloadCount((count) => count + 1)}
+            >
+              Coba lagi
+            </Button>
+          </div>
+        ) : filteredOrganizers.length > 0 ? (
           <div className="divide-y divide-slate-100">
             {filteredOrganizers.map((organizer) => (
               <OrganizerRow
                 key={organizer.id}
                 organizer={organizer}
-                onUnfollow={() =>
-                  setHiddenOrganizerIds((current) => [...current, organizer.id])
-                }
+                onUnfollow={() => void handleUnfollow(organizer)}
+                isUnfollowing={unfollowingOrganizerIds.includes(organizer.id)}
               />
             ))}
           </div>
@@ -325,7 +342,6 @@ export default function FollowingPage() {
             hasFollowing={followedOrganizers.length > 0}
             onReset={() => {
               setQuery("");
-              setActiveFilter("all");
             }}
           />
         )}
@@ -384,9 +400,11 @@ function HeaderMetric({
 function OrganizerRow({
   organizer,
   onUnfollow,
+  isUnfollowing,
 }: {
   organizer: FollowedOrganizer;
   onUnfollow: () => void;
+  isUnfollowing: boolean;
 }) {
   return (
     <article
@@ -472,10 +490,11 @@ function OrganizerRow({
           <Button
             type="button"
             variant="outline"
+            disabled={isUnfollowing}
             onClick={onUnfollow}
             className="h-9 flex-1 rounded-xl border-danger/20 px-3 text-xs font-semibold text-danger hover:bg-danger-light hover:text-danger"
           >
-            Berhenti
+            {isUnfollowing ? "Unfollowing..." : "Unfollow"}
           </Button>
         </div>
       </div>
@@ -504,7 +523,7 @@ function EmptyState({
       </h3>
       <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-500">
         {hasFollowing
-          ? "Coba ubah kata kunci atau filter kategori untuk melihat organizer lain."
+          ? "Coba ubah kata kunci pencarian untuk melihat organizer lain."
           : "Ikuti organizer dari halaman event agar event terbaru mereka muncul di sini."}
       </p>
       {hasFollowing ? (
@@ -513,7 +532,7 @@ function EmptyState({
           onClick={onReset}
           className="mt-5 h-10 rounded-xl px-4 text-sm font-semibold"
         >
-          Reset filter
+          Reset pencarian
         </Button>
       ) : (
         <Button

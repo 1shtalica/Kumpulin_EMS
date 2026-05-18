@@ -16,6 +16,7 @@ import {
     Users,
     Ticket,
     Heart,
+    BookmarkCheck,
     Settings,
 } from "lucide-react";
 import {
@@ -81,6 +82,11 @@ export default function LandingNavbar() {
                       icon: Ticket,
                   },
                   { href: "/user/following", label: "Mengikuti", icon: Heart },
+                  {
+                      href: "/user/wishlist",
+                      label: "Wishlist",
+                      icon: BookmarkCheck,
+                  },
               ];
 
     const accountItemsByRole =
