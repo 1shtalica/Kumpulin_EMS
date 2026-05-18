@@ -394,17 +394,13 @@ export default function TicketSection({ event }: { event: Event }) {
 
     return (
         <section className="w-full flex flex-col relative z-20">
-            {/*
-             * Struktur: sticky card dengan 2 zona:
-             *   - Atas (overflow-y-auto) : countdown + list tiket + qty counter
-             *   - Bawah (shrink-0)       : total harga + tombol beli + share — SELALU TERLIHAT
-             */}
+           
             <div
                 className="w-full bg-white shadow-md shadow-slate-900/5 border border-slate-200/80 rounded-2xl sticky top-24 flex flex-col overflow-hidden"
                 style={{ maxHeight: "calc(100vh - 7rem)" }}
             >
-                {/* ── ZONA ATAS: SCROLLABLE ── */}
-                <div className="flex-1 overflow-y-auto p-5 pb-3 flex flex-col gap-4 scrollbar-hide">
+                {/* ── ZONA ATAS: PINNED HEADER (Title & Countdown) ── */}
+                <div className="shrink-0 p-5 pb-2 flex flex-col gap-4 bg-white">
                     <div>
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
                             Registrasi
@@ -438,7 +434,10 @@ export default function TicketSection({ event }: { event: Event }) {
                             </span>
                         </div>
                     )}
+                </div>
 
+                {/* ── ZONA TENGAH: SCROLLABLE TICKET LIST ── */}
+                <div className="flex-1 overflow-y-auto px-5 pb-4 flex flex-col gap-4 scrollbar-hide">
                     {/* List tiket */}
                     <div className="flex flex-col gap-4 mt-2">
                         {effectiveTickets.map((ticket, index) => {
@@ -584,7 +583,10 @@ export default function TicketSection({ event }: { event: Event }) {
                             </div>
                         )}
                     </div>
+                </div>
 
+                {/* ── ZONA BAWAH: SELALU TERLIHAT ── */}
+                <div className="shrink-0 p-5 pt-3 flex flex-col gap-3 border-t border-slate-100 bg-white">
                     {/* Counter qty */}
                     {selectedTicket && (
                         <>
@@ -629,10 +631,7 @@ export default function TicketSection({ event }: { event: Event }) {
                             )}
                         </>
                     )}
-                </div>
-
-                {/* ── ZONA BAWAH: SELALU TERLIHAT ── */}
-                <div className="shrink-0 p-5 pt-3 flex flex-col gap-3 border-t border-slate-100 bg-white">
+                    
                     {/* Total harga */}
                     <div className="flex justify-between items-end">
                         <span className="text-slate-500 text-sm font-semibold">
