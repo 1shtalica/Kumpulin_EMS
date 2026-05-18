@@ -12,6 +12,7 @@ import {
   Home,
   LogOut,
   LucideIcon,
+  Settings,
   Ticket,
   User,
 } from "lucide-react";
@@ -59,13 +60,18 @@ export const menuItems: NavItem[] = [
     href: "/user/wishlist",
     icon: BookmarkCheck,
   },
+  {
+    title: "Profil Saya",
+    href: "/user/profile",
+    icon: User,
+  },
 ];
 
 export const accountItems: NavItem[] = [
   {
-    title: "Profil",
-    href: "/user/profile",
-    icon: User,
+    title: "Pengaturan Akun",
+    href: "/user/account",
+    icon: Settings,
   },
 ];
 
@@ -161,8 +167,10 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
     <Button
       variant="ghost"
       className={cn(
-        "min-w-0 justify-start text-left transition-all hover:border-primary/20 hover:bg-primary-light/60 hover:text-slate-950",
-        isOpen ? "h-13 w-full p-2" : "h-10 w-10 justify-center p-0",
+        "min-w-0 justify-start overflow-hidden text-left transition-all",
+        isOpen
+          ? "h-13 w-full rounded-xl border border-transparent p-2 hover:bg-slate-100 hover:text-slate-900"
+          : "mx-auto h-10 w-10 justify-center p-0 hover:bg-transparent hover:text-current",
       )}
     >
       <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
@@ -195,6 +203,22 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
         side={isOpen ? "top" : "right"}
         className="w-56 rounded-2xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10"
       >
+        {accountItems.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <DropdownMenuItem
+              key={item.href}
+              className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 focus:bg-slate-50 focus:text-slate-900"
+              asChild
+            >
+              <Link href={item.href}>
+                <Icon className="mr-2 h-4 w-4 text-slate-400" />
+                {item.title}
+              </Link>
+            </DropdownMenuItem>
+          );
+        })}
         <DropdownMenuItem
           className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700"
           onClick={logout}
@@ -210,9 +234,9 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-screen border-r border-slate-100 bg-white",
-          "hidden flex-col transition-all duration-300 ease-in-out md:flex",
-          isOpen ? "w-60" : "w-18",
+            "fixed top-0 left-0 z-40 h-screen border-r border-slate-100 bg-white",
+            "hidden flex-col transition-all duration-300 ease-in-out md:flex",
+            isOpen ? "w-60" : "w-18",
         )}
       >
         <div
@@ -264,48 +288,38 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
         </div>
 
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden px-4 py-3">
-          <div className="flex flex-col gap-2 overflow-hidden">
-            {isOpen && (
-              <h2 className="px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                Aktivitas
-              </h2>
-            )}
+          <div className="flex flex-col gap-1 overflow-hidden">
             <NavContent showLabel={isOpen} items={menuItems} />
-          </div>
-
-          <div className="flex flex-col gap-2 overflow-hidden">
-            {isOpen && (
-              <h2 className="px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                Akun
-              </h2>
-            )}
-            <NavContent showLabel={isOpen} items={accountItems} />
           </div>
 
           <div className="flex-1" />
 
-          <div
-            className={cn(
-              "border-t border-slate-100 pt-3",
-              isOpen ? "flex flex-col gap-2" : "flex flex-col items-center gap-2",
-            )}
-          >
-            {accountMenu}
-
+          <div>
             <Button
               variant="ghost"
               size={isOpen ? "default" : "icon"}
               className={cn(
-                "h-10 w-full justify-start whitespace-nowrap rounded-lg px-4 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                "h-10 w-full justify-start whitespace-nowrap rounded-lg px-4 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-500",
                 !isOpen && "h-10 w-10 justify-center px-0",
               )}
               asChild
             >
               <Link href="/">
-                <Home className={cn("h-4 w-4 shrink-0", isOpen && "mr-2")} />
-                {isOpen && <span>Kembali ke Beranda</span>}
+                <Home className={cn("h-4 w-4 shrink-0", isOpen && "mr-2.5")} />
+                {isOpen && <span>Beranda</span>}
               </Link>
             </Button>
+
+            <div className="my-2.5 border-t border-slate-100" />
+
+            <div
+              className={cn(
+                "flex items-center pt-2",
+                isOpen ? "justify-start" : "justify-center",
+              )}
+            >
+              {accountMenu}
+            </div>
           </div>
         </div>
       </aside>

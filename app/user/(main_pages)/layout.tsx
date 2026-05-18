@@ -87,10 +87,7 @@ export default function MainPagesLayout({
           </SheetHeader>
 
           <div className="flex flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden p-3">
-            <div className="flex flex-col gap-2 overflow-hidden">
-              <h2 className="px-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                Aktivitas
-              </h2>
+            <div className="flex flex-col gap-1 overflow-hidden">
               <NavContent
                 showLabel={true}
                 onClose={() => setIsSheetOpen(false)}
@@ -98,20 +95,15 @@ export default function MainPagesLayout({
               />
             </div>
 
-            <div className="flex flex-col gap-2 overflow-hidden">
-              <h2 className="px-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                Akun
-              </h2>
+            <div className="flex-1" />
+
+            <div className="space-y-2 border-t border-slate-100 pt-3">
               <NavContent
                 showLabel={true}
                 onClose={() => setIsSheetOpen(false)}
                 items={accountItems}
               />
-            </div>
 
-            <div className="flex-1" />
-
-            <div className="border-t border-slate-100 pt-3">
               <div className="mb-2 flex min-w-0 items-center gap-2.5 rounded-xl px-2 py-2">
                 <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
                   <AvatarImage src={user?.profile_url} alt={displayName} />
@@ -143,7 +135,7 @@ export default function MainPagesLayout({
             </div>
           </div>
 
-          <div className="shrink-0 border-t border-slate-100 p-4">
+        <div className="shrink-0 border-t border-slate-100 p-4">
             <Button
               variant="ghost"
               className="h-10 w-full justify-start rounded-lg px-3 text-sm whitespace-nowrap text-slate-500 hover:bg-slate-50 hover:text-slate-900"
@@ -151,7 +143,7 @@ export default function MainPagesLayout({
             >
               <Link href="/" onClick={() => setIsSheetOpen(false)}>
                 <Home className="h-4 w-4 shrink-0" />
-                <span>Kembali ke Beranda</span>
+                <span>Beranda</span>
               </Link>
             </Button>
           </div>
@@ -167,7 +159,7 @@ export default function MainPagesLayout({
             "px-6 md:px-8 pb-8 flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden",
             "md:ml-18",
             isOpen ? "md:ml-60" : "md:ml-18",
-            "pt-16",
+            "pt-26",
           )}
         >
           <UserHeader

@@ -107,10 +107,10 @@ export default function MyEventFilter() {
                             Organizer workspace
                         </p>
                         <div>
-                            <h2 className="text-3xl font-bold leading-[1.12] tracking-normal text-slate-950 md:text-4xl">
+                            <h2 className="text-2xl font-bold leading-[1.12] tracking-normal text-slate-950 md:text-3xl">
                                 Event Saya
                             </h2>
-                            <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600 md:text-base">
+                            <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-600 md:text-sm">
                                 Pantau publikasi, kapasitas, dan akses cepat
                                 untuk setiap event yang kamu kelola.
                             </p>

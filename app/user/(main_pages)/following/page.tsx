@@ -245,10 +245,10 @@ export default function FollowingPage() {
             <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
               Organizer yang diikuti
             </p>
-            <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
+            <h1 className="mt-2 text-2xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
               Mengikuti
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 md:text-sm">
               Pantau organizer favorit, lihat event terbaru, dan buka halaman
               publik mereka dari satu tempat.
             </p>

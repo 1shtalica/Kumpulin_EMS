@@ -19,7 +19,6 @@ import {
     Ticket as TicketIcon,
     UserRound,
     WalletCards,
-    X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -537,26 +536,26 @@ function MyTicketPageContent() {
     return (
         <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
             <div className="mx-auto w-full max-w-6xl space-y-5">
-                <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5">
+                <header className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
                     <TicketWalletDoodle />
-                    <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                        <div className="max-w-2xl">
-                            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+                    <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                        <div>
+                            <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
                                 Ticket wallet
                             </p>
-                            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+                            <h1 className="mt-2 text-2xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
                                 Tiket Saya
                             </h1>
-                            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 md:text-sm">
                                 Buka e-ticket, cek status check-in, dan temukan
                                 QR sebelum masuk ke lokasi event.
                             </p>
                         </div>
-                        <div className="flex items-end">
+                        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-2">
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="h-10 w-fit rounded-lg border-slate-200 bg-white text-slate-700 hover:border-primary/25 hover:bg-slate-50 hover:text-slate-950"
+                                className="h-10 rounded-xl border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 hover:border-primary/25 hover:bg-slate-50 hover:text-slate-950"
                                 onClick={() =>
                                     setReloadCount((current) => current + 1)
                                 }

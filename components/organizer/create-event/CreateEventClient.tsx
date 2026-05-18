@@ -254,10 +254,10 @@ export default function CreateEventClient() {
               <Sparkles className="h-3.5 w-3.5" />
               Organizer workspace
             </div>
-            <h1 className="text-3xl font-bold leading-tight text-slate-950 md:text-4xl">
+            <h1 className="text-2xl font-bold leading-tight text-slate-950 md:text-3xl">
               Buat Event Baru
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 md:text-sm">
               Susun detail event, jadwal, tiket, dan preview akhir sebelum
               dipublikasikan ke peserta.
             </p>

@@ -797,7 +797,7 @@ export default function CheckInDetailPage() {
                             <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
                                 Check-in workspace
                             </p>
-                            <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
+                            <h1 className="mt-2 text-2xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
                                 {event.title}
                             </h1>
                             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-600">

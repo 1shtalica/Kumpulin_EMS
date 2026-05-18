@@ -438,10 +438,10 @@ export default function CheckInPage() {
             <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
               Organizer workspace
             </p>
-            <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
+            <h1 className="mt-2 text-2xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
               Check-In
             </h1>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600 md:text-base">
+            <p className="mt-2 text-xs leading-relaxed text-slate-600 md:text-sm">
               Pilih event, buka scanner, dan pantau kehadiran peserta dari satu halaman.
             </p>
           </div>

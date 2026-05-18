@@ -520,22 +520,22 @@ function WishlistPageContent() {
                 }}
             />
             <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5">
-                <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-900/5">
+                <header className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
                     <WishlistDoodle />
-                    <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                        <div className="max-w-2xl">
-                            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-danger">
+                    <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                        <div>
+                            <p className="text-[11px] font-medium uppercase tracking-wider text-danger">
                                 Event wishlist
                             </p>
-                            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">
+                            <h1 className="mt-2 text-2xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
                                 Wishlist Saya
                             </h1>
-                            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 md:text-sm">
                                 Kumpulkan event incaran, cek jadwal, lalu lanjutkan
                                 pembelian saat registrasi dibuka.
                             </p>
                         </div>
-                        <div className="grid min-w-44 grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-2">
+                        <div className="grid min-w-44 grid-cols-2 gap-2 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-2">
                             <div className="rounded-xl bg-white px-3 py-2 text-center shadow-sm shadow-slate-900/5">
                                 <p className="text-lg font-semibold leading-none text-danger">
                                     {meta.total}

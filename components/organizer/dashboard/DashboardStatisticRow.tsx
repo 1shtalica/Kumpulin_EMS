@@ -156,10 +156,10 @@ export default function DashboardStatisticRow() {
                                 Ringkasan operasional
                             </Badge>
                             <div className="max-w-2xl space-y-2">
-                                <h2 className="text-2xl font-bold leading-tight text-white md:text-3xl">
+                                <h2 className="text-xl font-bold leading-tight text-white md:text-2xl">
                                     Dashboard organizer terisi untuk memantau event, tiket, dan payout.
                                 </h2>
-                                <p className="max-w-xl text-sm leading-6 text-slate-300">
+                                <p className="max-w-xl text-xs leading-relaxed text-slate-300 md:text-sm">
                                     Data dummy ini memberi gambaran lengkap sambil menunggu endpoint statistik organizer siap dipakai.
                                 </p>
                             </div>

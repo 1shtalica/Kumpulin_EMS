@@ -183,10 +183,10 @@ function EmptyCommunityState({ message }: { message?: string }) {
                     <p className="mt-6 text-[11px] font-medium uppercase tracking-wider text-primary">
                         Komunitas organizer
                     </p>
-                    <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950">
+                    <h1 className="mt-2 text-2xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
                         Belum ada komunitas
                     </h1>
-                    <p className="mx-auto mt-3 max-w-md text-sm md:text-base leading-relaxed text-slate-600">
+                    <p className="mx-auto mt-3 max-w-md text-xs leading-relaxed text-slate-600 md:text-sm">
                         {message ??
                             "Buat ruang komunitas untuk mengumpulkan peserta, membagikan informasi, dan menjaga hubungan setelah event selesai."}
                     </p>
@@ -424,10 +424,10 @@ export default async function Communities() {
                     <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
                         Organizer workspace
                     </p>
-                    <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
+                    <h1 className="mt-2 text-2xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
                         Komunitas
                     </h1>
-                    <p className="mt-2 max-w-2xl text-sm md:text-base leading-relaxed text-slate-600">
+                    <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 md:text-sm">
                         Kelola identitas komunitas, pantau aktivitas, dan buka
                         halaman publik dari satu tempat.
                     </p>
