@@ -248,12 +248,12 @@ function FeedPostCard({ post }: { post: Post }) {
                 imageClassName="max-h-[420px]"
             />
 
-            <div className="flex items-center gap-1 border-t border-slate-200/80 px-3 py-2 sm:px-4">
+            <div className="flex justify-end items-center gap-1 border-t border-slate-200/80 px-3 py-2 sm:px-4">
                 <Link
                     href={postHref}
                     className="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-slate-500 transition-all hover:bg-primary-light hover:text-primary"
                 >
-                    <MessageCircle className="h-5 w-5" />
+                    <MessageCircle className="h-4 w-4" />
                     <span>{formatNumber(post.comment_count)}</span>
                     <span className="hidden sm:inline">Komentar</span>
                 </Link>
@@ -982,7 +982,9 @@ export default function NewestPostsFeedClient() {
                                     <input
                                         value={communityQuery}
                                         onChange={(event) =>
-                                            setCommunityQuery(event.target.value)
+                                            setCommunityQuery(
+                                                event.target.value,
+                                            )
                                         }
                                         placeholder="Cari komunitas"
                                         className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm outline-none transition focus-visible:border-primary/40 focus-visible:ring-2 focus-visible:ring-primary/20"
@@ -990,20 +992,24 @@ export default function NewestPostsFeedClient() {
                                 </div>
                                 <div className="mt-3 space-y-2">
                                     {visibleTopCommunities.length ? (
-                                        visibleTopCommunities.map((community) => (
-                                            <Link
-                                                key={community.id}
-                                                href={`/komunitas/${community.id}`}
-                                                className="flex items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 transition hover:border-primary/30 hover:bg-white"
-                                            >
-                                                <span className="min-w-0 truncate text-sm font-medium text-slate-950">
-                                                    {community.label}
-                                                </span>
-                                                <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-500">
-                                                    {formatNumber(community.count)}
-                                                </span>
-                                            </Link>
-                                        ))
+                                        visibleTopCommunities.map(
+                                            (community) => (
+                                                <Link
+                                                    key={community.id}
+                                                    href={`/komunitas/${community.id}`}
+                                                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 transition hover:border-primary/30 hover:bg-white"
+                                                >
+                                                    <span className="min-w-0 truncate text-sm font-medium text-slate-950">
+                                                        {community.label}
+                                                    </span>
+                                                    <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-500">
+                                                        {formatNumber(
+                                                            community.count,
+                                                        )}
+                                                    </span>
+                                                </Link>
+                                            ),
+                                        )
                                     ) : (
                                         <p className="rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-3 text-sm text-slate-500">
                                             {topCommunities.length

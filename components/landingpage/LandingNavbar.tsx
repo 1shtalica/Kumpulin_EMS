@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthStore } from "@/stores/auth-store";
+import Image from "next/image";
 
 export default function LandingNavbar() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -120,10 +121,10 @@ export default function LandingNavbar() {
                 ? pathname.slice(0, path.length) === path
                 : pathname === path;
         return cn(
-            "rounded-full px-5 py-2 transition-all duration-300 relative font-semibold text-sm h-9",
+            "relative h-9 rounded-xl px-4 text-sm font-semibold transition-all duration-200",
             isActive
-                ? "bg-primary/10 text-primary"
-                : "text-slate-500 hover:text-slate-900 hover:bg-slate-100",
+                ? "border border-primary/10 bg-primary-light text-primary shadow-sm shadow-primary/5 hover:bg-primary-light hover:text-primary"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900",
         );
     };
 
@@ -134,14 +135,13 @@ export default function LandingNavbar() {
     return (
         <nav
             className={cn(
-                "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out py-3 md:py-4",
-                "border-b backdrop-blur-xl",
+                "fixed top-0 z-50 w-full border-b py-2.5 backdrop-blur-xl transition-all duration-300 ease-in-out md:py-3",
                 isScrolled
-                    ? "bg-white/85 border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
-                    : "bg-white border-white/40 shadow-none",
+                    ? "border-slate-200/70 bg-white/90 shadow-sm shadow-slate-900/5"
+                    : "border-slate-100 bg-white/95 shadow-none",
             )}
         >
-            <div className="container relative mx-auto px-4 md:px-8 lg:px-12 flex flex-row items-center justify-between w-full max-w-7xl">
+            <div className="container relative mx-auto flex w-full max-w-7xl flex-row items-center justify-between px-4 md:px-8 lg:px-12">
                 {/* LEFT: Burger (mobile) + Logo (desktop-only) */}
                 <div className="flex items-center gap-2">
                     {/* Burger — Mobile Only, slides dari kiri */}
@@ -153,55 +153,57 @@ export default function LandingNavbar() {
                             <SheetTrigger asChild>
                                 <Button
                                     variant="ghost"
-                                    size="icon"
+                                    size="icon-sm"
+                                    className="rounded-xl text-slate-600 hover:bg-slate-50 hover:text-primary"
                                     aria-label="Menu"
                                 >
-                                    <Menu className="h-6 w-6" />
+                                    <Menu className="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
 
                             <SheetContent
                                 side="left"
-                                className="w-64 flex flex-col gap-0"
+                                className="flex w-72 flex-col gap-0 border-slate-200 p-0"
                                 aria-describedby={undefined}
                             >
-                                <SheetHeader className="h-16 flex flex-row items-center border-b shrink-0 p-0">
-                                    <SheetTitle className="flex-1 px-4">
+                                <SheetHeader className="flex h-16 shrink-0 flex-row items-center border-b border-slate-100 px-4 py-0">
+                                    <SheetTitle className="flex-1">
                                         <button
                                             type="button"
-                                            className="flex items-center gap-2 text-xl group cursor-pointer focus-visible:outline-none"
+                                            className="flex items-center gap-2 text-xl group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                                             onClick={() => {
                                                 setIsMobileMenuOpen(false);
-                                                router.refresh();
+                                                router.push("/");
                                             }}
                                         >
-                                            <span className="transition-transform group-hover:rotate-12">
-                                                🎉
-                                            </span>
-                                            <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
-                                                kumpul.in
-                                            </span>
+                                            <Image
+                                                src="/kumpulin_wordmark.svg"
+                                                alt="Kumpulin Logo"
+                                                height={40}
+                                                width={120}
+                                                priority
+                                            />
                                         </button>
                                     </SheetTitle>
                                 </SheetHeader>
 
-                                <div className="flex-1 flex flex-col overflow-hidden p-3 gap-3">
-                                    <nav className="flex flex-col gap-2">
+                                <div className="flex flex-1 flex-col gap-3 overflow-hidden p-3">
+                                    <nav className="flex flex-col gap-1.5">
                                         <Button
                                             asChild
                                             variant="ghost"
                                             className={cn(
-                                                "w-full justify-start h-10",
+                                                "h-10 w-full justify-start rounded-xl px-3 text-sm",
                                                 pathname === "/"
-                                                    ? "bg-primary/10 text-primary font-bold hover:bg-primary/20"
-                                                    : "text-muted font-medium",
+                                                    ? "bg-primary-light font-semibold text-primary hover:bg-primary-light"
+                                                    : "font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900",
                                             )}
                                             onClick={() =>
                                                 setIsMobileMenuOpen(false)
                                             }
                                         >
                                             <Link href="/">
-                                                <Home className="h-5 w-5 shrink-0 mr-3" />
+                                                <Home className="mr-3 h-4 w-4 shrink-0" />
                                                 <span>Beranda</span>
                                             </Link>
                                         </Button>
@@ -210,17 +212,37 @@ export default function LandingNavbar() {
                                             asChild
                                             variant="ghost"
                                             className={cn(
-                                                "w-full justify-start h-10",
+                                                "h-10 w-full justify-start rounded-xl px-3 text-sm",
                                                 pathname === "/events"
-                                                    ? "bg-primary/10 text-primary font-bold hover:bg-primary/20"
-                                                    : "text-muted font-medium",
+                                                    ? "bg-primary-light font-semibold text-primary hover:bg-primary-light"
+                                                    : "font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900",
                                             )}
                                             onClick={() =>
                                                 setIsMobileMenuOpen(false)
                                             }
                                         >
                                             <Link href="/events">
+                                                <Calendar className="mr-3 h-4 w-4 shrink-0" />
                                                 <span>Jelajah</span>
+                                            </Link>
+                                        </Button>
+
+                                        <Button
+                                            asChild
+                                            variant="ghost"
+                                            className={cn(
+                                                "h-10 w-full justify-start rounded-xl px-3 text-sm",
+                                                pathname.startsWith("/komunitas")
+                                                    ? "bg-primary-light font-semibold text-primary hover:bg-primary-light"
+                                                    : "font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900",
+                                            )}
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
+                                        >
+                                            <Link href="/komunitas">
+                                                <Users className="mr-3 h-4 w-4 shrink-0" />
+                                                <span>Komunitas</span>
                                             </Link>
                                         </Button>
                                     </nav>
@@ -232,20 +254,21 @@ export default function LandingNavbar() {
                     {/* Logo — Desktop only (hidden on mobile) */}
                     <button
                         type="button"
-                        onClick={() => router.refresh()}
-                        className="hidden md:flex items-center gap-2 md:text-2xl group cursor-pointer focus-visible:outline-none"
+                        onClick={() => router.push("/")}
+                        className="hidden h-10 items-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:flex"
                     >
-                        <span className="transition-transform group-hover:rotate-12">
-                            🎉
-                        </span>
-                        <span className="font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-secondary">
-                            kumpul.in
-                        </span>
+                        <Image
+                            src="/kumpulin_wordmark.svg"
+                            alt="Kumpulin Logo"
+                            height={40}
+                            width={120}
+                            priority
+                        />
                     </button>
                 </div>
 
                 {/* CENTER: Desktop Nav */}
-                <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-2">
+                <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 rounded-2xl border border-slate-200/70 bg-white/80 p-1 shadow-sm shadow-slate-900/5 md:flex">
                     <Button
                         asChild
                         variant="ghost"
@@ -282,19 +305,19 @@ export default function LandingNavbar() {
                     ) : user ? (
                         <DropdownMenu modal={false}>
                             <DropdownMenuTrigger asChild>
-                                <button className="focus-visible:outline-none cursor-pointer">
-                                    <Avatar className="h-8 w-8 ring-2 ring-primary/30 hover:ring-primary transition-all">
+                                <button className="cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20">
+                                    <Avatar className="h-9 w-9 ring-2 ring-primary/20 transition-all hover:ring-primary/50">
                                         <AvatarImage
                                             src={user.profile_url ?? undefined}
                                             alt={user.username}
                                         />
-                                        <AvatarFallback className="bg-primary text-white text-xs font-bold">
+                                        <AvatarFallback className="bg-primary-light text-xs font-semibold text-primary">
                                             {userInitials}
                                         </AvatarFallback>
                                     </Avatar>
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuContent align="end" className="w-56 rounded-2xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10">
                                 {/* Info user */}
                                 <div className="px-3 py-2">
                                     <p className="text-sm font-semibold text-accent truncate">
@@ -319,7 +342,7 @@ export default function LandingNavbar() {
                                             >
                                                 <Link
                                                     href={href}
-                                                    className="cursor-pointer"
+                                                    className="cursor-pointer rounded-xl"
                                                 >
                                                     <Icon className="mr-2 h-4 w-4" />
                                                     {label}
@@ -344,7 +367,7 @@ export default function LandingNavbar() {
                                             >
                                                 <Link
                                                     href={href}
-                                                    className="cursor-pointer"
+                                                    className="cursor-pointer rounded-xl"
                                                 >
                                                     <Icon className="mr-2 h-4 w-4" />
                                                     {label}
@@ -353,7 +376,7 @@ export default function LandingNavbar() {
                                         ),
                                     )}
                                     <DropdownMenuItem
-                                        className="text-danger focus:text-danger focus:bg-danger/10 cursor-pointer"
+                                        className="cursor-pointer rounded-xl text-danger focus:bg-danger/10 focus:text-danger"
                                         onClick={logout}
                                     >
                                         <LogOut className="mr-2 h-4 w-4 text-danger" />
@@ -368,7 +391,7 @@ export default function LandingNavbar() {
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="rounded-full font-bold h-9 bg-white hover:bg-slate-100 border border-slate-200 shadow-sm"
+                                className="h-9 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
                                 asChild
                             >
                                 <Link href="/login">Masuk</Link>
@@ -377,7 +400,7 @@ export default function LandingNavbar() {
                                 variant="brand"
                                 size="sm"
                                 asChild
-                                className="hidden md:inline-flex rounded-full font-bold h-9 shadow-[0_4px_14px_0_rgb(0,44,238,0.39)] hover:shadow-[0_6px_20px_rgba(0,44,238,0.23)] hover:-translate-y-0.5 transition-all"
+                                className="hidden h-9 rounded-xl px-4 text-sm font-semibold shadow-glow transition-all hover:bg-primary-hover md:inline-flex"
                             >
                                 <Link href="/register">Daftar</Link>
                             </Button>
