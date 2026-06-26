@@ -136,6 +136,31 @@ export const CommunityService = {
         };
     },
 
+    async getFollowedPosts({
+        limit = 20,
+        cursor,
+    }: {
+        limit?: number;
+        cursor?: string | null;
+    } = {}): Promise<NewestPostsResult> {
+        const safeLimit = Math.min(Math.max(limit, 1), 100);
+        const response = await axiosClient.get<NewestPostsResponse>(
+            "/posts/followed",
+            {
+                params: {
+                    limit: safeLimit,
+                    ...(cursor ? { cursor } : {}),
+                },
+                skipAuthFailureRedirect: true,
+            },
+        );
+
+        return {
+            items: response.data.data?.items ?? [],
+            next_cursor: response.data.data?.next_cursor ?? null,
+        };
+    },
+
     async createCommunity(payload: CreateCommunityPayload): Promise<Community> {
         if (hasCommunityFiles(payload)) {
             const response = await axiosClient.post<CommunityResponse>(

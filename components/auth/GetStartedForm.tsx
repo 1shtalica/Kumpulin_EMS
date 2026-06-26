@@ -125,7 +125,8 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     const handleVerifyEmailCode = async () => {
         if (initialUser?.email_verified) {
             try {
-                await handleFinalSubmit();
+                const organizerData = await getOrganizerData();
+                await handleFinalSubmit(organizerData!);
             } catch (error) {
                 const axiosError = error as AxiosError<{ message: string }>;
                 const errorMessage =

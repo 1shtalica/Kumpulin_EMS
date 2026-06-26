@@ -91,8 +91,20 @@ export default function LandingNavbar() {
 
     const accountItemsByRole =
         user?.role === "organizer"
-            ? [{ href: "/organizer/account", label: "Pengaturan Akun", icon: Settings }]
-            : [{ href: "/user/account", label: "Pengaturan Akun", icon: Settings }];
+            ? [
+                  {
+                      href: "/organizer/profile",
+                      label: "Pengaturan Akun",
+                      icon: Settings,
+                  },
+              ]
+            : [
+                  {
+                      href: "/user/profile",
+                      label: "Pengaturan Akun",
+                      icon: Settings,
+                  },
+              ];
 
     useEffect(() => {
         const handleScroll = () => {
