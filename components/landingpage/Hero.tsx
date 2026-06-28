@@ -181,7 +181,7 @@ function HeroEventCardGraphic({
                 </g>
             </svg>
             <Ticket
-                className={`absolute -bottom-6 -right-5 rotate-[-8deg] opacity-[0.07] transition-all duration-500 group-hover:rotate-[-3deg] group-hover:scale-110 group-hover:opacity-[0.12] ${
+                className={`absolute -bottom-6 -right-5 rotate-[-8deg] opacity-[0.07] transition-all duration-500 group-hover:-rotate-3 group-hover:scale-110 group-hover:opacity-[0.12] ${
                     compact ? "h-24 w-24" : "h-32 w-32"
                 }`}
                 strokeWidth={1.4}

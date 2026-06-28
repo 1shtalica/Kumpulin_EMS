@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Users, Heart, ImageOff, Ticket } from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, cn } from "@/lib/utils";
+import { UserService } from "@/services/user-service";
 
 interface EventCardProps {
+    eventId?: string;
     title: string;
     slug: string;
     category: string;
@@ -25,6 +28,7 @@ interface EventCardProps {
     isRtPintar?: boolean;
     ticketSold?: number;
     maxQuota?: number;
+    isWishlisted?: boolean;
     variant?: "vertical" | "horizontal";
 }
 
@@ -36,7 +40,7 @@ function EventCardGraphic({ variant }: { variant: EventCardProps["variant"] }) {
         >
             <Ticket
                 className={cn(
-                    "absolute -bottom-7 -right-5 h-30 w-30 rotate-[-8deg] opacity-[0.08] transition-all duration-300 group-hover:rotate-[-3deg] group-hover:scale-110 group-hover:opacity-[0.13]",
+                    "absolute -bottom-7 -right-5 h-30 w-30 rotate-[-8deg] opacity-[0.08] transition-all duration-300 group-hover:-rotate-3 group-hover:scale-110 group-hover:opacity-[0.13]",
                     variant === "horizontal" && "h-34 w-34",
                 )}
                 strokeWidth={1.4}
@@ -46,6 +50,7 @@ function EventCardGraphic({ variant }: { variant: EventCardProps["variant"] }) {
 }
 
 export default function EventCard({
+    eventId,
     title,
     category,
     date,
@@ -55,14 +60,19 @@ export default function EventCard({
     organizer,
     image,
     slug,
-    isHot = false,
     isOnline = false,
-    isRtPintar = false,
     ticketSold = 0,
     maxQuota = 100,
+    isWishlisted = false,
     variant = "vertical",
 }: EventCardProps) {
     const [imgError, setImgError] = useState(false);
+    const [wishlisted, setWishlisted] = useState(isWishlisted);
+    const [isUpdatingWishlist, setIsUpdatingWishlist] = useState(false);
+
+    useEffect(() => {
+        setWishlisted(isWishlisted);
+    }, [isWishlisted]);
 
     // Parsing Date for the Box UI
     const dateObj = new Date(date);
@@ -75,6 +85,39 @@ export default function EventCard({
     const year = !isNaN(dateObj.getFullYear())
         ? dateObj.getFullYear()
         : date.split(" ")[2] || new Date().getFullYear();
+    const handleWishlistClick = async (
+        event: MouseEvent<HTMLButtonElement>,
+    ) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (isUpdatingWishlist) return;
+
+        if (!eventId) {
+            toast.error("ID event tidak ditemukan.");
+            return;
+        }
+
+        const nextWishlisted = !wishlisted;
+        setWishlisted(nextWishlisted);
+        setIsUpdatingWishlist(true);
+
+        try {
+            if (nextWishlisted) {
+                await UserService.wishlistEvent(eventId);
+                toast.success("Event ditambahkan ke wishlist.");
+            } else {
+                await UserService.unwishlistEvent(eventId);
+                toast.success("Event dihapus dari wishlist.");
+            }
+        } catch (error) {
+            console.error("Failed to update wishlist:", error);
+            setWishlisted(!nextWishlisted);
+            toast.error("Gagal memperbarui wishlist event.");
+        } finally {
+            setIsUpdatingWishlist(false);
+        }
+    };
 
     return (
         <Link
@@ -130,8 +173,28 @@ export default function EventCard({
                         )}
                     </div>
 
-                    <button className="absolute top-4 right-4 z-10 bg-white p-2 rounded-full text-slate-400 hover:text-red-500 hover:scale-110 transition-all shadow-sm cursor-pointer">
-                        <Heart size={18} />
+                    <button
+                        type="button"
+                        className={cn(
+                            "absolute top-4 right-4 z-10 bg-white p-2 rounded-full shadow-sm transition-all cursor-pointer",
+                            "hover:scale-110 disabled:cursor-not-allowed disabled:opacity-70",
+                            wishlisted
+                                ? "text-red-500 hover:text-red-600"
+                                : "text-slate-400 hover:text-red-500",
+                        )}
+                        onClick={handleWishlistClick}
+                        disabled={isUpdatingWishlist}
+                        aria-label={
+                            wishlisted
+                                ? `Hapus ${title} dari wishlist`
+                                : `Tambahkan ${title} ke wishlist`
+                        }
+                        aria-pressed={wishlisted}
+                    >
+                        <Heart
+                            size={18}
+                            className={cn(wishlisted && "fill-current")}
+                        />
                     </button>
                 </div>
 

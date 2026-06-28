@@ -32,6 +32,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Image from "next/image";
 
 interface NavItem {
     title: string;
@@ -263,14 +264,17 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
                         <button
                             type="button"
                             onClick={() => router.refresh()}
-                            className="group flex items-center gap-3 text-left focus-visible:outline-none"
+                            className="group flex items-center gap-3 text-left focus-visible:outline-none ps-4"
                         >
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-base font-bold text-white transition-transform group-hover:scale-105">
-                                K
-                            </span>
                             <span className="flex min-w-0 flex-col">
                                 <span className="whitespace-nowrap font-bold leading-tight text-slate-900">
-                                    kumpul.in
+                                    <Image
+                                        src="/kumpulin_wordmark.svg"
+                                        alt="Kumpulin Logo"
+                                        height={40}
+                                        width={80}
+                                        priority
+                                    />
                                 </span>
                                 <span className="whitespace-nowrap text-[13px] font-medium text-slate-500">
                                     User

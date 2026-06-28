@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { useParams } from "next/navigation";
 import { EventService } from "@/services/event-service";
 import Link from "next/link";
@@ -27,6 +27,47 @@ function formatDate(isoString: string | undefined) {
     }
 }
 
+function getStatusBadgeClass(isPublished: boolean) {
+    return isPublished
+        ? "gap-1.5 rounded-full border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary hover:bg-primary-light"
+        : "gap-1.5 rounded-full border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-100";
+}
+
+function WorkspaceShell({ children }: { children: ReactNode }) {
+    return (
+        <main className="relative -mx-6 min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-5 md:-mx-8 md:px-8 md:py-6">
+            <div
+                className="pointer-events-none absolute inset-0"
+                aria-hidden="true"
+                style={{
+                    backgroundImage: "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+                    backgroundSize: "28px 28px",
+                    opacity: 0.14,
+                }}
+            />
+            <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5">
+                {children}
+            </div>
+        </main>
+    );
+}
+
+function SectionTitle({
+    icon: Icon,
+    title,
+}: {
+    icon: ComponentType<{ className?: string }>;
+    title: string;
+}) {
+    return (
+        <h3 className="flex items-center gap-2 text-base font-semibold text-slate-950">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-light text-primary">
+                <Icon className="h-4.5 w-4.5" />
+            </span>
+            {title}
+        </h3>
+    );
+}
 
 export default function OrganizerEventDetail() {
     const params = useParams();
@@ -36,152 +77,202 @@ export default function OrganizerEventDetail() {
     const [loading, setLoading] = useState(true);
     const [notFoundFlag, setNotFoundFlag] = useState(false);
 
-    useEffect(() => {
+    const fetchEvent = useCallback(async () => {
         if (!eventId) return;
-        setLoading(true);
-        EventService.getEventByIdFull(eventId)
-            .then((data) => {
-                if (!data) {
-                    setNotFoundFlag(true);
-                } else {
-                    setEvent(data);
-                }
-            })
-            .catch(() => setNotFoundFlag(true))
-            .finally(() => setLoading(false));
+
+        try {
+            const data = await EventService.getEventByIdFull(eventId);
+            if (!data) {
+                setNotFoundFlag(true);
+                setEvent(null);
+                return;
+            }
+
+            setNotFoundFlag(false);
+            setEvent(data);
+        } catch {
+            setNotFoundFlag(true);
+            setEvent(null);
+        } finally {
+            setLoading(false);
+        }
     }, [eventId]);
+
+    useEffect(() => {
+        void fetchEvent();
+    }, [fetchEvent]);
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
+            <WorkspaceShell>
+                <div className="flex min-h-[60vh] items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </WorkspaceShell>
         );
     }
 
     if (notFoundFlag || !event) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-                <p className="text-muted-foreground text-lg">Event not found.</p>
-                <Button asChild variant="outline">
-                    <Link href="/organizer/my-event">Back to My Events</Link>
-                </Button>
-            </div>
+            <WorkspaceShell>
+                <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 text-center shadow-sm shadow-slate-900/5">
+                    <p className="text-lg font-semibold text-slate-950">Event tidak ditemukan.</p>
+                    <p className="max-w-sm text-sm leading-relaxed text-slate-500">
+                        Event mungkin sudah dihapus atau kamu tidak punya akses untuk mengelolanya.
+                    </p>
+                    <Button asChild variant="outline" className="rounded-xl border-slate-200 bg-white text-slate-600 hover:border-primary/30 hover:text-primary">
+                        <Link href="/organizer/my-event">Kembali ke Event Saya</Link>
+                    </Button>
+                </div>
+            </WorkspaceShell>
         );
     }
 
     const isPublished = event.status?.toLowerCase() === "published";
+    const eventVersionKey = [
+        event.event_id,
+        event.title,
+        event.status,
+        event.type,
+        event.event_start_date,
+        event.event_end_date,
+        event.start_registration_date,
+        event.end_registration_date,
+        event.address?.raw_address,
+        event.meeting_url,
+        event.images?.map((image) => image.image_url).join("|"),
+        event.rundowns?.length,
+        event.ticket_categories?.length,
+    ].join("-");
 
     return (
-        <div className="min-h-[calc(100vh-136px)] space-y-6 bg-[#f8fafc] px-4 py-6 md:-mx-8 md:px-8">
-            {/* Header & Back Button */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 md:p-6">
-                <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-                    <div className="flex min-w-0 items-center gap-4">
+        <WorkspaceShell>
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
+                <svg
+                    className="pointer-events-none absolute -right-10 -top-12 h-40 w-56 text-primary"
+                    viewBox="0 0 224 160"
+                    fill="none"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M15 96C48 34 91 12 144 30C183 43 199 81 210 132"
+                        stroke="currentColor"
+                        strokeOpacity="0.1"
+                        strokeWidth="18"
+                        strokeLinecap="round"
+                    />
+                    <path
+                        d="M54 125C82 80 115 65 153 78C179 87 193 108 201 143"
+                        stroke="#10b981"
+                        strokeOpacity="0.1"
+                        strokeWidth="14"
+                        strokeLinecap="round"
+                    />
+                    <rect x="126" y="24" width="18" height="18" rx="5" fill="currentColor" fillOpacity="0.1" />
+                    <rect x="155" y="43" width="26" height="26" rx="7" fill="currentColor" fillOpacity="0.08" />
+                </svg>
+
+                <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                    <div className="flex min-w-0 items-start gap-4">
                         <Button variant="outline" size="icon" asChild className="h-10 w-10 shrink-0 rounded-xl border-slate-200 bg-white shadow-sm shadow-slate-900/5">
-                        <Link href="/organizer/my-event">
-                            <ChevronLeft className="w-5 h-5" />
-                        </Link>
-                    </Button>
+                            <Link href="/organizer/my-event">
+                                <ChevronLeft className="h-5 w-5" />
+                            </Link>
+                        </Button>
                         <div className="min-w-0">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                                Edit event
+                            <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                                Organizer workspace
                             </p>
-                            <h1 className="mt-1 truncate text-2xl font-bold tracking-tight text-slate-950">
+                            <h1 className="mt-1 truncate text-2xl font-bold leading-[1.12] tracking-normal text-slate-950 md:text-3xl">
                                 {event.title}
                             </h1>
+                            <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 md:text-sm">
+                                Kelola detail event per bagian. Klik tombol Edit pada panel yang ingin diperbarui.
+                            </p>
                         </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                        <Badge className={isPublished ? "rounded-full bg-success px-3 py-1 text-white" : "rounded-full bg-slate-700 px-3 py-1 text-white"}>
+                        <Badge className={getStatusBadgeClass(isPublished)}>
+                            <span className={isPublished ? "size-1.5 rounded-full bg-primary" : "size-1.5 rounded-full bg-slate-400"} />
                             {event.status || "Draft"}
                         </Badge>
-                        <Badge variant="secondary" className="rounded-full bg-primary/10 px-3 py-1 text-primary">
+                        <Badge variant="secondary" className="rounded-full border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary">
                             {event.type}
                         </Badge>
                     </div>
                 </div>
-                <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-500">
-                    Kelola detail event per bagian. Klik tombol Edit pada kartu yang ingin diperbarui.
-                </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                {/* Main Column */}
-                <div className="space-y-6 md:col-span-2">
-                    {/* Core Info Card */}
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                <div className="space-y-5 md:col-span-2">
                     <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-6">
-                        <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-2xl bg-slate-100">
+                        <div className="relative mb-5 aspect-video w-full overflow-hidden rounded-2xl bg-slate-100">
                             {event.images && event.images.length > 0 ? (
                                 <Image src={event.images[0].image_url} alt="Banner" fill className="object-cover" unoptimized />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <Image src="/logo.png" alt="Logo" width={100} height={100} className="opacity-30" />
-                                </div>
+                                <Image src="/organizer-cover-placeholder.png" alt="Organizer cover placeholder" fill className="object-cover opacity-60" />
                             )}
                         </div>
 
                         <div className="space-y-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex items-center gap-3">
-                                    <Badge className={isPublished ? "rounded-full bg-success px-3 py-1 text-white" : "rounded-full bg-slate-700 px-3 py-1 text-white"}>
+                                    <Badge className={getStatusBadgeClass(isPublished)}>
+                                        <span className={isPublished ? "size-1.5 rounded-full bg-primary" : "size-1.5 rounded-full bg-slate-400"} />
                                         {event.status || "Draft"}
                                     </Badge>
-                                    <Badge variant="secondary" className="rounded-full bg-primary/10 px-3 py-1 text-primary">
+                                    <Badge variant="secondary" className="rounded-full border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary">
                                         {event.type}
                                     </Badge>
                                 </div>
-                                <EditSectionModal event={event} section="core" />
+                                <EditSectionModal key={`${eventVersionKey}-core`} event={event} section="core" onUpdated={fetchEvent} />
                             </div>
 
-                            <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">{event.title}</h2>
+                            <h2 className="text-xl font-semibold leading-snug text-slate-950 md:text-2xl">{event.title}</h2>
 
-                            <div className="space-y-1 text-muted-foreground">
+                            <div className="space-y-1 text-slate-600">
                                 {event.description
                                     ? <TipTapViewer content={(() => {
-                                        const raw = event.description as any;
+                                        const raw: unknown = event.description;
                                         if (typeof raw === 'string') {
                                             try {
-                                                const parsed = JSON.parse(raw);
-                                                if (parsed && typeof parsed.content === 'string') {
-                                                    return parsed.content;
+                                                const parsed: unknown = JSON.parse(raw);
+                                                if (parsed && typeof parsed === 'object' && 'content' in parsed) {
+                                                    const content = (parsed as { content?: unknown }).content;
+                                                    if (typeof content === 'string') return content;
                                                 }
                                             } catch { /* raw string, pass through */ }
                                             return raw;
                                         }
                                         if (raw && typeof raw === 'object') {
-                                            if (typeof raw.content === 'string') return raw.content;
+                                            if ('content' in raw) {
+                                                const content = (raw as { content?: unknown }).content;
+                                                if (typeof content === 'string') return content;
+                                            }
                                             return JSON.stringify(raw);
                                         }
                                         return String(raw ?? "");
                                     })()} />
-                                    : <p className="text-sm italic">No description provided.</p>
+                                    : <p className="text-sm italic text-slate-500">No description provided.</p>
                                 }
                             </div>
-
                         </div>
                     </div>
 
-                    {/* Address / Location Section */}
                     <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="flex items-center gap-2 text-xl font-bold text-slate-950">
-                                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-light text-primary">
-                                    <MapPin className="w-5 h-5" />
-                                </span>
-                                Lokasi
-                            </h3>
-                            <EditSectionModal event={event} section="location" />
+                        <div className="mb-5 flex items-center justify-between">
+                            <SectionTitle icon={MapPin} title="Lokasi" />
+                            <EditSectionModal key={`${eventVersionKey}-location`} event={event} section="location" onUpdated={fetchEvent} />
                         </div>
 
                         {event.is_online ? (
-                            <div className="flex items-start gap-4 p-5 bg-primary/5 rounded-2xl border border-primary/10">
-                                <div className="p-3 bg-white rounded-full shadow-sm text-primary">
-                                    <Video className="w-6 h-6" />
+                            <div className="flex items-start gap-4 rounded-xl border border-primary/10 bg-primary/5 p-4">
+                                <div className="rounded-xl bg-white p-3 text-primary shadow-sm shadow-slate-900/5">
+                                    <Video className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-foreground mb-1">Online Event</h4>
-                                    <a href={event.meeting_url || "#"} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline break-all">
+                                    <h4 className="mb-1 font-semibold text-slate-950">Online Event</h4>
+                                    <a href={event.meeting_url || "#"} target="_blank" rel="noreferrer" className="break-all text-sm text-primary hover:underline">
                                         {event.meeting_url || "Link has not been setup yet."}
                                     </a>
                                 </div>
@@ -189,154 +280,167 @@ export default function OrganizerEventDetail() {
                         ) : (
                             <div className="flex flex-col gap-6">
                                 {event.address && (event.address.raw_address || event.address.title) ? (
-                                    <div className="flex items-start gap-4 p-5 bg-slate-50 rounded-2xl border border-border">
-                                        <div className="p-3 bg-white rounded-full shadow-sm text-primary shrink-0">
-                                            <Map className="w-6 h-6" />
+                                    <div className="flex items-start gap-4 rounded-xl border border-slate-200/80 bg-slate-50/80 p-4">
+                                        <div className="shrink-0 rounded-xl bg-white p-3 text-primary shadow-sm shadow-slate-900/5">
+                                            <Map className="h-5 w-5" />
                                         </div>
                                         <div className="space-y-1">
-                                            <h4 className="font-semibold text-foreground">{event.address.title || event.address.raw_address || "Unnamed Location"}</h4>
-                                            {event.address.raw_address && <p className="text-sm text-muted-foreground">{event.address.raw_address}</p>}
+                                            <h4 className="font-semibold text-slate-950">{event.address.title || event.address.raw_address || "Unnamed Location"}</h4>
+                                            {event.address.raw_address && <p className="text-sm leading-relaxed text-slate-600">{event.address.raw_address}</p>}
                                             <p className="text-sm font-medium text-slate-500">
                                                 {[event.address.city, event.address.province, event.address.postal_code].filter(Boolean).join(", ")}
                                             </p>
                                             {event.address.maps_url && (
-                                                <a href={event.address.maps_url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline inline-flex items-center gap-1 mt-1">
-                                                    <Navigation className="w-3 h-3" /> View on Google Maps
+                                                <a href={event.address.maps_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                                                    <Navigation className="h-3 w-3" /> View on Google Maps
                                                 </a>
                                             )}
                                         </div>
                                     </div>
                                 ) : (
-                                    <p className="text-muted-foreground text-sm italic">Offline location not fully configured.</p>
+                                    <p className="text-sm italic text-slate-500">Offline location not fully configured.</p>
                                 )}
                             </div>
                         )}
                     </div>
 
-                    {/* Rundown Section */}
                     <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="flex items-center gap-2 text-xl font-bold text-slate-950">
-                                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-light text-primary">
-                                    <List className="w-5 h-5" />
-                                </span>
-                                Rundown
-                            </h3>
-                            <EditSectionModal event={event} section="rundown" />
+                        <div className="mb-5 flex items-center justify-between">
+                            <SectionTitle icon={List} title="Rundown" />
+                            <EditSectionModal key={`${eventVersionKey}-rundown`} event={event} section="rundown" onUpdated={fetchEvent} />
                         </div>
 
                         {event.rundowns && event.rundowns.length > 0 ? (
-                            <div className="space-y-4">
+                            <div className="relative space-y-4">
                                 {event.rundowns.map((r, i) => (
-                                    <div key={r.id || i} className="flex gap-4 p-4 border border-border rounded-2xl hover:bg-slate-50 transition-colors">
-                                        <div className="flex flex-col items-center justify-center px-4 py-2 bg-primary/10 text-primary rounded-xl shrink-0 h-fit min-w-25">
-                                            <span className="text-sm font-bold">{r.start_time}</span>
-                                            <span className="text-xs font-semibold opacity-70">to</span>
-                                            <span className="text-sm font-bold">{r.end_time}</span>
+                                    <div key={r.id || i} className="relative grid grid-cols-[44px_1fr] gap-3">
+                                        <div className="relative flex flex-col items-center">
+                                            {i < (event.rundowns?.length ?? 0) - 1 && (
+                                                <span className="absolute top-11 bottom-0 w-px bg-slate-200" aria-hidden="true" />
+                                            )}
+                                            <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-xl border border-primary/15 bg-white text-sm font-semibold text-primary shadow-sm shadow-slate-900/5 tabular-nums">
+                                                {String(i + 1).padStart(2, "0")}
+                                            </span>
                                         </div>
-                                        <div className="flex flex-col justify-center">
-                                            <h4 className="font-semibold text-foreground leading-tight">{r.title || "Untitled Rundown"}</h4>
-                                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.description || "No specific details provided."}</p>
-                                            {r.location && <p className="text-xs text-primary font-medium mt-2 flex items-center gap-1"><Navigation className="w-3 h-3" /> {r.location}</p>}
+
+                                        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 shadow-sm shadow-slate-900/5 transition-colors hover:border-primary/20 hover:bg-slate-50">
+                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                                <div className="min-w-0">
+                                                    <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                                                        Sesi {i + 1}
+                                                    </p>
+                                                    <h4 className="mt-1 text-base font-semibold leading-snug text-slate-950">
+                                                        {r.title || "Untitled Rundown"}
+                                                    </h4>
+                                                </div>
+                                                <div className="flex shrink-0 items-center rounded-xl border border-primary/10 bg-white px-3 py-2 text-xs font-semibold text-primary shadow-sm shadow-slate-900/5">
+                                                    <span>{r.start_time || "--:--"}</span>
+                                                    <span className="mx-2 text-slate-300">to</span>
+                                                    <span>{r.end_time || "--:--"}</span>
+                                                </div>
+                                            </div>
+
+                                            <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                                                {r.description || "No specific details provided."}
+                                            </p>
+
+                                            {r.location && (
+                                                <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-white px-2.5 py-1 text-xs font-medium text-primary">
+                                                    <Navigation className="h-3 w-3" />
+                                                    {r.location}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-muted-foreground text-sm italic">No rundowns configured.</p>
+                            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-5 py-8 text-center">
+                                <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-primary shadow-sm shadow-slate-900/5 ring-1 ring-slate-200/80">
+                                    <List className="h-5 w-5" />
+                                </div>
+                                <p className="text-sm font-semibold text-slate-950">No rundowns configured.</p>
+                                <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-slate-500">
+                                    Tambahkan sesi untuk menyusun alur acara yang akan ditampilkan ke peserta.
+                                </p>
+                            </div>
                         )}
                     </div>
                 </div>
 
-                {/* Sidebar / Tickets Column */}
-                <div className="space-y-6">
+                <div className="space-y-5">
                     <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
-                        <div className="flex items-center justify-between mb-5">
-                            <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950">
-                                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-light text-primary">
-                                    <Calendar className="w-5 h-5" />
-                                </span>
-                                Jadwal
-                            </h3>
-                            <EditSectionModal event={event} section="datetime" />
+                        <div className="mb-5 flex items-center justify-between">
+                            <SectionTitle icon={Calendar} title="Jadwal" />
+                            <EditSectionModal key={`${eventVersionKey}-datetime`} event={event} section="datetime" onUpdated={fetchEvent} />
                         </div>
                         <div className="space-y-5">
                             <div>
-                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Event Start</p>
-                                <p className="text-sm font-medium text-foreground">{formatDate(event.event_start_date)}</p>
+                                <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-slate-500">Event Start</p>
+                                <p className="text-sm font-semibold text-slate-950">{formatDate(event.event_start_date)}</p>
                             </div>
                             <div>
-                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Event End</p>
-                                <p className="text-sm font-medium text-foreground">{formatDate(event.event_end_date)}</p>
+                                <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-slate-500">Event End</p>
+                                <p className="text-sm font-semibold text-slate-950">{formatDate(event.event_end_date)}</p>
                             </div>
-                            <div className="w-full h-px bg-border" />
+                            <div className="h-px w-full bg-slate-200/80" />
                             <div>
-                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Registration Open</p>
-                                <p className="text-sm font-medium text-foreground">{formatDate(event.start_registration_date)}</p>
+                                <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-slate-500">Registration Open</p>
+                                <p className="text-sm font-semibold text-slate-950">{formatDate(event.start_registration_date)}</p>
                             </div>
                             <div>
-                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Registration Close</p>
-                                <p className="text-sm font-medium text-foreground">{formatDate(event.end_registration_date)}</p>
+                                <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-slate-500">Registration Close</p>
+                                <p className="text-sm font-semibold text-slate-950">{formatDate(event.end_registration_date)}</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
-                        <div className="flex items-center justify-between mb-5">
-                            <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950">
-                                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-light text-primary">
-                                    <Users className="w-5 h-5" />
-                                </span>
-                                Kapasitas
-                            </h3>
+                        <div className="mb-5 flex items-center justify-between">
+                            <SectionTitle icon={Users} title="Kapasitas" />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                                <p className="text-2xl font-bold text-primary">{event.total_sold}</p>
-                                <p className="text-xs font-semibold tracking-tight text-muted-foreground mt-1">Total Booked</p>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="rounded-xl border border-primary/10 bg-primary/5 p-4">
+                                <p className="text-2xl font-semibold leading-none text-primary tabular-nums">{event.total_sold}</p>
+                                <p className="mt-2 text-xs font-medium text-slate-500">Total Booked</p>
                             </div>
-                            <div className="p-4 bg-slate-50 rounded-2xl border border-border">
-                                <p className="text-2xl font-bold text-foreground">{event.max_capacity}</p>
-                                <p className="text-xs font-semibold tracking-tight text-muted-foreground mt-1">Max Capacity</p>
+                            <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-4">
+                                <p className="text-2xl font-semibold leading-none text-slate-950 tabular-nums">{event.max_capacity}</p>
+                                <p className="mt-2 text-xs font-medium text-slate-500">Max Capacity</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="flex items-center gap-2 text-lg font-bold text-slate-950">
-                                <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-primary-light text-primary">
-                                    <Ticket className="w-5 h-5" />
-                                </span>
-                                Tiket
-                            </h3>
-                            <EditSectionModal event={event} section="tickets" />
+                        <div className="mb-5 flex items-center justify-between">
+                            <SectionTitle icon={Ticket} title="Tiket" />
+                            <EditSectionModal key={`${eventVersionKey}-tickets`} event={event} section="tickets" onUpdated={fetchEvent} />
                         </div>
 
                         {event.ticket_categories && event.ticket_categories.length > 0 ? (
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {event.ticket_categories.map((t, i) => (
-                                    <div key={i} className="flex flex-col p-4 border border-border rounded-2xl hover:border-primary/30 transition-colors">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h4 className="font-semibold text-foreground">{t.name}</h4>
-                                            <span className="font-bold text-primary">
+                                    <div key={i} className="flex flex-col rounded-xl border border-slate-200/80 p-4 transition-colors hover:border-primary/30 hover:bg-slate-50/60">
+                                        <div className="mb-2 flex items-center justify-between gap-3">
+                                            <h4 className="font-semibold text-slate-950">{t.name}</h4>
+                                            <span className="shrink-0 font-semibold text-primary">
                                                 {t.price === 0 ? "Free" : `Rp ${t.price.toLocaleString("id-ID")}`}
                                             </span>
                                         </div>
-                                        <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{t.description}</p>
-                                        <div className="flex items-center justify-between pt-3 border-t border-border mt-auto">
-                                            <span className="text-xs font-medium text-muted-foreground">Booked: <strong className="text-foreground">{t.booked}/{t.quota}</strong></span>
+                                        <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-slate-500">{t.description}</p>
+                                        <div className="mt-auto flex items-center justify-between border-t border-slate-200/80 pt-3">
+                                            <span className="text-xs font-medium text-slate-500">Booked: <strong className="text-slate-950">{t.booked}/{t.quota}</strong></span>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-muted-foreground text-sm italic">No tickets configured.</p>
+                            <p className="text-sm italic text-slate-500">No tickets configured.</p>
                         )}
                     </div>
                 </div>
             </div>
-        </div>
+        </WorkspaceShell>
     );
 }

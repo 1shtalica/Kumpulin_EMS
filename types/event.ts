@@ -21,7 +21,7 @@ export interface Event {
   event_end_date: string;    
   start_registration_date: string; 
   end_registration_date: string;   
-  is_wishlisted?: boolean; //🌟 belum diimplementasi backend
+  is_wishlisted?: boolean;
   address: {
     address_id?: string;
     title?: string;
@@ -129,6 +129,7 @@ export interface GetEventsParams {
 export interface HomeEventCard {
   id?: string;
   event_id?: string;
+  is_wishlisted?: boolean;
   title: string;
   slug: string;
   type: string;

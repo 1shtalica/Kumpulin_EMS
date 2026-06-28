@@ -297,193 +297,251 @@ export default function EventScheduleStep({
 
       {/* --- Section 3: Rundown --- */}
       {(!sectionOnly || sectionOnly === "rundown") && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-              <CalendarIcon className="h-5 w-5 text-primary" />
-              Rundown Acara
-            </h3>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="border-dashed rounded-full"
-              onClick={() =>
-                append({
-                  title: "",
-                  start_time: "",
-                  end_time: "",
-                  description: "",
-                  location: "",
-                })
-              }
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Tambah Sesi
-            </Button>
+        <div className="space-y-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-1">
+              <h3 className="flex items-center gap-2 text-base font-semibold text-slate-950">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-light text-primary">
+                  <CalendarIcon className="h-4.5 w-4.5" />
+                </span>
+                Rundown Acara
+              </h3>
+              <p className="text-sm leading-relaxed text-slate-500">
+                Susun sesi sesuai urutan pelaksanaan event.
+              </p>
+            </div>
           </div>
 
           {fields.length === 0 && (
             <div
               className={cn(
-                "rounded-xl border border-dashed p-12 text-center",
+                "rounded-2xl border border-dashed bg-slate-50/80 px-5 py-8 text-center",
                 errors.rundowns
-                  ? "border-danger bg-red-50"
-                  : "border-gray-300 bg-gray-50",
+                  ? "border-danger/50 bg-danger-light/30"
+                  : "border-slate-200",
               )}
             >
+              <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-white text-primary shadow-sm shadow-slate-900/5 ring-1 ring-slate-200/80">
+                <CalendarIcon className="h-5 w-5" />
+              </div>
               <p
                 className={cn(
-                  "text-sm",
-                  errors.rundowns
-                    ? "text-danger font-medium"
-                    : "text-muted-foreground",
+                  "text-sm font-semibold",
+                  errors.rundowns ? "text-danger" : "text-slate-950",
                 )}
               >
                 {errors.rundowns &&
                   !Array.isArray(errors.rundowns) &&
                   "message" in errors.rundowns
                   ? errors.rundowns.message
-                  : 'Belum ada sesi rundown. Klik tombol "Tambah Sesi" untuk memulai.'}
+                  : "Belum ada sesi rundown"}
               </p>
+              {!errors.rundowns && (
+                <>
+                <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-slate-500">
+                  Tambah sesi pertama untuk mulai menyusun alur acara.
+                </p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="mt-4 h-9 rounded-xl border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm shadow-slate-900/5 hover:border-primary/30 hover:text-primary"
+                onClick={() =>
+                  append({
+                    title: "",
+                    start_time: "",
+                    end_time: "",
+                    description: "",
+                    location: "",
+                  })
+                }
+              >
+                <Plus className="mr-1.5 h-4 w-4" />
+                Tambah Sesi
+              </Button>
+                </>
+              )}
             </div>
           )}
 
-          <div className="space-y-6">
-            {fields.map((item, index) => (
-              <div
-                key={item.id}
-                className={cn(
-                  "rounded-2xl border bg-card p-6 shadow-sm",
-                  (errors.rundowns?.[index]?.title ||
-                    errors.rundowns?.[index]?.start_time ||
-                    errors.rundowns?.[index]?.end_time) &&
-                  "border-danger ring-1 ring-danger",
-                )}
-              >
-                {/* Header Row */}
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-medium text-accent">
-                    Sesi #{index + 1}
-                  </span>
-                  {fields.length > 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="py-1 px-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => remove(index)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Hapus
-                    </Button>
-                  )}
-                </div>
+          {fields.length > 0 && (
+            <div className="relative space-y-4">
+              {fields.map((item, index) => {
+                const hasItemError =
+                  errors.rundowns?.[index]?.title ||
+                  errors.rundowns?.[index]?.start_time ||
+                  errors.rundowns?.[index]?.end_time;
 
-                {/* Content Grid */}
-                {/* Hidden input to preserve database ID across field array mutations */}
-                <input type="hidden" {...register(`rundowns.${index}._dbId`)} />
-                <div className="grid gap-4 p-4 grid-cols-1 md:grid-cols-12">
-                  {/* Title */}
-                  <div className="space-y-1 md:col-span-12">
-                    <Label className="text-xs text-muted-foreground">
-                      Sesi <span className="text-danger">*</span>
-                    </Label>
-                    <Input
-                      placeholder="Nama sesi (contoh: Opening Ceremony)"
-                      className={cn(
-                        "h-9",
-                        errors.rundowns?.[index]?.title && "border-danger",
+                return (
+                  <div key={item.id} className="relative grid grid-cols-[44px_1fr] gap-3">
+                    <div className="relative flex flex-col items-center">
+                      {index < fields.length - 1 && (
+                        <span className="absolute top-11 bottom-0 w-px bg-slate-200" aria-hidden="true" />
                       )}
-                      {...register(`rundowns.${index}.title`)}
-                    />
-                    {errors.rundowns?.[index]?.title && (
-                      <p className="text-xs text-danger">
-                        {errors.rundowns?.[index]?.title?.message}
-                      </p>
-                    )}
-                  </div>
+                      <span
+                        className={cn(
+                          "relative z-10 flex h-10 w-10 items-center justify-center rounded-xl border bg-white text-sm font-semibold tabular-nums shadow-sm shadow-slate-900/5",
+                          hasItemError
+                            ? "border-danger/40 text-danger"
+                            : "border-primary/15 text-primary",
+                        )}
+                      >
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                    </div>
 
-                  {/* Time Inputs */}
-                  <div className="space-y-2 md:col-span-12">
-                    <Label className="text-xs text-muted-foreground">
-                      Waktu <span className="text-danger">*</span>
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 min-w-0">
-                        <Controller
-                          control={control}
-                          name={`rundowns.${index}.start_time`}
-                          render={({ field }) => (
-                            <TimePicker
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder="Mulai"
-                              className={cn(
-                                "h-9 text-sm w-full shadow-none px-2.5",
-                                errors.rundowns?.[index]?.start_time &&
-                                "border-danger"
-                              )}
-                            />
-                          )}
-                        />
+                    <div
+                      className={cn(
+                        "rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 shadow-sm shadow-slate-900/5 transition-colors",
+                        hasItemError && "border-danger/50 bg-danger-light/20 ring-1 ring-danger/20",
+                      )}
+                    >
+                      <div className="mb-4 flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                            Sesi {index + 1}
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-slate-950">
+                            Detail agenda
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Hapus sesi ${index + 1}`}
+                          title={`Hapus sesi ${index + 1}`}
+                          className="h-8 w-8 rounded-xl text-slate-400 hover:bg-danger-light hover:text-danger"
+                          onClick={() => remove(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <span className="text-muted-foreground shrink-0">-</span>
-                      <div className="flex-1 min-w-0">
-                        <Controller
-                          control={control}
-                          name={`rundowns.${index}.end_time`}
-                          render={({ field }) => (
-                            <TimePicker
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder="Selesai"
-                              className={cn(
-                                "h-9 text-sm w-full shadow-none px-2.5",
-                                errors.rundowns?.[index]?.end_time &&
-                                "border-danger"
+
+                      <input type="hidden" {...register(`rundowns.${index}._dbId`)} />
+
+                      <div className="grid gap-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium text-slate-500">
+                            Nama sesi <span className="text-danger">*</span>
+                          </Label>
+                          <Input
+                            placeholder="Contoh: Opening Ceremony"
+                            className={cn(
+                              "h-10 rounded-xl border-slate-200 bg-white text-sm shadow-none focus-visible:border-primary/40 focus-visible:ring-primary/20",
+                              errors.rundowns?.[index]?.title && "border-danger focus-visible:ring-danger/20",
+                            )}
+                            {...register(`rundowns.${index}.title`)}
+                          />
+                          {errors.rundowns?.[index]?.title && (
+                            <p className="text-xs text-danger">
+                              {errors.rundowns?.[index]?.title?.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-end">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-slate-500">
+                              Mulai <span className="text-danger">*</span>
+                            </Label>
+                            <Controller
+                              control={control}
+                              name={`rundowns.${index}.start_time`}
+                              render={({ field }) => (
+                                <TimePicker
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder="09:00"
+                                  className={cn(
+                                    "h-10 w-full rounded-xl border-slate-200 bg-white px-3 text-sm shadow-none focus-visible:border-primary/40 focus-visible:ring-primary/20",
+                                    errors.rundowns?.[index]?.start_time && "border-danger focus-visible:ring-danger/20",
+                                  )}
+                                />
                               )}
                             />
-                          )}
-                        />
+                          </div>
+                          <span className="hidden pb-2 text-sm font-medium text-slate-400 sm:block">to</span>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-slate-500">
+                              Selesai <span className="text-danger">*</span>
+                            </Label>
+                            <Controller
+                              control={control}
+                              name={`rundowns.${index}.end_time`}
+                              render={({ field }) => (
+                                <TimePicker
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder="09:30"
+                                  className={cn(
+                                    "h-10 w-full rounded-xl border-slate-200 bg-white px-3 text-sm shadow-none focus-visible:border-primary/40 focus-visible:ring-primary/20",
+                                    errors.rundowns?.[index]?.end_time && "border-danger focus-visible:ring-danger/20",
+                                  )}
+                                />
+                              )}
+                            />
+                          </div>
+                        </div>
+                        {(errors.rundowns?.[index]?.start_time ||
+                          errors.rundowns?.[index]?.end_time) && (
+                          <p className="text-xs text-danger">
+                            {errors.rundowns?.[index]?.start_time?.message ||
+                              errors.rundowns?.[index]?.end_time?.message}
+                          </p>
+                        )}
+
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-slate-500">
+                              Lokasi opsional
+                            </Label>
+                            <Input
+                              placeholder="Contoh: Aula Utama"
+                              className="h-10 rounded-xl border-slate-200 bg-white text-sm shadow-none focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                              {...register(`rundowns.${index}.location`)}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium text-slate-500">
+                              Catatan opsional
+                            </Label>
+                            <Input
+                              placeholder="Deskripsi singkat sesi"
+                              className="h-10 rounded-xl border-slate-200 bg-white text-sm shadow-none focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                              {...register(`rundowns.${index}.description`)}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    {(errors.rundowns?.[index]?.start_time ||
-                      errors.rundowns?.[index]?.end_time) && (
-                        <p className="text-xs text-danger">
-                          {errors.rundowns?.[index]?.start_time?.message ||
-                            errors.rundowns?.[index]?.end_time?.message}
-                        </p>
-                      )}
                   </div>
-
-                  {/* Location */}
-                  <div className="space-y-1 md:col-span-6">
-                    <Label className="text-xs text-muted-foreground">
-                      Lokasi (Opsional)
-                    </Label>
-                    <Input
-                      placeholder="Tempat (contoh: Aula Utama)"
-                      className="h-9"
-                      {...register(`rundowns.${index}.location`)}
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div className="space-y-1 md:col-span-6">
-                    <Label className="text-xs text-muted-foreground">
-                      Deskripsi (Opsional)
-                    </Label>
-                    <Input
-                      placeholder="Deskripsi singkat..."
-                      className="h-9"
-                      {...register(`rundowns.${index}.description`)}
-                    />
-                  </div>
+                );
+              })}
+              <div className="grid grid-cols-[44px_1fr] gap-3">
+                <div className="flex justify-center">
+                  <span className="h-10 w-px bg-slate-200" aria-hidden="true" />
                 </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-10 w-full justify-center rounded-xl border-dashed border-slate-300 bg-white text-sm font-semibold text-slate-600 shadow-sm shadow-slate-900/5 hover:border-primary/30 hover:bg-primary-light/40 hover:text-primary"
+                  onClick={() =>
+                    append({
+                      title: "",
+                      start_time: "",
+                      end_time: "",
+                      description: "",
+                      location: "",
+                    })
+                  }
+                >
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  Tambah Sesi Berikutnya
+                </Button>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       )}
 

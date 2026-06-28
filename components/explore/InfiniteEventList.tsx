@@ -32,6 +32,34 @@ export default function InfiniteEventList({
   const sentinelRef = useRef<HTMLDivElement>(null);
   const isFetchingRef = useRef(false);
 
+  const reloadFirstPage = useCallback(async () => {
+    try {
+      const result = await EventService.getEventsClient({
+        limit,
+        type: typeFilter,
+        q: searchQuery,
+        category: categoryFilter,
+        province: provinceFilter,
+        price: priceFilter,
+        sort: sortOption,
+      });
+
+      setEvents(result.data);
+      setHasMore(result.pagination.has_more);
+      setNextCursor(result.pagination.next_cursor);
+      setError(null);
+    } catch (error) {
+      console.error("[InfiniteEventList] Failed to reload first page:", error);
+    }
+  }, [
+    limit,
+    typeFilter,
+    searchQuery,
+    categoryFilter,
+    provinceFilter,
+    priceFilter,
+    sortOption,
+  ]);
   const loadMore = useCallback(async () => {
     if (isFetchingRef.current || isLoading || !hasMore || !nextCursor) return;
 
@@ -99,6 +127,10 @@ export default function InfiniteEventList({
     sortOption,
   ]);
 
+
+  useEffect(() => {
+    void reloadFirstPage();
+  }, [reloadFirstPage]);
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;

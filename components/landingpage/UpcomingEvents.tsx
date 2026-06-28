@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import EventCard, { EventCardSkeletonList } from "@/components/reusable/EventCard";
 import { EventService } from "@/services/event-service";
 import EmptyState from "../reusable/EmptyState";
+import { cookies } from "next/headers";
 
 async function UpcomingEventsGrid() {
   let events: Awaited<ReturnType<typeof EventService.getEvents>>["data"] = [];
 
   try {
-    const { data } = await EventService.getEvents({ limit: 8 });
+    const cookieHeader = (await cookies()).toString();
+    const { data } = await EventService.getEvents({ limit: 8 }, cookieHeader);
     events = data;
   } catch (error) {
     console.error("Failed to load random events:", error);
@@ -28,7 +30,8 @@ async function UpcomingEventsGrid() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
       {events.map((event) => (
         <EventCard
-          key={event.id}
+          key={event.id ?? event.event_id ?? event.slug}
+          eventId={event.event_id ?? event.id}
           title={event.title}
           category={event.type || ""}
           date={event.start_date || ""}
@@ -40,6 +43,7 @@ async function UpcomingEventsGrid() {
           slug={event.slug}
           isHot={false}
           isOnline={event.is_online}
+          isWishlisted={event.is_wishlisted}
           isRtPintar={event.type === "internal"}
           ticketSold={event.total_sold || 0}
           maxQuota={event.max_capacity || 0}
@@ -62,8 +66,8 @@ export default function UpcomingEvents() {
             opacity: 0.24,
           }}
         />
-        <div className="absolute top-8 right-8 h-[21rem] w-[21rem] rounded-full bg-[#002cee14]" />
-        <div className="absolute bottom-8 left-8 h-[16rem] w-[16rem] rounded-full bg-[#6366f112]" />
+        <div className="absolute top-8 right-8 h-84 w-84 rounded-full bg-[#002cee14]" />
+        <div className="absolute bottom-8 left-8 h-84 w-[16rem] rounded-full bg-[#6366f112]" />
       </div>
       <div className="relative z-10 container mx-auto px-4 md:px-8 lg:px-12 w-full max-w-7xl">
         {/* HEADER */}

@@ -30,6 +30,7 @@ import { useRouter } from "next/navigation";
 interface EditModalProps {
     event: Event;
     section: 'core' | 'location' | 'rundown' | 'datetime' | 'tickets';
+    onUpdated?: () => Promise<void> | void;
 }
 
 const sectionMeta: Record<EditModalProps["section"], {
@@ -70,7 +71,17 @@ const sectionMeta: Record<EditModalProps["section"], {
     },
 };
 
-export function EditSectionModal({ event, section }: EditModalProps): ReactNode {
+function toLocalOffsetISOString(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, "0");
+    const timezoneOffset = -date.getTimezoneOffset();
+    const sign = timezoneOffset >= 0 ? "+" : "-";
+    const absoluteOffset = Math.abs(timezoneOffset);
+    const offsetHours = pad(Math.floor(absoluteOffset / 60));
+    const offsetMinutes = pad(absoluteOffset % 60);
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${sign}${offsetHours}:${offsetMinutes}`;
+}
+export function EditSectionModal({ event, section, onUpdated }: EditModalProps): ReactNode {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -267,10 +278,10 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
 
                 case 'datetime':
                     payloadToSubmit = {
-                        event_start_date: data.event_start_date.toISOString(),
-                        event_end_date: data.event_end_date.toISOString(),
-                        start_registration_date: data.start_registration_date.toISOString(),
-                        end_registration_date: data.end_registration_date.toISOString()
+                        event_start_date: toLocalOffsetISOString(data.event_start_date),
+                        event_end_date: toLocalOffsetISOString(data.event_end_date),
+                        start_registration_date: toLocalOffsetISOString(data.start_registration_date),
+                        end_registration_date: toLocalOffsetISOString(data.end_registration_date)
                     };
 
                     try {
@@ -381,8 +392,8 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                             price: Number(t.price),
                             quota: Number(t.quota),
                             description: t.description || "",
-                            start_date_time: t.start_date_time.toISOString(),
-                            end_date_time: t.end_date_time.toISOString(),
+                            start_date_time: toLocalOffsetISOString(t.start_date_time),
+                            end_date_time: toLocalOffsetISOString(t.end_date_time),
                         }));
 
                     // Only include tickets that were actually modified
@@ -397,8 +408,8 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                                 orig.price !== Number(t.price) ||
                                 orig.quota !== Number(t.quota) ||
                                 (orig.description || "") !== (t.description || "") ||
-                                new Date(orig.start_date_time || "").toISOString() !== t.start_date_time.toISOString() ||
-                                new Date(orig.end_date_time || "").toISOString() !== t.end_date_time.toISOString()
+                                toLocalOffsetISOString(new Date(orig.start_date_time || "")) !== toLocalOffsetISOString(t.start_date_time) ||
+                                toLocalOffsetISOString(new Date(orig.end_date_time || "")) !== toLocalOffsetISOString(t.end_date_time)
                             );
                         })
                         .map(t => ({
@@ -407,8 +418,8 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                             price: Number(t.price),
                             quota: Number(t.quota),
                             description: t.description || "",
-                            start_date_time: t.start_date_time.toISOString(),
-                            end_date_time: t.end_date_time.toISOString(),
+                            start_date_time: toLocalOffsetISOString(t.start_date_time),
+                            end_date_time: toLocalOffsetISOString(t.end_date_time),
                         }));
 
                     const formTicketIds = formTickets.map(t => t._dbId).filter(Boolean);
@@ -430,6 +441,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
 
             // Refresh page data to reflect changes
             router.refresh();
+            await onUpdated?.();
 
             toast.success("Section berhasil diupdate", {
                 description: `Perubahan pada bagian ${section} telah disimpan.`
@@ -478,7 +490,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                     size="sm"
                     aria-label={`Edit ${meta.badge}`}
                     title={`Edit ${meta.badge}`}
-                    className="h-9 shrink-0 rounded-xl border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm shadow-slate-900/5 transition-all hover:border-primary/20 hover:bg-primary-light/50 hover:text-primary"
+                    className="h-9 shrink-0 rounded-xl border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm shadow-slate-900/5 transition-all hover:border-primary/30 hover:bg-primary-light/60 hover:text-primary"
                 >
                     <Pencil className="w-4 h-4" />
                     <span>Edit</span>
@@ -486,30 +498,53 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
             </SheetTrigger>
             <SheetContent
                 side="right"
-                className="w-screen max-w-3xl! gap-0 overflow-hidden border-l border-slate-200/80 bg-[#f8fafc] p-0 shadow-2xl shadow-slate-950/15 pointer-events-auto"
+                className="w-screen max-w-3xl! gap-0 overflow-hidden border-l border-slate-200/80 bg-[#f9fafb] p-0 shadow-xl shadow-slate-950/10 pointer-events-auto"
             >
                 <FormProvider {...methods}>
-                    <form onSubmit={methods.handleSubmit(handleSubmit as any)} className="flex h-dvh flex-col">
+                    <form onSubmit={methods.handleSubmit(handleSubmit as any)} className="flex h-dvh flex-col bg-[#f9fafb]">
                         {/* Sticky Header */}
-                        <SheetHeader className="shrink-0 border-b border-slate-200/80 bg-white/95 px-5 py-5 pr-14 text-left shadow-sm shadow-slate-900/[0.03] backdrop-blur-lg md:px-8 md:py-6">
-                            <div className="mb-3 flex items-center gap-3">
-                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-light text-primary ring-1 ring-primary/10">
+                        <SheetHeader className="relative shrink-0 overflow-hidden border-b border-slate-200/80 bg-white px-5 py-5 pr-14 text-left shadow-sm shadow-slate-900/5 md:px-8 md:py-6">
+                            <svg
+                                className="pointer-events-none absolute -right-12 -top-14 h-40 w-56 text-primary"
+                                viewBox="0 0 224 160"
+                                fill="none"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="M15 96C48 34 91 12 144 30C183 43 199 81 210 132"
+                                    stroke="currentColor"
+                                    strokeOpacity="0.1"
+                                    strokeWidth="18"
+                                    strokeLinecap="round"
+                                />
+                                <path
+                                    d="M54 125C82 80 115 65 153 78C179 87 193 108 201 143"
+                                    stroke="#10b981"
+                                    strokeOpacity="0.1"
+                                    strokeWidth="14"
+                                    strokeLinecap="round"
+                                />
+                                <rect x="126" y="24" width="18" height="18" rx="5" fill="currentColor" fillOpacity="0.1" />
+                                <rect x="155" y="43" width="26" height="26" rx="7" fill="currentColor" fillOpacity="0.08" />
+                            </svg>
+                            <div className="relative mb-3 flex items-center gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary ring-1 ring-primary/10">
                                     <SectionIcon className="h-5 w-5" />
                                 </div>
                                 <div className="min-w-0">
                                     <span className="inline-flex rounded-full border border-primary/10 bg-primary-light px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
                                         {meta.badge}
                                     </span>
-                                    <SheetTitle className="mt-2 text-xl font-bold tracking-tight text-slate-950 md:text-2xl">
+                                    <SheetTitle className="mt-2 text-xl font-semibold leading-tight tracking-normal text-slate-950 md:text-2xl">
                                         {meta.title}
                                     </SheetTitle>
                                 </div>
                             </div>
-                            <SheetDescription className="max-w-2xl text-sm leading-relaxed text-slate-500">
+                            <SheetDescription className="relative max-w-2xl text-sm leading-relaxed text-slate-600">
                                 {meta.description}
                             </SheetDescription>
-                            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                            <div className="relative mt-4 rounded-xl border border-slate-200/80 bg-slate-50/80 px-4 py-3">
+                                <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
                                     Event yang diedit
                                 </p>
                                 <p className="mt-1 line-clamp-1 text-sm font-semibold text-slate-900">
@@ -519,15 +554,15 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                         </SheetHeader>
 
                         {/* Scrollable Content Zone */}
-                        <div className="custom-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-4 py-6 md:px-8 md:py-8">
+                        <div className="custom-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-4 py-5 md:px-8 md:py-6">
                             {/* Inner Wrapper for safe padding on very long content */}
-                            <div className="mx-auto w-full max-w-2xl rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 md:p-6">
+                            <div className="mx-auto w-full max-w-2xl rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 md:p-5">
                                 {renderContent()}
                             </div>
                         </div>
 
                         {/* Sticky Footer */}
-                        <SheetFooter className="flex shrink-0 flex-row items-center justify-between gap-3 border-t border-slate-200/80 bg-white/95 px-5 py-4 shadow-[0_-8px_24px_rgba(15,23,42,0.04)] backdrop-blur-lg md:px-8">
+                        <SheetFooter className="flex shrink-0 flex-row items-center justify-between gap-3 border-t border-slate-200/80 bg-white px-5 py-4 shadow-sm shadow-slate-900/5 md:px-8">
                             <p className="hidden text-xs text-slate-500 sm:block">
                                 Perubahan hanya diterapkan ke section ini.
                             </p>
@@ -537,7 +572,7 @@ export function EditSectionModal({ event, section }: EditModalProps): ReactNode 
                                     variant="outline"
                                     onClick={() => setOpen(false)}
                                     disabled={isLoading}
-                                    className="m-0 h-10 rounded-xl border-slate-200 bg-white px-5 text-sm font-semibold text-slate-600 shadow-sm shadow-slate-900/5 hover:border-primary/20 hover:text-primary"
+                                    className="m-0 h-10 rounded-xl border-slate-200 bg-white px-5 text-sm font-semibold text-slate-600 shadow-none hover:border-primary/30 hover:bg-primary-light/40 hover:text-primary"
                                 >
                                     Batal
                                 </Button>

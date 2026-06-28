@@ -137,7 +137,7 @@ export default function OrganizerEventCard({
             className={`group relative flex h-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white text-card-foreground shadow-sm shadow-slate-900/5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md hover:shadow-slate-900/10 ${isGrid ? "flex-col" : "flex-col lg:flex-row"}`}
         >
             <div
-                className={`relative z-10 flex shrink-0 items-center justify-center overflow-hidden bg-slate-950 ${isGrid ? "m-3 h-[10.5rem] w-[calc(100%-24px)] rounded-xl sm:h-[11.25rem]" : "m-3 h-[11.5rem] w-[calc(100%-24px)] rounded-xl lg:m-4 lg:mr-0 lg:h-auto lg:min-h-[12.75rem] lg:w-72"}`}
+                className={`relative z-10 flex shrink-0 items-center justify-center overflow-hidden bg-slate-950 ${isGrid ? "m-3 h-45 w-[calc(100%-24px)] rounded-xl sm:h-45" : "m-3 h-46 w-[calc(100%-24px)] rounded-xl lg:m-4 lg:mr-0 lg:h-auto lg:min-h-51 lg:w-72"}`}
             >
                 {event.image_url ? (
                     <Image
@@ -171,7 +171,7 @@ export default function OrganizerEventCard({
                     </Badge>
                 </div>
 
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-950/75 via-slate-950/25 to-transparent p-2.5">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-slate-950/75 via-slate-950/25 to-transparent p-2.5">
                     <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-white">
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 backdrop-blur">
                             <Calendar className="h-3.5 w-3.5 stroke-[1.5]" />

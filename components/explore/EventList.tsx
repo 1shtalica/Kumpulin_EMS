@@ -41,6 +41,7 @@ export default function EventList({ events }: EventListProps) {
       {events.map((event) => (
         <EventCard
           key={event.id ?? event.event_id ?? event.slug}
+          eventId={event.event_id ?? event.id}
           title={event.title}
           // 🌟 seharusnya kategori
           category={event.type}
@@ -51,6 +52,7 @@ export default function EventList({ events }: EventListProps) {
           image={event.image_url || "/placeholder-event.jpg"}
           slug={event.slug}
           isOnline={event.is_online}
+          isWishlisted={event.is_wishlisted}
           ticketSold={event.total_sold}
           maxQuota={event.max_capacity}
         />

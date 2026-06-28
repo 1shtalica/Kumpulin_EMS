@@ -4,8 +4,6 @@ import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuthStore } from "@/stores/auth-store";
 import { usePathname } from "next/navigation";
 
 interface OrganizerHeaderProps {

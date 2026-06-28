@@ -7,6 +7,7 @@ import { EventService } from "@/services/event-service";
 import type { HomeEventCard } from "@/types/event";
 import { Suspense } from "react";
 import GoToTopButton from "@/components/reusable/GoToTopButton";
+import { cookies } from "next/headers";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
@@ -46,6 +47,7 @@ export default async function ExplorePage(props: {
     typeof searchParams.sort === "string" ? searchParams.sort : "";
 
   const LIMIT = 12;
+  const cookieHeader = (await cookies()).toString();
 
   let initialEvents: HomeEventCard[] = [];
   let initialHasMore = false;
@@ -61,7 +63,7 @@ export default async function ExplorePage(props: {
       province: provinceFilter,
       price: priceFilter,
       sort: sortOption,
-    });
+    }, cookieHeader);
     initialEvents = response.data;
     initialHasMore = response.pagination.has_more;
     initialNextCursor = response.pagination.next_cursor;

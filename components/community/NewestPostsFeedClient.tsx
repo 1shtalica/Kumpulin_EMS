@@ -626,7 +626,7 @@ export default function NewestPostsFeedClient() {
                         Komunitas
                     </h1>
                 </div>
-                <div className="sticky top-[64px] z-30 -mx-4 border-y border-slate-200/80 bg-white/95 px-4 py-2 shadow-sm shadow-slate-900/5 backdrop-blur lg:hidden">
+                <div className="sticky top-16 z-30 -mx-4 border-y border-slate-200/80 bg-white/95 px-4 py-2 shadow-sm shadow-slate-900/5 backdrop-blur lg:hidden">
                     <div className="mx-auto grid max-w-sm grid-cols-2 rounded-xl bg-slate-100 p-1">
                         {feedModeOptions.map((option) => {
                             const active = feedMode === option.value;

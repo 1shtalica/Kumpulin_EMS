@@ -159,13 +159,17 @@ const normalizeEventPagination = (
 export const EventService = {
   async getEvents(
     params: GetEventsParams = {},
+    cookieHeader?: string,
   ): Promise<EventListResult> {
     try {
       const urlParams = buildEventListSearchParams(params);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/events?${urlParams.toString()}`,
-        { cache: "no-store" },
+        {
+          cache: "no-store",
+          headers: cookieHeader ? { cookie: cookieHeader } : undefined,
+        },
       );
 
       if (!response.ok) {
@@ -196,6 +200,7 @@ export const EventService = {
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/events?${urlParams.toString()}`,
+        { credentials: "include" },
       );
 
       if (!response.ok) {
@@ -335,10 +340,13 @@ export const EventService = {
     }
   },
 
-  async getRandomEvents(): Promise<HomeEventCard[]> {
+  async getRandomEvents(cookieHeader?: string): Promise<HomeEventCard[]> {
     try {
       const json = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/events/random`,
+        {
+          headers: cookieHeader ? { cookie: cookieHeader } : undefined,
+        },
       );
       const data = await json.json();
       return data.data || [];

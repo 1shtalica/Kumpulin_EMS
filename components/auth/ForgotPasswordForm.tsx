@@ -124,9 +124,7 @@ export default function ForgotPasswordForm() {
                         <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-white shadow-glow">
                             <Ticket className="size-4" />
                         </span>
-                        <span className="text-primary">
-                            kumpul.in
-                        </span>
+                        <span className="text-primary">kumpul.in</span>
                     </Link>
                     <span className="rounded-full border border-primary/20 bg-primary-light px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
                         Recovery
@@ -149,7 +147,10 @@ export default function ForgotPasswordForm() {
             </div>
 
             {!isSubmitted ? (
-                <form onSubmit={handleSubmit(onSubmit)} className="grid gap-3.5">
+                <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="grid gap-3.5"
+                >
                     <div className="grid gap-2">
                         <Label
                             htmlFor="email"
@@ -232,13 +233,13 @@ export default function ForgotPasswordForm() {
                                 <p className="text-sm font-semibold text-slate-950">
                                     Link reset password telah dikirim
                                 </p>
-                                <p className="mt-1 break-words text-sm font-semibold text-primary">
+                                <p className="mt-1 wrap-break-words text-sm font-semibold text-primary">
                                     {submittedEmail}
                                 </p>
                                 <p className="mt-2 text-xs leading-relaxed text-slate-600">
-                                    Buka email tersebut dari perangkat yang aman,
-                                    lalu ikuti instruksi untuk membuat password
-                                    baru.
+                                    Buka email tersebut dari perangkat yang
+                                    aman, lalu ikuti instruksi untuk membuat
+                                    password baru.
                                 </p>
                             </div>
                         </div>

@@ -18,6 +18,7 @@ import { CommunityService } from "@/services/community-service";
 import { useAuthStore } from "@/stores/auth-store";
 import type { Comment, Community, Post } from "@/types/community";
 import PostImageCarousel from "./PostImageCarousel";
+import Image from "next/image";
 
 type ApiErrorBody = {
     message?: string;
@@ -86,7 +87,8 @@ const formatDate = (value: string) => {
     }).format(date);
 };
 
-const formatNumber = (value: number) => new Intl.NumberFormat("id-ID").format(value);
+const formatNumber = (value: number) =>
+    new Intl.NumberFormat("id-ID").format(value);
 
 const getPostAuthorLabel = (post: Post) =>
     post.author_name?.trim() || "Unknown user";
@@ -284,7 +286,8 @@ function CommentComposer({
             {replyingToLabel ? (
                 <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-600">
                     <span>
-                        Replying to <span className="font-semibold">{replyingToLabel}</span>
+                        Replying to{" "}
+                        <span className="font-semibold">{replyingToLabel}</span>
                     </span>
                     {onCancelReplyTarget ? (
                         <button
@@ -370,7 +373,7 @@ function ThreadCommentRow({
                     {avatarFallback}
                 </span>
                 {comment.author_profile_url ? (
-                    <img
+                    <Image
                         src={comment.author_profile_url}
                         alt={author}
                         className="absolute inset-0 h-full w-full object-cover"
@@ -403,7 +406,9 @@ function ThreadCommentRow({
                         <div className="mt-2 space-y-3">
                             <Textarea
                                 value={editBody}
-                                onChange={(event) => setEditBody(event.target.value)}
+                                onChange={(event) =>
+                                    setEditBody(event.target.value)
+                                }
                                 className="min-h-20 rounded-xl border-slate-200 bg-white text-sm text-slate-700"
                             />
                             <div className="flex justify-end gap-2">
@@ -420,7 +425,10 @@ function ThreadCommentRow({
                                 <Button
                                     className="rounded-full"
                                     onClick={async () => {
-                                        await onUpdate(comment.id, editBody.trim());
+                                        await onUpdate(
+                                            comment.id,
+                                            editBody.trim(),
+                                        );
                                         setIsEditing(false);
                                     }}
                                 >
@@ -492,9 +500,8 @@ export default function PostDetailClient({
     const user = useAuthStore((state) => state.user);
     const [community, setCommunity] = useState<Community | null>(null);
     const [post, setPost] = useState<Post | null>(null);
-    const [commentsState, setCommentsState] = useState<CommentsState>(
-        EMPTY_COMMENTS_STATE,
-    );
+    const [commentsState, setCommentsState] =
+        useState<CommentsState>(EMPTY_COMMENTS_STATE);
     const [page, setPage] = useState(1);
     const [hasNext, setHasNext] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -628,7 +635,9 @@ export default function PostDetailClient({
                 const parsed = JSON.parse(event.data) as unknown;
                 const created = extractCommentFromEventPayload(parsed);
                 if (!created) return;
-                setCommentsState((current) => mergeCommentsState(current, [created]));
+                setCommentsState((current) =>
+                    mergeCommentsState(current, [created]),
+                );
                 setPost((current) =>
                     current
                         ? {
@@ -658,7 +667,8 @@ export default function PostDetailClient({
                                 ? {
                                       ...postState,
                                       comment_count: Math.max(
-                                          postState.comment_count - removedCount,
+                                          postState.comment_count -
+                                              removedCount,
                                           0,
                                       ),
                                   }
@@ -688,10 +698,14 @@ export default function PostDetailClient({
         const childrenByParent = new Map<string, Comment[]>();
 
         comments.forEach((comment) => {
-            if (!comment.parent_comment_id || !byId[comment.parent_comment_id]) {
+            if (
+                !comment.parent_comment_id ||
+                !byId[comment.parent_comment_id]
+            ) {
                 return;
             }
-            const siblings = childrenByParent.get(comment.parent_comment_id) ?? [];
+            const siblings =
+                childrenByParent.get(comment.parent_comment_id) ?? [];
             siblings.push(comment);
             childrenByParent.set(comment.parent_comment_id, siblings);
         });
@@ -776,7 +790,9 @@ export default function PostDetailClient({
             if (reply) {
                 const mention = `@${getMentionHandle(getCommentAuthorLabel(reply))} `;
                 setComposerBody((current) =>
-                    current.startsWith(mention) ? current : `${mention}${current}`,
+                    current.startsWith(mention)
+                        ? current
+                        : `${mention}${current}`,
                 );
             }
 
@@ -814,7 +830,10 @@ export default function PostDetailClient({
         const now = new Date().toISOString();
         const tempId = `temp-${Date.now()}`;
         const optimisticAuthorName =
-            [user.first_name, user.last_name].filter(Boolean).join(" ").trim() ||
+            [user.first_name, user.last_name]
+                .filter(Boolean)
+                .join(" ")
+                .trim() ||
             user.username?.trim() ||
             undefined;
         const optimisticComment: Comment = {
@@ -830,7 +849,9 @@ export default function PostDetailClient({
             updated_at: now,
         };
 
-        setCommentsState((current) => mergeCommentsState(current, [optimisticComment]));
+        setCommentsState((current) =>
+            mergeCommentsState(current, [optimisticComment]),
+        );
         setPost((current) =>
             current
                 ? { ...current, comment_count: current.comment_count + 1 }
@@ -866,7 +887,9 @@ export default function PostDetailClient({
 
             toast.success("Komentar terkirim.", { id: toastId });
         } catch (error) {
-            setCommentsState((current) => removeCommentTree(current, tempId).next);
+            setCommentsState(
+                (current) => removeCommentTree(current, tempId).next,
+            );
             setPost((current) =>
                 current
                     ? {
@@ -912,7 +935,9 @@ export default function PostDetailClient({
                     commentId,
                     { body },
                 );
-                setCommentsState((current) => mergeCommentsState(current, [updated]));
+                setCommentsState((current) =>
+                    mergeCommentsState(current, [updated]),
+                );
                 toast.success("Komentar diperbarui.", { id: toastId });
             } catch (error) {
                 setCommentsState((current) =>
@@ -937,7 +962,10 @@ export default function PostDetailClient({
 
             const snapshotState = commentsState;
             const snapshotCount = post?.comment_count ?? 0;
-            const { next, removedCount } = removeCommentTree(commentsState, comment.id);
+            const { next, removedCount } = removeCommentTree(
+                commentsState,
+                comment.id,
+            );
             if (!removedCount) return;
 
             setCommentsState(next);
@@ -968,11 +996,16 @@ export default function PostDetailClient({
             } catch (error) {
                 setCommentsState(snapshotState);
                 setPost((current) =>
-                    current ? { ...current, comment_count: snapshotCount } : current,
+                    current
+                        ? { ...current, comment_count: snapshotCount }
+                        : current,
                 );
-                toast.error(getApiErrorMessage(error, "Gagal menghapus komentar."), {
-                    id: toastId,
-                });
+                toast.error(
+                    getApiErrorMessage(error, "Gagal menghapus komentar."),
+                    {
+                        id: toastId,
+                    },
+                );
             }
         },
         [commentsState, communityId, post, postId, replyTarget?.rootId],
@@ -980,7 +1013,7 @@ export default function PostDetailClient({
 
     if (isLoading) {
         return (
-            <main className="mx-auto w-full max-w-[800px] px-4 pb-32 pt-28 sm:px-6">
+            <main className="mx-auto w-full max-w-200 px-4 pb-32 pt-28 sm:px-6">
                 <div className="h-80 animate-pulse rounded-3xl bg-white" />
                 <div className="mt-8 h-72 animate-pulse rounded-3xl bg-white" />
             </main>
@@ -989,7 +1022,7 @@ export default function PostDetailClient({
 
     if (!post || !community) {
         return (
-            <main className="mx-auto w-full max-w-[800px] px-4 pb-32 pt-32 text-center sm:px-6">
+            <main className="mx-auto w-full max-w-200 px-4 pb-32 pt-32 text-center sm:px-6">
                 <h1 className="text-xl font-semibold text-slate-950">
                     {postLoadError?.title ?? "Post tidak ditemukan"}
                 </h1>
@@ -998,14 +1031,16 @@ export default function PostDetailClient({
                         "Post mungkin sudah dihapus atau tidak berada pada komunitas ini."}
                 </p>
                 <Button asChild className="mt-6 rounded-full">
-                    <Link href={`/komunitas/${communityId}`}>Kembali ke komunitas</Link>
+                    <Link href={`/komunitas/${communityId}`}>
+                        Kembali ke komunitas
+                    </Link>
                 </Button>
             </main>
         );
     }
 
     return (
-        <main className="mx-auto w-full max-w-[800px] px-4 pb-32 pt-28 sm:px-6">
+        <main className="mx-auto w-full max-w-200 px-4 pb-32 pt-28 sm:px-6">
             <div className="flex w-full flex-col gap-8">
                 <article className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
                     <div className="flex flex-col gap-5 p-5 sm:p-7">
@@ -1022,7 +1057,8 @@ export default function PostDetailClient({
                                 </p>
                             ) : null}
                             <p className="mt-1 text-xs font-medium text-slate-400">
-                                {getPostAuthorLabel(post)} - {formatDate(post.created_at)}
+                                {getPostAuthorLabel(post)} -{" "}
+                                {formatDate(post.created_at)}
                             </p>
                         </div>
 
@@ -1048,7 +1084,9 @@ export default function PostDetailClient({
                             </span>
                             <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
                                 <Share className="h-5 w-5" />
-                                <span className="hidden sm:inline">Bagikan</span>
+                                <span className="hidden sm:inline">
+                                    Bagikan
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -1080,7 +1118,8 @@ export default function PostDetailClient({
                         <div className="space-y-8">
                             {commentThreads.map((thread, threadIndex) => {
                                 const isExpanded =
-                                    expandedRepliesByRootId[thread.root.id] ?? false;
+                                    expandedRepliesByRootId[thread.root.id] ??
+                                    false;
                                 const visibleReplies = isExpanded
                                     ? thread.replies
                                     : thread.replies.slice(
@@ -1098,7 +1137,9 @@ export default function PostDetailClient({
                                             displayBody={thread.root.body}
                                             userId={userId}
                                             canManage={canManage}
-                                            onReply={() => activateReplyTarget(thread.root)}
+                                            onReply={() =>
+                                                activateReplyTarget(thread.root)
+                                            }
                                             onUpdate={handleUpdateComment}
                                             onDelete={handleDeleteComment}
                                         />
@@ -1111,7 +1152,8 @@ export default function PostDetailClient({
                                                         setExpandedRepliesByRootId(
                                                             (current) => ({
                                                                 ...current,
-                                                                [thread.root.id]:
+                                                                [thread.root
+                                                                    .id]:
                                                                     !isExpanded,
                                                             }),
                                                         )
@@ -1121,36 +1163,48 @@ export default function PostDetailClient({
                                                     {isExpanded
                                                         ? "Sembunyikan balasan"
                                                         : `Lihat ${formatNumber(
-                                                              thread.replies.length,
+                                                              thread.replies
+                                                                  .length,
                                                           )} balasan`}
                                                 </button>
 
                                                 {visibleReplies.length ? (
                                                     <div className="space-y-4">
-                                                        {visibleReplies.map((reply, replyIndex) => (
-                                                            <ThreadCommentRow
-                                                                key={`${reply.comment.id || "reply"}-${replyIndex}`}
-                                                                comment={reply.comment}
-                                                                displayBody={
-                                                                    reply.displayBody
-                                                                }
-                                                                userId={userId}
-                                                                canManage={canManage}
-                                                                isReply
-                                                                onReply={() =>
-                                                                    activateReplyTarget(
-                                                                        thread.root,
-                                                                        reply.comment,
-                                                                    )
-                                                                }
-                                                                onUpdate={
-                                                                    handleUpdateComment
-                                                                }
-                                                                onDelete={
-                                                                    handleDeleteComment
-                                                                }
-                                                            />
-                                                        ))}
+                                                        {visibleReplies.map(
+                                                            (
+                                                                reply,
+                                                                replyIndex,
+                                                            ) => (
+                                                                <ThreadCommentRow
+                                                                    key={`${reply.comment.id || "reply"}-${replyIndex}`}
+                                                                    comment={
+                                                                        reply.comment
+                                                                    }
+                                                                    displayBody={
+                                                                        reply.displayBody
+                                                                    }
+                                                                    userId={
+                                                                        userId
+                                                                    }
+                                                                    canManage={
+                                                                        canManage
+                                                                    }
+                                                                    isReply
+                                                                    onReply={() =>
+                                                                        activateReplyTarget(
+                                                                            thread.root,
+                                                                            reply.comment,
+                                                                        )
+                                                                    }
+                                                                    onUpdate={
+                                                                        handleUpdateComment
+                                                                    }
+                                                                    onDelete={
+                                                                        handleDeleteComment
+                                                                    }
+                                                                />
+                                                            ),
+                                                        )}
                                                     </div>
                                                 ) : null}
                                             </div>
