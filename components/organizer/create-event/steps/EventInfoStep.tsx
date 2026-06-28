@@ -321,7 +321,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
             )}
           />
           <div className="absolute right-3 bottom-0 top-0 flex items-center pointer-events-none">
-            <span className="text-muted text-[10px]">{title?.length || 0}/50</span>
+            <span className="text-slate-400 text-[10px]">{title?.length || 0}/50</span>
           </div>
         </div>
         {errors.title && (
@@ -499,7 +499,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
         <Label>
           Banner Event <span className="text-danger">*</span>
         </Label>
-        <p className="text-xs text-muted">
+        <p className="text-xs text-slate-500">
           1 gambar utama yang tampil di card event. Format: PNG, JPEG. Maks 5MB. Ukuran ideal: 1920x1080 (16:9)
         </p>
 
@@ -509,7 +509,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
               "relative rounded-xl border-2 border-dashed p-6 text-center transition-colors cursor-pointer",
               bannerDragActive
                 ? "border-primary bg-primary/5"
-                : "border-gray-300 hover:border-gray-400",
+                : "border-slate-300 hover:border-slate-400",
               (bannerError || errors.banner_image) && "border-danger",
             )}
             onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setBannerDragActive(true); }}
@@ -527,12 +527,12 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
             />
             <div className="space-y-3">
               <div className="mx-auto flex h-12 w-12 items-center justify-center">
-                <Upload className="h-6 w-6 text-muted" />
+                <Upload className="h-6 w-6 text-slate-400" />
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-accent">Drag & drop banner di sini, atau</p>
+                <p className="text-sm font-medium text-slate-900">Drag & drop banner di sini, atau</p>
                 <Button
-                  className="my-2 px-5 rounded-3xl"
+                  className="my-2 px-5 rounded-xl border-slate-200 bg-white text-slate-600 hover:border-primary/30 hover:text-primary"
                   type="button"
                   variant="outline"
                   size="sm"
@@ -544,7 +544,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
             </div>
           </div>
         ) : (
-          <div className="relative group rounded-xl overflow-hidden border border-gray-200 aspect-video w-full">
+          <div className="relative group rounded-xl overflow-hidden border border-slate-200/80 shadow-sm aspect-video w-full">
             <img
               src={banner_image_preview || ""}
               alt="Banner Preview"
@@ -580,7 +580,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
         <Label>
           Poster/Galeri Event <span className="text-danger">*</span>
         </Label>
-        <p className="text-xs text-muted">
+        <p className="text-xs text-slate-500">
           Upload hingga {MAX_FILES} poster. Format: PNG, JPEG. Maks 5MB per file. Ukuran ideal: 1920x1080 (16:9)
         </p>
 
@@ -591,7 +591,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
               "relative rounded-xl border-2 border-dashed p-6 text-center transition-colors cursor-pointer",
               dragActive
                 ? "border-primary bg-primary/5"
-                : "border-gray-300 hover:border-gray-400",
+                : "border-slate-300 hover:border-slate-400",
               (fileError || errors.images) && "border-danger",
             )}
             onDragEnter={handleDrag}
@@ -611,15 +611,15 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
 
             <div className="space-y-3">
               <div className="mx-auto flex h-12 w-12 items-center justify-center">
-                <Upload className="h-6 w-6 text-muted" />
+                <Upload className="h-6 w-6 text-slate-400" />
               </div>
 
               <div className="space-y-1">
-                <p className="text-sm font-medium text-accent">
+                <p className="text-sm font-medium text-slate-900">
                   Drag & drop gambar di sini, atau
                 </p>
                 <Button
-                  className="my-2 px-5 rounded-3xl"
+                  className="my-2 px-5 rounded-xl border-slate-200 bg-white text-slate-600 hover:border-primary/30 hover:text-primary"
                   type="button"
                   variant="outline"
                   size="sm"
@@ -629,7 +629,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
                 </Button>
               </div>
 
-              <p className="text-xs text-muted">
+              <p className="text-xs text-slate-500">
                 {currentImages.length}/{MAX_FILES} gambar terupload
               </p>
             </div>
@@ -640,7 +640,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
         {hasImages && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-accent">
+              <p className="text-sm font-medium text-slate-900">
                 {currentImages.length} gambar terupload
               </p>
               <Button
@@ -658,7 +658,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
               {currentPreviews.map((preview, index) => (
                 <div
                   key={index}
-                  className="group relative overflow-hidden rounded-lg border border-gray-200"
+                  className="group relative overflow-hidden rounded-xl border border-slate-200/80 shadow-sm"
                 >
                   <img
                     src={preview}
@@ -675,12 +675,12 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
                     <X className="h-3 w-3" />
                   </Button>
 
-                  <div className="bg-gray-50 px-2 py-1.5 flex flex-col justify-center h-full">
-                    <p className="truncate text-xs font-medium text-accent">
+                  <div className="bg-slate-50 px-2 py-1.5 flex flex-col justify-center h-full">
+                    <p className="truncate text-xs font-medium text-slate-900">
                       {currentImages[index]?.name || "Existing Image"}
                     </p>
                     {currentImages[index]?.size ? (
-                      <p className="text-xs text-muted">
+                      <p className="text-xs text-slate-500">
                         {(currentImages[index].size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     ) : null}
@@ -703,10 +703,10 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
       </div>
 
       <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}>
-        <DialogContent className="sm:max-w-md rounded-2xl p-6 border-border">
+        <DialogContent className="sm:max-w-md rounded-2xl p-6 border-slate-200/80 shadow-md">
           <DialogHeader className="space-y-3">
-            <DialogTitle className="text-xl text-accent font-bold">Hapus Gambar</DialogTitle>
-            <DialogDescription className="text-muted text-base leading-relaxed">
+            <DialogTitle className="text-xl font-semibold text-slate-950">Hapus Gambar</DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed text-slate-600">
               Yakin ingin menghapus {deleteConfirm?.type === 'banner' ? 'banner' : 'poster'} ini? Gambar akan dihapus segera dan tidak dapat dikembalikan.
             </DialogDescription>
           </DialogHeader>
@@ -715,7 +715,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
               type="button"
               variant="outline"
               onClick={() => setDeleteConfirm(null)}
-              className="rounded-xl px-5 m-0 font-medium hover:bg-slate-100"
+              className="rounded-xl px-5 m-0 font-semibold border-slate-200 bg-white text-slate-600 hover:border-primary/30 hover:text-primary"
             >
               Batal
             </Button>
@@ -723,7 +723,7 @@ export default function EventInfoStep({ hideHeader, eventId }: { hideHeader?: bo
               type="button"
               variant="destructive"
               onClick={confirmDelete}
-              className="rounded-xl px-5 m-0 bg-danger hover:bg-danger-hover shadow-sm font-medium"
+              className="rounded-xl px-5 m-0 bg-danger hover:bg-danger-hover shadow-sm font-semibold"
             >
               Hapus
             </Button>

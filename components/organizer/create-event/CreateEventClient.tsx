@@ -327,7 +327,10 @@ export default function CreateEventClient() {
             </div>
           </FormProvider>
 
-          <div className="mt-5 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+          {/* Spacer to prevent content from hiding behind the fixed bar */}
+          <div className="h-28" />
+
+          <div className="fixed bottom-6 left-1/2 z-50 w-[calc(100%-2rem)] max-w-4xl -translate-x-1/2 rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-xl shadow-slate-900/10 backdrop-blur-md transition-all">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2 text-sm text-slate-500">
                 <CheckCircle2 className="h-4 w-4 text-primary" />
