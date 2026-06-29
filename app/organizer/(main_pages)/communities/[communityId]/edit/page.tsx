@@ -388,7 +388,7 @@ export default function EditCommunityPage() {
                             </Label>
                             <div className="flex rounded-xl border border-input bg-gray-50 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
                                 <span className="flex h-10 shrink-0 items-center rounded-l-xl border-r border-input bg-slate-200 px-4 text-sm text-slate-500">
-                                    kumpul.in/c/
+                                    kumpul.in/k/
                                 </span>
                                 <input
                                     id="community-slug"

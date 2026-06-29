@@ -45,6 +45,8 @@ export type CommunityResponse = ApiResponse<Community>;
 export interface Post {
   id: string;
   community_id: string;
+  community_slug?: string | null;
+  community_name?: string | null;
   author_user_id: number;
   author_name?: string | null;
   author_username?: string | null;

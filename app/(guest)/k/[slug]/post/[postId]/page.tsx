@@ -1,22 +1,22 @@
 import LandingNavbar from "@/components/landingpage/LandingNavbar";
-import PostDetailClient from "@/components/community/PostDetailClient";
+import PostDetailSlugClient from "@/components/community/PostDetailSlugClient";
 
 export const metadata = {
     title: "Post Komunitas - Kumpul.in",
     description: "Detail post dan komentar komunitas.",
 };
 
-export default async function CommunityPostDetailPage({
+export default async function CommunitySlugPostDetailPage({
     params,
 }: {
-    params: Promise<{ communityId: string; postId: string }>;
+    params: Promise<{ slug: string; postId: string }>;
 }) {
-    const { communityId, postId } = await params;
+    const { slug, postId } = await params;
 
     return (
         <div className="min-h-screen bg-[#f9fafb]">
             <LandingNavbar />
-            <PostDetailClient communityId={communityId} postId={postId} />
+            <PostDetailSlugClient slug={slug} postId={postId} />
         </div>
     );
 }

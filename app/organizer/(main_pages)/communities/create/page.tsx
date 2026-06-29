@@ -288,7 +288,7 @@ export default function CreateCommunityPage() {
                                     className={fieldClassName}
                                 />
                                 <p className="text-xs leading-5 text-slate-500">
-                                    Akan digunakan sebagai URL: kumpul.in/c/
+                                    Akan digunakan sebagai URL: kumpul.in/k/
                                     <span className="font-semibold">
                                         nama-komunitas
                                     </span>{" "}

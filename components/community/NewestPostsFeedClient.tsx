@@ -80,8 +80,16 @@ const formatNumber = (value: number) =>
     new Intl.NumberFormat("id-ID").format(value);
 
 const getCommunityLabel = (post: Post) =>
-    post.organizer_name?.trim() || `Community ${post.community_id.slice(0, 8)}`;
+    post.community_name?.trim() ||
+    post.organizer_name?.trim() ||
+    `Community ${post.community_id.slice(0, 8)}`;
 
+const getCommunityHref = (post: Post) =>
+    post.community_slug
+        ? `/k/${post.community_slug}`
+        : `/komunitas/${post.community_id}`;
+
+const getPostHref = (post: Post) => `${getCommunityHref(post)}/post/${post.id}`;
 const getAuthorLabel = (post: Post) => {
     const username = post.author_name?.trim() || post.username?.trim();
     return username
@@ -131,8 +139,8 @@ function LoadingCard() {
 }
 
 function FeedPostCard({ post }: { post: Post }) {
-    const postHref = `/komunitas/${post.community_id}/post/${post.id}`;
-    const communityHref = `/komunitas/${post.community_id}`;
+    const postHref = getPostHref(post);
+    const communityHref = getCommunityHref(post);
     const communityLabel = getCommunityLabel(post);
     const authorLabel = getAuthorLabel(post);
     const postTypeLabel = getPostTypeLabel(post);
@@ -411,11 +419,15 @@ export default function NewestPostsFeedClient() {
             const current = map.get(post.community_id);
             map.set(post.community_id, {
                 id: post.community_id,
+                slug: post.community_slug ?? null,
                 label: getCommunityLabel(post),
                 count: (current?.count ?? 0) + 1,
             });
             return map;
-        }, new Map<string, { id: string; label: string; count: number }>()),
+        }, new Map<
+            string,
+            { id: string; slug: string | null; label: string; count: number }
+        >()),
     )
         .map(([, community]) => community)
         .sort((a, b) => b.count - a.count);
@@ -996,7 +1008,11 @@ export default function NewestPostsFeedClient() {
                                             (community) => (
                                                 <Link
                                                     key={community.id}
-                                                    href={`/komunitas/${community.id}`}
+                                                    href={
+                                                        community.slug
+                                                            ? "/k/" + community.slug
+                                                            : "/komunitas/" + community.id
+                                                    }
                                                     className="flex items-center justify-between gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 transition hover:border-primary/30 hover:bg-white"
                                                 >
                                                     <span className="min-w-0 truncate text-sm font-medium text-slate-950">

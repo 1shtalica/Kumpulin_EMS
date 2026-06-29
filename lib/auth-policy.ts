@@ -44,7 +44,7 @@ export const authRoutes = [...guestOnlyAuthRoutes, ...accountRecoveryRoutes];
 /**
  * Public read-only route prefixes that must remain accessible without login.
  */
-const guestReadableRoutes = ["/events", "/explore"];
+const guestReadableRoutes = ["/events", "/explore", "/komunitas", "/k"];
 
 /**
  * Checks whether a pathname is exactly a route or a child path of that route.

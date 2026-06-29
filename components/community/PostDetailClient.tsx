@@ -389,7 +389,7 @@ function ThreadCommentRow({
                     className={
                         isReply
                             ? "rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
-                            : "rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.06)]"
+                            : "rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-sm shadow-slate-900/5"
                     }
                 >
                     <p
@@ -1013,16 +1013,16 @@ export default function PostDetailClient({
 
     if (isLoading) {
         return (
-            <main className="mx-auto w-full max-w-200 px-4 pb-32 pt-28 sm:px-6">
-                <div className="h-80 animate-pulse rounded-3xl bg-white" />
-                <div className="mt-8 h-72 animate-pulse rounded-3xl bg-white" />
+            <main className="relative mx-auto w-full max-w-6xl px-4 pb-32 pt-28 sm:px-6 lg:px-8">
+                <div className="h-80 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5" />
+                <div className="mt-5 h-72 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5" />
             </main>
         );
     }
 
     if (!post || !community) {
         return (
-            <main className="mx-auto w-full max-w-200 px-4 pb-32 pt-32 text-center sm:px-6">
+            <main className="relative mx-auto w-full max-w-6xl px-4 pb-32 pt-32 text-center sm:px-6 lg:px-8">
                 <h1 className="text-xl font-semibold text-slate-950">
                     {postLoadError?.title ?? "Post tidak ditemukan"}
                 </h1>
@@ -1040,13 +1040,13 @@ export default function PostDetailClient({
     }
 
     return (
-        <main className="mx-auto w-full max-w-200 px-4 pb-32 pt-28 sm:px-6">
+        <main className="relative mx-auto w-full max-w-6xl px-4 pb-32 pt-28 sm:px-6 lg:px-8">
             <div className="flex w-full flex-col gap-8">
-                <article className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+                <article className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5">
                     <div className="flex flex-col gap-5 p-5 sm:p-7">
                         <div>
                             <Link
-                                href={`/komunitas/${community.id}`}
+                                href={`/k/${community.slug}`}
                                 className="text-sm font-semibold text-primary hover:underline"
                             >
                                 k/{community.slug}
@@ -1077,7 +1077,7 @@ export default function PostDetailClient({
                             />
                         </div>
 
-                        <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-5">
+                        <div className="mt-3 flex items-center gap-2 border-t border-slate-200/80 pt-5">
                             <span className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500">
                                 <MessageCircle className="h-5 w-5" />
                                 {formatNumber(post.comment_count)} Komentar
@@ -1092,7 +1092,7 @@ export default function PostDetailClient({
                     </div>
                 </article>
 
-                <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] sm:p-7">
+                <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-7">
                     <h2 className="mb-6 text-lg font-semibold text-slate-900">
                         Komentar ({formatNumber(post.comment_count)})
                     </h2>
@@ -1130,7 +1130,7 @@ export default function PostDetailClient({
                                 return (
                                     <article
                                         key={`${thread.root.id || "thread"}-${threadIndex}`}
-                                        className="space-y-3 border-b border-slate-100 pb-5 last:border-b-0 last:pb-0"
+                                        className="space-y-3 border-b border-slate-200/80 pb-5 last:border-b-0 last:pb-0"
                                     >
                                         <ThreadCommentRow
                                             comment={thread.root}
@@ -1214,7 +1214,7 @@ export default function PostDetailClient({
                             })}
                         </div>
                     ) : (
-                        <div className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-8 text-center">
+                        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 px-5 py-8 text-center">
                             <MessageCircle className="mx-auto h-7 w-7 text-slate-300" />
                             <p className="mt-3 text-sm font-medium text-slate-600">
                                 Belum ada komentar.

@@ -306,7 +306,7 @@ function CommunityCard({ community }: { community: Community }) {
                             <ArrowUpRight className="h-4 w-4 text-slate-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
                         </Link>
                         <Link
-                            href={`/komunitas/${community.id}`}
+                            href={`/k/${community.slug}`}
                             className="group flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-sm transition-all hover:border-primary/30 hover:text-primary hover:shadow-md"
                         >
                             <span className="flex items-center gap-2">

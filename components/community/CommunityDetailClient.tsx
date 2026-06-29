@@ -1,16 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AxiosError } from "axios";
 import {
     CalendarDays,
+    FileText,
     ImagePlus,
     Loader2,
     MessageCircle,
     MoreHorizontal,
+    Plus,
     Pencil,
     Share,
+    ShieldCheck,
     Trash2,
     UsersRound,
 } from "lucide-react";
@@ -310,29 +313,29 @@ function PostFormDialog({
 
 function PostCard({
     post,
-    communityId,
+    postHref,
     canManage,
     onEdit,
     onDelete,
 }: {
     post: Post;
-    communityId: string;
+    postHref: string;
     canManage: boolean;
     onEdit: (post: Post) => void;
     onDelete: (post: Post) => void;
 }) {
     return (
-        <article className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-            <div className="flex flex-col gap-5 p-6 sm:p-8">
+        <article className="group overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md hover:shadow-slate-900/10">
+            <div className="flex flex-col gap-5 p-5 sm:p-6">
                 <div className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                            <span className="rounded-full border border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary">
                                 {post.post_type === "announcement"
                                     ? "Pengumuman"
                                     : "Diskusi"}
                             </span>
-                            <span className="text-xs font-medium text-slate-400">
+                            <span className="text-xs font-medium text-slate-500">
                                 {formatDate(post.created_at)}
                             </span>
                         </div>
@@ -342,7 +345,7 @@ function PostCard({
                             <button
                                 type="button"
                                 onClick={() => onEdit(post)}
-                                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-50 hover:text-primary"
+                                className="rounded-xl p-2 text-slate-400 transition hover:bg-primary-light hover:text-primary"
                                 aria-label="Edit post"
                             >
                                 <Pencil className="h-4 w-4" />
@@ -350,7 +353,7 @@ function PostCard({
                             <button
                                 type="button"
                                 onClick={() => onDelete(post)}
-                                className="rounded-full p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                                className="rounded-xl p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                                 aria-label="Hapus post"
                             >
                                 <Trash2 className="h-4 w-4" />
@@ -361,33 +364,30 @@ function PostCard({
                     )}
                 </div>
 
-                <Link
-                    href={`/komunitas/${communityId}/post/${post.id}`}
-                    className="group block"
-                >
-                    <h2 className="mb-2.5 text-lg font-semibold leading-6 text-slate-900 transition-colors group-hover:text-primary sm:text-xl sm:leading-7">
+                <Link href={postHref} className="group block">
+                    <h2 className="mb-2.5 line-clamp-2 text-lg font-semibold leading-snug text-slate-950 transition-colors group-hover:text-primary">
                         {post.title}
                     </h2>
-                    <p className="whitespace-pre-line text-sm leading-6 text-slate-600">
+                    <p className="line-clamp-3 whitespace-pre-line text-sm leading-6 text-slate-600">
                         {post.body}
                     </p>
                 </Link>
 
                 <PostImageCarousel
                     imageUrls={post.image_urls}
-                    href={`/komunitas/${communityId}/post/${post.id}`}
+                    href={postHref}
                     className="mt-0"
                 />
 
-                <div className="mt-1 flex items-center gap-2 border-t border-slate-100 pt-5">
+                <div className="mt-1 flex items-center gap-2 border-t border-slate-200/80 pt-5">
                     <Link
-                        href={`/komunitas/${communityId}/post/${post.id}`}
-                        className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary"
+                        href={postHref}
+                        className="group flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary-light hover:text-primary"
                     >
                         <MessageCircle className="h-5 w-5" />
                         <span>{formatNumber(post.comment_count)} Komentar</span>
                     </Link>
-                    <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
+                    <button className="group ml-auto flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary-light hover:text-primary">
                         <Share className="h-5 w-5" />
                         <span>Bagikan</span>
                     </button>
@@ -397,13 +397,58 @@ function PostCard({
     );
 }
 
+function PublicCommunitySurface({ children }: { children: ReactNode }) {
+    return (
+        <main className="relative overflow-hidden bg-[#f9fafb] px-4 pb-24 pt-20 sm:px-6 lg:px-8">
+            <div
+                className="pointer-events-none absolute inset-0"
+                aria-hidden="true"
+                style={{
+                    backgroundImage:
+                        "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+                    backgroundSize: "28px 28px",
+                    opacity: 0.14,
+                }}
+            />
+            <svg
+                className="pointer-events-none absolute inset-x-0 top-20 h-96 w-full text-primary"
+                viewBox="0 0 1440 420"
+                fill="none"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+            >
+                <path
+                    d="M64 274C224 154 332 334 514 196C666 81 806 155 962 94C1128 29 1264 122 1384 54"
+                    stroke="currentColor"
+                    strokeOpacity="0.07"
+                    strokeWidth="2"
+                />
+                <path
+                    d="M88 116C244 198 368 72 526 148C704 234 842 90 1032 184C1170 252 1262 286 1370 230"
+                    stroke="#10b981"
+                    strokeOpacity="0.055"
+                    strokeWidth="2"
+                />
+            </svg>
+            <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5">
+                {children}
+            </div>
+        </main>
+    );
+}
+
 export default function CommunityDetailClient({
     communityId,
+    communitySlug,
 }: {
-    communityId: string;
+    communityId?: string;
+    communitySlug?: string;
 }) {
     const user = useAuthStore((state) => state.user);
     const [community, setCommunity] = useState<Community | null>(null);
+    const [resolvedCommunityId, setResolvedCommunityId] = useState<string | null>(
+        communityId ?? null,
+    );
     const [posts, setPosts] = useState<Post[]>([]);
     const [page, setPage] = useState(1);
     const [hasNext, setHasNext] = useState(false);
@@ -417,11 +462,11 @@ export default function CommunityDetailClient({
     const canManage = user?.role === "organizer";
 
     const loadPosts = useCallback(
-        async (targetPage = 1, append = false) => {
+        async (targetCommunityId: string, targetPage = 1, append = false) => {
             setIsLoadingPosts(true);
             try {
                 const result = await CommunityService.listPosts(
-                    communityId,
+                    targetCommunityId,
                     targetPage,
                     10,
                 );
@@ -436,7 +481,7 @@ export default function CommunityDetailClient({
                 setIsLoadingPosts(false);
             }
         },
-        [communityId],
+        [],
     );
 
     useEffect(() => {
@@ -445,28 +490,33 @@ export default function CommunityDetailClient({
         const loadCommunity = async () => {
             setIsLoading(true);
             try {
-                const data =
-                    await CommunityService.getCommunityById(communityId);
+                const data = communitySlug
+                    ? await CommunityService.getCommunityBySlug(communitySlug)
+                    : await CommunityService.getCommunityById(communityId ?? "");
                 if (!mounted) return;
                 setCommunity(data);
-                await loadPosts(1);
+                setResolvedCommunityId(data.id);
+                await loadPosts(data.id, 1);
             } catch (error) {
                 if (!mounted) return;
                 toast.error(
                     getApiErrorMessage(error, "Gagal mengambil komunitas."),
                 );
                 setCommunity(null);
+                setResolvedCommunityId(null);
             } finally {
                 if (mounted) setIsLoading(false);
             }
         };
 
-        void loadCommunity();
+        if (communityId || communitySlug) {
+            void loadCommunity();
+        }
 
         return () => {
             mounted = false;
         };
-    }, [communityId, loadPosts]);
+    }, [communityId, communitySlug, loadPosts]);
 
     const memberCount = useMemo(() => {
         if (!community) return 0;
@@ -479,14 +529,16 @@ export default function CommunityDetailClient({
             return;
         }
 
+        if (!resolvedCommunityId) return;
+
         setIsMutatingMembership(true);
         try {
             if (joined) {
-                await CommunityService.leaveCommunity(communityId);
+                await CommunityService.leaveCommunity(resolvedCommunityId);
                 setJoined(false);
                 toast.success("Anda keluar dari komunitas.");
             } else {
-                await CommunityService.joinCommunity(communityId);
+                await CommunityService.joinCommunity(resolvedCommunityId);
                 setJoined(true);
                 toast.success("Berhasil bergabung dengan komunitas.");
             }
@@ -511,6 +563,8 @@ export default function CommunityDetailClient({
         images: File[];
         replaceImages: boolean;
     }) => {
+        if (!resolvedCommunityId) return;
+
         const toastId = toast.loading(
             editingPost ? "Menyimpan post..." : "Menerbitkan post...",
         );
@@ -518,14 +572,14 @@ export default function CommunityDetailClient({
         try {
             if (editingPost) {
                 const updatedPost = await CommunityService.updatePost(
-                    communityId,
+                    resolvedCommunityId,
                     editingPost.id,
                     { title: payload.title, body: payload.body },
                 );
                 let finalPost = updatedPost;
                 if (payload.replaceImages && payload.images.length) {
                     finalPost = await CommunityService.replacePostImages(
-                        communityId,
+                        resolvedCommunityId,
                         editingPost.id,
                         payload.images,
                     );
@@ -539,12 +593,15 @@ export default function CommunityDetailClient({
                 return;
             }
 
-            const createdPost = await CommunityService.createPost(communityId, {
-                title: payload.title,
-                body: payload.body,
-                post_type: payload.post_type,
-                images: payload.images,
-            });
+            const createdPost = await CommunityService.createPost(
+                resolvedCommunityId,
+                {
+                    title: payload.title,
+                    body: payload.body,
+                    post_type: payload.post_type,
+                    images: payload.images,
+                },
+            );
             setPosts((current) => [createdPost, ...current]);
             setCommunity((current) =>
                 current
@@ -561,12 +618,14 @@ export default function CommunityDetailClient({
     };
 
     const handleDeletePost = async (post: Post) => {
+        if (!resolvedCommunityId) return;
+
         const confirmed = window.confirm(`Hapus post "${post.title}"?`);
         if (!confirmed) return;
 
         const toastId = toast.loading("Menghapus post...");
         try {
-            await CommunityService.deletePost(communityId, post.id);
+            await CommunityService.deletePost(resolvedCommunityId, post.id);
             setPosts((current) =>
                 current.filter((item) => item.id !== post.id),
             );
@@ -588,188 +647,256 @@ export default function CommunityDetailClient({
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-slate-50">
-                <div className="mx-auto w-full max-w-[800px] px-4 pb-24 pt-28 sm:px-6">
-                    <div className="h-96 animate-pulse rounded-3xl bg-white" />
-                    <div className="mt-8 h-52 animate-pulse rounded-3xl bg-white" />
-                </div>
-            </div>
+            <PublicCommunitySurface>
+                <div className="h-80 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5" />
+                <div className="h-52 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5" />
+            </PublicCommunitySurface>
         );
     }
 
     if (!community) {
         return (
-            <div className="min-h-screen bg-slate-50 px-4 pt-32 text-center">
-                <h1 className="text-xl font-semibold text-slate-950">
-                    Komunitas tidak ditemukan
-                </h1>
-                <Button asChild className="mt-5 rounded-full">
-                    <Link href="/komunitas">Kembali ke komunitas</Link>
-                </Button>
-            </div>
+            <PublicCommunitySurface>
+                <div className="rounded-2xl border border-slate-200/80 bg-white px-6 py-12 text-center shadow-md shadow-slate-900/5">
+                    <h1 className="text-xl font-semibold text-slate-950">
+                        Komunitas tidak ditemukan
+                    </h1>
+                    <Button asChild className="mt-5 h-10 rounded-xl text-sm font-semibold">
+                        <Link href="/komunitas">Kembali ke komunitas</Link>
+                    </Button>
+                </div>
+            </PublicCommunitySurface>
         );
     }
 
-    return (
-        <main className="mx-auto w-full max-w-[800px] px-4 pb-24 pt-28 sm:px-6">
-            <div className="flex w-full flex-col gap-8">
-                <section className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-                    <div className="h-56 w-full bg-slate-200 sm:h-64">
-                        {community.banner_url ? (
-                            <img
-                                alt=""
-                                className="h-full w-full object-cover"
-                                src={community.banner_url}
-                            />
-                        ) : (
-                            <div className="flex h-full items-center justify-center bg-slate-900 text-sm font-semibold text-white">
-                                {community.name}
-                            </div>
-                        )}
-                    </div>
+    const communityHref = `/k/${community.slug}`;
 
-                    <div className="relative px-6 pb-7 sm:px-8">
-                        <div className="mb-6 -mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                            <div className="relative h-28 w-28 overflow-hidden rounded-2xl border-4 border-white bg-white shadow-sm">
+    return (
+        <PublicCommunitySurface>
+            <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5">
+                <div className="h-2 bg-linear-to-r from-primary via-emerald-400 to-sky-400" />
+                <div className="relative overflow-hidden px-5 py-5 sm:px-6 sm:py-6 lg:px-7 lg:py-7">
+                    <div
+                        className="pointer-events-none absolute inset-0 opacity-60"
+                        aria-hidden="true"
+                        style={{
+                            backgroundImage:
+                                "radial-gradient(circle at 16px 16px, rgba(99,102,241,0.10) 0 1px, transparent 1px), linear-gradient(135deg, rgba(99,102,241,0.06), rgba(16,185,129,0.05) 45%, transparent 70%)",
+                            backgroundSize: "32px 32px, 100% 100%",
+                        }}
+                    />
+
+                    <div className="relative flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start">
+                            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md shadow-slate-900/10 sm:h-28 sm:w-28">
                                 <CommunityAvatar community={community} />
                             </div>
-                            <div className="flex gap-3">
-                                <Button
-                                    variant="outline"
-                                    className="rounded-full border-slate-200"
-                                >
-                                    <Share className="h-4 w-4" />
-                                    Bagikan
-                                </Button>
-                                <Button
-                                    onClick={handleJoinToggle}
-                                    disabled={isMutatingMembership}
-                                    className="rounded-full px-6"
-                                    variant={joined ? "outline" : "default"}
-                                >
-                                    {isMutatingMembership ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : null}
-                                    {joined ? "Keluar" : "Bergabung"}
-                                </Button>
+
+                            <div className="min-w-0 pt-1">
+                                <div className="mb-3 flex flex-wrap items-center gap-2">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">
+                                        <span className="size-1.5 rounded-full bg-emerald-500" />
+                                        Komunitas publik
+                                    </span>
+                                    <span className="rounded-full border border-primary/15 bg-white px-2.5 py-1 text-xs font-semibold text-primary shadow-sm shadow-slate-900/5">
+                                        k/{community.slug}
+                                    </span>
+                                </div>
+
+                                <h1 className="text-3xl font-bold leading-tight text-slate-950 md:text-4xl">
+                                    {community.name}
+                                </h1>
+                                <p className="mt-3 line-clamp-3 max-w-3xl whitespace-pre-line text-sm leading-6 text-slate-600 md:text-base">
+                                    {community.description ||
+                                        "Komunitas ini belum memiliki deskripsi."}
+                                </p>
                             </div>
                         </div>
 
-                        <div>
-                            <h1 className="mb-1 text-xl font-semibold leading-7 text-slate-900 sm:text-2xl">
-                                {community.name}
-                            </h1>
-                            <p className="text-sm font-medium text-slate-500">
-                                k/{community.slug}
-                            </p>
-                            <p className="mt-4 whitespace-pre-line text-sm leading-6 text-slate-600">
-                                {community.description ||
-                                    "Komunitas ini belum memiliki deskripsi."}
-                            </p>
+                        <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:pt-8">
+                            <Button
+                                onClick={handleJoinToggle}
+                                disabled={isMutatingMembership}
+                                className="h-10 rounded-xl px-5 text-sm font-semibold shadow-sm shadow-primary/20"
+                                variant={joined ? "secondary" : "default"}
+                            >
+                                {isMutatingMembership ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <ShieldCheck className="h-4 w-4" />
+                                )}
+                                {joined ? "Sudah bergabung" : "Bergabung"}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="h-10 rounded-xl border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm hover:border-primary/30 hover:text-primary"
+                            >
+                                <Share className="h-4 w-4" />
+                                Bagikan
+                            </Button>
+                        </div>
+                    </div>
 
-                            {community.rules ? (
-                                <div className="mt-5 rounded-2xl border border-indigo-100 bg-indigo-50/60 px-4 py-4">
-                                    <p className="text-sm font-semibold text-slate-900">
-                                        Peraturan Komunitas
-                                    </p>
-                                    <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">
-                                        {community.rules}
-                                    </p>
-                                </div>
+                    <div className="relative mt-6 grid gap-3 sm:grid-cols-3">
+                        <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/85 p-4 shadow-sm shadow-slate-900/5 backdrop-blur">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary">
+                                <UsersRound className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-xl font-semibold leading-none tabular-nums text-slate-950">
+                                    {formatNumber(memberCount)}
+                                </p>
+                                <p className="mt-1 text-xs text-slate-500">Anggota</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/85 p-4 shadow-sm shadow-slate-900/5 backdrop-blur">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary">
+                                <FileText className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-xl font-semibold leading-none tabular-nums text-slate-950">
+                                    {formatNumber(community.post_count)}
+                                </p>
+                                <p className="mt-1 text-xs text-slate-500">Post</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white/85 p-4 shadow-sm shadow-slate-900/5 backdrop-blur">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary">
+                                <CalendarDays className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-slate-950">
+                                    {formatDate(community.created_at)}
+                                </p>
+                                <p className="mt-1 text-xs text-slate-500">Dibuat</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+                <div className="flex min-w-0 flex-col gap-5">
+                    <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                                    Feed komunitas
+                                </p>
+                                <h2 className="mt-1 text-xl font-semibold text-slate-950">
+                                    Post terbaru
+                                </h2>
+                                <p className="mt-1 text-sm text-slate-500">
+                                    Diskusi dan pengumuman terbaru dari komunitas ini.
+                                </p>
+                            </div>
+                            {canManage ? (
+                                <Button
+                                    className="h-10 rounded-xl text-sm font-semibold"
+                                    onClick={() => {
+                                        setEditingPost(null);
+                                        setFormOpen(true);
+                                    }}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Buat Post
+                                </Button>
                             ) : null}
-
-                            <div className="mt-6 grid grid-cols-3 gap-3 border-t border-slate-100 pt-6 text-sm text-slate-700">
-                                <div>
-                                    <span className="block text-base font-semibold text-slate-900">
-                                        {formatNumber(memberCount)}
-                                    </span>
-                                    <span className="text-xs text-slate-500">
-                                        Anggota
-                                    </span>
-                                </div>
-                                <div>
-                                    <span className="block text-base font-semibold text-slate-900">
-                                        {formatNumber(community.post_count)}
-                                    </span>
-                                    <span className="text-xs text-slate-500">
-                                        Post
-                                    </span>
-                                </div>
-                                <div className="text-right">
-                                    <span className="flex items-center justify-end gap-2 text-sm font-medium text-slate-400">
-                                        <CalendarDays className="h-4 w-4" />
-                                        {formatDate(community.created_at)}
-                                    </span>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                <div className="flex items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-lg font-semibold text-slate-950">
-                            Post Komunitas
-                        </h2>
-                        <p className="mt-1 text-sm text-slate-500">
-                            Diskusi dan pengumuman terbaru.
-                        </p>
-                    </div>
-                    {canManage ? (
-                        <Button
-                            className="rounded-full"
-                            onClick={() => {
-                                setEditingPost(null);
-                                setFormOpen(true);
-                            }}
-                        >
-                            Buat Post
-                        </Button>
+                    {posts.length ? (
+                        <div className="flex flex-col gap-4">
+                            {posts.map((post) => (
+                                <PostCard
+                                    key={post.id}
+                                    post={post}
+                                    postHref={`${communityHref}/post/${post.id}`}
+                                    canManage={canManage}
+                                    onEdit={(targetPost) => {
+                                        setEditingPost(targetPost);
+                                        setFormOpen(true);
+                                    }}
+                                    onDelete={handleDeletePost}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="rounded-2xl border border-slate-200/80 bg-white px-6 py-12 text-center shadow-sm shadow-slate-900/5">
+                            <UsersRound className="mx-auto h-8 w-8 text-slate-300" />
+                            <h3 className="mt-4 text-base font-semibold text-slate-950">
+                                Belum ada post
+                            </h3>
+                            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                                Post yang dibuat pengelola komunitas akan tampil di sini.
+                            </p>
+                        </div>
+                    )}
+
+                    {hasNext ? (
+                        <div className="flex justify-center">
+                            <Button
+                                variant="outline"
+                                disabled={isLoadingPosts || !resolvedCommunityId}
+                                onClick={() =>
+                                    resolvedCommunityId
+                                        ? loadPosts(resolvedCommunityId, page + 1, true)
+                                        : undefined
+                                }
+                                className="h-10 rounded-xl border-slate-200 bg-white px-7 text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+                            >
+                                {isLoadingPosts ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : null}
+                                Muat lebih banyak
+                            </Button>
+                        </div>
                     ) : null}
                 </div>
 
-                {posts.length ? (
-                    posts.map((post) => (
-                        <PostCard
-                            key={post.id}
-                            post={post}
-                            communityId={community.id}
-                            canManage={canManage}
-                            onEdit={(targetPost) => {
-                                setEditingPost(targetPost);
-                                setFormOpen(true);
-                            }}
-                            onDelete={handleDeletePost}
-                        />
-                    ))
-                ) : (
-                    <div className="rounded-3xl border border-slate-100 bg-white px-6 py-12 text-center shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-                        <UsersRound className="mx-auto h-8 w-8 text-slate-300" />
-                        <h3 className="mt-4 text-base font-semibold text-slate-900">
-                            Belum ada post
-                        </h3>
-                        <p className="mt-2 text-sm leading-6 text-slate-500">
-                            Post yang dibuat pengelola komunitas akan tampil di
-                            sini.
+                <aside className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
+                    <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
+                        <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                            Tentang komunitas
                         </p>
-                    </div>
-                )}
+                        <h2 className="mt-1 text-base font-semibold text-slate-950">
+                            {community.name}
+                        </h2>
+                        <div className="mt-3 max-h-56 overflow-y-auto pr-1 text-sm leading-relaxed text-slate-600">
+                            <p className="whitespace-pre-line">
+                                {community.description ||
+                                    "Komunitas ini belum memiliki deskripsi."}
+                            </p>
+                        </div>
+                    </section>
 
-                {hasNext ? (
-                    <div className="flex justify-center">
-                        <Button
-                            variant="outline"
-                            disabled={isLoadingPosts}
-                            onClick={() => loadPosts(page + 1, true)}
-                            className="rounded-full px-7"
+                    {community.rules ? (
+                        <details className="group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-slate-950">
+                                Peraturan komunitas
+                                <span className="rounded-full bg-primary-light px-2 py-1 text-[11px] font-semibold text-primary transition group-open:bg-slate-100 group-open:text-slate-500">
+                                    Lihat
+                                </span>
+                            </summary>
+                            <div className="mt-4 max-h-72 overflow-y-auto pr-1 text-sm leading-relaxed text-slate-600">
+                                <p className="whitespace-pre-line">{community.rules}</p>
+                            </div>
+                        </details>
+                    ) : null}
+
+                    <section className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
+                        <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                            Link publik
+                        </p>
+                        <Link
+                            href={communityHref}
+                            className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:border-primary/30 hover:text-primary"
                         >
-                            {isLoadingPosts ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : null}
-                            Muat lebih banyak
-                        </Button>
-                    </div>
-                ) : null}
+                            <span className="min-w-0 truncate">k/{community.slug}</span>
+                            <Share className="h-4 w-4 shrink-0" />
+                        </Link>
+                    </section>
+                </aside>
             </div>
 
             <PostFormDialog
@@ -778,6 +905,6 @@ export default function CommunityDetailClient({
                 post={editingPost}
                 onSubmit={handlePostSubmit}
             />
-        </main>
+        </PublicCommunitySurface>
     );
 }

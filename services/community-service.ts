@@ -204,6 +204,13 @@ export const CommunityService = {
         return response.data.data;
     },
 
+    async getCommunityBySlug(slug: string): Promise<Community> {
+        const response = await axiosClient.get<CommunityResponse>(
+            `/communities/slug/${slug}`,
+        );
+        return response.data.data;
+    },
+
     async getCommunityByOrganizer(): Promise<Community> {
         const response = await axiosClient.get<CommunityResponse>(
             "/organizer/community",
