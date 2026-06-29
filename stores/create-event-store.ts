@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type {
   CreateEventFormState,
   EventType,
@@ -123,282 +124,323 @@ const initialFormData: CreateEventFormState = {
   step: 1,
 };
 
-export const useCreateEventStore = create<CreateEventStore>((set, get) => ({
-  formData: initialFormData,
-  currentStep: 1,
-
-  // Navigation
-  nextStep: () => {
-    const { currentStep } = get();
-    if (currentStep < 5) {
-      set({ currentStep: currentStep + 1 });
-      set((state) => ({
-        formData: { ...state.formData, step: currentStep + 1 },
-      }));
-    }
-  },
-
-  prevStep: () => {
-    const { currentStep } = get();
-    if (currentStep > 1) {
-      set({ currentStep: currentStep - 1 });
-      set((state) => ({
-        formData: { ...state.formData, step: currentStep - 1 },
-      }));
-    }
-  },
-
-  setStep: (step) => {
-    set({ currentStep: step });
-    set((state) => ({
-      formData: { ...state.formData, step },
-    }));
-  },
-
-  // Step 1 updates
-  updateEventType: (type) => {
-    set((state) => ({
-      formData: { ...state.formData, type: type },
-    }));
-  },
-
-  // Step 2 updates
-  updateTitle: (title) => {
-    set((state) => ({
-      formData: { ...state.formData, title },
-    }));
-  },
-
-  updateCategory: (category) => {
-    set((state) => ({
-      formData: { ...state.formData, category },
-    }));
-  },
-
-  updateDescription: (description) => {
-    set((state) => ({
-      formData: { ...state.formData, description },
-    }));
-  },
-
-  updateBannerImage: (file, preview) => {
-    set((state) => ({
-      formData: { ...state.formData, banner_image: file, banner_image_preview: preview },
-    }));
-  },
-
-  updatePosters: (files, previews) => {
-    set((state) => ({
-      formData: { ...state.formData, images: files, image_previews: previews },
-    }));
-  },
-
-  // Step 3 updates - DateTime
-  updateEventDateTime: (data: { event_start_date?: Date; event_end_date?: Date }) => {
-    set((state) => ({
-      formData: { ...state.formData, ...data },
-    }));
-  },
-
-  updateRegistrationDateTime: (data: { start_registration_date?: Date; end_registration_date?: Date }) => {
-    set((state) => ({
-      formData: { ...state.formData, ...data },
-    }));
-  },
-
-  addRundown: () => {
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        rundowns: [
-          ...state.formData.rundowns,
-          {
-            title: "",
-            description: "",
-            start_time: "",
-            end_time: "",
-          },
-        ],
-      },
-    }));
-  },
-
-  removeRundown: (index) => {
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        rundowns: state.formData.rundowns.filter((_, i) => i !== index),
-      },
-    }));
-  },
-
-  updateRundown: (index, field, value) => {
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        rundowns: state.formData.rundowns.map((item, i) =>
-          i === index ? { ...item, [field]: value } : item
-        ),
-      },
-    }));
-  },
-
-  updateIsOnline: (is_online) => {
-    set((state) => ({
-      formData: { ...state.formData, is_online },
-    }));
-  },
-
-  updateAddress: (address) => {
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        address: { ...state.formData.address, ...address },
-      },
-    }));
-  },
-
-  updateMeetingUrl: (meeting_url) => {
-    set((state) => ({
-      formData: { ...state.formData, meeting_url },
-    }));
-  },
-
-  updateHideMeetingUrl: (hide_meeting_url) => {
-    set((state) => ({
-      formData: { ...state.formData, hide_meeting_url },
-    }));
-  },
-
-  // Step 4 updates
-
-  updateMaxCapacity: (max_capacity) => {
-    set((state) => ({
-      formData: { ...state.formData, max_capacity },
-    }));
-  },
-
-  updateTickets: (tickets) => {
-    set((state) => ({
-      formData: { ...state.formData, tickets },
-    }));
-  },
-
-  addFreeTicket: () => {
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        tickets: [
-          ...state.formData.tickets,
-          { name: "Tiket Gratis", price: 0, quota: 0, description: "", type: "free", start_date_time: undefined, end_date_time: undefined },
-        ],
-      },
-    }));
-  },
-
-  addPaidTicket: () => {
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        tickets: [
-          ...state.formData.tickets,
-          { name: "Tiket Berbayar", price: 1000, quota: 0, description: "", type: "paid", start_date_time: undefined, end_date_time: undefined },
-        ],
-      },
-    }));
-  },
-
-  removeTicket: (index) => {
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        tickets: state.formData.tickets.filter((_, i) => i !== index),
-      },
-    }));
-  },
-
-  updateTicket: (index, field, value) => {
-    set((state) => ({
-      formData: {
-        ...state.formData,
-        tickets: state.formData.tickets.map((ticket, i) =>
-          i === index ? { ...ticket, [field]: value } : ticket,
-        ),
-      },
-    }));
-  },
-
-  // Reset
-  reset: () => {
-    set({
+export const useCreateEventStore = create<CreateEventStore>()(
+  persist(
+    (set, get) => ({
       formData: initialFormData,
       currentStep: 1,
-    });
-  },
 
-  syncFormData: (data) => {
-    set((state) => ({
-      formData: { ...state.formData, ...data }
-    }));
-  },
+      // Navigation
+      nextStep: () => {
+        const { currentStep } = get();
+        if (currentStep < 5) {
+          set({ currentStep: currentStep + 1 });
+          set((state) => ({
+            formData: { ...state.formData, step: currentStep + 1 },
+          }));
+        }
+      },
 
-  loadFromExistingEvent: (event: Event) => {
-    set({
-      currentStep: 1,
-      formData: {
-        ...initialFormData,
-        title: `${event.title} (Copy)`,
-        type: (event.type as EventType) || "public",
-        category: event.category || "",
-        description: typeof event.description === 'string' ? event.description : "",
+      prevStep: () => {
+        const { currentStep } = get();
+        if (currentStep > 1) {
+          set({ currentStep: currentStep - 1 });
+          set((state) => ({
+            formData: { ...state.formData, step: currentStep - 1 },
+          }));
+        }
+      },
 
-        
-        // Explicitly clear all dates
-        event_start_date: undefined,
-        event_end_date: undefined,
-        start_registration_date: undefined,
-        end_registration_date: undefined,
+      setStep: (step) => {
+        set({ currentStep: step });
+        set((state) => ({
+          formData: { ...state.formData, step },
+        }));
+      },
 
-        // Images are intentionally left empty for the user to re-upload.
-        banner_image: null,
-        banner_image_preview: "",
-        images: [],
-        image_previews: [],
+      // Step 1 updates
+      updateEventType: (type) => {
+        set((state) => ({
+          formData: { ...state.formData, type: type },
+        }));
+      },
 
-        rundowns: event.rundowns?.map(r => ({
-          title: r.title || "",
-          description: r.description || "",
-          start_time: r.start_time || "",
-          end_time: r.end_time || "",
-          location: r.location || "",
-        })) || [],
+      // Step 2 updates
+      updateTitle: (title) => {
+        set((state) => ({
+          formData: { ...state.formData, title },
+        }));
+      },
 
-        is_online: event.is_online,
-        meeting_url: event.meeting_url || "",
-        hide_meeting_url: false,
-        address: event.address ? {
-          title: event.address.title || "",
-          raw_address: event.address.raw_address || "",
-          city: event.address.city || "",
-          province: event.address.province || "",
-          postal_code: event.address.postal_code || "",
-          location_url: event.address.maps_url || "",
-        } : initialFormData.address,
+      updateCategory: (category) => {
+        set((state) => ({
+          formData: { ...state.formData, category },
+        }));
+      },
 
-        max_capacity: event.max_capacity || 1,
-        max_ticket_per_user: event.max_ticket_per_user || 0,
+      updateDescription: (description) => {
+        set((state) => ({
+          formData: { ...state.formData, description },
+        }));
+      },
 
-        tickets: event.ticket_categories?.map(t => ({
-          name: t.name,
-          price: t.price,
-          quota: t.quota,
-          description: t.description || "",
-          type: (t.price > 0 ? "paid" : "free") as "paid" | "free",
-          start_date_time: undefined,
-          end_date_time: undefined,
-        })) || [],
+      updateBannerImage: (file, preview) => {
+        set((state) => ({
+          formData: { ...state.formData, banner_image: file, banner_image_preview: preview },
+        }));
+      },
+
+      updatePosters: (files, previews) => {
+        set((state) => ({
+          formData: { ...state.formData, images: files, image_previews: previews },
+        }));
+      },
+
+      // Step 3 updates - DateTime
+      updateEventDateTime: (data: { event_start_date?: Date; event_end_date?: Date }) => {
+        set((state) => ({
+          formData: { ...state.formData, ...data },
+        }));
+      },
+
+      updateRegistrationDateTime: (data: { start_registration_date?: Date; end_registration_date?: Date }) => {
+        set((state) => ({
+          formData: { ...state.formData, ...data },
+        }));
+      },
+
+      addRundown: () => {
+        set((state) => ({
+          formData: {
+            ...state.formData,
+            rundowns: [
+              ...state.formData.rundowns,
+              {
+                title: "",
+                description: "",
+                start_time: "",
+                end_time: "",
+              },
+            ],
+          },
+        }));
+      },
+
+      removeRundown: (index) => {
+        set((state) => ({
+          formData: {
+            ...state.formData,
+            rundowns: state.formData.rundowns.filter((_, i) => i !== index),
+          },
+        }));
+      },
+
+      updateRundown: (index, field, value) => {
+        set((state) => ({
+          formData: {
+            ...state.formData,
+            rundowns: state.formData.rundowns.map((item, i) =>
+              i === index ? { ...item, [field]: value } : item
+            ),
+          },
+        }));
+      },
+
+      updateIsOnline: (is_online) => {
+        set((state) => ({
+          formData: { ...state.formData, is_online },
+        }));
+      },
+
+      updateAddress: (address) => {
+        set((state) => ({
+          formData: {
+            ...state.formData,
+            address: { ...state.formData.address, ...address },
+          },
+        }));
+      },
+
+      updateMeetingUrl: (meeting_url) => {
+        set((state) => ({
+          formData: { ...state.formData, meeting_url },
+        }));
+      },
+
+      updateHideMeetingUrl: (hide_meeting_url) => {
+        set((state) => ({
+          formData: { ...state.formData, hide_meeting_url },
+        }));
+      },
+
+      // Step 4 updates
+
+      updateMaxCapacity: (max_capacity) => {
+        set((state) => ({
+          formData: { ...state.formData, max_capacity },
+        }));
+      },
+
+      updateTickets: (tickets) => {
+        set((state) => ({
+          formData: { ...state.formData, tickets },
+        }));
+      },
+
+      addFreeTicket: () => {
+        set((state) => ({
+          formData: {
+            ...state.formData,
+            tickets: [
+              ...state.formData.tickets,
+              { name: "Tiket Gratis", price: 0, quota: 0, description: "", type: "free", start_date_time: undefined, end_date_time: undefined },
+            ],
+          },
+        }));
+      },
+
+      addPaidTicket: () => {
+        set((state) => ({
+          formData: {
+            ...state.formData,
+            tickets: [
+              ...state.formData.tickets,
+              { name: "Tiket Berbayar", price: 1000, quota: 0, description: "", type: "paid", start_date_time: undefined, end_date_time: undefined },
+            ],
+          },
+        }));
+      },
+
+      removeTicket: (index) => {
+        set((state) => ({
+          formData: {
+            ...state.formData,
+            tickets: state.formData.tickets.filter((_, i) => i !== index),
+          },
+        }));
+      },
+
+      updateTicket: (index, field, value) => {
+        set((state) => ({
+          formData: {
+            ...state.formData,
+            tickets: state.formData.tickets.map((ticket, i) =>
+              i === index ? { ...ticket, [field]: value } : ticket,
+            ),
+          },
+        }));
+      },
+
+      // Reset
+      reset: () => {
+        set({
+          formData: initialFormData,
+          currentStep: 1,
+        });
+        localStorage.removeItem("create-event-draft");
+      },
+
+      syncFormData: (data) => {
+        set((state) => ({
+          formData: { ...state.formData, ...data }
+        }));
+      },
+
+      loadFromExistingEvent: (event: Event) => {
+        set({
+          currentStep: 1,
+          formData: {
+            ...initialFormData,
+            title: `${event.title} (Copy)`,
+            type: (event.type as EventType) || "public",
+            category: event.category || "",
+            description: typeof event.description === 'string' ? event.description : "",
+
+            // Explicitly clear all dates
+            event_start_date: undefined,
+            event_end_date: undefined,
+            start_registration_date: undefined,
+            end_registration_date: undefined,
+
+            // Images are intentionally left empty for the user to re-upload.
+            banner_image: null,
+            banner_image_preview: "",
+            images: [],
+            image_previews: [],
+
+            rundowns: event.rundowns?.map(r => ({
+              title: r.title || "",
+              description: r.description || "",
+              start_time: r.start_time || "",
+              end_time: r.end_time || "",
+              location: r.location || "",
+            })) || [],
+
+            is_online: event.is_online,
+            meeting_url: event.meeting_url || "",
+            hide_meeting_url: false,
+            address: event.address ? {
+              title: event.address.title || "",
+              raw_address: event.address.raw_address || "",
+              city: event.address.city || "",
+              province: event.address.province || "",
+              postal_code: event.address.postal_code || "",
+              location_url: event.address.maps_url || "",
+            } : initialFormData.address,
+
+            max_capacity: event.max_capacity || 1,
+            max_ticket_per_user: event.max_ticket_per_user || 0,
+
+            tickets: event.ticket_categories?.map(t => ({
+              name: t.name,
+              price: t.price,
+              quota: t.quota,
+              description: t.description || "",
+              type: (t.price > 0 ? "paid" : "free") as "paid" | "free",
+              start_date_time: undefined,
+              end_date_time: undefined,
+            })) || [],
+          }
+        });
       }
-    });
-  }
-}));
+    }),
+    {
+      name: "create-event-draft",
+      partialize: (state) => {
+        const {
+          banner_image,
+          banner_image_preview,
+          images,
+          image_previews,
+          ...textFields
+        } = state.formData;
+        return {
+          formData: textFields,
+          currentStep: state.currentStep,
+        };
+      },
+      merge: (persistedState: any, currentState) => {
+        const merged = { ...currentState };
+        if (persistedState?.formData) {
+          const pForm = persistedState.formData;
+          merged.formData = {
+            ...currentState.formData,
+            ...pForm,
+            event_start_date: pForm.event_start_date ? new Date(pForm.event_start_date) : undefined,
+            event_end_date: pForm.event_end_date ? new Date(pForm.event_end_date) : undefined,
+            start_registration_date: pForm.start_registration_date ? new Date(pForm.start_registration_date) : undefined,
+            end_registration_date: pForm.end_registration_date ? new Date(pForm.end_registration_date) : undefined,
+            tickets: pForm.tickets?.map((t: any) => ({
+              ...t,
+              start_date_time: t.start_date_time ? new Date(t.start_date_time) : undefined,
+              end_date_time: t.end_date_time ? new Date(t.end_date_time) : undefined,
+            })),
+          };
+          merged.currentStep = persistedState.currentStep ?? 1;
+        }
+        return merged as CreateEventStore;
+      },
+    }
+  )
+);
 

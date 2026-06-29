@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Save, Sparkles } from "lucide-react";
+import { ChevronLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -18,9 +18,6 @@ export default function CreateEventHeader() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleSaveDraft = () => {
-    alert("Draft berhasil disimpan");
-  };
 
   return (
     <nav
@@ -52,15 +49,7 @@ export default function CreateEventHeader() {
           </div>
         </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleSaveDraft}
-          className="h-10 rounded-xl border-slate-200 bg-white px-3 text-slate-600 shadow-sm shadow-slate-900/5 hover:border-primary/30 hover:bg-primary-light/50 hover:text-primary"
-        >
-          <Save className="h-4 w-4" />
-          <span className="hidden sm:inline">Simpan Draft</span>
-        </Button>
+
       </div>
     </nav>
   );
