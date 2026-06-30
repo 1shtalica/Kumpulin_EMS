@@ -201,7 +201,11 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         const organizerData = await getOrganizerData();
         if (organizerData === null) return;
 
-        setStep(3);
+        if (isEmailVerified) {
+            await handleFinalSubmit(organizerData);
+        } else {
+            setStep(3);
+        }
     };
 
     const handleFinalSubmit = async (organizerData?: OrganizerFormValues) => {
