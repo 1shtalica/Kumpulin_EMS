@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+
 import {
     Minus,
     Plus,
@@ -21,7 +22,6 @@ import { cn } from "@/lib/utils";
 import { Event } from "@/types/event";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth-store";
-import { OrderService } from "@/services/order-service";
 import { UserService } from "@/services/user-service";
 
 const TICKET_COLORS = [
@@ -75,9 +75,7 @@ function QuotaBar({
                     <div
                         className={cn(
                             "h-full rounded-full transition-all duration-500",
-                            isSoldOut
-                                ? "bg-slate-400"
-                                : "bg-linear-to-r from-primary to-secondary",
+                            isSoldOut ? "bg-slate-400" : "bg-primary",
                         )}
                         style={{ width: `${percentage}%` }}
                     />
@@ -177,7 +175,13 @@ function CountdownDisplay({
 }
 
 // Komponen badge countdown tiket dengan 2 mode: Santai (>24 jam) dan FOMO (<24 jam)
-function TicketCountdownBadge({ diff, type }: { diff: number; type: "starts" | "ends" }) {
+function TicketCountdownBadge({
+    diff,
+    type,
+}: {
+    diff: number;
+    type: "starts" | "ends";
+}) {
     const pad = (n: number) => n.toString().padStart(2, "0");
     const totalSeconds = Math.max(0, Math.floor(diff / 1000));
     const days = Math.floor(totalSeconds / 86400);
@@ -285,10 +289,18 @@ export default function TicketSection({ event }: { event: Event }) {
         ? new Date(event.end_registration_date).getTime()
         : Infinity;
 
-    const isRegistrationUpcoming = event.status === "published" && startReg > 0 && now > 0 && now < startReg;
-    const isRegistrationClosed = event.status !== "published" || (now > 0 && now > endReg);
+    const isRegistrationUpcoming =
+        event.status === "published" &&
+        startReg > 0 &&
+        now > 0 &&
+        now < startReg;
+    const isRegistrationClosed =
+        event.status !== "published" || (now > 0 && now > endReg);
     const isRegistrationOpen =
-        event.status === "published" && now > 0 && !isRegistrationUpcoming && !isRegistrationClosed;
+        event.status === "published" &&
+        now > 0 &&
+        !isRegistrationUpcoming &&
+        !isRegistrationClosed;
 
     const selectedTicket = effectiveTickets.find(
         (t) => t.id === selectedTicketId,
@@ -516,15 +528,24 @@ export default function TicketSection({ event }: { event: Event }) {
                                     {/* Ticket Content */}
                                     <div className="flex-1 p-3.5 flex flex-col justify-between">
                                         {/* Badge countdown tiket – 2 mode: Santai & FOMO */}
-                                        {isTicketUpcoming && currentTime && event.status === "published" && !isActuallySoldOut && (
-                                            <TicketCountdownBadge diff={ticketStart - now} type="starts" />
-                                        )}
+                                        {isTicketUpcoming &&
+                                            currentTime &&
+                                            event.status === "published" &&
+                                            !isActuallySoldOut && (
+                                                <TicketCountdownBadge
+                                                    diff={ticketStart - now}
+                                                    type="starts"
+                                                />
+                                            )}
                                         {isTicketOpen &&
                                             currentTime &&
                                             ticketEnd !== Infinity &&
                                             event.status === "published" &&
                                             !isActuallySoldOut && (
-                                                <TicketCountdownBadge diff={ticketEnd - now} type="ends" />
+                                                <TicketCountdownBadge
+                                                    diff={ticketEnd - now}
+                                                    type="ends"
+                                                />
                                             )}
 
                                         {/* Header */}
@@ -648,8 +669,7 @@ export default function TicketSection({ event }: { event: Event }) {
                         // Guest → arahkan login
                         <Button
                             asChild
-                            size="lg"
-                            className="cursor-pointer w-full py-5 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-xl font-semibold text-sm shadow-md shadow-primary/20"
+                            className="cursor-pointer w-full h-10 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold text-sm shadow-sm shadow-primary/20"
                         >
                             <Link href="/login">Masuk untuk Membeli Tiket</Link>
                         </Button>
@@ -684,48 +704,14 @@ export default function TicketSection({ event }: { event: Event }) {
                         // User biasa → tombol Beli Tiket + Wishlist
                         <div className="flex gap-2">
                             <Button
-                                size="lg"
-                                onClick={async () => {
+                                onClick={() => {
                                     if (!selectedTicket || !event.event_id)
                                         return;
-                                    setIsLoading(true);
-                                    setOrderError(null);
-                                    try {
-                                        // Generate idempotency key unik per user-event-category-qty
-                                        const idempotencyKey = `${event.event_id}-${selectedTicket.id}-${qty}-${Date.now()}`;
-                                        const orderData =
-                                            await OrderService.createOrder(
-                                                event.event_id,
-                                                {
-                                                    items: [
-                                                        {
-                                                            ticket_category_id:
-                                                                selectedTicket.id!,
-                                                            quantity: qty,
-                                                        },
-                                                    ],
-                                                },
-                                                idempotencyKey,
-                                            );
-                                        router.push(
-                                            `/checkout/${orderData.order.id}`,
-                                        );
-                                    } catch (err: unknown) {
-                                        const error = err as {
-                                            response?: {
-                                                data?: { message?: string };
-                                            };
-                                        };
-                                        const msg =
-                                            error?.response?.data?.message ??
-                                            "Gagal membuat pesanan, coba lagi.";
-                                        toast.error(msg);
-                                        setOrderError(msg);
-                                    } finally {
-                                        setIsLoading(false);
-                                    }
+                                    router.push(
+                                        `/checkout/${event.event_id}?ticket_id=${selectedTicket.id}&qty=${qty}`,
+                                    );
                                 }}
-                                className="cursor-pointer flex-1 h-14 bg-linear-to-r from-primary to-secondary hover:opacity-90 rounded-xl font-semibold text-sm shadow-md shadow-primary/20"
+                                className="cursor-pointer flex-1 h-10 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold text-sm shadow-sm shadow-primary/20"
                                 disabled={
                                     !selectedTicket ||
                                     isLoading ||
@@ -753,7 +739,7 @@ export default function TicketSection({ event }: { event: Event }) {
                                         : "Tambah ke Wishlist"
                                 }
                                 className={cn(
-                                    "w-14 h-14 rounded-xl border-slate-200 shadow-sm cursor-pointer transition-all duration-300",
+                                    "w-10 h-10 rounded-xl border-slate-200 shadow-sm cursor-pointer transition-all duration-300",
                                     isWishlisted
                                         ? "bg-danger border-danger text-white hover:bg-danger-light hover:border-danger hover:text-danger"
                                         : "text-slate-500 hover:text-danger hover:border-danger hover:bg-danger-light",
@@ -765,7 +751,7 @@ export default function TicketSection({ event }: { event: Event }) {
                                     <Loader2 className="h-5 w-5 animate-spin" />
                                 ) : (
                                     <Heart
-                                        size={24}
+                                        size={20}
                                         className={cn(
                                             isWishlisted && "fill-current",
                                         )}

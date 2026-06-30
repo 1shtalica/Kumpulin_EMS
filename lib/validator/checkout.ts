@@ -9,7 +9,7 @@ export const checkoutSchema = z.object({
     .regex(/^8[0-9]+$/, { error: "Nomor harus diawali angka 8 dan hanya boleh angka" })
     .min(9, { error: "Nomor HP minimal 9 digit" })
     .max(13, { error: "Nomor HP maksimal 13 digit" }),
-  payment_method: z.string().min(1, { error: "Silakan pilih metode pembayaran terlebih dahulu" }),
+  payment_method: z.string().optional(),
 });
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>;

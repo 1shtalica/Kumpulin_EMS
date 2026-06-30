@@ -18,6 +18,7 @@ export interface PaymentSummaryResponse {
   method?: string;
   amount: number;
   paid_at?: string;
+  payment_url?: string;
 }
 
 export interface TicketSummaryInOrder {

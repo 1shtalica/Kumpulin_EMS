@@ -4,12 +4,15 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AxiosError } from "axios";
 import {
+    ArrowLeft,
+    ChevronRight,
     Loader2,
     MessageCircle,
     Pencil,
     Reply,
-    Share,
+    Share2,
     Trash2,
+    Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -282,12 +285,15 @@ function CommentComposer({
     };
 
     return (
-        <div className="space-y-4 rounded-2xl border border-slate-100 bg-slate-50/60 p-4 sm:p-5">
+        <div className="space-y-3">
             {replyingToLabel ? (
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-600">
-                    <span>
-                        Replying to{" "}
-                        <span className="font-semibold">{replyingToLabel}</span>
+                <div className="flex items-center justify-between rounded-xl border border-primary/10 bg-primary-light px-3.5 py-2.5 text-xs text-slate-700">
+                    <span className="flex items-center gap-1.5">
+                        <Reply className="h-3.5 w-3.5 text-primary" />
+                        Membalas{" "}
+                        <span className="font-semibold text-primary">
+                            {replyingToLabel}
+                        </span>
                     </span>
                     {onCancelReplyTarget ? (
                         <button
@@ -306,20 +312,22 @@ function CommentComposer({
                 value={value}
                 disabled={disabled || isSubmitting}
                 onChange={(event) => onChange(event.target.value)}
-                className="min-h-24 resize-y rounded-xl border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-700 placeholder:text-slate-400"
+                className="min-h-24 resize-y rounded-xl border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-700 shadow-none placeholder:text-slate-400 focus-visible:border-primary/40 focus-visible:ring-primary/20"
                 placeholder={placeholder}
             />
 
             <div className="flex justify-end">
                 <Button
                     type="button"
-                    className="rounded-full px-6"
+                    className="h-10 rounded-xl px-6 text-sm font-semibold"
                     disabled={disabled || isSubmitting}
                     onClick={handleSubmit}
                 >
                     {isSubmitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : null}
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                    )}
                     {submitLabel}
                 </Button>
             </div>
@@ -355,12 +363,12 @@ function ThreadCommentRow({
     const avatarFallback = getCommentAvatarFallback(comment);
 
     return (
-        <div className={isReply ? "flex gap-3" : "flex gap-4"}>
+        <div className={isReply ? "flex gap-3" : "flex gap-3.5"}>
             <div
                 className={
                     isReply
-                        ? "relative mt-1 h-8 w-8 shrink-0 overflow-hidden rounded-full bg-slate-200"
-                        : "relative mt-1 h-10 w-10 shrink-0 overflow-hidden rounded-full bg-slate-900"
+                        ? "relative mt-0.5 h-8 w-8 shrink-0 overflow-hidden rounded-full bg-slate-200"
+                        : "relative mt-0.5 h-10 w-10 shrink-0 overflow-hidden rounded-full bg-linear-to-br from-primary/80 to-primary"
                 }
             >
                 <span
@@ -376,6 +384,7 @@ function ThreadCommentRow({
                     <Image
                         src={comment.author_profile_url}
                         alt={author}
+                        fill
                         className="absolute inset-0 h-full w-full object-cover"
                         onError={(event) => {
                             event.currentTarget.style.display = "none";
@@ -388,33 +397,38 @@ function ThreadCommentRow({
                 <div
                     className={
                         isReply
-                            ? "rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
-                            : "rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-sm shadow-slate-900/5"
+                            ? "rounded-xl border border-slate-200/80 bg-slate-50/80 px-4 py-3"
+                            : "rounded-2xl border border-slate-200/80 bg-white px-4 py-3.5 shadow-sm shadow-slate-900/5"
                     }
                 >
-                    <p
-                        className={
-                            isReply
-                                ? "text-xs font-semibold text-slate-700"
-                                : "text-sm font-semibold text-slate-800"
-                        }
-                    >
-                        {author}
-                    </p>
+                    <div className="flex items-center gap-2">
+                        <p
+                            className={
+                                isReply
+                                    ? "text-xs font-semibold text-slate-800"
+                                    : "text-sm font-semibold text-slate-950"
+                            }
+                        >
+                            {author}
+                        </p>
+                        <span className="text-[11px] text-slate-400">
+                            {formatDate(comment.created_at)}
+                        </span>
+                    </div>
 
                     {isEditing ? (
-                        <div className="mt-2 space-y-3">
+                        <div className="mt-2.5 space-y-3">
                             <Textarea
                                 value={editBody}
                                 onChange={(event) =>
                                     setEditBody(event.target.value)
                                 }
-                                className="min-h-20 rounded-xl border-slate-200 bg-white text-sm text-slate-700"
+                                className="min-h-20 rounded-xl border-slate-200 bg-white text-sm leading-relaxed text-slate-700 shadow-none focus-visible:border-primary/40 focus-visible:ring-primary/20"
                             />
                             <div className="flex justify-end gap-2">
                                 <Button
-                                    variant="ghost"
-                                    className="rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                                    variant="outline"
+                                    className="h-9 rounded-xl border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 transition hover:border-primary/30 hover:text-primary"
                                     onClick={() => {
                                         setEditBody(comment.body);
                                         setIsEditing(false);
@@ -423,7 +437,7 @@ function ThreadCommentRow({
                                     Batal
                                 </Button>
                                 <Button
-                                    className="rounded-full"
+                                    className="h-9 rounded-xl px-3.5 text-sm font-semibold"
                                     onClick={async () => {
                                         await onUpdate(
                                             comment.id,
@@ -440,8 +454,8 @@ function ThreadCommentRow({
                         <p
                             className={
                                 isReply
-                                    ? "mt-1 whitespace-pre-line text-sm leading-6 text-slate-600"
-                                    : "mt-1 whitespace-pre-line text-sm leading-6 text-slate-700"
+                                    ? "mt-1 whitespace-pre-line text-sm leading-relaxed text-slate-600"
+                                    : "mt-1.5 whitespace-pre-line text-sm leading-relaxed text-slate-700"
                             }
                         >
                             {displayBody}
@@ -450,12 +464,11 @@ function ThreadCommentRow({
                 </div>
 
                 {!isEditing ? (
-                    <div className="mt-2.5 flex flex-wrap items-center gap-2 px-1 text-xs font-medium text-slate-400">
-                        <span>{formatDate(comment.created_at)}</span>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1 px-1 text-xs font-medium text-slate-400">
                         <button
                             type="button"
                             onClick={onReply}
-                            className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-slate-500 transition hover:bg-slate-100 hover:text-primary"
+                            className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-primary"
                         >
                             <Reply className="h-3.5 w-3.5" />
                             Balas
@@ -467,7 +480,7 @@ function ThreadCommentRow({
                                     setEditBody(comment.body);
                                     setIsEditing(true);
                                 }}
-                                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-slate-500 transition hover:bg-slate-100 hover:text-primary"
+                                className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-primary"
                             >
                                 <Pencil className="h-3.5 w-3.5" />
                                 Edit
@@ -477,7 +490,7 @@ function ThreadCommentRow({
                             <button
                                 type="button"
                                 onClick={() => void onDelete(comment)}
-                                className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-slate-500 transition hover:bg-red-50 hover:text-red-600"
+                                className="inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-slate-500 transition hover:bg-red-50 hover:text-red-600"
                             >
                                 <Trash2 className="h-3.5 w-3.5" />
                                 Hapus
@@ -1013,77 +1026,221 @@ export default function PostDetailClient({
 
     if (isLoading) {
         return (
-            <main className="relative mx-auto w-full max-w-6xl px-4 pb-32 pt-28 sm:px-6 lg:px-8">
-                <div className="h-80 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5" />
-                <div className="mt-5 h-72 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5" />
+            <main className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-[#f9fafb] px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+                <div
+                    className="pointer-events-none absolute inset-0"
+                    aria-hidden="true"
+                    style={{
+                        backgroundImage:
+                            "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+                        backgroundSize: "28px 28px",
+                        opacity: 0.16,
+                    }}
+                />
+                <div className="relative mx-auto flex w-full max-w-4xl flex-col gap-4">
+                    <div className="h-14 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5" />
+                    <div className="h-72 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5" />
+                    <div className="h-64 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5" />
+                </div>
             </main>
         );
     }
 
     if (!post || !community) {
         return (
-            <main className="relative mx-auto w-full max-w-6xl px-4 pb-32 pt-32 text-center sm:px-6 lg:px-8">
-                <h1 className="text-xl font-semibold text-slate-950">
-                    {postLoadError?.title ?? "Post tidak ditemukan"}
-                </h1>
-                <p className="mt-3 text-sm text-slate-500">
-                    {postLoadError?.description ??
-                        "Post mungkin sudah dihapus atau tidak berada pada komunitas ini."}
-                </p>
-                <Button asChild className="mt-6 rounded-full">
-                    <Link href={`/komunitas/${communityId}`}>
-                        Kembali ke komunitas
-                    </Link>
-                </Button>
+            <main className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-[#f9fafb] px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+                <div
+                    className="pointer-events-none absolute inset-0"
+                    aria-hidden="true"
+                    style={{
+                        backgroundImage:
+                            "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+                        backgroundSize: "28px 28px",
+                        opacity: 0.16,
+                    }}
+                />
+                <div className="relative mx-auto w-full max-w-3xl rounded-2xl border border-slate-200/80 bg-white px-6 py-12 text-center shadow-md shadow-slate-900/5">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100">
+                        <MessageCircle className="h-6 w-6 text-slate-400" />
+                    </div>
+                    <h1 className="text-xl font-semibold text-slate-950">
+                        {postLoadError?.title ?? "Post tidak ditemukan"}
+                    </h1>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                        {postLoadError?.description ??
+                            "Post mungkin sudah dihapus atau tidak berada pada komunitas ini."}
+                    </p>
+                    <Button
+                        asChild
+                        className="mt-6 h-10 rounded-xl text-sm font-semibold"
+                    >
+                        <Link href={`/komunitas/${communityId}`}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Kembali ke komunitas
+                        </Link>
+                    </Button>
+                </div>
             </main>
         );
     }
 
+    const postAuthor = getPostAuthorLabel(post);
+    const postAuthorInitials =
+        postAuthor
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((w) => w[0]?.toUpperCase() ?? "")
+            .join("") || "U";
+
     return (
-        <main className="relative mx-auto w-full max-w-6xl px-4 pb-32 pt-28 sm:px-6 lg:px-8">
-            <div className="flex w-full flex-col gap-8">
-                <article className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5">
-                    <div className="flex flex-col gap-5 p-5 sm:p-7">
-                        <div>
-                            <Link
-                                href={`/k/${community.slug}`}
-                                className="text-sm font-semibold text-primary hover:underline"
-                            >
-                                k/{community.slug}
-                            </Link>
+        <main className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-[#f9fafb] px-4 pb-20 pt-24 sm:px-6 lg:px-8">
+            <div
+                className="pointer-events-none absolute inset-0"
+                aria-hidden="true"
+                style={{
+                    backgroundImage:
+                        "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+                    backgroundSize: "28px 28px",
+                    opacity: 0.16,
+                }}
+            />
+            <div className="relative mx-auto flex w-full max-w-4xl flex-col gap-4">
+                {/* Breadcrumb / Context Header */}
+                <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5">
+                    <svg
+                        className="pointer-events-none absolute -right-3 -top-3 h-24 w-24 text-primary"
+                        viewBox="0 0 96 96"
+                        fill="none"
+                    >
+                        <rect
+                            x="20"
+                            y="20"
+                            width="56"
+                            height="56"
+                            rx="12"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeOpacity="0.08"
+                            fill="currentColor"
+                            fillOpacity="0.03"
+                        />
+                        <path
+                            d="M10 50 Q30 30 50 50 T90 50"
+                            stroke="currentColor"
+                            strokeWidth="1"
+                            strokeOpacity="0.06"
+                            fill="none"
+                        />
+                    </svg>
+                    <div className="relative flex items-center gap-3">
+                        <Link
+                            href={`/k/${community.slug}`}
+                            className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50 transition hover:border-primary/30"
+                        >
+                            {community.logo_url ? (
+                                <Image
+                                    src={community.logo_url}
+                                    alt={community.name}
+                                    width={40}
+                                    height={40}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <Users className="h-4 w-4 text-slate-400" />
+                            )}
+                        </Link>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                <Link
+                                    href={`/k/${community.slug}`}
+                                    className="font-semibold text-primary transition hover:underline"
+                                >
+                                    k/{community.slug}
+                                </Link>
+                                <ChevronRight className="h-3 w-3 text-slate-400" />
+                                <span className="truncate font-medium text-slate-500">
+                                    Post
+                                </span>
+                            </div>
                             {getOrganizerLabel(post) ? (
-                                <p className="mt-1 text-xs font-medium text-slate-500">
+                                <p className="mt-0.5 text-[11px] font-medium text-slate-400">
                                     {getOrganizerLabel(post)}
                                 </p>
                             ) : null}
-                            <p className="mt-1 text-xs font-medium text-slate-400">
-                                {getPostAuthorLabel(post)} -{" "}
-                                {formatDate(post.created_at)}
-                            </p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            asChild
+                            className="hidden h-9 rounded-xl border-slate-200 bg-white px-3.5 text-sm font-semibold text-slate-600 transition hover:border-primary/30 hover:text-primary sm:flex"
+                        >
+                            <Link href={`/k/${community.slug}`}>
+                                <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                                Kembali
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Post Article */}
+                <article className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5">
+                    <div className="flex flex-col gap-5 p-5 sm:p-7">
+                        {/* Author Bar */}
+                        <div className="flex items-center gap-3">
+                            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-linear-to-br from-primary/80 to-primary">
+                                <span className="flex h-full w-full items-center justify-center text-xs font-semibold text-white">
+                                    {postAuthorInitials}
+                                </span>
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold text-slate-950">
+                                    {postAuthor}
+                                </p>
+                                <p className="text-xs text-slate-400">
+                                    {formatDate(post.created_at)}
+                                </p>
+                            </div>
+                            {post.post_type === "announcement" ? (
+                                <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                    Pengumuman
+                                </span>
+                            ) : null}
                         </div>
 
+                        {/* Post Content */}
                         <div>
-                            <h1 className="mb-4 text-xl font-semibold leading-7 text-slate-900 sm:text-2xl">
+                            <h1 className="text-xl font-bold leading-snug text-slate-950 sm:text-2xl">
                                 {post.title}
                             </h1>
-                            <p className="whitespace-pre-line text-sm leading-6 text-slate-700">
+                            <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600 md:text-base">
                                 {post.body}
                             </p>
 
                             <PostImageCarousel
                                 imageUrls={post.image_urls}
-                                className="mt-6"
+                                className="mt-5"
                                 imageClassName="max-h-[620px]"
                             />
                         </div>
 
-                        <div className="mt-3 flex items-center gap-2 border-t border-slate-200/80 pt-5">
-                            <span className="group flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500">
-                                <MessageCircle className="h-5 w-5" />
+                        {/* Footer Actions */}
+                        <div className="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 px-4 py-3">
+                            <span className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                                <MessageCircle className="h-4.5 w-4.5" />
                                 {formatNumber(post.comment_count)} Komentar
                             </span>
-                            <button className="group ml-auto flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary/10 hover:text-primary">
-                                <Share className="h-5 w-5" />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    void navigator.clipboard.writeText(
+                                        window.location.href,
+                                    );
+                                    toast.success("Link berhasil disalin!");
+                                }}
+                                className="ml-auto flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white hover:text-primary hover:shadow-sm"
+                            >
+                                <Share2 className="h-4 w-4" />
                                 <span className="hidden sm:inline">
                                     Bagikan
                                 </span>
@@ -1092,12 +1249,18 @@ export default function PostDetailClient({
                     </div>
                 </article>
 
+                {/* Comments Section */}
                 <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-7">
-                    <h2 className="mb-6 text-lg font-semibold text-slate-900">
-                        Komentar ({formatNumber(post.comment_count)})
-                    </h2>
+                    <div className="mb-5 flex items-center gap-3">
+                        <h2 className="text-base font-semibold text-slate-950">
+                            Komentar
+                        </h2>
+                        <span className="inline-flex items-center rounded-full bg-primary-light px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-primary">
+                            {formatNumber(post.comment_count)}
+                        </span>
+                    </div>
 
-                    <div className="mb-7">
+                    <div className="mb-6">
                         <CommentComposer
                             inputRef={composerRef}
                             disabled={!user}
@@ -1115,7 +1278,7 @@ export default function PostDetailClient({
                     </div>
 
                     {commentThreads.length ? (
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             {commentThreads.map((thread, threadIndex) => {
                                 const isExpanded =
                                     expandedRepliesByRootId[thread.root.id] ??
@@ -1130,7 +1293,7 @@ export default function PostDetailClient({
                                 return (
                                     <article
                                         key={`${thread.root.id || "thread"}-${threadIndex}`}
-                                        className="space-y-3 border-b border-slate-200/80 pb-5 last:border-b-0 last:pb-0"
+                                        className="space-y-3 border-b border-slate-200/60 pb-6 last:border-b-0 last:pb-0"
                                     >
                                         <ThreadCommentRow
                                             comment={thread.root}
@@ -1145,7 +1308,7 @@ export default function PostDetailClient({
                                         />
 
                                         {thread.replies.length ? (
-                                            <div className="pl-9 sm:pl-11">
+                                            <div className="pl-9 sm:pl-14">
                                                 <button
                                                     type="button"
                                                     onClick={() =>
@@ -1158,8 +1321,9 @@ export default function PostDetailClient({
                                                             }),
                                                         )
                                                     }
-                                                    className="mb-3 text-xs font-semibold text-slate-500 transition hover:text-primary"
+                                                    className="mb-3 inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary-light"
                                                 >
+                                                    <MessageCircle className="h-3.5 w-3.5" />
                                                     {isExpanded
                                                         ? "Sembunyikan balasan"
                                                         : `Lihat ${formatNumber(
@@ -1169,7 +1333,7 @@ export default function PostDetailClient({
                                                 </button>
 
                                                 {visibleReplies.length ? (
-                                                    <div className="space-y-4">
+                                                    <div className="space-y-3">
                                                         {visibleReplies.map(
                                                             (
                                                                 reply,
@@ -1214,10 +1378,15 @@ export default function PostDetailClient({
                             })}
                         </div>
                     ) : (
-                        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 px-5 py-8 text-center">
-                            <MessageCircle className="mx-auto h-7 w-7 text-slate-300" />
-                            <p className="mt-3 text-sm font-medium text-slate-600">
+                        <div className="px-5 py-10 text-center">
+                            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100">
+                                <MessageCircle className="h-5 w-5 text-slate-400" />
+                            </div>
+                            <p className="text-sm font-medium text-slate-600">
                                 Belum ada komentar.
+                            </p>
+                            <p className="mt-1 text-xs text-slate-400">
+                                Jadilah yang pertama berkomentar!
                             </p>
                         </div>
                     )}
@@ -1227,10 +1396,10 @@ export default function PostDetailClient({
                             variant="outline"
                             disabled={isLoadingComments}
                             onClick={() => loadComments(page + 1, true)}
-                            className="mt-8 w-full rounded-2xl py-3.5 text-sm font-semibold text-primary"
+                            className="mt-6 flex h-10 w-full items-center justify-center rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 transition hover:border-primary/30 hover:text-primary"
                         >
                             {isLoadingComments ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             ) : null}
                             Muat lebih banyak komentar
                         </Button>

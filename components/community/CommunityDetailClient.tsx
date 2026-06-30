@@ -363,10 +363,10 @@ function PostCard({
                 </div>
 
                 <Link href={postHref} className="group block">
-                    <h2 className="mb-2.5 line-clamp-2 text-lg font-semibold leading-snug text-slate-950 transition-colors group-hover:text-primary">
+                    <h2 className="mb-2.5 line-clamp-2 text-base font-semibold leading-snug text-slate-950 sm:text-lg transition-colors group-hover:text-primary">
                         {post.title}
                     </h2>
-                    <p className="line-clamp-3 whitespace-pre-line text-sm leading-6 text-slate-600">
+                    <p className="line-clamp-3 whitespace-pre-line text-[13px] leading-5 text-slate-600">
                         {post.body}
                     </p>
                 </Link>
@@ -381,13 +381,13 @@ function PostCard({
                 <div className="mt-1 flex items-center gap-2 border-t border-slate-200/80 pt-5">
                     <Link
                         href={postHref}
-                        className="group flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary-light hover:text-primary"
+                        className="group flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 sm:text-sm transition-all hover:bg-primary-light hover:text-primary"
                     >
-                        <MessageCircle className="h-5 w-5" />
+                        <MessageCircle className="h-4 w-4" />
                         <span>{formatNumber(post.comment_count)} Komentar</span>
                     </Link>
-                    <button className="group ml-auto flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-slate-500 transition-all hover:bg-primary-light hover:text-primary">
-                        <Share className="h-5 w-5" />
+                    <button className="group ml-auto flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 sm:text-sm transition-all hover:bg-primary-light hover:text-primary">
+                        <Share className="h-4 w-4" />
                         <span>Bagikan</span>
                     </button>
                 </div>
@@ -627,10 +627,10 @@ export default function CommunityDetailClient({
         return (
             <PublicCommunitySurface>
                 <div className="rounded-2xl border border-slate-200/80 bg-white px-6 py-12 text-center shadow-md shadow-slate-900/5">
-                    <h1 className="text-xl font-semibold text-slate-950">
+                    <h1 className="text-lg font-semibold text-slate-950">
                         Komunitas tidak ditemukan
                     </h1>
-                    <Button asChild className="mt-5 h-10 rounded-xl text-sm font-semibold">
+                    <Button asChild className="mt-5 h-10 rounded-xl text-[13px] font-semibold sm:text-sm">
                         <Link href="/komunitas">Kembali ke komunitas</Link>
                     </Button>
                 </div>
@@ -642,6 +642,19 @@ export default function CommunityDetailClient({
 
     return (
         <PublicCommunitySurface>
+            {community.banner_url ? (
+                <section
+                    className="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-sm shadow-slate-900/5"
+                    aria-label={`${community.name} banner`}
+                >
+                    <img
+                        alt=""
+                        className="h-28 w-full object-cover sm:h-32 lg:h-36"
+                        src={community.banner_url}
+                    />
+                </section>
+            ) : null}
+
             <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
                 <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
                     <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
@@ -654,35 +667,35 @@ export default function CommunityDetailClient({
                                     <span className="size-1.5 rounded-full bg-emerald-500" />
                                     Publik
                                 </span>
-                                <h1 className="mt-2 line-clamp-2 text-2xl font-bold leading-tight text-slate-950">
+                                <h1 className="mt-2 line-clamp-2 text-xl font-bold leading-tight text-slate-950">
                                     {community.name}
                                 </h1>
-                                <p className="mt-1 truncate text-sm font-medium text-primary">
+                                <p className="mt-1 truncate text-xs font-medium text-primary sm:text-sm">
                                     k/{community.slug}
                                 </p>
                             </div>
                         </div>
 
-                        <p className="mt-4 line-clamp-4 whitespace-pre-line text-sm leading-6 text-slate-600">
+                        <p className="mt-4 line-clamp-4 whitespace-pre-line text-[13px] leading-5 text-slate-600">
                             {community.description ||
                                 "Komunitas ini belum memiliki deskripsi."}
                         </p>
 
                         <div className="mt-5 grid grid-cols-3 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50/70 text-center">
                             <div className="px-3 py-3">
-                                <p className="text-lg font-semibold leading-none tabular-nums text-slate-950">
+                                <p className="text-base font-semibold leading-none tabular-nums text-slate-950">
                                     {formatNumber(memberCount)}
                                 </p>
                                 <p className="mt-1 text-[11px] text-slate-500">Anggota</p>
                             </div>
                             <div className="border-x border-slate-200/80 px-3 py-3">
-                                <p className="text-lg font-semibold leading-none tabular-nums text-slate-950">
+                                <p className="text-base font-semibold leading-none tabular-nums text-slate-950">
                                     {formatNumber(community.post_count)}
                                 </p>
                                 <p className="mt-1 text-[11px] text-slate-500">Post</p>
                             </div>
                             <div className="px-3 py-3">
-                                <p className="text-lg font-semibold leading-none tabular-nums text-slate-950">
+                                <p className="text-base font-semibold leading-none tabular-nums text-slate-950">
                                     {formatDate(community.created_at).split(" ")[2]}
                                 </p>
                                 <p className="mt-1 text-[11px] text-slate-500">Dibuat</p>
@@ -693,7 +706,7 @@ export default function CommunityDetailClient({
                             <Button
                                 onClick={handleJoinToggle}
                                 disabled={isMutatingMembership}
-                                className="h-10 rounded-xl text-sm font-semibold"
+                                className="h-10 rounded-xl text-[13px] font-semibold sm:text-sm"
                                 variant={joined ? "secondary" : "default"}
                             >
                                 {isMutatingMembership ? (
@@ -705,7 +718,7 @@ export default function CommunityDetailClient({
                             </Button>
                             <Button
                                 variant="outline"
-                                className="h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:border-primary/30 hover:text-primary"
+                                className="h-10 rounded-xl border-slate-200 bg-white text-[13px] font-semibold text-slate-700 sm:text-sm hover:border-primary/30 hover:text-primary"
                             >
                                 <Share className="h-4 w-4" />
                                 Bagikan
@@ -715,13 +728,13 @@ export default function CommunityDetailClient({
 
                     {community.rules ? (
                         <details className="group rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
-                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-slate-950">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[13px] font-semibold text-slate-950">
                                 Peraturan komunitas
                                 <span className="rounded-lg bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-500 transition group-open:bg-primary-light group-open:text-primary">
                                     Lihat
                                 </span>
                             </summary>
-                            <div className="mt-4 max-h-64 overflow-y-auto pr-1 text-sm leading-6 text-slate-600">
+                            <div className="mt-4 max-h-64 overflow-y-auto pr-1 text-[13px] leading-5 text-slate-600">
                                 <p className="whitespace-pre-line">{community.rules}</p>
                             </div>
                         </details>
@@ -729,7 +742,7 @@ export default function CommunityDetailClient({
 
                     <Link
                         href={communityHref}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm font-medium text-slate-600 shadow-sm shadow-slate-900/5 transition hover:border-primary/30 hover:text-primary"
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-[13px] font-medium text-slate-600 shadow-sm shadow-slate-900/5 transition hover:border-primary/30 hover:text-primary"
                     >
                         <span className="min-w-0 truncate">k/{community.slug}</span>
                         <Share className="h-4 w-4 shrink-0" />
@@ -740,16 +753,16 @@ export default function CommunityDetailClient({
                     <section className="rounded-2xl border border-slate-200/80 bg-white px-5 py-4 shadow-sm shadow-slate-900/5">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
-                                <h2 className="text-xl font-semibold text-slate-950">
+                                <h2 className="text-lg font-semibold text-slate-950">
                                     Post terbaru
                                 </h2>
-                                <p className="mt-1 text-sm text-slate-500">
+                                <p className="mt-1 text-[13px] text-slate-500">
                                     Diskusi dan pengumuman dari komunitas ini.
                                 </p>
                             </div>
                             {canManage ? (
                                 <Button
-                                    className="h-10 rounded-xl text-sm font-semibold"
+                                    className="h-10 rounded-xl text-[13px] font-semibold sm:text-sm"
                                     onClick={() => {
                                         setEditingPost(null);
                                         setFormOpen(true);

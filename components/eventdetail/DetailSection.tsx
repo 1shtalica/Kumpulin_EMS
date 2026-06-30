@@ -2,6 +2,8 @@
 
 import {
     Calendar,
+    List,
+    Navigation,
     Clock,
     MapPin,
     Users,
@@ -15,7 +17,6 @@ import {
 import { useState, useEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 import { Event } from "@/types/event";
 import { format, isSameDay } from "date-fns";
@@ -146,66 +147,73 @@ export default function DetailSection({
 
     return (
         <section className="w-full flex flex-col items-center justify-between relative">
-            <div className="w-full h-fit p-5 sm:p-6 lg:p-7 bg-white shadow-md shadow-slate-900/5 border border-slate-200/80 rounded-2xl">
-                <div className="flex flex-col gap-5 md:gap-6">
-                    {/* Baris Kategori */}
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="brand">{event.category}</Badge>
+            <div className="w-full h-fit p-4 sm:p-5 lg:p-6 bg-white shadow-md shadow-slate-900/5 border border-slate-200/80 rounded-2xl">
+                <div className="flex flex-col gap-4 md:gap-5">
+                    <div className="-mx-4 -mt-4 border-b border-slate-100 px-4 pb-4 pt-4 sm:-mx-5 sm:-mt-5 sm:px-5 sm:pt-5 lg:-mx-6 lg:-mt-6 lg:px-6 lg:pt-6">
+                        <div className="mb-4 flex flex-wrap items-center gap-2">
+                            <Badge variant="brand">{event.category}</Badge>
 
-                        <Badge
-                            className={
-                                event.is_online
-                                    ? "bg-linear-to-r from-blue-600 to-blue-800 text-white font-semibold border-none px-3 rounded-full uppercase text-[10px] tracking-wide shadow-sm"
-                                    : "bg-muted text-white shadow-sm"
-                            }
-                        >
-                            {event.is_online ? "Online" : "Offline"}
-                        </Badge>
+                            <Badge
+                                className={
+                                    event.is_online
+                                        ? "bg-blue-50 text-blue-700 font-semibold border border-blue-100 px-2.5 rounded-full uppercase text-[10px] tracking-wide shadow-none"
+                                        : "bg-slate-100 text-slate-700 border border-slate-200 shadow-none px-2.5 rounded-full uppercase text-[10px] tracking-wide"
+                                }
+                            >
+                                {event.is_online ? "Online" : "Offline"}
+                            </Badge>
 
-                        <Badge className="bg-secondary-light text-secondary border border-secondary rounded-full px-2 flex items-center gap-1">
-                            {(() => {
-                                if (
-                                    !event.ticket_categories ||
-                                    event.ticket_categories.length === 0
-                                )
+                            <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full px-2.5 text-[10px] uppercase tracking-wide shadow-none">
+                                {(() => {
+                                    if (
+                                        !event.ticket_categories ||
+                                        event.ticket_categories.length === 0
+                                    )
+                                        return "Gratis";
+                                    const hasFree =
+                                        event.ticket_categories.some(
+                                            (t) => t.price === 0,
+                                        );
+                                    const hasPaid =
+                                        event.ticket_categories.some(
+                                            (t) => t.price > 0,
+                                        );
+
+                                    if (hasFree && hasPaid)
+                                        return "Gratis & Berbayar";
+                                    if (hasPaid) return "Berbayar";
                                     return "Gratis";
-                                const hasFree = event.ticket_categories.some(
-                                    (t) => t.price === 0,
-                                );
-                                const hasPaid = event.ticket_categories.some(
-                                    (t) => t.price > 0,
-                                );
+                                })()}
+                            </Badge>
+                        </div>
 
-                                if (hasFree && hasPaid)
-                                    return "Gratis & Berbayar";
-                                if (hasPaid) return "Berbayar";
-                                return "Gratis";
-                            })()}
-                        </Badge>
-                    </div>
-
-                    {/* Judul event */}
-                    <div className="flex items-start gap-3 py-3 md:py-4">
-                        <div className="mt-1 h-9 w-1 bg-primary rounded-full shrink-0"></div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-slate-950 leading-[1.12] tracking-normal">
-                            {event.title}
-                        </h1>
-                        {isEditable && (
-                            <EditSectionModal event={event} section="core" />
-                        )}
-                    </div>
-
-                    {/* Detail Event Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                        {/* 1. Jadwal Event */}
-                        <div className="flex flex-row items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
-                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary-light text-primary">
-                                <Calendar size={16} />
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="border-l-2 border-primary/70 pl-4">
+                                <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                                    Event Detail
+                                </span>
+                                <h1 className="mt-1 text-2xl font-bold leading-tight tracking-normal text-slate-950 md:text-3xl">
+                                    {event.title}
+                                </h1>
                             </div>
-                            <div className="flex flex-col ">
+                            {isEditable && (
+                                <EditSectionModal
+                                    event={event}
+                                    section="core"
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50/70 p-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-primary shadow-sm shadow-slate-900/5 ring-1 ring-slate-100">
+                                <Calendar size={15} />
+                            </div>
+                            <div className="min-w-0">
                                 <div className="flex items-center gap-1">
-                                    <span className="text-[11px] tracking-wider font-semibold text-slate-500">
-                                        JADWAL EVENT
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                                        Jadwal Event
                                     </span>
                                     {isEditable && (
                                         <EditSectionModal
@@ -214,7 +222,7 @@ export default function DetailSection({
                                         />
                                     )}
                                 </div>
-                                <p className="text-sm md:text-base font-semibold text-slate-900 mt-0.5 leading-snug">
+                                <p className="mt-0.5 text-sm font-semibold leading-snug text-slate-950">
                                     {eventDateString}
                                 </p>
                                 <p className="text-xs text-slate-500">
@@ -223,15 +231,14 @@ export default function DetailSection({
                             </div>
                         </div>
 
-                        {/* 2. Masa Registrasi */}
-                        <div className="flex flex-row items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
-                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary-light text-primary">
-                                <Clock size={16} />
+                        <div className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50/70 p-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-primary shadow-sm shadow-slate-900/5 ring-1 ring-slate-100">
+                                <Clock size={15} />
                             </div>
-                            <div className="flex flex-col">
+                            <div className="min-w-0">
                                 <div className="flex items-center gap-1">
-                                    <span className="text-[11px] tracking-wider font-semibold text-slate-500">
-                                        MASA REGISTRASI
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                                        Masa Registrasi
                                     </span>
                                     {isEditable && (
                                         <EditSectionModal
@@ -240,7 +247,7 @@ export default function DetailSection({
                                         />
                                     )}
                                 </div>
-                                <p className="text-sm md:text-base font-semibold text-slate-900 mt-0.5 leading-snug">
+                                <p className="mt-0.5 text-sm font-semibold leading-snug text-slate-950">
                                     {regDateString}
                                 </p>
                                 {regTimeString && (
@@ -251,15 +258,14 @@ export default function DetailSection({
                             </div>
                         </div>
 
-                        {/* 3. Lokasi */}
-                        <div className="flex flex-row items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
-                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary-light text-primary">
-                                <MapPin size={16} />
+                        <div className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50/70 p-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-primary shadow-sm shadow-slate-900/5 ring-1 ring-slate-100">
+                                <MapPin size={15} />
                             </div>
-                            <div className="flex flex-col">
+                            <div className="min-w-0">
                                 <div className="flex items-center gap-1">
-                                    <span className="text-[11px] tracking-wider font-semibold text-slate-500">
-                                        LOKASI
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                                        Lokasi
                                     </span>
                                     {isEditable && (
                                         <EditSectionModal
@@ -269,7 +275,7 @@ export default function DetailSection({
                                     )}
                                 </div>
                                 <p
-                                    className="text-sm md:text-base font-semibold text-slate-900 line-clamp-2 leading-snug"
+                                    className="mt-0.5 line-clamp-2 text-sm font-semibold leading-snug text-slate-950"
                                     title={event.address?.raw_address}
                                 >
                                     {event.is_online
@@ -290,7 +296,7 @@ export default function DetailSection({
                                             href={event.address.maps_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-1 mt-1.5 text-[11px] font-semibold text-primary hover:text-primary-hover transition-colors bg-primary-light hover:bg-primary/10 px-2.5 py-1 rounded-xl w-fit"
+                                            className="mt-1.5 inline-flex w-fit items-center gap-1 rounded-lg bg-white px-2 py-1 text-[11px] font-semibold text-primary ring-1 ring-primary/10 transition-colors hover:bg-primary-light"
                                         >
                                             <MapPin size={11} />
                                             Lihat di Peta
@@ -300,15 +306,14 @@ export default function DetailSection({
                             </div>
                         </div>
 
-                        {/* 4. Partisipan */}
-                        <div className="flex flex-row items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3.5">
-                            <div className="flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-primary-light text-primary mt-0.5">
-                                <Users size={16} />
+                        <div className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50/70 p-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-primary shadow-sm shadow-slate-900/5 ring-1 ring-slate-100">
+                                <Users size={15} />
                             </div>
-                            <div className="flex flex-col">
+                            <div className="min-w-0">
                                 <div className="flex items-center gap-1">
-                                    <span className="text-[11px] tracking-wider font-semibold text-slate-500">
-                                        PARTISIPAN
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                                        Partisipan
                                     </span>
                                     {isEditable && (
                                         <EditSectionModal
@@ -317,7 +322,7 @@ export default function DetailSection({
                                         />
                                     )}
                                 </div>
-                                <p className="text-sm md:text-base font-semibold text-slate-900">
+                                <p className="mt-0.5 text-sm font-semibold text-slate-950">
                                     {event.total_sold}/
                                     {event.max_capacity || "-"} terdaftar
                                 </p>
@@ -325,66 +330,61 @@ export default function DetailSection({
                         </div>
                     </div>
 
-                    {/* Pemisah  */}
-                    <Separator orientation="horizontal" />
-
-                    <div className="bg-primary-light/70 py-4 px-4 sm:px-5 rounded-2xl border border-primary/10">
+                    <div className="-mx-4 sm:-mx-5 lg:-mx-6 border-y border-slate-100 bg-slate-50/70 px-4 py-4 sm:px-5 lg:px-6">
                         {event.organizer && (
-                            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
-                                <div className="flex flex-row items-center gap-5 w-full md:w-auto">
-                                    <div className="shrink-0">
-                                        <Link
-                                            href={
-                                                isOwnEvent
-                                                    ? "/organizer/profile"
-                                                    : `/organizer/${event.organizer.slug}`
-                                            }
-                                            className="hover:opacity-80 transition-opacity"
-                                        >
-                                            <Avatar className="h-12 w-12 ring-2 ring-white shadow-sm">
-                                                <AvatarImage
-                                                    src={
-                                                        event.organizer
-                                                            .profile_image_url
-                                                    }
-                                                />
-                                                <AvatarFallback>
-                                                    {event.organizer.name
-                                                        .substring(0, 2)
-                                                        .toUpperCase()}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                        </Link>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <div className="flex flex-row items-center gap-1">
-                                            <p className="font-semibold text-slate-900 leading-tight">
+                            <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex min-w-0 items-center gap-3.5">
+                                    <Link
+                                        href={
+                                            isOwnEvent
+                                                ? "/organizer/profile"
+                                                : `/organizer/${event.organizer.slug}`
+                                        }
+                                        className="shrink-0 hover:opacity-85 transition-opacity"
+                                    >
+                                        <Avatar className="h-11 w-11 ring-1 ring-slate-200 shadow-sm">
+                                            <AvatarImage
+                                                src={
+                                                    event.organizer
+                                                        .profile_image_url
+                                                }
+                                            />
+                                            <AvatarFallback className="bg-slate-700 text-xs font-semibold text-white">
+                                                {event.organizer.name
+                                                    .substring(0, 2)
+                                                    .toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </Link>
+                                    <div className="min-w-0">
+                                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                                            Organizer
+                                        </span>
+                                        <div className="mt-0.5 flex items-center gap-1.5">
+                                            <p className="truncate text-sm font-semibold leading-tight text-slate-950">
                                                 {event.organizer.name}
                                             </p>
                                             {event.organizer
                                                 .verification_status ===
                                                 "verified" && (
                                                 <CheckCircle2
-                                                    size={16}
-                                                    className="text-blue-500 fill-blue-50"
+                                                    size={15}
+                                                    className="shrink-0 text-blue-500 fill-blue-50"
                                                 />
                                             )}
                                         </div>
-                                        <div className="pt-1 text-slate-600 leading-relaxed">
-                                            <p className="text-sm line-clamp-2">
-                                                {event.organizer.description}
-                                            </p>
-                                        </div>
+                                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600 sm:text-sm">
+                                            {event.organizer.description}
+                                        </p>
                                     </div>
                                 </div>
-                                {/* Kanan: Tombol Aksi */}
+
                                 {isOwnEvent ? (
-                                    // Pemilik event: arahkan ke edit profile sendiri
                                     <Button
                                         asChild
                                         variant="outline"
                                         size="sm"
-                                        className="rounded-xl px-5 shrink-0"
+                                        className="h-9 shrink-0 rounded-lg border-slate-200 px-4 text-xs font-semibold"
                                     >
                                         <Link href="/organizer/profile">
                                             <Pencil
@@ -395,13 +395,12 @@ export default function DetailSection({
                                         </Link>
                                     </Button>
                                 ) : (
-                                    // Bukan pemilik: tombol Follow / Unfollow
                                     <Button
                                         variant={
                                             hasFollowed ? "outline" : "default"
                                         }
                                         size="sm"
-                                        className="rounded-xl px-5 shrink-0"
+                                        className="h-9 shrink-0 rounded-lg px-4 text-xs font-semibold shadow-sm shadow-primary/15"
                                         onClick={handleFollowToggle}
                                         disabled={isLoadingFollow}
                                     >
@@ -427,12 +426,16 @@ export default function DetailSection({
                     </div>
 
                     {/* Bagian Deskripsi Event  */}
-                    <div className="pt-2 md:pt-3">
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="h-7 w-1 bg-primary rounded-full"></div>
-                            <h4 className="text-xl md:text-2xl font-bold text-slate-950 leading-tight">
-                                Tentang Event
-                            </h4>
+                    <div className="pt-1 md:pt-2">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                            <div>
+                                <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                                    Detail Event
+                                </span>
+                                <h4 className="mt-1 text-lg font-bold leading-tight text-slate-950 md:text-xl">
+                                    Tentang Event
+                                </h4>
+                            </div>
                             {isEditable && (
                                 <EditSectionModal
                                     event={event}
@@ -440,19 +443,30 @@ export default function DetailSection({
                                 />
                             )}
                         </div>
-                        <TipTapViewer
-                            content={event.description?.content || ""}
-                        />
+                        <div className="border-l-2 border-primary/70 pl-4 sm:pl-5">
+                            <TipTapViewer
+                                content={event.description?.content || ""}
+                            />
+                        </div>
                     </div>
 
                     {/* Bagian Rundown Acara  */}
                     {event.rundowns && event.rundowns.length > 0 && (
-                        <div className="pt-2 md:pt-3">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="h-7 w-1 bg-primary rounded-full"></div>
-                                <h4 className="text-xl md:text-2xl font-bold text-slate-950 leading-tight">
-                                    Rundown Acara
-                                </h4>
+                        <div className="pt-1 md:pt-2">
+                            <div className="mb-4 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-light text-primary">
+                                        <List className="h-5 w-5" />
+                                    </span>
+                                    <div>
+                                        <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                                            Susunan Acara
+                                        </span>
+                                        <h4 className="mt-1 text-lg font-bold leading-tight text-slate-950 md:text-xl">
+                                            Rundown
+                                        </h4>
+                                    </div>
+                                </div>
                                 {isEditable && (
                                     <EditSectionModal
                                         event={event}
@@ -461,52 +475,66 @@ export default function DetailSection({
                                 )}
                             </div>
 
-                            <div className="flex flex-col gap-4">
+                            <div className="relative space-y-4">
                                 {event.rundowns.map((item, index) => (
                                     <div
                                         key={item.id ?? index}
-                                        className="group flex flex-col md:flex-row gap-3 md:gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-primary/20 hover:bg-primary-light/10 hover:shadow-sm transition-all duration-300"
+                                        className="relative grid grid-cols-[44px_1fr] gap-3"
                                     >
-                                        {/* Waktu (Kiri) */}
-                                        <div className=" shrink-0 flex flex-col justify-start md:justify-center pt-1">
-                                            <div className="flex items-center gap-2 text-sm font-semibold text-primary bg-white border border-primary/10 px-3 py-1.5 rounded-xl shadow-sm w-fit">
-                                                <Clock
-                                                    size={14}
-                                                    className="md:w-5 md:h-5"
+                                        <div className="relative flex flex-col items-center">
+                                            {index <
+                                                (event.rundowns?.length ?? 0) -
+                                                    1 && (
+                                                <span
+                                                    className="absolute bottom-0 top-11 w-px bg-slate-200"
+                                                    aria-hidden="true"
                                                 />
-                                                <span>
-                                                    {item.start_time} -{" "}
-                                                    {item.end_time}
-                                                </span>
-                                            </div>
+                                            )}
+                                            <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-lg border border-primary/15 bg-white text-sm font-semibold tabular-nums text-primary shadow-sm shadow-slate-900/5">
+                                                {String(index + 1).padStart(
+                                                    2,
+                                                    "0",
+                                                )}
+                                            </span>
                                         </div>
 
-                                        {/* Detail (Kanan) */}
-                                        <div
-                                            className={`flex flex-col w-full ${item.location || item.description ? "gap-2" : "justify-center"}`}
-                                        >
-                                            <h5 className="font-semibold text-slate-950 text-base md:text-lg leading-tight group-hover:text-primary transition-colors">
-                                                {item.title}
-                                            </h5>
-
-                                            {item.location && (
-                                                <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                    <MapPin
-                                                        size={16}
-                                                        className="text-primary shrink-0"
-                                                    />
-                                                    <span className="font-medium">
-                                                        {item.location}
+                                        <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 shadow-sm shadow-slate-900/5 transition-colors hover:border-primary/20 hover:bg-slate-50">
+                                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                                <div className="min-w-0">
+                                                    <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                                                        Sesi {index + 1}
+                                                    </p>
+                                                    <h5 className="mt-1 text-base font-semibold leading-snug text-slate-950">
+                                                        {item.title ||
+                                                            "Untitled Rundown"}
+                                                    </h5>
+                                                </div>
+                                                <div className="flex shrink-0 items-center rounded-xl border border-primary/10 bg-white px-3 py-2 text-xs font-semibold text-primary shadow-sm shadow-slate-900/5">
+                                                    <span className="font-bold">
+                                                        {item.start_time ||
+                                                            "--:--"}
+                                                    </span>
+                                                    <span className="mx-2 text-slate-300">
+                                                        hingga
+                                                    </span>
+                                                    <span className="font-bold">
+                                                        {item.end_time ||
+                                                            "--:--"}
                                                     </span>
                                                 </div>
-                                            )}
+                                            </div>
 
                                             {item.description && (
-                                                <div className="mt-1 pb-1 border-l-2 border-slate-200 pl-3 ml-1">
-                                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                                        {item.description}
-                                                    </p>
-                                                </div>
+                                                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                                                    {item.description}
+                                                </p>
+                                            )}
+
+                                            {item.location && (
+                                                <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/10 bg-white px-2.5 py-1 text-xs font-medium text-primary">
+                                                    <Navigation className="h-3 w-3" />
+                                                    {item.location}
+                                                </p>
                                             )}
                                         </div>
                                     </div>

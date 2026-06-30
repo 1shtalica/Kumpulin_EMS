@@ -1,0 +1,1 @@
+export { default } from "../../payment/[order_id]/page";
