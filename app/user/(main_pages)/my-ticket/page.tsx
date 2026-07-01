@@ -7,6 +7,7 @@ import {
     AlertCircle,
     ArrowRight,
     CheckCircle2,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
     Clock3,
@@ -47,6 +48,12 @@ type StatusOption = {
     label: string;
     shortLabel: string;
     value: "all" | TicketStatus;
+};
+
+type TicketEventGroup = {
+    eventId: string;
+    eventTitle: string;
+    tickets: MyTicketListItem[];
 };
 
 const STATUS_OPTIONS: StatusOption[] = [
@@ -135,6 +142,27 @@ const updateQueryString = (
 
     const next = nextParams.toString();
     return next ? `?${next}` : "";
+};
+const groupTicketsByEvent = (tickets: MyTicketListItem[]) => {
+    const groups = new Map<string, TicketEventGroup>();
+
+    tickets.forEach((ticket) => {
+        const eventId = ticket.event_id || ticket.id;
+        const existingGroup = groups.get(eventId);
+
+        if (existingGroup) {
+            existingGroup.tickets.push(ticket);
+            return;
+        }
+
+        groups.set(eventId, {
+            eventId,
+            eventTitle: ticket.event_title || "Event",
+            tickets: [ticket],
+        });
+    });
+
+    return Array.from(groups.values());
 };
 
 function TicketWalletDoodle() {
@@ -369,6 +397,101 @@ function TicketCard({ item }: { item: MyTicketListItem }) {
         </article>
     );
 }
+function TicketEventAccordion({
+    group,
+    isOpen,
+    onToggle,
+}: {
+    group: TicketEventGroup;
+    isOpen: boolean;
+    onToggle: () => void;
+}) {
+    const activeTickets = group.tickets.filter(
+        (ticket) => ticket.status === "issued",
+    ).length;
+    const checkedInTickets = group.tickets.filter(
+        (ticket) => ticket.status === "checked_in",
+    ).length;
+    const categoryNames = Array.from(
+        new Set(
+            group.tickets
+                .map((ticket) => ticket.ticket_category_name)
+                .filter(Boolean),
+        ),
+    );
+
+    return (
+        <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 transition-all duration-200 hover:border-primary/30">
+            <button
+                type="button"
+                onClick={onToggle}
+                className="group flex w-full flex-col gap-4 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:p-5 lg:flex-row lg:items-center lg:justify-between"
+                aria-expanded={isOpen}
+            >
+                <div className="flex min-w-0 gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <TicketIcon className="h-6 w-6" />
+                    </div>
+                    <div className="min-w-0">
+                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                            <Badge
+                                variant="outline"
+                                className="rounded-full border-primary/15 bg-primary/5 text-primary"
+                            >
+                                {group.tickets.length} tiket
+                            </Badge>
+                            {activeTickets > 0 ? (
+                                <Badge
+                                    variant="outline"
+                                    className="rounded-full border-emerald-100 bg-emerald-50 text-emerald-700"
+                                >
+                                    {activeTickets} aktif
+                                </Badge>
+                            ) : null}
+                            {checkedInTickets > 0 ? (
+                                <Badge
+                                    variant="outline"
+                                    className="rounded-full border-blue-100 bg-blue-50 text-blue-700"
+                                >
+                                    {checkedInTickets} hadir
+                                </Badge>
+                            ) : null}
+                        </div>
+                        <h2 className="line-clamp-2 text-lg font-semibold tracking-tight text-slate-950 transition-colors group-hover:text-primary sm:text-xl">
+                            {group.eventTitle}
+                        </h2>
+                        <p className="mt-1 line-clamp-1 text-sm text-slate-500">
+                            {categoryNames.length > 0
+                                ? categoryNames.join(", ")
+                                : "Kategori tiket"}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 lg:border-t-0 lg:pt-0">
+                    <span className="text-sm font-semibold text-slate-500">
+                        {isOpen ? "Tutup tiket" : "Lihat tiket"}
+                    </span>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-colors group-hover:border-primary/20 group-hover:text-primary">
+                        <ChevronDown
+                            className={`h-4 w-4 transition-transform duration-200 ${
+                                isOpen ? "rotate-180" : ""
+                            }`}
+                        />
+                    </span>
+                </div>
+            </button>
+
+            {isOpen ? (
+                <div className="space-y-3 border-t border-slate-100 bg-slate-50/60 p-3 sm:p-4">
+                    {group.tickets.map((ticket) => (
+                        <TicketCard key={ticket.id} item={ticket} />
+                    ))}
+                </div>
+            ) : null}
+        </article>
+    );
+}
 function TicketSkeletonList() {
     return (
         <div className="space-y-3">
@@ -420,7 +543,8 @@ function MyTicketPageContent() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [errorCode, setErrorCode] = useState<string>("");
     const [reloadCount, setReloadCount] = useState(0);
-    const [eventIdInput, setEventIdInput] = useState("");
+    const [eventTitleInput, setEventTitleInput] = useState("");
+    const [openEventIds, setOpenEventIds] = useState<Set<string>>(new Set());
 
     const page = parsePositiveInt(searchParams.get("page"), 1);
     const limit = normalizeLimit(
@@ -430,17 +554,17 @@ function MyTicketPageContent() {
     const status = VALID_STATUSES.has(rawStatus as TicketStatus)
         ? (rawStatus as TicketStatus)
         : undefined;
-    const eventId = searchParams.get("event_id")?.trim() ?? "";
+    const eventTitle = searchParams.get("event_title")?.trim() ?? "";
 
     const selectedStatus = status ?? "all";
     const selectedStatusOption =
         STATUS_OPTIONS.find((option) => option.value === selectedStatus) ??
         STATUS_OPTIONS[0];
-    const hasFilters = selectedStatus !== "all" || Boolean(eventId);
+    const hasFilters = selectedStatus !== "all" || Boolean(eventTitle);
 
     useEffect(() => {
-        setEventIdInput(eventId);
-    }, [eventId]);
+        setEventTitleInput(eventTitle);
+    }, [eventTitle]);
 
     useEffect(() => {
         let isMounted = true;
@@ -455,7 +579,7 @@ function MyTicketPageContent() {
                     page,
                     limit,
                     ...(status ? { status } : {}),
-                    ...(eventId ? { event_id: eventId } : {}),
+                    ...(eventTitle ? { event_title: eventTitle } : {}),
                 });
 
                 if (!isMounted) return;
@@ -488,7 +612,7 @@ function MyTicketPageContent() {
         return () => {
             isMounted = false;
         };
-    }, [page, limit, status, eventId, reloadCount, router]);
+    }, [page, limit, status, eventTitle, reloadCount, router]);
 
     const totalPages = Math.max(pagination.total_pages || 1, 1);
     const safePage = Math.min(Math.max(page, 1), totalPages);
@@ -500,11 +624,26 @@ function MyTicketPageContent() {
         const end = Math.min(safePage * limit, pagination.total_items);
         return `${start}-${end} dari ${pagination.total_items} tiket`;
     }, [limit, pagination.total_items, safePage]);
+    const ticketEventGroups = useMemo(() => groupTicketsByEvent(items), [items]);
+
+    const toggleEventGroup = (groupId: string) => {
+        setOpenEventIds((current) => {
+            const next = new Set(current);
+
+            if (next.has(groupId)) {
+                next.delete(groupId);
+            } else {
+                next.add(groupId);
+            }
+
+            return next;
+        });
+    };
 
     const applyQuery = (updates: Record<string, string | null>) => {
         const nextQuery = updateQueryString(
             new URLSearchParams(searchParams.toString()),
-            updates,
+            { event_id: null, ...updates },
         );
         router.replace(`/user/my-ticket${nextQuery}`);
     };
@@ -523,13 +662,14 @@ function MyTicketPageContent() {
     const handleFilterSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         applyQuery({
-            event_id: eventIdInput.trim() || null,
+            event_title: eventTitleInput.trim() || null,
+            event_id: null,
             page: "1",
         });
     };
 
     const clearFilters = () => {
-        setEventIdInput("");
+        setEventTitleInput("");
         router.replace("/user/my-ticket");
     };
 
@@ -608,11 +748,11 @@ function MyTicketPageContent() {
                             <div className="relative">
                                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                 <Input
-                                    value={eventIdInput}
+                                    value={eventTitleInput}
                                     onChange={(event) =>
-                                        setEventIdInput(event.target.value)
+                                        setEventTitleInput(event.target.value)
                                     }
-                                    placeholder="Cari dengan kode event"
+                                    placeholder="Cari dengan nama event"
                                     className="h-10 rounded-full border-slate-200 bg-slate-50 pl-10"
                                 />
                             </div>
@@ -641,13 +781,13 @@ function MyTicketPageContent() {
                                     >
                                         {selectedStatusOption.label}
                                     </Badge>
-                                    {eventId ? (
+                                    {eventTitle ? (
                                         <Badge
                                             variant="outline"
                                             className="max-w-full rounded-full border-slate-200 bg-slate-50 text-slate-600"
                                         >
                                             <span className="truncate">
-                                                Kode event: {eventId}
+                                                Event: {eventTitle}
                                             </span>
                                         </Badge>
                                     ) : null}
@@ -728,7 +868,7 @@ function MyTicketPageContent() {
                         </div>
                     ) : null}
 
-                    {!isLoading && !errorMessage && items.length === 0 ? (
+                    {!isLoading && !errorMessage && ticketEventGroups.length === 0 ? (
                         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm shadow-slate-900/5">
                             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <WalletCards className="h-7 w-7" />
@@ -740,7 +880,7 @@ function MyTicketPageContent() {
                             </p>
                             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
                                 {hasFilters
-                                    ? "Coba ubah status atau hapus kode event untuk melihat tiket lainnya."
+                                    ? "Coba ubah status atau hapus nama event untuk melihat tiket lainnya."
                                     : "Tiket Anda akan muncul di sini setelah pembelian berhasil."}
                             </p>
                             <div className="mt-5 flex flex-wrap justify-center gap-2">
@@ -764,10 +904,15 @@ function MyTicketPageContent() {
                         </div>
                     ) : null}
 
-                    {!isLoading && !errorMessage && items.length > 0 ? (
+                    {!isLoading && !errorMessage && ticketEventGroups.length > 0 ? (
                         <>
-                            {items.map((item) => (
-                                <TicketCard key={item.id} item={item} />
+                            {ticketEventGroups.map((group) => (
+                                <TicketEventAccordion
+                                    key={group.eventId}
+                                    group={group}
+                                    isOpen={openEventIds.has(group.eventId)}
+                                    onToggle={() => toggleEventGroup(group.eventId)}
+                                />
                             ))}
 
                             <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between">

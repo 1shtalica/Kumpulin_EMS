@@ -59,15 +59,16 @@ const TICKET_COLORS = [
 
 // --- 1. KOMPONEN QUOTA BAR ---
 function QuotaBar({
-    booked,
+    remaining,
     total,
     isSoldOut,
 }: {
-    booked: number;
+    remaining: number;
     total: number;
     isSoldOut?: boolean;
 }) {
-    const percentage = Math.min((booked / total) * 100, 100);
+    const used = Math.max(0, total - remaining);
+    const percentage = total > 0 ? Math.min((used / total) * 100, 100) : 0;
     return (
         <div className="w-full flex flex-col gap-1 mt-3">
             <div className="w-full flex flex-row items-center gap-3">
@@ -81,16 +82,26 @@ function QuotaBar({
                     />
                 </div>
                 <span className="text-[10px] text-muted whitespace-nowrap min-w-fit">
-                    {Math.max(0, total - booked)} tersisa
+                    {remaining} tersisa
                 </span>
             </div>
         </div>
     );
 }
 
+function getTicketRemaining(ticket: {
+    quota: number;
+    sold?: number | null;
+    booked?: number | null;
+}) {
+    const sold = ticket.sold ?? 0;
+    const booked = ticket.booked ?? 0;
+    return Math.max(0, ticket.quota - sold - booked);
+}
+
 // --- 2. KOMPONEN COUNTDOWN DUAL-MODE ---
-// Mode santai : >= 24 jam → "X hari HH jam MM menit"
-// Mode FOMO   : <  24 jam → "HH:MM:SS" merah berkedip
+// Mode santai : >= 24 jam -> X hari HH jam MM menit
+// Mode FOMO   : <  24 jam -> HH:MM:SS merah berkedip
 function CountdownDisplay({
     diff,
     label,
@@ -219,7 +230,7 @@ function TicketCountdownBadge({
                     {days > 0 && (
                         <>
                             <span>{days}h</span>
-                            <span className="opacity-40">·</span>
+                            <span className="opacity-40">-</span>
                         </>
                     )}
                     <span>{pad(hours)}j</span>
@@ -248,7 +259,8 @@ export default function TicketSection({ event }: { event: Event }) {
                   name: "Tiket Gratis",
                   price: 0,
                   quota: event.max_capacity || 0,
-                  booked: event.total_sold || 0,
+                  booked: 0,
+                  sold: event.total_sold || 0,
                   description: "Tiket masuk untuk event ini.",
                   start_date_time: undefined as string | undefined,
                   end_date_time: undefined as string | undefined,
@@ -257,7 +269,7 @@ export default function TicketSection({ event }: { event: Event }) {
         : (event.ticket_categories ?? []);
 
     const availableTicket = effectiveTickets.find(
-        (t) => t.quota === 0 || t.booked < t.quota,
+        (t) => getTicketRemaining(t) > 0,
     );
     const [selectedTicketId, setSelectedTicketId] = useState<string | null>(
         availableTicket?.id ?? null,
@@ -308,10 +320,7 @@ export default function TicketSection({ event }: { event: Event }) {
 
     const maxPurchase = (() => {
         if (!selectedTicket) return 0;
-        const remaining =
-            selectedTicket.quota > 0
-                ? selectedTicket.quota - selectedTicket.booked
-                : Infinity;
+        const remaining = getTicketRemaining(selectedTicket);
         const limitPerUser = event.max_ticket_per_user ?? 0;
         return limitPerUser > 0 ? Math.min(remaining, limitPerUser) : remaining;
     })();
@@ -331,6 +340,27 @@ export default function TicketSection({ event }: { event: Event }) {
         if (!isSelectable) return;
         setSelectedTicketId(id);
         setQty(1);
+    };
+
+    const handleCheckout = () => {
+        if (!selectedTicket || !event.event_id) return;
+
+        const remaining = getTicketRemaining(selectedTicket);
+        if (remaining <= 0) {
+            setOrderError("Tiket ini sudah habis.");
+            return;
+        }
+
+        if (qty > remaining) {
+            setOrderError(`Sisa tiket hanya ${remaining}.`);
+            setQty(remaining);
+            return;
+        }
+
+        setOrderError(null);
+        router.push(
+            `/checkout/${event.event_id}?ticket_id=${selectedTicket.id}&qty=${qty}`,
+        );
     };
 
     const handleShare = (platform: string) => {
@@ -411,7 +441,7 @@ export default function TicketSection({ event }: { event: Event }) {
                 className="w-full bg-white shadow-md shadow-slate-900/5 border border-slate-200/80 rounded-2xl sticky top-24 flex flex-col overflow-hidden"
                 style={{ maxHeight: "calc(100vh - 7rem)" }}
             >
-                {/* ── ZONA ATAS: PINNED HEADER (Title & Countdown) ── */}
+                {/* ZONA ATAS: PINNED HEADER (Title & Countdown) */}
                 <div className="shrink-0 p-5 pb-2 flex flex-col gap-4 bg-white">
                     <div>
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
@@ -448,7 +478,7 @@ export default function TicketSection({ event }: { event: Event }) {
                     )}
                 </div>
 
-                {/* ── ZONA TENGAH: SCROLLABLE TICKET LIST ── */}
+                {/* ZONA TENGAH: SCROLLABLE TICKET LIST */}
                 <div className="flex-1 overflow-y-auto px-5 pb-4 flex flex-col gap-4 scrollbar-hide">
                     {/* List tiket */}
                     <div className="flex flex-col gap-4 mt-2">
@@ -466,9 +496,8 @@ export default function TicketSection({ event }: { event: Event }) {
                             const isTicketOpen =
                                 now > 0 && !isTicketUpcoming && !isTicketClosed;
 
-                            const isActuallySoldOut =
-                                ticket.quota > 0 &&
-                                ticket.booked >= ticket.quota;
+                            const remaining = getTicketRemaining(ticket);
+                            const isActuallySoldOut = remaining <= 0;
                             const isSelectable =
                                 !isActuallySoldOut &&
                                 isRegistrationOpen &&
@@ -526,7 +555,7 @@ export default function TicketSection({ event }: { event: Event }) {
 
                                     {/* Ticket Content */}
                                     <div className="flex-1 p-3.5 flex flex-col justify-between">
-                                        {/* Badge countdown tiket – 2 mode: Santai & FOMO */}
+                                        {/* Badge countdown tiket - 2 mode: Santai & FOMO */}
                                         {isTicketUpcoming &&
                                             currentTime &&
                                             event.status === "published" &&
@@ -579,19 +608,12 @@ export default function TicketSection({ event }: { event: Event }) {
                                         )}
 
                                         {/* Progress Bar */}
-                                        {ticket.quota > 0 ? (
+                                        {ticket.quota > 0 && (
                                             <QuotaBar
-                                                booked={ticket.booked}
+                                                remaining={remaining}
                                                 total={ticket.quota}
                                                 isSoldOut={isActuallySoldOut}
                                             />
-                                        ) : (
-                                            <div className="mt-3 flex items-center gap-2">
-                                                <div className="h-1.5 w-full bg-white/60 rounded-full" />
-                                                <span className="text-[10px] text-slate-500 whitespace-nowrap font-medium">
-                                                    Tanpa Batas Kuota
-                                                </span>
-                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -606,7 +628,7 @@ export default function TicketSection({ event }: { event: Event }) {
                     </div>
                 </div>
 
-                {/* ── ZONA BAWAH: SELALU TERLIHAT ── */}
+                {/* ZONA BAWAH: SELALU TERLIHAT */}
                 <div className="shrink-0 p-5 pt-3 flex flex-col gap-3 border-t border-slate-100 bg-white">
                     {/* Counter qty */}
                     {selectedTicket && (
@@ -665,7 +687,7 @@ export default function TicketSection({ event }: { event: Event }) {
 
                     {/* Tombol aksi berdasarkan role */}
                     {!user ? (
-                        // Guest → arahkan login
+                        // Guest -> arahkan login
                         <Button
                             asChild
                             className="cursor-pointer w-full h-10 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold text-sm shadow-sm shadow-primary/20"
@@ -675,7 +697,7 @@ export default function TicketSection({ event }: { event: Event }) {
                     ) : user.role === "organizer" ? (
                         // Semua Organizer: tidak bisa beli tiket
                         String(event.organizer?.id) === String(user.id) ? (
-                            // EO pemilik event ini → manajemen
+                            // EO pemilik event ini -> manajemen
                             <Button
                                 asChild
                                 size="lg"
@@ -689,7 +711,7 @@ export default function TicketSection({ event }: { event: Event }) {
                                 </Link>
                             </Button>
                         ) : (
-                            // EO bukan pemilik → pesan informatif, tanpa tombol beli/wishlist
+                            // EO bukan pemilik -> pesan informatif, tanpa tombol beli/wishlist
                             <div className="flex flex-col items-center gap-1.5 py-4 px-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
                                 <span className="text-xs font-medium text-red-500">
                                     Akun Organizer tidak dapat membeli tiket.
@@ -700,22 +722,17 @@ export default function TicketSection({ event }: { event: Event }) {
                             </div>
                         )
                     ) : (
-                        // User biasa → tombol Beli Tiket + Wishlist
+                        // User biasa -> tombol Beli Tiket + Wishlist
                         <div className="flex gap-2">
                             <Button
-                                onClick={() => {
-                                    if (!selectedTicket || !event.event_id)
-                                        return;
-                                    router.push(
-                                        `/checkout/${event.event_id}?ticket_id=${selectedTicket.id}&qty=${qty}`,
-                                    );
-                                }}
+                                onClick={handleCheckout}
                                 className="cursor-pointer flex-1 h-10 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold text-sm shadow-sm shadow-primary/20"
                                 disabled={
                                     !selectedTicket ||
                                     isLoading ||
                                     !isRegistrationOpen ||
-                                    !selectedTicket?.id
+                                    !selectedTicket?.id ||
+                                    maxPurchase <= 0
                                 }
                             >
                                 {isLoading ? (

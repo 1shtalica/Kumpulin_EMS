@@ -218,14 +218,16 @@ const normalizeMyTicketsArgs = (
   limit?: number,
   status?: string,
   eventId?: string,
+  eventTitle?: string,
 ): Required<Pick<GetMyTicketsParams, "page" | "limit">> &
-  Pick<GetMyTicketsParams, "status" | "event_id"> => {
+  Pick<GetMyTicketsParams, "status" | "event_id" | "event_title"> => {
   if (typeof paramsOrPage === "number") {
     return {
       page: normalizePage(paramsOrPage),
       limit: normalizeLimit(limit),
       ...(status ? { status } : {}),
       ...(eventId ? { event_id: eventId } : {}),
+      ...(eventTitle ? { event_title: eventTitle } : {}),
     };
   }
 
@@ -234,6 +236,7 @@ const normalizeMyTicketsArgs = (
     limit: normalizeLimit(paramsOrPage.limit),
     ...(paramsOrPage.status ? { status: paramsOrPage.status } : {}),
     ...(paramsOrPage.event_id ? { event_id: paramsOrPage.event_id } : {}),
+    ...(paramsOrPage.event_title ? { event_title: paramsOrPage.event_title } : {}),
   };
 };
 
@@ -245,14 +248,16 @@ async function getMyTickets(
   limit?: number,
   status?: string,
   eventId?: string,
+  eventTitle?: string,
 ): Promise<MyTicketsListData>;
 async function getMyTickets(
   paramsOrPage: GetMyTicketsParams | number = {},
   limit?: number,
   status?: string,
   eventId?: string,
+  eventTitle?: string,
 ): Promise<MyTicketsListData> {
-  const params = normalizeMyTicketsArgs(paramsOrPage, limit, status, eventId);
+  const params = normalizeMyTicketsArgs(paramsOrPage, limit, status, eventId, eventTitle);
 
   const response = await axiosClient.get<MyTicketsListResponse>("/my-tickets", {
     params: {
@@ -260,6 +265,7 @@ async function getMyTickets(
       limit: params.limit,
       ...(params.status ? { status: params.status } : {}),
       ...(params.event_id ? { event_id: params.event_id } : {}),
+      ...(params.event_title ? { event_title: params.event_title } : {}),
     },
   });
 

@@ -42,6 +42,16 @@ function normalizePhone(value: string) {
   return `+62${digits}`;
 }
 
+function getTicketRemaining(ticket: {
+  quota: number;
+  sold?: number | null;
+  booked?: number | null;
+}) {
+  const sold = ticket.sold ?? 0;
+  const booked = ticket.booked ?? 0;
+  return Math.max(0, ticket.quota - sold - booked);
+}
+
 export default function CheckoutPage({
   params,
   searchParams,
@@ -125,6 +135,18 @@ export default function CheckoutPage({
 
   const onSubmit = async (data: CheckoutFormValues) => {
     if (!event || !ticket_id) return;
+    const selectedTicket = event.ticket_categories?.find((t) => t.id === ticket_id);
+    if (selectedTicket) {
+      const remaining = getTicketRemaining(selectedTicket);
+      if (remaining <= 0) {
+        toast.error("Tiket ini sudah habis.");
+        return;
+      }
+      if (qty > remaining) {
+        toast.error(`Sisa tiket hanya ${remaining}.`);
+        return;
+      }
+    }
     setIsLoading(true);
 
     try {
@@ -204,7 +226,8 @@ export default function CheckoutPage({
                 name: "Tiket Gratis",
                 price: 0,
                 quota: event.max_capacity || 0,
-                booked: event.total_sold || 0,
+                booked: 0,
+                sold: event.total_sold || 0,
                 description: "Tiket masuk untuk event ini.",
             },
         ]

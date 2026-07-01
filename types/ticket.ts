@@ -89,4 +89,5 @@ export interface GetMyTicketsParams {
   limit?: number;
   status?: TicketStatus | string;
   event_id?: string;
+  event_title?: string;
 }

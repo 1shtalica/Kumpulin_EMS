@@ -1,5 +1,5 @@
 // ============================================================
-// Event type — disesuaikan dengan actual BE response (EventResponse DTO)
+// Event type - disesuaikan dengan actual BE response (EventResponse DTO)
 // Endpoint: GET /api/v1/events/:slug  &  GET /api/v1/organizer/events/:id
 // ============================================================
 export interface Event {
@@ -46,7 +46,8 @@ export interface Event {
     name: string;
     price: number;
     quota: number;
-    booked: number;  
+    booked: number;
+    sold: number;
     description: string;
     start_date_time?: string | null; 
     end_date_time?: string | null;  
@@ -120,7 +121,7 @@ export interface GetEventsParams {
   province?: string;
   price?: string;
   sort?: string;
-  // 🌟 tunggu api siap
+  // TODO: tunggu api siap
 }
 
 // ============================================================
