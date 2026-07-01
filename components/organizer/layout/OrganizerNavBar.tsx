@@ -69,6 +69,11 @@ export const menuItems: NavItem[] = [
         icon: Users,
     },
     {
+        title: "Keuangan",
+        href: "/organizer/finance",
+        icon: Wallet,
+    },
+    {
         title: "Profil Organizer",
         href: "/organizer/profile",
         icon: User,
