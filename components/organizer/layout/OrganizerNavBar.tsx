@@ -16,6 +16,7 @@ import {
     LucideIcon,
     Home,
     Settings,
+    Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth-store";
