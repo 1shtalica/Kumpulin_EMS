@@ -177,7 +177,7 @@ export default function CheckoutPage({
         return;
       }
       
-      router.push(`/payment/${orderData.order.id}`);
+      router.push(`/orders/${orderData.order.id}`);
     } catch (err: unknown) {
       const error = err as {
         response?: { data?: { message?: string } };
