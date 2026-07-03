@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { PaymentTimer } from "@/components/payment/PaymentTimer";
 import { QRCodeDisplay } from "@/components/user/my-ticket/QRCodeDisplay";
 import { OrderService } from "@/services/order-service";
+import { saveLastOrderId } from "@/lib/order-session";
 import type { OrderDataResponse, TicketSummaryInOrder } from "@/types/order";
 
 const POLL_INTERVAL_MS = 4000;
@@ -289,6 +290,7 @@ export default function OrderStatusPage({
   };
 
   useEffect(() => {
+    saveLastOrderId(order_id);
     loadOrder();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order_id]);

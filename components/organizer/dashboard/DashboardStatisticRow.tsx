@@ -1,12 +1,18 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
+    AlertCircle,
     ArrowUpRight,
     Banknote,
-    CalendarCheck,
+    CalendarCheck2,
     CheckCircle2,
     Clock3,
-    MapPin,
+    FileText,
+    MessageSquareText,
     Plus,
+    RefreshCw,
     ScanLine,
     Ticket,
     Users,
@@ -14,159 +20,379 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { OrganizerService } from "@/services/organizer-service";
+import { formatFinanceCurrency } from "@/components/organizer/finance/finance-format";
+import type {
+    OrganizerDashboardData,
+    OrganizerEventPerformance,
+    OrganizerSalesByTicketCategory,
+} from "@/types/organizer";
+import { cn } from "@/lib/utils";
 
-const stats = [
-    {
-        label: "Pendapatan bulan ini",
-        value: "Rp 86,4 jt",
-        helper: "+18,2% dari bulan lalu",
-        icon: Banknote,
-        tone: "text-primary bg-primary/10",
-    },
-    {
-        label: "Tiket terjual",
-        value: "1.248",
-        helper: "74% dari kapasitas aktif",
-        icon: Ticket,
-        tone: "text-success bg-success-light/70",
-    },
-    {
-        label: "Event aktif",
-        value: "12",
-        helper: "4 event berlangsung pekan ini",
-        icon: CalendarCheck,
-        tone: "text-info bg-info-light/80",
-    },
-    {
-        label: "Check-in hari ini",
-        value: "326",
-        helper: "42 tiket menunggu validasi",
-        icon: ScanLine,
-        tone: "text-warning-hover bg-warning-light/80",
-    },
-];
+const numberFormatter = new Intl.NumberFormat("id-ID");
+const dateFormatter = new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
+});
+const timeFormatter = new Intl.DateTimeFormat("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Jakarta",
+});
 
-const weeklySales = [
-    { day: "Sen", value: 42 },
-    { day: "Sel", value: 58 },
-    { day: "Rab", value: 76 },
-    { day: "Kam", value: 64 },
-    { day: "Jum", value: 88 },
-    { day: "Sab", value: 94 },
-    { day: "Min", value: 71 },
-];
+const formatNumber = (value: number) => numberFormatter.format(value || 0);
+const formatRate = (value: number) => `${numberFormatter.format(value || 0)}%`;
+const clampRate = (value: number) => Math.min(Math.max(value || 0, 0), 100);
 
-const priorityEvents = [
-    {
-        title: "Jakarta Creative Meetup 2026",
-        status: "Published",
-        date: "12 Mei",
-        location: "Jakarta Selatan",
-        sold: 486,
-        capacity: 600,
-        revenue: "Rp 38,8 jt",
-    },
-    {
-        title: "Kelas UI/UX Portfolio Review",
-        status: "Ongoing",
-        date: "16 Mei",
-        location: "Online",
-        sold: 212,
-        capacity: 240,
-        revenue: "Rp 12,7 jt",
-    },
-    {
-        title: "Bandung Founder Night",
-        status: "Draft",
-        date: "22 Mei",
-        location: "Bandung",
-        sold: 0,
-        capacity: 180,
-        revenue: "Rp 0",
-    },
-];
+function WorkspaceTexture() {
+    return (
+        <div
+            className="pointer-events-none absolute inset-0"
+            aria-hidden="true"
+            style={{
+                backgroundImage:
+                    "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+                backgroundSize: "28px 28px",
+                opacity: 0.16,
+            }}
+        />
+    );
+}
 
-const recentTransactions = [
-    {
-        buyer: "Nadia Putri",
-        event: "Jakarta Creative Meetup",
-        amount: "Rp 150.000",
-        status: "Lunas",
-        time: "10 menit lalu",
-    },
-    {
-        buyer: "Rizky Ardiansyah",
-        event: "Kelas UI/UX Portfolio Review",
-        amount: "Rp 75.000",
-        status: "Lunas",
-        time: "28 menit lalu",
-    },
-    {
-        buyer: "Dewi Lestari",
-        event: "Bandung Founder Night",
-        amount: "Rp 125.000",
-        status: "Menunggu",
-        time: "1 jam lalu",
-    },
-    {
-        buyer: "Arman Hakim",
-        event: "Jakarta Creative Meetup",
-        amount: "Rp 300.000",
-        status: "Lunas",
-        time: "2 jam lalu",
-    },
-];
+function DashboardShell({ children }: { children: React.ReactNode }) {
+    return (
+        <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
+            <WorkspaceTexture />
+            <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5">
+                {children}
+            </div>
+        </main>
+    );
+}
 
-const tasks = [
-    {
-        title: "Lengkapi rekening pencairan",
-        description: "Payout Jakarta Creative Meetup siap diproses setelah rekening diverifikasi.",
-        due: "Hari ini",
-    },
-    {
-        title: "Aktifkan sesi check-in",
-        description: "Kelas UI/UX Portfolio Review mulai dalam 2 hari.",
-        due: "Besok",
-    },
-    {
-        title: "Terbitkan draft event",
-        description: "Bandung Founder Night sudah punya 86 pengikut yang menunggu tiket.",
-        due: "22 Mei",
-    },
-];
+function DashboardSkeleton() {
+    return (
+        <DashboardShell>
+            <Skeleton className="h-48 rounded-2xl bg-slate-200/80" />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                    <Skeleton
+                        key={index}
+                        className="h-36 rounded-2xl bg-slate-200/80"
+                    />
+                ))}
+            </div>
+            <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+                <Skeleton className="h-96 rounded-2xl bg-slate-200/80" />
+                <Skeleton className="h-96 rounded-2xl bg-slate-200/80" />
+            </div>
+        </DashboardShell>
+    );
+}
 
-const audienceSegments = [
-    { label: "Komunitas", value: 44 },
-    { label: "Referral", value: 27 },
-    { label: "Pencarian", value: 18 },
-    { label: "Sosial", value: 11 },
-];
+function MetricCell({ label, value }: { label: string; value: string }) {
+    return (
+        <div>
+            <p className="text-xs font-medium text-slate-500">{label}</p>
+            <p className="mt-1 truncate font-semibold text-slate-950">{value}</p>
+        </div>
+    );
+}
 
-const formatPercent = (value: number, capacity: number) =>
-    capacity > 0 ? Math.round((value / capacity) * 100) : 0;
+function ProgressLine({
+    label,
+    valueLabel,
+    value,
+    className,
+}: {
+    label: string;
+    valueLabel: string;
+    value: number;
+    className: string;
+}) {
+    return (
+        <div>
+            <div className="mb-2 flex items-center justify-between gap-3 text-xs font-medium">
+                <span className="text-slate-500">{label}</span>
+                <span className="text-slate-900">{valueLabel}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div
+                    className={cn("h-full rounded-full", className)}
+                    style={{ width: `${clampRate(value)}%` }}
+                />
+            </div>
+        </div>
+    );
+}
+
+function EmptyPanel({
+    icon: Icon,
+    title,
+    description,
+}: {
+    icon: typeof AlertCircle;
+    title: string;
+    description: string;
+}) {
+    return (
+        <div className="flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-6 text-center">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary">
+                <Icon className="h-5 w-5" />
+            </div>
+            <p className="text-[13px] font-semibold text-slate-950">{title}</p>
+            <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-500">
+                {description}
+            </p>
+        </div>
+    );
+}
+
+function statusLabel(status: string) {
+    const labels: Record<string, string> = {
+        draft: "Draf",
+        published: "Terbit",
+        cancelled: "Dibatalkan",
+        completed: "Selesai",
+    };
+
+    return labels[status] ?? status;
+}
+
+function statusClassName(status: string) {
+    if (status === "published") return "border-primary/15 bg-primary-light text-primary";
+    if (status === "draft") return "border-slate-200 bg-slate-100 text-slate-500";
+    if (status === "cancelled") return "border-danger/15 bg-danger-light text-danger";
+    return "border-success/15 bg-success-light text-success-hover";
+}
+
+function formatEventDate(startDate: string, endDate: string) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    return `${dateFormatter.format(start)}, ${timeFormatter.format(start)} - ${timeFormatter.format(end)}`;
+}
+
+function EventPerformanceRow({ event }: { event: OrganizerEventPerformance }) {
+    return (
+        <article className="p-4 transition-colors hover:bg-slate-50/70">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-slate-950">
+                            {event.title}
+                        </h3>
+                        <Badge
+                            variant="outline"
+                            className={cn(
+                                "gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                                statusClassName(event.status),
+                            )}
+                        >
+                            <span className="size-1.5 rounded-full bg-current" />
+                            {statusLabel(event.status)}
+                        </Badge>
+                    </div>
+                    <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        {formatEventDate(event.event_start_date, event.event_end_date)}
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-[13px] sm:grid-cols-4 lg:min-w-[480px]">
+                    <MetricCell
+                        label="Tiket"
+                        value={`${formatNumber(event.tickets_sold)}/${formatNumber(event.capacity)}`}
+                    />
+                    <MetricCell label="Pendapatan" value={formatFinanceCurrency(event.revenue)} />
+                    <MetricCell label="Diterbitkan" value={formatNumber(event.issued_tickets)} />
+                    <MetricCell
+                        label="Presensi"
+                        value={`${formatNumber(event.checked_in_tickets)} (${formatRate(event.checkin_rate)})`}
+                    />
+                </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <ProgressLine
+                    label="Okupansi"
+                    valueLabel={formatRate(event.occupancy_rate)}
+                    value={event.occupancy_rate}
+                    className="bg-primary"
+                />
+                <ProgressLine
+                    label="Presensi"
+                    valueLabel={formatRate(event.checkin_rate)}
+                    value={event.checkin_rate}
+                    className="bg-success"
+                />
+            </div>
+        </article>
+    );
+}
+function TicketCategoryRow({
+    category,
+    maxSold,
+}: {
+    category: OrganizerSalesByTicketCategory;
+    maxSold: number;
+}) {
+    const width = maxSold > 0 ? (category.quantity_sold / maxSold) * 100 : 0;
+
+    return (
+        <div className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                    <p className="truncate text-[13px] font-semibold text-slate-950">
+                        {category.name}
+                    </p>
+                    <p className="mt-1 truncate text-xs text-slate-500">
+                        {category.event_title}
+                    </p>
+                </div>
+                <div className="shrink-0 text-right">
+                    <p className="text-[13px] font-semibold text-slate-950">
+                        {formatNumber(category.quantity_sold)}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">terjual</p>
+                </div>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${width}%` }}
+                />
+            </div>
+            <p className="mt-3 text-xs font-semibold text-slate-700">
+                {formatFinanceCurrency(category.revenue)}
+            </p>
+        </div>
+    );
+}
 
 export default function DashboardStatisticRow() {
-    return (
-        <div className="flex flex-col gap-6">
-            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 text-white shadow-sm">
-                <div className="grid gap-6 p-5 md:grid-cols-[1.35fr_0.65fr] md:p-7">
-                    <div className="flex flex-col justify-between gap-8">
-                        <div className="space-y-3">
-                            <Badge className="w-fit rounded-full border border-white/10 bg-white/10 px-3 py-1 text-white hover:bg-white/10">
-                                Ringkasan operasional
-                            </Badge>
-                            <div className="max-w-2xl space-y-2">
-                                <h2 className="text-xl font-bold leading-tight text-white md:text-2xl">
-                                    Dashboard organizer terisi untuk memantau event, tiket, dan payout.
-                                </h2>
-                                <p className="max-w-xl text-xs leading-relaxed text-slate-300 md:text-sm">
-                                    Data dummy ini memberi gambaran lengkap sambil menunggu endpoint statistik organizer siap dipakai.
-                                </p>
+    const [dashboard, setDashboard] = useState<OrganizerDashboardData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadDashboard = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const data = await OrganizerService.getDashboard();
+            setDashboard(data);
+        } catch (err) {
+            console.error("Failed to load organizer dashboard", err);
+            setError("Dasbor organizer belum bisa dimuat.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadDashboard();
+    }, []);
+
+    const maxCategorySold = useMemo(() => {
+        return Math.max(
+            0,
+            ...(dashboard?.sales.sales_by_ticket_category.map(
+                (category) => category.quantity_sold,
+            ) ?? []),
+        );
+    }, [dashboard]);
+
+    if (isLoading) return <DashboardSkeleton />;
+
+    if (error || !dashboard) {
+        return (
+            <DashboardShell>
+                <div className="rounded-2xl border border-danger/20 bg-white p-5 shadow-sm shadow-slate-900/5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-danger-light text-danger">
+                                <AlertCircle className="h-5 w-5" />
                             </div>
+                            <div>
+                                <h2 className="text-sm font-semibold text-slate-950">
+                                    Gagal memuat dasbor
+                                </h2>
+                                <p className="mt-1 text-xs leading-relaxed text-slate-500">{error}</p>
+                            </div>
+                        </div>
+                        <Button
+                            type="button"
+                            className="h-10 rounded-xl text-sm font-semibold"
+                            onClick={loadDashboard}
+                        >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Muat ulang
+                        </Button>
+                    </div>
+                </div>
+            </DashboardShell>
+        );
+    }
+
+    const { overview, event_performance, sales, finance, community } = dashboard;
+    const totalBalance =
+        finance.available_amount +
+        finance.pending_amount +
+        finance.requested_withdrawal_amount;
+    const stats = [
+        {
+            label: "Total pendapatan",
+            value: formatFinanceCurrency(overview.total_revenue, overview.currency),
+            helper: `${formatNumber(sales.paid_orders)} pesanan lunas dari ${formatNumber(sales.total_orders)} pesanan`,
+            icon: Banknote,
+            tone: "bg-primary-light text-primary",
+        },
+        {
+            label: "Tiket terjual",
+            value: formatNumber(overview.total_tickets_sold),
+            helper: `${formatNumber(overview.total_capacity)} total kapasitas`,
+            icon: Ticket,
+            tone: "bg-success-light text-success-hover",
+        },
+        {
+            label: "Event terbit",
+            value: formatNumber(overview.published_events),
+            helper: `${formatNumber(overview.upcoming_events)} mendatang, ${formatNumber(overview.past_events)} selesai`,
+            icon: CalendarCheck2,
+            tone: "bg-info-light text-info",
+        },
+        {
+            label: "Saldo tersedia",
+            value: formatFinanceCurrency(finance.available_amount, finance.currency),
+            helper: `${formatFinanceCurrency(finance.pending_amount, finance.currency)} tertahan`,
+            icon: WalletCards,
+            tone: "bg-warning-light text-warning-hover",
+        },
+    ];
+
+    return (
+        <DashboardShell>
+            <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
+                <div className="grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
+                    <div className="flex flex-col justify-between gap-6">
+                        <div>
+                            <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                                Ruang kerja organizer
+                            </p>
+                            <h2 className="mt-2 text-2xl font-semibold leading-tight text-slate-950 md:text-3xl">
+                                Dasbor
+                            </h2>
+                            <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600">
+                                Pantau performa event, penjualan tiket, komunitas,
+                                dan saldo organizer dari satu tempat.
+                            </p>
                         </div>
 
                         <div className="flex flex-wrap gap-3">
-                            <Button asChild className="rounded-full bg-white text-slate-950 hover:bg-slate-100">
+                            <Button asChild className="h-10 rounded-xl text-sm font-semibold">
                                 <Link href="/organizer/create-event">
                                     <Plus className="mr-2 h-4 w-4" />
                                     Buat Event
@@ -175,36 +401,40 @@ export default function DashboardStatisticRow() {
                             <Button
                                 asChild
                                 variant="outline"
-                                className="rounded-full border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+                                className="h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
                             >
-                                <Link href="/organizer/my-event">
-                                    Lihat Event
+                                <Link href="/organizer/finance">
+                                    Keuangan
                                     <ArrowUpRight className="ml-2 h-4 w-4" />
                                 </Link>
                             </Button>
                         </div>
                     </div>
 
-                    <div className="rounded-xl border border-white/10 bg-white/8 p-5">
-                        <div className="mb-5 flex items-center justify-between">
+                    <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-4">
+                        <div className="flex items-start justify-between gap-4">
                             <div>
-                                <p className="text-xs font-medium uppercase text-slate-400">Target penjualan</p>
-                                <p className="mt-1 text-2xl font-bold text-white">82%</p>
+                                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                                    Okupansi keseluruhan
+                                </p>
+                                <p className="mt-2 text-xl font-semibold leading-none tabular-nums text-slate-950">
+                                    {formatRate(overview.overall_occupancy_rate)}
+                                </p>
                             </div>
-                            <WalletCards className="h-8 w-8 text-slate-300" />
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary">
+                                <ScanLine className="h-5 w-5" />
+                            </div>
                         </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                            <div className="h-full w-[82%] rounded-full bg-white" />
+                        <div className="mt-5 h-2 overflow-hidden rounded-full bg-white">
+                            <div
+                                className="h-full rounded-full bg-primary"
+                                style={{ width: `${clampRate(overview.overall_occupancy_rate)}%` }}
+                            />
                         </div>
-                        <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <p className="text-slate-400">Terjual</p>
-                                <p className="font-semibold text-white">1.248 tiket</p>
-                            </div>
-                            <div>
-                                <p className="text-slate-400">Target</p>
-                                <p className="font-semibold text-white">1.520 tiket</p>
-                            </div>
+                        <div className="mt-5 grid grid-cols-3 gap-3 text-sm">
+                            <MetricCell label="Event" value={formatNumber(overview.total_events)} />
+                            <MetricCell label="Terjual" value={formatNumber(overview.total_tickets_sold)} />
+                            <MetricCell label="Draf" value={formatNumber(overview.draft_events)} />
                         </div>
                     </div>
                 </div>
@@ -217,229 +447,237 @@ export default function DashboardStatisticRow() {
                     return (
                         <div
                             key={item.label}
-                            className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                            className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5"
                         >
                             <div className="mb-5 flex items-center justify-between gap-4">
-                                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.tone}`}>
+                                <div
+                                    className={cn(
+                                        "flex h-11 w-11 items-center justify-center rounded-xl",
+                                        item.tone,
+                                    )}
+                                >
                                     <Icon className="h-5 w-5" />
                                 </div>
-                                <Badge variant="outline" className="rounded-full border-slate-200 text-xs text-slate-500">
-                                    Mei 2026
-                                </Badge>
                             </div>
-                            <p className="text-sm font-medium text-slate-500">{item.label}</p>
-                            <p className="mt-2 text-2xl font-bold text-slate-950">{item.value}</p>
-                            <p className="mt-2 text-xs font-medium text-slate-500">{item.helper}</p>
+                            <p className="text-xs font-medium text-slate-500">{item.label}</p>
+                            <p className="mt-2 text-xl font-semibold leading-none tabular-nums text-slate-950">
+                                {item.value}
+                            </p>
+                            <p className="mt-2 text-xs font-medium leading-relaxed text-slate-500">
+                                {item.helper}
+                            </p>
                         </div>
                     );
                 })}
             </section>
-
-            <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <section className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+                <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5">
+                    <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h3 className="text-lg font-semibold text-slate-950">Penjualan 7 hari</h3>
-                            <p className="text-sm text-slate-500">Jumlah tiket terjual dari semua event aktif.</p>
+                            <h2 className="text-lg font-semibold text-slate-950">
+                                Performa event
+                            </h2>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                Tiket, pendapatan, okupansi, dan presensi per event.
+                            </p>
                         </div>
-                        <Badge className="w-fit rounded-full bg-success-light text-success-hover hover:bg-success-light">
-                            +12,4%
-                        </Badge>
-                    </div>
-
-                    <div className="flex h-64 items-end gap-3">
-                        {weeklySales.map((item) => (
-                            <div key={item.day} className="flex h-full flex-1 flex-col justify-end gap-3">
-                                <div className="flex flex-1 items-end rounded-full bg-slate-100">
-                                    <div
-                                        className="w-full rounded-full bg-primary transition-all duration-300"
-                                        style={{ height: `${item.value}%` }}
-                                    />
-                                </div>
-                                <span className="text-center text-xs font-medium text-slate-500">{item.day}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="mb-6">
-                        <h3 className="text-lg font-semibold text-slate-950">Sumber audiens</h3>
-                        <p className="text-sm text-slate-500">Distribusi pendaftar berdasarkan kanal masuk.</p>
-                    </div>
-
-                    <div className="space-y-5">
-                        {audienceSegments.map((segment) => (
-                            <div key={segment.label}>
-                                <div className="mb-2 flex items-center justify-between text-sm">
-                                    <span className="font-medium text-slate-700">{segment.label}</span>
-                                    <span className="font-semibold text-slate-950">{segment.value}%</span>
-                                </div>
-                                <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                                    <div
-                                        className="h-full rounded-full bg-slate-900"
-                                        style={{ width: `${segment.value}%` }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="flex items-start gap-3">
-                            <Users className="mt-0.5 h-5 w-5 text-primary" />
-                            <div>
-                                <p className="text-sm font-semibold text-slate-950">1.876 calon peserta</p>
-                                <p className="mt-1 text-sm leading-5 text-slate-500">
-                                    312 orang menyimpan event dan belum checkout. Prioritaskan broadcast komunitas pekan ini.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-                <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                    <div className="flex items-center justify-between gap-4 border-b border-slate-100 p-5">
-                        <div>
-                            <h3 className="text-lg font-semibold text-slate-950">Event prioritas</h3>
-                            <p className="text-sm text-slate-500">Event yang paling perlu dipantau oleh organizer.</p>
-                        </div>
-                        <Button asChild variant="outline" className="rounded-full">
-                            <Link href="/organizer/my-event">Kelola</Link>
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="h-10 w-fit rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+                        >
+                            <Link href="/organizer/my-event">
+                                Kelola Event
+                                <ArrowUpRight className="ml-2 h-4 w-4" />
+                            </Link>
                         </Button>
                     </div>
 
-                    <div className="divide-y divide-slate-100">
-                        {priorityEvents.map((event) => {
-                            const progress = formatPercent(event.sold, event.capacity);
-
-                            return (
-                                <div key={event.title} className="p-5">
-                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                                        <div className="min-w-0">
-                                            <div className="mb-2 flex flex-wrap items-center gap-2">
-                                                <h4 className="font-semibold text-slate-950">{event.title}</h4>
-                                                <Badge
-                                                    variant="outline"
-                                                    className="rounded-full border-slate-200 text-xs text-slate-500"
-                                                >
-                                                    {event.status}
-                                                </Badge>
-                                            </div>
-                                            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-                                                <span className="flex items-center gap-1.5">
-                                                    <Clock3 className="h-4 w-4" />
-                                                    {event.date}
-                                                </span>
-                                                <span className="flex items-center gap-1.5">
-                                                    <MapPin className="h-4 w-4" />
-                                                    {event.location}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-6 text-sm sm:grid-cols-3 lg:min-w-[330px]">
-                                            <div>
-                                                <p className="text-slate-500">Terjual</p>
-                                                <p className="mt-1 font-semibold text-slate-950">
-                                                    {event.sold}/{event.capacity}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-slate-500">Progress</p>
-                                                <p className="mt-1 font-semibold text-slate-950">{progress}%</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-slate-500">Revenue</p>
-                                                <p className="mt-1 font-semibold text-slate-950">{event.revenue}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
-                                        <div
-                                            className="h-full rounded-full bg-primary"
-                                            style={{ width: `${progress}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="mb-5">
-                        <h3 className="text-lg font-semibold text-slate-950">Tugas organizer</h3>
-                        <p className="text-sm text-slate-500">Antrian kerja yang berpengaruh ke event aktif.</p>
-                    </div>
-
-                    <div className="space-y-4">
-                        {tasks.map((task) => (
-                            <div key={task.title} className="flex gap-3">
-                                <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                                    <CheckCircle2 className="h-4 w-4" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <p className="font-semibold text-slate-950">{task.title}</p>
-                                        <span className="shrink-0 text-xs font-medium text-slate-500">{task.due}</span>
-                                    </div>
-                                    <p className="mt-1 text-sm leading-5 text-slate-500">{task.description}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between gap-4 border-b border-slate-100 p-5">
-                    <div>
-                        <h3 className="text-lg font-semibold text-slate-950">Transaksi terbaru</h3>
-                        <p className="text-sm text-slate-500">Pembayaran terakhir dari seluruh event organizer.</p>
-                    </div>
-                    <Badge variant="outline" className="rounded-full border-slate-200 text-slate-500">
-                        Live dummy
-                    </Badge>
-                </div>
-
-                <div className="overflow-x-auto">
-                    <table className="w-full min-w-[680px] text-left text-sm">
-                        <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase text-slate-500">
-                            <tr>
-                                <th className="px-5 py-3 font-semibold">Pembeli</th>
-                                <th className="px-5 py-3 font-semibold">Event</th>
-                                <th className="px-5 py-3 font-semibold">Nominal</th>
-                                <th className="px-5 py-3 font-semibold">Status</th>
-                                <th className="px-5 py-3 font-semibold">Waktu</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {recentTransactions.map((transaction) => (
-                                <tr key={`${transaction.buyer}-${transaction.time}`} className="hover:bg-slate-50/70">
-                                    <td className="px-5 py-4 font-semibold text-slate-950">{transaction.buyer}</td>
-                                    <td className="px-5 py-4 text-slate-600">{transaction.event}</td>
-                                    <td className="px-5 py-4 font-semibold text-slate-950">{transaction.amount}</td>
-                                    <td className="px-5 py-4">
-                                        <Badge
-                                            className={
-                                                transaction.status === "Lunas"
-                                                    ? "rounded-full bg-success-light text-success-hover hover:bg-success-light"
-                                                    : "rounded-full bg-warning-light text-warning-hover hover:bg-warning-light"
-                                            }
-                                        >
-                                            {transaction.status}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-5 py-4 text-slate-500">{transaction.time}</td>
-                                </tr>
+                    {event_performance.length > 0 ? (
+                        <div className="divide-y divide-slate-100">
+                            {event_performance.map((event) => (
+                                <EventPerformanceRow key={event.event_id} event={event} />
                             ))}
-                        </tbody>
-                    </table>
+                        </div>
+                    ) : (
+                        <div className="p-4">
+                            <EmptyPanel
+                                icon={CalendarCheck2}
+                                title="Belum ada event"
+                                description="Event yang dibuat akan muncul di sini setelah tersedia dari API."
+                            />
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-5">
+                    <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+                        <div className="mb-5 flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-sm font-semibold text-slate-950">
+                                    Konversi pesanan
+                                </h2>
+                                <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                    Status pesanan dari semua event.
+                                </p>
+                            </div>
+                            <Badge className="rounded-full border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary">
+                                {formatRate(sales.order_conversion_rate)}
+                            </Badge>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                            <div
+                                className="h-full rounded-full bg-primary"
+                                style={{ width: `${clampRate(sales.order_conversion_rate)}%` }}
+                            />
+                        </div>
+                        <div className="mt-5 grid grid-cols-2 gap-3">
+                            <MetricCell label="Lunas" value={formatNumber(sales.paid_orders)} />
+                            <MetricCell label="Kedaluwarsa" value={formatNumber(sales.expired_orders)} />
+                            <MetricCell label="Menunggu" value={formatNumber(sales.pending_orders)} />
+                            <MetricCell label="Dibatalkan" value={formatNumber(sales.cancelled_orders)} />
+                        </div>
+                    </section>
+
+                    <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+                        <div className="mb-5 flex items-start justify-between gap-4">
+                            <div>
+                                <h2 className="text-sm font-semibold text-slate-950">
+                                    Komunitas
+                                </h2>
+                                <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                    Aktivitas komunitas organizer.
+                                </p>
+                            </div>
+                            <Users className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <MetricCell label="Pengikut" value={formatNumber(community.followers)} />
+                            <MetricCell label="Anggota" value={formatNumber(community.members)} />
+                            <MetricCell label="Postingan" value={formatNumber(community.posts)} />
+                            <MetricCell label="Komentar" value={formatNumber(community.comments)} />
+                        </div>
+                    </section>
                 </div>
             </section>
-        </div>
+
+            <section className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+                    <div className="mb-5 flex items-start justify-between gap-4">
+                        <div>
+                            <h2 className="text-lg font-semibold text-slate-950">
+                                Saldo organizer
+                            </h2>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                Saldo tersedia, tertahan, dan pencairan.
+                            </p>
+                        </div>
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+                        >
+                            <Link href="/organizer/finance/withdrawals">
+                                Tarik saldo
+                                <ArrowUpRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-4">
+                        <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                            Total saldo tercatat
+                        </p>
+                        <p className="mt-2 text-xl font-semibold leading-none tabular-nums text-slate-950">
+                            {formatFinanceCurrency(totalBalance, finance.currency)}
+                        </p>
+                    </div>
+
+                    <div className="mt-4 space-y-4">
+                        <ProgressLine
+                            label="Tersedia"
+                            valueLabel={formatFinanceCurrency(finance.available_amount, finance.currency)}
+                            value={totalBalance > 0 ? (finance.available_amount / totalBalance) * 100 : 0}
+                            className="bg-success"
+                        />
+                        <ProgressLine
+                            label="Tertahan"
+                            valueLabel={formatFinanceCurrency(finance.pending_amount, finance.currency)}
+                            value={totalBalance > 0 ? (finance.pending_amount / totalBalance) * 100 : 0}
+                            className="bg-warning-hover"
+                        />
+                        <ProgressLine
+                            label="Pencairan diajukan"
+                            valueLabel={formatFinanceCurrency(
+                                finance.requested_withdrawal_amount,
+                                finance.currency,
+                            )}
+                            value={
+                                totalBalance > 0
+                                    ? (finance.requested_withdrawal_amount / totalBalance) * 100
+                                    : 0
+                            }
+                            className="bg-primary"
+                        />
+                    </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+                    <div className="mb-5 flex items-start justify-between gap-4">
+                        <div>
+                            <h2 className="text-lg font-semibold text-slate-950">
+                                Penjualan kategori tiket
+                            </h2>
+                            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                Kategori tiket dengan penjualan dari pesanan lunas.
+                            </p>
+                        </div>
+                        <MessageSquareText className="h-5 w-5 text-primary" />
+                    </div>
+
+                    {sales.sales_by_ticket_category.length > 0 ? (
+                        <div className="grid gap-3 md:grid-cols-2">
+                            {sales.sales_by_ticket_category.map((category) => (
+                                <TicketCategoryRow
+                                    key={category.ticket_category_id}
+                                    category={category}
+                                    maxSold={maxCategorySold}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyPanel
+                            icon={FileText}
+                            title="Belum ada kategori terjual"
+                            description="Kategori tiket akan tampil setelah ada pesanan lunas."
+                        />
+                    )}
+                </div>
+            </section>
+
+            <section className="grid gap-4 md:grid-cols-3">
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+                    <CheckCircle2 className="mb-4 h-5 w-5 text-success-hover" />
+                    <p className="text-xs font-medium text-slate-500">Event terbit</p>
+                    <p className="mt-2 text-xl font-semibold leading-none tabular-nums text-slate-950">
+                        {formatNumber(overview.published_events)}
+                    </p>
+                </div>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+                    <Users className="mb-4 h-5 w-5 text-primary" />
+                    <p className="text-xs font-medium text-slate-500">Anggota komunitas</p>
+                    <p className="mt-2 text-xl font-semibold leading-none tabular-nums text-slate-950">
+                        {formatNumber(overview.community_members)}
+                    </p>
+                </div>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+                    <FileText className="mb-4 h-5 w-5 text-warning-hover" />
+                    <p className="text-xs font-medium text-slate-500">Postingan komunitas</p>
+                    <p className="mt-2 text-xl font-semibold leading-none tabular-nums text-slate-950">
+                        {formatNumber(overview.community_posts)}
+                    </p>
+                </div>
+            </section>
+        </DashboardShell>
     );
 }

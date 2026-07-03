@@ -1,4 +1,6 @@
 import type {
+  OrganizerDashboardData,
+  OrganizerDashboardResponse,
   OrganizerProfileData,
   OrganizerProfileResponse,
 } from "@/types/organizer";
@@ -9,7 +11,7 @@ import type {
 } from "@/types/community";
 import axiosClient from "@/lib/axios-client";
 
-// ─── Feature flag ────────────────────────────────────────────────────────────
+// Feature flag
 // Set to `true` to use the local Next.js mock routes for getting own profile.
 // The public profile fetching is already using the real API!
 type OrganizerMutationResponse<T = unknown> = {
@@ -20,7 +22,17 @@ type OrganizerMutationResponse<T = unknown> = {
 
 export const OrganizerService = {
   /**
-   * GET /organizer/profile  (real — own profile, requires auth)
+   * GET /organizer/dashboard
+   * Returns the organizer operational dashboard overview.
+   */
+  async getDashboard(): Promise<OrganizerDashboardData> {
+    const response = await axiosClient.get<OrganizerDashboardResponse>(
+      "/organizer/dashboard",
+    );
+    return response.data.data;
+  },
+  /**
+   * GET /organizer/profile  (real own profile, requires auth)
    * GET /api/organizer/profile  (mock)
    */
   async getProfile(): Promise<OrganizerProfileData> {
@@ -96,7 +108,7 @@ export const OrganizerService = {
   },
 
   /**
-   * GET /organizers/profile/:slug  (real — public profile by organizer slug)
+   * GET /organizers/profile/:slug  (real public profile by organizer slug)
    * This maps the backend's Event response into the expected OrganizerProfileData shape
    */
   async getProfileBySlug(slug: string): Promise<OrganizerProfileData> {
@@ -168,4 +180,3 @@ export const OrganizerService = {
     }
   },
 };
-
