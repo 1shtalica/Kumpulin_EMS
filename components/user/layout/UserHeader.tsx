@@ -15,6 +15,7 @@ export default function UserHeader({ className }: UserHeaderProps) {
   const pathname = usePathname();
 
   const getPageTitle = () => {
+    if (pathname.startsWith("/my-orders")) return "Riwayat Pesanan";
     if (pathname.startsWith("/user/my-ticket")) return "Tiket Saya";
     if (pathname.startsWith("/user/following")) return "Mengikuti";
     if (pathname.startsWith("/user/wishlist")) return "Wishlist Saya";
@@ -30,7 +31,7 @@ export default function UserHeader({ className }: UserHeaderProps) {
         className
       )}
     >
-      {/* Burger — membuka Sheet mobile */}
+      {/* Burger â€” membuka Sheet mobile */}
       <SheetTrigger asChild>
         <Button
           variant="ghost"
@@ -54,3 +55,5 @@ export default function UserHeader({ className }: UserHeaderProps) {
     </header>
   );
 }
+
+

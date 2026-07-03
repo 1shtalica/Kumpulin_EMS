@@ -7,6 +7,7 @@ import {
     ChevronLeft,
     ChevronRight,
     ChevronsUpDown,
+    ClipboardList,
     BookmarkCheck,
     Heart,
     Home,
@@ -46,6 +47,11 @@ interface UserNavBarProps {
 }
 
 export const menuItems: NavItem[] = [
+    {
+        title: "Riwayat Pesanan",
+        href: "/my-orders",
+        icon: ClipboardList,
+    },
     {
         title: "Tiket Saya",
         href: "/user/my-ticket",
@@ -344,3 +350,6 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
         </TooltipProvider>
     );
 }
+
+
+

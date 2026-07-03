@@ -191,7 +191,7 @@ function SectionBlock({
 
 function LoadingState() {
     return (
-        <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
+        <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
             <div className="mx-auto w-full max-w-6xl space-y-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
                     <div className="h-4 w-32 animate-pulse rounded-full bg-slate-100" />
@@ -283,7 +283,7 @@ export default function MyTicketDetailPage({
 
     if (errorMessage) {
         return (
-            <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
+            <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
                 <div className="mx-auto w-full max-w-4xl rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm shadow-slate-900/5">
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
                         <AlertCircle className="h-6 w-6" />
@@ -327,7 +327,7 @@ export default function MyTicketDetailPage({
     const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(ticket.qr_code)}`;
 
     return (
-        <main className="min-h-[calc(100vh-136px)] bg-slate-50 px-4 py-6 md:-mx-8 md:px-8">
+        <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
             <div className="mx-auto w-full max-w-6xl space-y-5">
                 <Button
                     variant="ghost"

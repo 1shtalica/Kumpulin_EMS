@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Eye, Loader2, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Eye, Landmark, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { FinanceNavigation } from "@/components/organizer/finance/FinanceNavigation";
@@ -38,12 +38,29 @@ function StatusPill({ status }: { status: OrganizerWithdrawalStatus }) {
     <span
       className={
         isRequested
-          ? "rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700"
-          : "rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600"
+          ? "inline-flex items-center gap-1.5 rounded-full border border-warning/20 bg-warning-light px-2.5 py-1 text-[11px] font-semibold text-warning-hover"
+          : "inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-500"
       }
     >
+      <span className={isRequested ? "size-1.5 rounded-full bg-warning-hover" : "size-1.5 rounded-full bg-slate-400"} />
       {withdrawalStatusLabel(status)}
     </span>
+  );
+}
+
+function WithdrawalHeaderGraphic() {
+  return (
+    <svg
+      className="pointer-events-none absolute bottom-0 right-0 hidden h-40 w-72 translate-x-10 translate-y-8 text-primary md:block"
+      viewBox="0 0 288 160"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path d="M32 118C72 82 112 72 146 80C190 90 210 112 256 74" stroke="currentColor" strokeOpacity="0.12" strokeWidth="2" />
+      <rect x="162" y="28" width="80" height="58" rx="16" stroke="currentColor" strokeOpacity="0.12" strokeWidth="2" />
+      <path d="M184 56H220M184 70H206" stroke="currentColor" strokeOpacity="0.13" strokeWidth="6" strokeLinecap="round" />
+      <path d="M82 42V108M82 108L58 84M82 108L106 84" stroke="#10b981" strokeOpacity="0.18" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
@@ -66,7 +83,7 @@ export default function OrganizerWithdrawalsPage() {
       setItems(data.items);
       setPagination(data.pagination);
     } catch {
-      toast.error("Gagal memuat withdrawal.");
+      toast.error("Gagal memuat pencairan.");
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -78,29 +95,66 @@ export default function OrganizerWithdrawalsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, status]);
 
+  const selectedStatusLabel = useMemo(
+    () => statuses.find((option) => option.value === status)?.label ?? "Semua status",
+    [status],
+  );
+
   return (
-    <main className="relative -mx-6 min-h-[calc(100vh-136px)] bg-[#f9fafb] px-4 py-5 md:-mx-8 md:px-8 md:py-6">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-950">
-            Withdrawal
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Riwayat pencairan dana dan status pengajuan manual.
-          </p>
-        </div>
+    <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
+      <div
+        className="pointer-events-none absolute inset-0"
+        aria-hidden="true"
+        style={{
+          backgroundImage: "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+          opacity: 0.16,
+        }}
+      />
+
+      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5">
+        <section className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
+          <WithdrawalHeaderGraphic />
+          <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                Ruang kerja organizer
+              </p>
+              <h1 className="mt-2 text-2xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
+                Pencairan
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
+                Pantau riwayat pencairan dana dan status pengajuan manual organizer.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => loadWithdrawals(true)}
+              disabled={isRefreshing}
+              className="h-10 w-fit rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+            >
+              {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Muat Ulang
+            </Button>
+          </div>
+        </section>
 
         <FinanceNavigation />
 
-        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5">
+          <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-950">Daftar Pencairan</h2>
+              <p className="mt-1 text-sm text-slate-500">Filter aktif: {selectedStatusLabel}</p>
+            </div>
             <select
               value={status}
               onChange={(event) => {
                 setStatus(event.target.value as OrganizerWithdrawalStatus | "");
                 setPage(1);
               }}
-              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-primary"
+              className="h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
             >
               {statuses.map((option) => (
                 <option key={option.value || "all"} value={option.value}>
@@ -108,33 +162,27 @@ export default function OrganizerWithdrawalsPage() {
                 </option>
               ))}
             </select>
-            <Button
-              variant="outline"
-              onClick={() => loadWithdrawals(true)}
-              disabled={isRefreshing}
-            >
-              {isRefreshing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
-              Refresh
-            </Button>
           </div>
 
           {isLoading ? (
-            <div className="flex min-h-72 items-center justify-center text-slate-500">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Memuat withdrawal...
+            <div className="flex min-h-72 items-center justify-center text-sm font-medium text-slate-500">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin text-primary" />
+              Memuat pencairan...
             </div>
           ) : items.length === 0 ? (
-            <div className="flex min-h-72 items-center justify-center px-6 text-center text-sm text-slate-500">
-              Belum ada withdrawal untuk filter ini.
+            <div className="flex min-h-72 flex-col items-center justify-center px-6 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-light text-primary">
+                <Landmark className="h-6 w-6" />
+              </div>
+              <p className="mt-4 text-base font-semibold text-slate-950">Belum ada pencairan</p>
+              <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
+                Pengajuan pencairan dana akan muncul di sini setelah dibuat.
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[820px] text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <thead className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500">
                   <tr>
                     <th className="px-5 py-3 font-semibold">Tanggal</th>
                     <th className="px-5 py-3 font-semibold">Rekening</th>
@@ -145,7 +193,7 @@ export default function OrganizerWithdrawalsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {items.map((item) => (
-                    <tr key={item.id} className="bg-white">
+                    <tr key={item.id} className="bg-white transition-colors hover:bg-slate-50/70">
                       <td className="px-5 py-4 text-slate-600">
                         <p>{formatFinanceDate(item.requested_at || item.created_at)}</p>
                         {item.cancelled_at && (
@@ -163,13 +211,18 @@ export default function OrganizerWithdrawalsPage() {
                       <td className="px-5 py-4">
                         <StatusPill status={item.status} />
                       </td>
-                      <td className="px-5 py-4 text-right font-bold text-slate-950">
+                      <td className="px-5 py-4 text-right font-semibold text-slate-950 tabular-nums">
                         {formatFinanceCurrency(item.amount, item.currency)}
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <Button asChild variant="outline" size="sm">
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="sm"
+                          className="rounded-xl border-slate-200 bg-white font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+                        >
                           <Link href={`/organizer/finance/withdrawals/${item.id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                             Detail
                           </Link>
                         </Button>
@@ -181,13 +234,14 @@ export default function OrganizerWithdrawalsPage() {
             </div>
           )}
 
-          <div className="flex flex-col gap-3 border-t border-slate-100 p-5 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 border-t border-slate-100 p-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <span>
-              Halaman {pagination.page} dari {pagination.total_pages} - {pagination.total_items} withdrawal
+              Halaman {pagination.page} dari {pagination.total_pages} - {pagination.total_items} pencairan
             </span>
             <div className="flex gap-2">
               <Button
                 variant="outline"
+                className="h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
                 disabled={page <= 1 || isLoading}
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
               >
@@ -195,6 +249,7 @@ export default function OrganizerWithdrawalsPage() {
               </Button>
               <Button
                 variant="outline"
+                className="h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
                 disabled={page >= pagination.total_pages || isLoading}
                 onClick={() => setPage((current) => current + 1)}
               >

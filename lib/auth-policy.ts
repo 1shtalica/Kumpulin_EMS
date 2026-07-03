@@ -24,6 +24,8 @@ export const protectedRoutes: ProtectedRoutePolicy[] = [
   { path: "/organizer/create-event", roles: ["organizer"] },
   { path: "/user/following", roles: ["user"] },
   { path: "/user/my-ticket", roles: ["user"] },
+  { path: "/my-orders", roles: ["user"] },
+  { path: "/orders", roles: ["user"] },
   { path: "/user/profile", roles: ["user"] },
   { path: "/checkout", roles: ["user"] },
   { path: "/payment", roles: ["user"] },
@@ -96,3 +98,5 @@ export const resolveRoutePolicy = (pathname: string): RoutePolicyResolution => {
     protectedRoute: protectedRoute ?? undefined,
   };
 };
+
+

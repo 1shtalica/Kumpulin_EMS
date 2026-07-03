@@ -1,6 +1,6 @@
 import UserMainPagesLayout from "@/components/user/layout/UserMainPagesLayout";
 
-export default function MainPagesLayout({
+export default function MyOrdersLayout({
   children,
 }: {
   children: React.ReactNode;
