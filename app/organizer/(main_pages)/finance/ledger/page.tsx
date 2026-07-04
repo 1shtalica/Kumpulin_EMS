@@ -23,7 +23,10 @@ const ledgerTypes: Array<{ value: OrganizerLedgerType | ""; label: string }> = [
   { value: "earning_pending", label: "Pendapatan Menunggu" },
   { value: "earning_available", label: "Pendapatan Tersedia" },
   { value: "withdrawal_requested", label: "Pencairan Diajukan" },
-  { value: "withdrawal_cancelled", label: "Pencairan Dibatalkan" },
+  { value: "withdrawal_processing", label: "Payout Diproses" },
+  { value: "withdrawal_succeeded", label: "Payout Berhasil" },
+  { value: "withdrawal_failed", label: "Payout Gagal" },
+  { value: "withdrawal_cancelled", label: "Payout Dibatalkan" },
 ];
 
 const initialPagination: OrganizerFinancePagination = {
@@ -34,19 +37,19 @@ const initialPagination: OrganizerFinancePagination = {
 };
 
 function amountClass(type: string) {
-  if (type === "withdrawal_requested") return "text-danger";
-  if (type === "withdrawal_cancelled") return "text-warning-hover";
+  if (type === "withdrawal_requested" || type === "withdrawal_processing") return "text-danger";
+  if (type === "withdrawal_failed" || type === "withdrawal_cancelled") return "text-warning-hover";
   return "text-success-hover";
 }
 
 function typeBadgeClass(type: string) {
-  if (type === "withdrawal_requested") {
+  if (type === "withdrawal_requested" || type === "withdrawal_processing") {
     return "border-danger/15 bg-danger-light text-danger";
   }
-  if (type === "withdrawal_cancelled") {
+  if (type === "withdrawal_failed" || type === "withdrawal_cancelled") {
     return "border-warning/20 bg-warning-light text-warning-hover";
   }
-  if (type === "earning_available") {
+  if (type === "withdrawal_succeeded" || type === "earning_available") {
     return "border-success/15 bg-success-light text-success-hover";
   }
   return "border-primary/15 bg-primary-light text-primary";
@@ -259,3 +262,6 @@ export default function OrganizerLedgerPage() {
     </main>
   );
 }
+
+
+

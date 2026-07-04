@@ -1,17 +1,15 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
   Banknote,
   CheckCircle2,
   Clock3,
-  Copy,
-  ExternalLink,
   Landmark,
   Loader2,
   RefreshCw,
-  Send,
   Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +18,8 @@ import { FinanceNavigation } from "@/components/organizer/finance/FinanceNavigat
 import {
   formatFinanceCurrency,
   formatFinanceDate,
+  payoutChannelLabel,
+  withdrawalStatusDescription,
   withdrawalStatusLabel,
 } from "@/components/organizer/finance/finance-format";
 import { Button } from "@/components/ui/button";
@@ -27,15 +27,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { OrganizerFinanceService } from "@/services/organizer-finance-service";
-import type {
-  CreateWithdrawalRequest,
-  OrganizerBalance,
-  OrganizerWithdrawal,
+import {
+  PAYOUT_CHANNELS,
+  type CreateWithdrawalRequest,
+  type OrganizerBalance,
+  type OrganizerWithdrawal,
+  type OrganizerWithdrawalStatus,
 } from "@/types/organizer-finance";
 
 const initialForm: CreateWithdrawalRequest = {
   amount: 0,
-  bank_name: "",
+  channel_code: "",
   bank_account_number: "",
   bank_account_holder_name: "",
   organizer_note: "",
@@ -60,38 +62,40 @@ function FinanceHeaderGraphic() {
       fill="none"
       aria-hidden="true"
     >
-      <path
-        d="M24 132C64 86 98 70 132 78C172 88 190 118 242 82"
-        stroke="currentColor"
-        strokeOpacity="0.12"
-        strokeWidth="2"
-      />
-      <path
-        d="M50 150C94 114 130 104 164 114C202 126 214 142 266 108"
-        stroke="currentColor"
-        strokeOpacity="0.08"
-        strokeWidth="2"
-      />
-      <rect
-        x="164"
-        y="28"
-        width="76"
-        height="54"
-        rx="16"
-        stroke="currentColor"
-        strokeOpacity="0.12"
-        strokeWidth="2"
-      />
+      <path d="M24 132C64 86 98 70 132 78C172 88 190 118 242 82" stroke="currentColor" strokeOpacity="0.12" strokeWidth="2" />
+      <path d="M50 150C94 114 130 104 164 114C202 126 214 142 266 108" stroke="currentColor" strokeOpacity="0.08" strokeWidth="2" />
+      <rect x="164" y="28" width="76" height="54" rx="16" stroke="currentColor" strokeOpacity="0.12" strokeWidth="2" />
       <rect x="184" y="48" width="36" height="5" rx="2.5" fill="currentColor" fillOpacity="0.12" />
       <rect x="184" y="61" width="22" height="5" rx="2.5" fill="currentColor" fillOpacity="0.1" />
-      <path
-        d="M70 74H118M70 92H140M70 110H106"
-        stroke="#10b981"
-        strokeOpacity="0.16"
-        strokeWidth="8"
-        strokeLinecap="round"
-      />
+      <path d="M70 74H118M70 92H140M70 110H106" stroke="#10b981" strokeOpacity="0.16" strokeWidth="8" strokeLinecap="round" />
     </svg>
+  );
+}
+
+function statusPillClass(status: OrganizerWithdrawalStatus) {
+  const classes: Record<OrganizerWithdrawalStatus, string> = {
+    processing: "border-warning/20 bg-warning-light text-warning-hover",
+    succeeded: "border-success/20 bg-success-light text-success-hover",
+    failed: "border-red-200 bg-red-50 text-red-600",
+    cancelled: "border-slate-200 bg-slate-100 text-slate-500",
+  };
+
+  return classes[status];
+}
+
+function StatusPill({ status }: { status: OrganizerWithdrawalStatus }) {
+  const dotClass: Record<OrganizerWithdrawalStatus, string> = {
+    processing: "bg-warning-hover",
+    succeeded: "bg-success-hover",
+    failed: "bg-red-500",
+    cancelled: "bg-slate-400",
+  };
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${statusPillClass(status)}`}>
+      <span className={`size-1.5 rounded-full ${dotClass[status]}`} />
+      {withdrawalStatusLabel(status)}
+    </span>
   );
 }
 
@@ -118,7 +122,7 @@ function BalanceCard({ title, description, value, isLoading, tone, Icon }: Balan
   }[tone];
 
   return (
-    <article className={`rounded-2xl border bg-white p-4 shadow-sm shadow-slate-900/5 ${toneClass.border}`}>
+    <article className={`rounded-xl border bg-white p-4 shadow-sm shadow-slate-900/5 ${toneClass.border}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-slate-500">
@@ -130,7 +134,7 @@ function BalanceCard({ title, description, value, isLoading, tone, Icon }: Balan
           </p>
           <p className="mt-2 text-xs leading-relaxed text-slate-500">{description}</p>
         </div>
-        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${toneClass.icon}`}>
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${toneClass.icon}`}>
           <Icon className="h-5 w-5" />
         </div>
       </div>
@@ -140,14 +144,15 @@ function BalanceCard({ title, description, value, isLoading, tone, Icon }: Balan
 
 export default function OrganizerFinancePage() {
   const [balance, setBalance] = useState<OrganizerBalance | null>(null);
+  const [recentWithdrawals, setRecentWithdrawals] = useState<OrganizerWithdrawal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRecentLoading, setIsRecentLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState<CreateWithdrawalRequest>(initialForm);
-  const [createdWithdrawal, setCreatedWithdrawal] =
-    useState<OrganizerWithdrawal | null>(null);
+  const [createdWithdrawal, setCreatedWithdrawal] = useState<OrganizerWithdrawal | null>(null);
 
-  const loadBalance = async (refreshing = false) => {
+  const loadBalance = useCallback(async (refreshing = false) => {
     try {
       if (refreshing) setIsRefreshing(true);
       const data = await OrganizerFinanceService.getBalance();
@@ -158,11 +163,28 @@ export default function OrganizerFinancePage() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, []);
+
+  const loadRecentWithdrawals = useCallback(async (refreshing = false) => {
+    try {
+      if (refreshing) setIsRefreshing(true);
+      const data = await OrganizerFinanceService.getWithdrawals({ page: 1, limit: 5 });
+      setRecentWithdrawals(data.items);
+    } catch {
+      toast.error("Gagal memuat riwayat payout.");
+    } finally {
+      setIsRecentLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  const refreshFinanceData = useCallback(async (refreshing = false) => {
+    await Promise.all([loadBalance(refreshing), loadRecentWithdrawals(refreshing)]);
+  }, [loadBalance, loadRecentWithdrawals]);
 
   useEffect(() => {
-    loadBalance();
-  }, []);
+    refreshFinanceData();
+  }, [refreshFinanceData]);
 
   const updateForm = (key: keyof CreateWithdrawalRequest, value: string) => {
     setForm((current) => ({
@@ -177,7 +199,7 @@ export default function OrganizerFinancePage() {
     if (form.amount > balance.available_amount) {
       return "Nominal tidak boleh melebihi saldo tersedia.";
     }
-    if (!form.bank_name.trim()) return "Nama bank wajib diisi.";
+    if (!form.channel_code.trim()) return "Channel payout wajib dipilih.";
     if (!form.bank_account_number.trim()) return "Nomor rekening wajib diisi.";
     if (!form.bank_account_holder_name.trim()) {
       return "Nama pemilik rekening wajib diisi.";
@@ -196,32 +218,22 @@ export default function OrganizerFinancePage() {
     setIsSubmitting(true);
     try {
       const withdrawal = await OrganizerFinanceService.createWithdrawal({
-        ...form,
-        bank_name: form.bank_name.trim(),
+        amount: form.amount,
+        channel_code: form.channel_code.trim(),
         bank_account_number: form.bank_account_number.trim(),
         bank_account_holder_name: form.bank_account_holder_name.trim(),
         organizer_note: form.organizer_note?.trim(),
       });
       setCreatedWithdrawal(withdrawal);
       setForm(initialForm);
-      toast.success("Pencairan berhasil diajukan.");
-      await loadBalance(true);
+      toast.success("Payout berhasil diajukan ke Xendit.");
+      await refreshFinanceData(true);
     } catch {
-      toast.error("Gagal mengajukan pencairan.");
+      toast.error("Gagal mengajukan payout.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const copyReport = async () => {
-    if (!createdWithdrawal?.whatsapp_message) return;
-    await navigator.clipboard.writeText(createdWithdrawal.whatsapp_message);
-    toast.success("Laporan WhatsApp disalin.");
-  };
-
-  const whatsappHref = createdWithdrawal?.whatsapp_message
-    ? `https://wa.me/?text=${encodeURIComponent(createdWithdrawal.whatsapp_message)}`
-    : "#";
 
   const availablePercent = useMemo(() => {
     if (!balance) return 0;
@@ -245,8 +257,8 @@ export default function OrganizerFinancePage() {
         }}
       />
 
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5">
-        <section className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
+      <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-5">
+        <section className="relative overflow-hidden rounded-xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
           <FinanceHeaderGraphic />
           <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -257,22 +269,22 @@ export default function OrganizerFinancePage() {
                 Keuangan Organizer
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600">
-                Pantau saldo acara, cek dana yang siap dicairkan, dan ajukan pencairan manual.
+                Pantau saldo acara, ajukan payout otomatis melalui Xendit, dan cek status pencairan terbaru.
               </p>
             </div>
             <Button
               type="button"
               variant="outline"
-              onClick={() => loadBalance(true)}
+              onClick={() => refreshFinanceData(true)}
               disabled={isRefreshing}
-              className="h-10 w-fit rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+              className="h-10 w-fit rounded-lg border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
             >
               {isRefreshing ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <RefreshCw className="h-4 w-4" />
               )}
-              Muat Ulang Saldo
+              Muat Ulang
             </Button>
           </div>
         </section>
@@ -297,7 +309,7 @@ export default function OrganizerFinancePage() {
             Icon={CheckCircle2}
           />
           <BalanceCard
-            title="Sudah Diajukan"
+            title="Dalam Payout"
             description={`Diperbarui ${formatFinanceDate(balance?.updated_at)}`}
             value={formatFinanceCurrency(balance?.requested_withdrawal_amount ?? 0, balance?.currency)}
             isLoading={isLoading}
@@ -306,26 +318,24 @@ export default function OrganizerFinancePage() {
           />
         </section>
 
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
+        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
           <form
             onSubmit={handleSubmit}
-            className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5"
+            className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5"
           >
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-light text-primary">
                   <Wallet className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-950">
-                    Ajukan Pencairan
-                  </h2>
+                  <h2 className="text-lg font-semibold text-slate-950">Ajukan Payout</h2>
                   <p className="text-sm leading-relaxed text-slate-500">
-                    Nominal divalidasi terhadap saldo tersedia.
+                    Dana dikirim lewat Xendit sesuai channel bank yang dipilih.
                   </p>
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-sm">
+              <div className="rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-sm">
                 <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
                   Saldo tersedia
                 </p>
@@ -349,20 +359,26 @@ export default function OrganizerFinancePage() {
                   value={form.amount || ""}
                   onChange={(event) => updateForm("amount", event.target.value)}
                   placeholder="500000"
-                  className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                  className="h-10 rounded-lg border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="bank_name" className="text-sm font-medium text-slate-700">
-                  Bank
+                <Label htmlFor="channel_code" className="text-sm font-medium text-slate-700">
+                  Channel Bank
                 </Label>
-                <Input
-                  id="bank_name"
-                  value={form.bank_name}
-                  onChange={(event) => updateForm("bank_name", event.target.value)}
-                  placeholder="BCA"
-                  className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
-                />
+                <select
+                  id="channel_code"
+                  value={form.channel_code}
+                  onChange={(event) => updateForm("channel_code", event.target.value)}
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+                >
+                  <option value="">Pilih bank</option>
+                  {PAYOUT_CHANNELS.map((channel) => (
+                    <option key={channel.value} value={channel.value}>
+                      {channel.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bank_account_number" className="text-sm font-medium text-slate-700">
@@ -373,7 +389,7 @@ export default function OrganizerFinancePage() {
                   value={form.bank_account_number}
                   onChange={(event) => updateForm("bank_account_number", event.target.value)}
                   placeholder="1234567890"
-                  className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                  className="h-10 rounded-lg border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
                 />
               </div>
               <div className="space-y-2 sm:col-span-2">
@@ -385,26 +401,26 @@ export default function OrganizerFinancePage() {
                   value={form.bank_account_holder_name}
                   onChange={(event) => updateForm("bank_account_holder_name", event.target.value)}
                   placeholder="Nama organizer"
-                  className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                  className="h-10 rounded-lg border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
                 />
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="organizer_note" className="text-sm font-medium text-slate-700">
-                  Catatan
+                  Catatan Opsional
                 </Label>
                 <Textarea
                   id="organizer_note"
                   value={form.organizer_note}
                   onChange={(event) => updateForm("organizer_note", event.target.value)}
-                  placeholder="Catatan internal untuk pencairan ini"
-                  rows={4}
-                  className="min-h-28 rounded-xl border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                  placeholder="Withdraw event revenue"
+                  rows={3}
+                  className="min-h-24 rounded-lg border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
                 />
               </div>
             </div>
 
             <Button
-              className="mt-6 h-10 w-full rounded-xl text-sm font-semibold sm:w-auto"
+              className="mt-6 h-10 w-full rounded-lg text-sm font-semibold sm:w-auto"
               disabled={isSubmitting || isLoading}
             >
               {isSubmitting ? (
@@ -412,66 +428,110 @@ export default function OrganizerFinancePage() {
               ) : (
                 <ArrowUpRight className="h-4 w-4" />
               )}
-              Ajukan Pencairan
+              Ajukan Payout
             </Button>
           </form>
 
-          <aside className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success-light text-success-hover">
-                <Landmark className="h-5 w-5" />
+          <aside className="space-y-4">
+            <section className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success-light text-success-hover">
+                  <Landmark className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-950">Payout Terbaru</h2>
+                  <p className="text-sm text-slate-500">Status dari backend Xendit.</p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-lg font-semibold text-slate-950">Laporan WhatsApp</h2>
-                <p className="text-sm text-slate-500">Format laporan dari sistem.</p>
-              </div>
-            </div>
 
-            {createdWithdrawal ? (
-              <div className="mt-5 space-y-4">
-                <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 text-sm">
+              {createdWithdrawal ? (
+                <div className="mt-5 space-y-3 rounded-lg border border-slate-200/80 bg-slate-50/80 p-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-slate-950">
-                      {withdrawalStatusLabel(createdWithdrawal.status)}
-                    </p>
-                    <span className="rounded-full border border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary">
-                      Pencairan
+                    <StatusPill status={createdWithdrawal.status} />
+                    <span className="font-semibold text-slate-950 tabular-nums">
+                      {formatFinanceCurrency(createdWithdrawal.amount, createdWithdrawal.currency)}
                     </span>
                   </div>
-                  <p className="mt-2 text-lg font-semibold text-slate-950 tabular-nums">
-                    {formatFinanceCurrency(createdWithdrawal.amount, createdWithdrawal.currency)}
+                  <p className="leading-relaxed text-slate-600">
+                    {withdrawalStatusDescription(createdWithdrawal.status)}
                   </p>
+                  {createdWithdrawal.status === "failed" && createdWithdrawal.failure_message && (
+                    <p className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-red-600">
+                      {createdWithdrawal.failure_message}
+                    </p>
+                  )}
+                  <dl className="grid gap-2 text-xs text-slate-500">
+                    <div className="flex justify-between gap-3">
+                      <dt>Channel</dt>
+                      <dd className="font-medium text-slate-700">{payoutChannelLabel(createdWithdrawal.channel_code)}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt>Reference</dt>
+                      <dd className="font-mono text-slate-700">{createdWithdrawal.xendit_reference_id || "-"}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt>Xendit</dt>
+                      <dd className="font-medium text-slate-700">{createdWithdrawal.xendit_status || "-"}</dd>
+                    </div>
+                  </dl>
                 </div>
-                <div className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl border border-slate-200/80 bg-slate-50/70 p-4 text-sm leading-relaxed text-slate-700">
-                  {createdWithdrawal.whatsapp_message}
+              ) : (
+                <div className="mt-5 rounded-lg border border-dashed border-slate-200/80 bg-slate-50/80 p-4 text-sm leading-relaxed text-slate-600">
+                  Setelah payout dibuat, status pemrosesan Xendit akan tampil di sini.
                 </div>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <Button
-                    variant="outline"
-                    onClick={copyReport}
-                    type="button"
-                    className="h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
-                  >
-                    <Copy className="h-4 w-4" />
-                    Salin Laporan
-                  </Button>
-                  <Button asChild className="h-10 rounded-xl text-sm font-semibold">
-                    <a href={whatsappHref} target="_blank" rel="noreferrer">
-                      <Send className="h-4 w-4" />
-                      Kirim WhatsApp
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </Button>
-                </div>
+              )}
+            </section>
+
+            <section className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-base font-semibold text-slate-950">Riwayat Singkat</h2>
+                <Button asChild variant="ghost" size="sm" className="h-8 rounded-lg px-2 text-xs font-semibold text-primary">
+                  <Link href="/organizer/finance/withdrawals">Lihat semua</Link>
+                </Button>
               </div>
-            ) : (
-              <div className="mt-5 rounded-xl border border-dashed border-slate-200/80 bg-slate-50/80 p-4 text-sm leading-relaxed text-slate-600">
-                Setelah pencairan berhasil diajukan, laporan dari sistem akan tampil di sini untuk disalin atau dikirim melalui WhatsApp.
-              </div>
-            )}
+
+              {isRecentLoading ? (
+                <div className="mt-4 flex items-center text-sm text-slate-500">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
+                  Memuat riwayat...
+                </div>
+              ) : recentWithdrawals.length === 0 ? (
+                <p className="mt-4 rounded-lg border border-dashed border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">
+                  Belum ada payout.
+                </p>
+              ) : (
+                <div className="mt-4 space-y-2">
+                  {recentWithdrawals.map((withdrawal) => (
+                    <Link
+                      key={withdrawal.id}
+                      href={`/organizer/finance/withdrawals/${withdrawal.id}`}
+                      className="block rounded-lg border border-slate-200/80 bg-slate-50/70 p-3 transition-colors hover:border-primary/25 hover:bg-white"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-slate-950">
+                            {payoutChannelLabel(withdrawal.channel_code)} - {withdrawal.bank_account_holder_name}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {formatFinanceDate(withdrawal.requested_at)}
+                          </p>
+                        </div>
+                        <StatusPill status={withdrawal.status} />
+                      </div>
+                      <p className="mt-2 text-sm font-semibold text-slate-950 tabular-nums">
+                        {formatFinanceCurrency(withdrawal.amount, withdrawal.currency)}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
           </aside>
         </section>
       </div>
     </main>
   );
 }
+
+
+

@@ -29,6 +29,9 @@ export type OrganizerLedgerType =
   | "earning_pending"
   | "earning_available"
   | "withdrawal_requested"
+  | "withdrawal_processing"
+  | "withdrawal_succeeded"
+  | "withdrawal_failed"
   | "withdrawal_cancelled";
 
 export interface OrganizerLedgerEntry {
@@ -45,28 +48,54 @@ export interface OrganizerLedgerEntry {
   created_at: string;
 }
 
-export type OrganizerWithdrawalStatus = "requested" | "cancelled";
+export type OrganizerWithdrawalStatus =
+  | "processing"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+export type PayoutChannelCode = "ID_BCA" | "ID_BNI" | "ID_BRI" | "ID_MANDIRI";
+
+export interface PayoutChannelOption {
+  label: string;
+  value: PayoutChannelCode;
+}
+
+export const PAYOUT_CHANNELS: PayoutChannelOption[] = [
+  { label: "BCA", value: "ID_BCA" },
+  { label: "BNI", value: "ID_BNI" },
+  { label: "BRI", value: "ID_BRI" },
+  { label: "Mandiri", value: "ID_MANDIRI" },
+];
 
 export interface OrganizerWithdrawal {
   id: string;
   organizer_id: string;
+  requested_by_user_id: number;
   amount: number;
   currency: string;
-  bank_name: string;
+  channel_code: string;
   bank_account_number: string;
   bank_account_holder_name: string;
-  organizer_note?: string;
-  whatsapp_message: string;
+  organizer_note?: string | null;
   status: OrganizerWithdrawalStatus;
+  xendit_payout_id?: string | null;
+  xendit_reference_id: string;
+  xendit_status: string;
+  failure_code?: string | null;
+  failure_message?: string | null;
   requested_at: string;
+  processed_at?: string | null;
+  succeeded_at?: string | null;
+  failed_at?: string | null;
   cancelled_at?: string | null;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CreateWithdrawalRequest {
   amount: number;
-  bank_name: string;
+  channel_code: string;
   bank_account_number: string;
   bank_account_holder_name: string;
   organizer_note?: string;

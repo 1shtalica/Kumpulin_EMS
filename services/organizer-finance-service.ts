@@ -66,11 +66,4 @@ export const OrganizerFinanceService = {
     >(`/organizer/withdrawals/${withdrawalId}`);
     return response.data.data;
   },
-
-  async cancelWithdrawal(withdrawalId: string): Promise<OrganizerWithdrawal> {
-    const response = await axiosClient.post<
-      OrganizerFinanceApiResponse<OrganizerWithdrawal>
-    >(`/organizer/withdrawals/${withdrawalId}/cancel`);
-    return response.data.data;
-  },
 };
