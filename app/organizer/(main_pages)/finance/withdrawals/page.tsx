@@ -115,7 +115,7 @@ export default function OrganizerWithdrawalsPage() {
   );
 
   return (
-    <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
+    <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-3 py-6 sm:px-4 md:-mx-8 md:px-6 lg:px-8">
       <div
         className="pointer-events-none absolute inset-0"
         aria-hidden="true"
@@ -126,7 +126,7 @@ export default function OrganizerWithdrawalsPage() {
         }}
       />
 
-      <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-5">
+      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-5">
         <section className="relative overflow-hidden rounded-xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
           <WithdrawalHeaderGraphic />
           <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -293,3 +293,4 @@ export default function OrganizerWithdrawalsPage() {
     </main>
   );
 }
+
