@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
     Users,
     Calendar,
-    Star,
     Globe,
     Share2,
     Clock,
@@ -35,7 +34,6 @@ import { OrganizerService } from "@/services/organizer-service";
 import type {
     OrganizerProfileData,
     OrganizerProfileEvent,
-    OrganizerProfileReview,
 } from "@/types/organizer";
 import { cn } from "@/lib/utils";
 
@@ -188,59 +186,13 @@ function OrganizerEventCard({ event }: { event: OrganizerProfileEvent }) {
     );
 }
 
-// ─── Review Card ─────────────────────────────────────────────────────────────
-
-function ReviewCard({ review }: { review: OrganizerProfileReview }) {
-    const initials = review.reviewer_name
-        .split(" ")
-        .slice(0, 2)
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase();
-
-    return (
-        <div className="flex gap-3 p-5 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xs font-bold">
-                {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-sm font-semibold text-slate-800 truncate">
-                        {review.reviewer_name}
-                    </span>
-                    <div className="flex items-center gap-0.5 shrink-0">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                                key={i}
-                                className={cn(
-                                    "w-3 h-3",
-                                    i < review.rating
-                                        ? "fill-amber-400 text-amber-400"
-                                        : "text-slate-200",
-                                )}
-                            />
-                        ))}
-                    </div>
-                </div>
-                <p className="text-[13px] text-slate-500 leading-relaxed line-clamp-3">
-                    {review.comment}
-                </p>
-                <p className="text-[11px] text-slate-300 mt-1.5 font-medium">
-                    {formatDate(review.created_at)}
-                </p>
-            </div>
-        </div>
-    );
-}
-
 // ─── Tab Types ────────────────────────────────────────────────────────────────
 
-type TabId = "upcoming" | "past" | "reviews";
+type TabId = "upcoming" | "past";
 
 const TABS: { id: TabId; label: string }[] = [
     { id: "upcoming", label: "Mendatang" },
     { id: "past", label: "Selesai" },
-    { id: "reviews", label: "Ulasan" },
 ];
 
 // ─── Main Component ──────────────────────────────────────────────────────────
@@ -258,9 +210,7 @@ export default function PublicOrganizerProfile({
     const [profile, setProfile] = useState<OrganizerProfileData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<TabId>(
-        slug ? "upcoming" : "reviews",
-    );
+    const [activeTab, setActiveTab] = useState<TabId>("upcoming");
     const [followed, setFollowed] = useState(false);
     const [isLoadingFollow, setIsLoadingFollow] = useState(false);
 
@@ -426,18 +376,10 @@ export default function PublicOrganizerProfile({
         organizer,
         stats,
         events = { upcoming: [], past: [] },
-        reviews,
     } = profile;
-    const ratingFull = Math.floor(stats.average_rating);
-    const ratingHalf = stats.average_rating - ratingFull >= 0.5;
     const isPublicProfile = Boolean(slug);
 
-    const activeEvents =
-        activeTab === "upcoming"
-            ? events.upcoming
-            : activeTab === "past"
-              ? events.past
-              : [];
+    const activeEvents = activeTab === "upcoming" ? events.upcoming : events.past;
     const createdEvents = [...events.upcoming, ...events.past].slice(0, 4);
 
     return (
@@ -684,7 +626,7 @@ export default function PublicOrganizerProfile({
                         className={cn(
                             isPublicProfile
                                 ? "scrollbar-hide flex items-center gap-0 overflow-x-auto py-4"
-                                : "grid grid-cols-2 gap-3 sm:grid-cols-5",
+                                : "grid grid-cols-2 gap-3 sm:grid-cols-4",
                         )}
                     >
                         {/* Followers */}
@@ -743,7 +685,7 @@ export default function PublicOrganizerProfile({
                             className={cn(
                                 "flex min-w-36 flex-col",
                                 isPublicProfile
-                                    ? "items-center border-r border-slate-200 px-6 sm:items-start"
+                                    ? "items-center px-6 sm:items-start"
                                     : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
                             )}
                         >
@@ -755,40 +697,6 @@ export default function PublicOrganizerProfile({
                             </span>
                         </div>
 
-                        {/* Rating */}
-                        <div
-                            className={cn(
-                                "flex min-w-40 flex-col",
-                                isPublicProfile
-                                    ? "items-center px-6 sm:items-start"
-                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
-                            )}
-                        >
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-lg sm:text-xl font-bold text-amber-500">
-                                    {stats.average_rating.toFixed(1)}
-                                </span>
-                                <div className="flex items-center gap-0.5">
-                                    {Array.from({ length: 5 }).map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            className={cn(
-                                                "w-3.5 h-3.5",
-                                                i < ratingFull
-                                                    ? "fill-amber-400 text-amber-400"
-                                                    : i === ratingFull &&
-                                                        ratingHalf
-                                                      ? "fill-amber-200 text-amber-300"
-                                                      : "text-slate-200",
-                                            )}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
-                                {formatStat(stats.reviews_count)} ulasan
-                            </span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -803,12 +711,8 @@ export default function PublicOrganizerProfile({
                 <div className="flex flex-col gap-6 lg:flex-row">
                     {/* ── Left Main ── */}
                     <div id="events" className="flex-1 min-w-0 scroll-mt-24">
-                        {/* Tabs */}
                         <div className="mb-6 flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-1 shadow-sm shadow-slate-900/5">
-                            {(slug
-                                ? TABS
-                                : TABS.filter((t) => t.id === "reviews")
-                            ).map((tab) => (
+                            {TABS.map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
@@ -820,87 +724,47 @@ export default function PublicOrganizerProfile({
                                     )}
                                 >
                                     {tab.label}
-                                    {/* Count badge */}
                                     {tab.id === "upcoming" && (
-                                        <span className="ml-1.5 text-[10px] font-bold bg-primary/10 text-primary rounded-full px-1.5 py-0.5">
+                                        <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
                                             {stats.upcoming_events_count}
                                         </span>
                                     )}
                                     {tab.id === "past" && (
-                                        <span className="ml-1.5 text-[10px] font-bold bg-slate-100 text-slate-400 rounded-full px-1.5 py-0.5">
+                                        <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-400">
                                             {stats.past_events_count}
-                                        </span>
-                                    )}
-                                    {tab.id === "reviews" && (
-                                        <span className="ml-1.5 text-[10px] font-bold bg-amber-50 text-amber-500 rounded-full px-1.5 py-0.5">
-                                            {stats.reviews_count}
                                         </span>
                                     )}
                                 </button>
                             ))}
                         </div>
 
-                        {/* Events grid */}
-                        {activeTab !== "reviews" && (
-                            <>
-                                {activeEvents.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-20 text-slate-400 shadow-sm shadow-slate-900/5">
-                                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50">
-                                            <Inbox className="w-7 h-7 text-slate-300" />
-                                        </div>
-                                        <div className="text-center">
-                                            <p className="font-bold text-slate-600 mb-1">
-                                                {activeTab === "upcoming"
-                                                    ? "Belum ada event mendatang"
-                                                    : "Belum ada event selesai"}
-                                            </p>
-                                            <p className="text-sm text-slate-400">
-                                                Pantau halaman ini untuk update
-                                                event berikutnya.
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                                        {activeEvents.map((event) => (
-                                            <OrganizerEventCard
-                                                key={event.id}
-                                                event={event}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {/* Reviews */}
-                        {activeTab === "reviews" && (
-                            <>
-                                {reviews.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-20 text-center text-slate-400 shadow-sm shadow-slate-900/5">
-                                        <Star className="h-8 w-8 text-slate-300" />
-                                        <p className="font-bold text-slate-600">
-                                            Belum ada ulasan
-                                        </p>
-                                        <p className="text-sm text-slate-400">
-                                            Ulasan peserta akan muncul setelah
-                                            event selesai.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                        {reviews.map((review) => (
-                                            <ReviewCard
-                                                key={review.id}
-                                                review={review}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </>
+                        {activeEvents.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-20 text-slate-400 shadow-sm shadow-slate-900/5">
+                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50">
+                                    <Inbox className="h-7 w-7 text-slate-300" />
+                                </div>
+                                <div className="text-center">
+                                    <p className="mb-1 font-bold text-slate-600">
+                                        {activeTab === "upcoming"
+                                            ? "Belum ada event mendatang"
+                                            : "Belum ada event selesai"}
+                                    </p>
+                                    <p className="text-sm text-slate-400">
+                                        Pantau halaman ini untuk update event berikutnya.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                                {activeEvents.map((event) => (
+                                    <OrganizerEventCard
+                                        key={event.id}
+                                        event={event}
+                                    />
+                                ))}
+                            </div>
                         )}
                     </div>
-
                     {/* ── Right Sidebar ── */}
                     <aside className="flex w-full shrink-0 flex-col gap-5 lg:w-80">
                         {/* About */}
@@ -941,14 +805,6 @@ export default function PublicOrganizerProfile({
                                             stats.total_event_attendees,
                                         )}{" "}
                                         total peserta
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2.5 text-sm text-slate-500">
-                                    <Star className="w-4 h-4 text-amber-400 shrink-0" />
-                                    <span>
-                                        Rating {stats.average_rating.toFixed(1)}{" "}
-                                        dari {formatStat(stats.reviews_count)}{" "}
-                                        ulasan
                                     </span>
                                 </div>
                             </div>
@@ -1054,4 +910,5 @@ export default function PublicOrganizerProfile({
         </div>
     );
 }
+
 
