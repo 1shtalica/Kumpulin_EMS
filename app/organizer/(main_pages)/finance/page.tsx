@@ -321,25 +321,23 @@ export default function OrganizerFinancePage() {
         <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
           <form
             onSubmit={handleSubmit}
-            className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5"
+            className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5"
           >
-            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-light text-primary">
-                  <Wallet className="h-5 w-5" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-950">Ajukan Payout</h2>
-                  <p className="text-sm leading-relaxed text-slate-500">
-                    Dana dikirim lewat Xendit sesuai channel bank yang dipilih.
-                  </p>
-                </div>
+            <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                  Payout request
+                </p>
+                <h2 className="mt-1 text-xl font-semibold text-slate-950">Ajukan Payout</h2>
+                <p className="mt-1 max-w-xl text-sm leading-relaxed text-slate-600">
+                  Pilih rekening tujuan dan nominal yang akan dikirim melalui Xendit.
+                </p>
               </div>
-              <div className="rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-sm">
+              <div className="shrink-0 rounded-xl border border-slate-200/80 bg-slate-50/80 px-4 py-3 sm:min-w-44 sm:text-right">
                 <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
                   Saldo tersedia
                 </p>
-                <p className="mt-1 font-semibold text-slate-950 tabular-nums">
+                <p className="mt-1 text-lg font-semibold leading-none text-slate-950 tabular-nums">
                   {isLoading
                     ? "..."
                     : formatFinanceCurrency(balance?.available_amount ?? 0, balance?.currency)}
@@ -347,66 +345,89 @@ export default function OrganizerFinancePage() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="amount" className="text-sm font-medium text-slate-700">
-                  Nominal
-                </Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  min={0}
-                  value={form.amount || ""}
-                  onChange={(event) => updateForm("amount", event.target.value)}
-                  placeholder="500000"
-                  className="h-10 rounded-lg border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="channel_code" className="text-sm font-medium text-slate-700">
-                  Channel Bank
-                </Label>
-                <select
-                  id="channel_code"
-                  value={form.channel_code}
-                  onChange={(event) => updateForm("channel_code", event.target.value)}
-                  className="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
-                >
-                  <option value="">Pilih bank</option>
-                  {PAYOUT_CHANNELS.map((channel) => (
-                    <option key={channel.value} value={channel.value}>
-                      {channel.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bank_account_number" className="text-sm font-medium text-slate-700">
-                  Nomor Rekening
-                </Label>
-                <Input
-                  id="bank_account_number"
-                  value={form.bank_account_number}
-                  onChange={(event) => updateForm("bank_account_number", event.target.value)}
-                  placeholder="1234567890"
-                  className="h-10 rounded-lg border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="bank_account_holder_name" className="text-sm font-medium text-slate-700">
-                  Nama Pemilik Rekening
-                </Label>
-                <Input
-                  id="bank_account_holder_name"
-                  value={form.bank_account_holder_name}
-                  onChange={(event) => updateForm("bank_account_holder_name", event.target.value)}
-                  placeholder="Nama organizer"
-                  className="h-10 rounded-lg border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
+            <div className="space-y-5 p-5">
+              <section className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Label htmlFor="amount" className="text-sm font-medium text-slate-700">
+                      Nominal pencairan
+                    </Label>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500">
+                        Rp
+                      </span>
+                      <Input
+                        id="amount"
+                        type="number"
+                        min={0}
+                        value={form.amount || ""}
+                        onChange={(event) => updateForm("amount", event.target.value)}
+                        placeholder="500000"
+                        className="h-12 rounded-xl border-slate-200 bg-white pl-10 text-lg font-semibold tabular-nums focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                      />
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-primary/15 bg-white px-3 py-2 text-xs leading-relaxed text-slate-600 sm:w-56">
+                    Maksimal {formatFinanceCurrency(balance?.available_amount ?? 0, balance?.currency)} tersedia untuk request payout.
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-4">
+                <div>
+                  <h3 className="text-base font-semibold text-slate-950">Rekening tujuan</h3>
+                  <p className="mt-1 text-sm text-slate-500">Data ini dikirim sebagai channel payout ke backend.</p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="channel_code" className="text-sm font-medium text-slate-700">
+                      Channel Bank
+                    </Label>
+                    <select
+                      id="channel_code"
+                      value={form.channel_code}
+                      onChange={(event) => updateForm("channel_code", event.target.value)}
+                      className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
+                    >
+                      <option value="">Pilih bank</option>
+                      {PAYOUT_CHANNELS.map((channel) => (
+                        <option key={channel.value} value={channel.value}>
+                          {channel.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bank_account_number" className="text-sm font-medium text-slate-700">
+                      Nomor Rekening
+                    </Label>
+                    <Input
+                      id="bank_account_number"
+                      value={form.bank_account_number}
+                      onChange={(event) => updateForm("bank_account_number", event.target.value)}
+                      placeholder="1234567890"
+                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="bank_account_holder_name" className="text-sm font-medium text-slate-700">
+                      Nama Pemilik Rekening
+                    </Label>
+                    <Input
+                      id="bank_account_holder_name"
+                      value={form.bank_account_holder_name}
+                      onChange={(event) => updateForm("bank_account_holder_name", event.target.value)}
+                      placeholder="Nama organizer"
+                      className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className="space-y-2">
                 <Label htmlFor="organizer_note" className="text-sm font-medium text-slate-700">
-                  Catatan Opsional
+                  Catatan opsional
                 </Label>
                 <Textarea
                   id="organizer_note"
@@ -414,22 +435,27 @@ export default function OrganizerFinancePage() {
                   onChange={(event) => updateForm("organizer_note", event.target.value)}
                   placeholder="Withdraw event revenue"
                   rows={3}
-                  className="min-h-24 rounded-lg border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                  className="min-h-24 rounded-xl border-slate-200 bg-slate-50 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
                 />
-              </div>
+              </section>
             </div>
 
-            <Button
-              className="mt-6 h-10 w-full rounded-lg text-sm font-semibold sm:w-auto"
-              disabled={isSubmitting || isLoading}
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ArrowUpRight className="h-4 w-4" />
-              )}
-              Ajukan Payout
-            </Button>
+            <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs leading-relaxed text-slate-500">
+                Setelah request dibuat, status payout dapat dilihat di riwayat pencairan.
+              </p>
+              <Button
+                className="h-10 w-full rounded-xl px-5 text-sm font-semibold sm:w-auto"
+                disabled={isSubmitting || isLoading}
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowUpRight className="h-4 w-4" />
+                )}
+                Ajukan Payout
+              </Button>
+            </div>
           </form>
 
           <aside className="space-y-4">
@@ -532,4 +558,5 @@ export default function OrganizerFinancePage() {
     </main>
   );
 }
+
 
