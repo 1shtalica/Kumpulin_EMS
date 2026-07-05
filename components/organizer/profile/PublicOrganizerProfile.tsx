@@ -20,6 +20,7 @@ import {
     CalendarDays,
     Check,
     Image as ImageIcon,
+    Settings,
 } from "lucide-react";
 import { EditProfileModal } from "./EditProfileModal";
 import { useDebouncedCallback } from "use-debounce";
@@ -442,9 +443,58 @@ export default function PublicOrganizerProfile({
         <div
             className={cn(
                 "min-h-screen bg-[#f9fafb]",
-                isPublicProfile && "px-4 py-6 md:px-8",
+                isPublicProfile
+                    ? "px-4 py-6 md:px-8"
+                    : "relative min-h-[calc(100vh-136px)] overflow-hidden px-4 py-6 md:-mx-8 md:px-8",
             )}
         >
+            {!isPublicProfile && (
+                <div
+                    className="pointer-events-none absolute inset-0"
+                    aria-hidden="true"
+                    style={{
+                        backgroundImage:
+                            "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+                        backgroundSize: "28px 28px",
+                        opacity: 0.16,
+                    }}
+                />
+            )}
+            <div
+                className={cn(
+                    !isPublicProfile &&
+                        "relative mx-auto flex w-full max-w-6xl flex-col gap-5",
+                )}
+            >
+                {!isPublicProfile && (
+                    <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <div className="min-w-0">
+                                <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                                    Organizer workspace
+                                </p>
+                                <h1 className="mt-1 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
+                                    Profil Organizer
+                                </h1>
+                                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+                                    Kelola identitas publik organizer, foto
+                                    profil, banner, dan deskripsi yang dilihat
+                                    peserta.
+                                </p>
+                            </div>
+                            <EditProfileModal
+                                organizer={organizer}
+                                onUpdated={handleProfileUpdated}
+                                trigger={
+                                    <button className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-white shadow-md shadow-primary/15 transition-colors hover:bg-primary-hover">
+                                        <Settings className="h-4 w-4" />
+                                        Edit Profil
+                                    </button>
+                                }
+                            />
+                        </div>
+                    </section>
+                )}
             {/* ─── Hero Header ───────────────────────────────────────────────────── */}
             <div
                 className={cn(
@@ -456,7 +506,7 @@ export default function PublicOrganizerProfile({
                 <div
                     className={cn(
                         "relative w-full overflow-hidden bg-slate-100",
-                        isPublicProfile ? "h-48 sm:h-64" : "h-36 sm:h-48",
+                        isPublicProfile ? "h-48 sm:h-64" : "h-32 sm:h-40",
                     )}
                 >
                     <Image
@@ -609,14 +659,7 @@ export default function PublicOrganizerProfile({
                                         <Share2 className="w-4 h-4" />
                                     </button>
                                 </>
-                            ) : (
-                                <>
-                                    <EditProfileModal
-                                        organizer={organizer}
-                                        onUpdated={handleProfileUpdated}
-                                    />
-                                </>
-                            )}
+                            ) : null}
                         </div>
                     </div>
                 </div>
@@ -625,14 +668,33 @@ export default function PublicOrganizerProfile({
             {/* ─── Stats Row ─────────────────────────────────────────────────────── */}
             <div
                 className={cn(
-                    "mt-5 rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
+                    "rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
+                    isPublicProfile && "mt-5",
                     isPublicProfile && "mx-auto max-w-6xl",
                 )}
             >
-                <div className="mx-auto max-w-6xl px-4 md:px-8">
-                    <div className="scrollbar-hide flex items-center gap-0 overflow-x-auto py-4">
+                <div
+                    className={cn(
+                        "mx-auto max-w-6xl",
+                        isPublicProfile ? "px-4 md:px-8" : "p-4",
+                    )}
+                >
+                    <div
+                        className={cn(
+                            isPublicProfile
+                                ? "scrollbar-hide flex items-center gap-0 overflow-x-auto py-4"
+                                : "grid grid-cols-2 gap-3 sm:grid-cols-5",
+                        )}
+                    >
                         {/* Followers */}
-                        <div className="flex min-w-32 flex-col items-center border-r border-slate-200 px-6 first:pl-0 last:border-0 sm:items-start">
+                        <div
+                            className={cn(
+                                "flex min-w-32 flex-col",
+                                isPublicProfile
+                                    ? "items-center border-r border-slate-200 px-6 first:pl-0 last:border-0 sm:items-start"
+                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                            )}
+                        >
                             <span className="text-lg sm:text-xl font-bold text-slate-900">
                                 {formatStat(stats.followers)}
                             </span>
@@ -642,7 +704,14 @@ export default function PublicOrganizerProfile({
                         </div>
 
                         {/* Hosting duration */}
-                        <div className="flex min-w-36 flex-col items-center border-r border-slate-200 px-6 sm:items-start">
+                        <div
+                            className={cn(
+                                "flex min-w-36 flex-col",
+                                isPublicProfile
+                                    ? "items-center border-r border-slate-200 px-6 sm:items-start"
+                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                            )}
+                        >
                             <span className="text-lg sm:text-xl font-bold text-slate-900">
                                 {hostingDuration(organizer.joined_at)}
                             </span>
@@ -652,7 +721,14 @@ export default function PublicOrganizerProfile({
                         </div>
 
                         {/* Total events */}
-                        <div className="flex min-w-32 flex-col items-center border-r border-slate-200 px-6 sm:items-start">
+                        <div
+                            className={cn(
+                                "flex min-w-32 flex-col",
+                                isPublicProfile
+                                    ? "items-center border-r border-slate-200 px-6 sm:items-start"
+                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                            )}
+                        >
                             <span className="text-lg sm:text-xl font-bold text-slate-900">
                                 {stats.total_events}
                             </span>
@@ -662,7 +738,14 @@ export default function PublicOrganizerProfile({
                         </div>
 
                         {/* Total attendees */}
-                        <div className="flex min-w-36 flex-col items-center border-r border-slate-200 px-6 sm:items-start">
+                        <div
+                            className={cn(
+                                "flex min-w-36 flex-col",
+                                isPublicProfile
+                                    ? "items-center border-r border-slate-200 px-6 sm:items-start"
+                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                            )}
+                        >
                             <span className="text-lg sm:text-xl font-bold text-slate-900">
                                 {formatStat(stats.total_event_attendees)}
                             </span>
@@ -672,7 +755,14 @@ export default function PublicOrganizerProfile({
                         </div>
 
                         {/* Rating */}
-                        <div className="flex min-w-40 flex-col items-center px-6 sm:items-start">
+                        <div
+                            className={cn(
+                                "flex min-w-40 flex-col",
+                                isPublicProfile
+                                    ? "items-center px-6 sm:items-start"
+                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                            )}
+                        >
                             <div className="flex items-center gap-1.5">
                                 <span className="text-lg sm:text-xl font-bold text-amber-500">
                                     {stats.average_rating.toFixed(1)}
@@ -705,8 +795,8 @@ export default function PublicOrganizerProfile({
             {/* ─── Body ──────────────────────────────────────────────────────────── */}
             <div
                 className={cn(
-                    "mx-auto max-w-6xl px-4 py-8 md:px-8",
-                    isPublicProfile && "px-0 md:px-0",
+                    "mx-auto max-w-6xl",
+                    isPublicProfile ? "px-0 py-8 md:px-0" : "py-0",
                 )}
             >
                 <div className="flex flex-col gap-6 lg:flex-row">
@@ -917,6 +1007,8 @@ export default function PublicOrganizerProfile({
                     </aside>
                 </div>
             </div>
+            </div>
         </div>
     );
 }
+
