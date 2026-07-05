@@ -438,6 +438,7 @@ export default function PublicOrganizerProfile({
             : activeTab === "past"
               ? events.past
               : [];
+    const createdEvents = [...events.upcoming, ...events.past].slice(0, 4);
 
     return (
         <div
@@ -974,35 +975,77 @@ export default function PublicOrganizerProfile({
                             </div>
                         )}
 
-                        {/* Quick rating widget */}
                         <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
-                            <div className="mb-2 flex items-center justify-between">
-                                <span className="text-sm font-bold text-slate-700">
-                                    Rating Keseluruhan
-                                </span>
-                                <span className="text-2xl font-black text-amber-500">
-                                    {stats.average_rating.toFixed(1)}
-                                </span>
+                            <div className="mb-4 flex items-center justify-between gap-3">
+                                <h2 className="flex items-center gap-1.5 text-sm font-bold text-slate-900">
+                                    <Calendar className="h-4 w-4 text-primary" />
+                                    Event Organizer
+                                </h2>
+                                <Link
+                                    href="#events"
+                                    className="text-xs font-semibold text-primary hover:text-primary/80"
+                                >
+                                    Lihat semua
+                                </Link>
                             </div>
-                            <div className="flex gap-0.5 mb-2">
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                    <Star
-                                        key={i}
-                                        className={cn(
-                                            "w-5 h-5",
-                                            i < ratingFull
-                                                ? "fill-amber-400 text-amber-400"
-                                                : i === ratingFull && ratingHalf
-                                                  ? "fill-amber-200 text-amber-300"
-                                                  : "text-slate-200",
-                                        )}
-                                    />
-                                ))}
-                            </div>
-                            <p className="text-xs text-slate-500">
-                                Berdasarkan {formatStat(stats.reviews_count)}{" "}
-                                ulasan peserta
-                            </p>
+                            {createdEvents.length === 0 ? (
+                                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-500">
+                                    Belum ada event yang dibuat organizer ini.
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {createdEvents.map((event) => {
+                                        const mode =
+                                            modeConfig[event.event_mode] ??
+                                            modeConfig.offline;
+                                        const ModeIcon = mode.icon;
+
+                                        return (
+                                            <Link
+                                                key={event.id}
+                                                href={`/events/${event.slug}`}
+                                                className="group flex gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-md hover:shadow-slate-900/10"
+                                            >
+                                                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                                                    <Image
+                                                        src={
+                                                            event.primary_image ||
+                                                            `/placeholder-event.jpg`
+                                                        }
+                                                        alt={event.title}
+                                                        fill
+                                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                                    />
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors group-hover:text-primary">
+                                                        {event.title}
+                                                    </p>
+                                                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-500">
+                                                        <span>
+                                                            {formatDateShort(
+                                                                event.start_time,
+                                                            )}
+                                                        </span>
+                                                        <span className="h-1 w-1 rounded-full bg-slate-300" />
+                                                        <span className="inline-flex items-center gap-1">
+                                                            <ModeIcon className="h-3 w-3" />
+                                                            {mode.label}
+                                                        </span>
+                                                        <span className="h-1 w-1 rounded-full bg-slate-300" />
+                                                        <span>
+                                                            {formatStat(
+                                                                event.attendee_count,
+                                                            )}{" "}
+                                                            peserta
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </aside>
                 </div>
