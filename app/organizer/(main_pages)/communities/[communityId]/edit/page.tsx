@@ -124,7 +124,7 @@ export default function EditCommunityPage() {
             }
 
             try {
-                const data = await CommunityService.getCommunityByOrganizer();
+                const data = await CommunityService.getCommunityById(params.communityId);
                 if (!isMounted) return;
 
                 setCommunity(data);
@@ -175,7 +175,7 @@ export default function EditCommunityPage() {
 
         try {
             const updatedCommunity =
-                await CommunityService.updateOrganizerCommunity({
+                await CommunityService.updateCommunity(community.id, {
                     name,
                     slug,
                     description,
@@ -232,10 +232,10 @@ export default function EditCommunityPage() {
     }
 
     const handleDeleteCommunity = async () => {
-        if (!canConfirmDelete) return;
+        if (!canConfirmDelete || !community) return;
         setIsSubmitting(true);
         try {
-            await CommunityService.deleteOrganizerCommunity();
+            await CommunityService.deleteCommunity(community.id);
             router.push("/organizer/communities");
         } catch {
             setErrorMessage("Gagal menghapus komunitas.");

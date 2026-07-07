@@ -45,6 +45,8 @@ export default async function ExplorePage(props: {
     typeof searchParams.price === "string" ? searchParams.price : "";
   const sortOption =
     typeof searchParams.sort === "string" ? searchParams.sort : "";
+  const followingFilter =
+    typeof searchParams.following === "string" ? searchParams.following : "";
 
   const LIMIT = 12;
   const cookieHeader = (await cookies()).toString();
@@ -63,6 +65,7 @@ export default async function ExplorePage(props: {
       province: provinceFilter,
       price: priceFilter,
       sort: sortOption,
+      following: followingFilter,
     }, cookieHeader);
     initialEvents = response.data;
     initialHasMore = response.pagination.has_more;
@@ -124,6 +127,7 @@ export default async function ExplorePage(props: {
           provinceFilter={provinceFilter}
           priceFilter={priceFilter}
           sortOption={sortOption}
+          followingFilter={followingFilter}
           limit={LIMIT}
         />
       </main>

@@ -385,12 +385,10 @@ function CommentPanel({
         </div>
     );
 }
-export default function SupportCommunityClient() {
-    const [community, setCommunity] = useState<Community | null>(null);
+function SupportCommunityItem({ initialCommunity }: { initialCommunity: Community }) {
+    const [community, setCommunity] = useState<Community>(initialCommunity);
     const [posts, setPosts] = useState<Post[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [accessDenied, setAccessDenied] = useState(false);
-    const [notFound, setNotFound] = useState(false);
+    const [loadingPosts, setLoadingPosts] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingPost, setEditingPost] = useState<Post | null>(null);
     const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
@@ -405,50 +403,35 @@ export default function SupportCommunityClient() {
         [posts],
     );
 
-    const loadCommunity = useCallback(async () => {
-        setLoading(true);
-        setAccessDenied(false);
-        setNotFound(false);
-        try {
-            const result = await SupportService.getSupportCommunity();
-            setCommunity(result.community);
-            if (result.posts.length) {
-                setPosts(result.posts);
-            } else {
+    useEffect(() => {
+        const fetchPosts = async () => {
+            setLoadingPosts(true);
+            try {
                 const postResult = await CommunityService.listPosts(
-                    result.community.id,
+                    community.id,
                     1,
                     50,
                 );
                 setPosts(postResult.data);
-            }
-        } catch (error) {
-            const status = getErrorStatus(error);
-            if (status === 403) setAccessDenied(true);
-            else if (status === 404) setNotFound(true);
-            else
+            } catch (error) {
                 toast.error(
                     getApiErrorMessage(
                         error,
-                        "Gagal mengambil komunitas support.",
+                        "Gagal mengambil post komunitas.",
                     ),
                 );
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        void loadCommunity();
-    }, [loadCommunity]);
+            } finally {
+                setLoadingPosts(false);
+            }
+        };
+        void fetchPosts();
+    }, [community.id]);
 
     const handlePostSubmit = async (payload: {
         title: string;
         body: string;
         post_type: "text" | "announcement";
     }) => {
-        if (!community) return;
-
         try {
             if (editingPost) {
                 const updated = await CommunityService.updatePost(
@@ -473,11 +456,10 @@ export default function SupportCommunityClient() {
                 payload,
             );
             setPosts((current) => [created, ...current]);
-            setCommunity((current) =>
-                current
-                    ? { ...current, post_count: current.post_count + 1 }
-                    : current,
-            );
+            setCommunity((current) => ({
+                ...current,
+                post_count: current.post_count + 1,
+            }));
             toast.success("Post diterbitkan.");
         } catch (error) {
             toast.error(getApiErrorMessage(error, "Gagal menyimpan post."));
@@ -486,26 +468,246 @@ export default function SupportCommunityClient() {
     };
 
     const handleDeletePost = async (post: Post) => {
-        if (!community || !window.confirm(`Hapus post "${post.title}"?`))
-            return;
+        if (!window.confirm(`Hapus post "${post.title}"?`)) return;
         try {
             await CommunityService.deletePost(community.id, post.id);
             setPosts((current) =>
                 current.filter((item) => item.id !== post.id),
             );
-            setCommunity((current) =>
-                current
-                    ? {
-                          ...current,
-                          post_count: Math.max(current.post_count - 1, 0),
-                      }
-                    : current,
-            );
+            setCommunity((current) => ({
+                ...current,
+                post_count: Math.max(current.post_count - 1, 0),
+            }));
             toast.success("Post dihapus.");
         } catch (error) {
             toast.error(getApiErrorMessage(error, "Gagal menghapus post."));
         }
     };
+
+    return (
+        <div className="mb-12 space-y-6">
+            <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5">
+                {community.banner_url ? (
+                    <div className="relative h-44 bg-slate-100 md:h-56">
+                        <Image
+                            src={community.banner_url}
+                            alt=""
+                            fill
+                            className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 to-transparent" />
+                        <div className="absolute bottom-5 left-5 right-5">
+                            <p className="text-[11px] font-medium uppercase tracking-wider text-white/75">
+                                Support community
+                            </p>
+                            <h1 className="mt-1 text-3xl font-bold leading-tight text-white">
+                                {community.name}
+                            </h1>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="p-5">
+                        <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                            Support community
+                        </p>
+                        <h1 className="mt-2 text-2xl font-bold text-slate-950">
+                            {community.name}
+                        </h1>
+                    </div>
+                )}
+                <div className="grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_280px]">
+                    <div>
+                        <p className="text-sm leading-relaxed text-slate-600">
+                            {community.description ||
+                                "Komunitas ini belum memiliki deskripsi."}
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50/80 text-center">
+                        <div className="px-3 py-3">
+                            <p className="text-xl font-semibold text-slate-950">
+                                {formatNumber(community.member_count)}
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                                Anggota
+                            </p>
+                        </div>
+                        <div className="border-x border-slate-200/80 px-3 py-3">
+                            <p className="text-xl font-semibold text-slate-950">
+                                {formatNumber(community.post_count)}
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                                Post
+                            </p>
+                        </div>
+                        <div className="px-3 py-3">
+                            <p className="text-xl font-semibold text-slate-950">
+                                {formatNumber(community.event_count)}
+                            </p>
+                            <p className="text-[11px] text-slate-500">
+                                Event
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 className="text-base font-semibold text-slate-950">
+                            Community posts
+                        </h2>
+                        <p className="mt-1 text-sm text-slate-500">
+                            Buat, edit, hapus post, dan kelola komentar.
+                        </p>
+                    </div>
+                    <Button
+                        className="h-10 rounded-xl text-sm font-semibold"
+                        onClick={() => {
+                            setEditingPost(null);
+                            setDialogOpen(true);
+                        }}
+                    >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Buat Post
+                    </Button>
+                </div>
+            </section>
+
+            {loadingPosts ? (
+                <div className="flex min-h-32 items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+            ) : sortedPosts.length ? (
+                <section className="space-y-3">
+                    {sortedPosts.map((post) => (
+                        <article
+                            key={post.id}
+                            className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5"
+                        >
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className="rounded-full border border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary">
+                                            {post.post_type ===
+                                            "announcement"
+                                                ? "Pengumuman"
+                                                : "Diskusi"}
+                                        </span>
+                                        <span className="text-xs text-slate-500">
+                                            {formatDate(post.created_at)}
+                                        </span>
+                                    </div>
+                                    <h3 className="mt-3 text-lg font-semibold text-slate-950">
+                                        {post.title}
+                                    </h3>
+                                    <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+                                        {post.body}
+                                    </p>
+                                </div>
+                                <div className="flex shrink-0 gap-1">
+                                    <button
+                                        type="button"
+                                        className="rounded-xl p-2 text-slate-400 hover:bg-primary-light hover:text-primary"
+                                        onClick={() => {
+                                            setEditingPost(post);
+                                            setDialogOpen(true);
+                                        }}
+                                        aria-label="Edit post"
+                                    >
+                                        <Pencil className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="rounded-xl p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                                        onClick={() => handleDeletePost(post)}
+                                        aria-label="Hapus post"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            </div>
+                            <Button
+                                variant="outline"
+                                className="mt-4 h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+                                onClick={() =>
+                                    setExpandedPostId((current) =>
+                                        current === post.id ? null : post.id,
+                                    )
+                                }
+                            >
+                                <MessageCircle className="mr-2 h-4 w-4" />
+                                {expandedPostId === post.id
+                                    ? "Tutup komentar"
+                                    : "Kelola komentar"}
+                            </Button>
+                            {expandedPostId === post.id ? (
+                                <CommentPanel
+                                    communityId={community.id}
+                                    post={post}
+                                />
+                            ) : null}
+                        </article>
+                    ))}
+                </section>
+            ) : (
+                <section className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-14 text-center shadow-sm shadow-slate-900/5">
+                    <ShieldCheck className="mx-auto h-8 w-8 text-slate-300" />
+                    <h2 className="mt-4 text-lg font-semibold text-slate-950">
+                        Belum ada post
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-500">
+                        Buat post pertama untuk komunitas organizer ini.
+                    </p>
+                </section>
+            )}
+
+            <PostDialog
+                open={dialogOpen}
+                post={editingPost}
+                onOpenChange={setDialogOpen}
+                onSubmit={handlePostSubmit}
+            />
+        </div>
+    );
+}
+
+export default function SupportCommunityClient() {
+    const [communities, setCommunities] = useState<Community[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [accessDenied, setAccessDenied] = useState(false);
+    const [notFound, setNotFound] = useState(false);
+
+    const loadCommunities = useCallback(async () => {
+        setLoading(true);
+        setAccessDenied(false);
+        setNotFound(false);
+        try {
+            const result = await SupportService.getSupportCommunities();
+            if (result.data.length === 0) {
+                setNotFound(true);
+            } else {
+                setCommunities(result.data);
+            }
+        } catch (error) {
+            const status = getErrorStatus(error);
+            if (status === 403) setAccessDenied(true);
+            else if (status === 404) setNotFound(true);
+            else
+                toast.error(
+                    getApiErrorMessage(
+                        error,
+                        "Gagal mengambil komunitas support.",
+                    ),
+                );
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        void loadCommunities();
+    }, [loadCommunities]);
 
     if (accessDenied) {
         return (
@@ -531,194 +733,16 @@ export default function SupportCommunityClient() {
                 <div className="flex min-h-72 items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5">
                     <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
-            ) : community ? (
-                <>
-                    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-md shadow-slate-900/5">
-                        {community.banner_url ? (
-                            <div className="relative h-44 bg-slate-100 md:h-56">
-                                <Image
-                                    src={community.banner_url}
-                                    alt=""
-                                    fill
-                                    className="object-cover"
-                                />
-                                <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 to-transparent" />
-                                <div className="absolute bottom-5 left-5 right-5">
-                                    <p className="text-[11px] font-medium uppercase tracking-wider text-white/75">
-                                        Support community
-                                    </p>
-                                    <h1 className="mt-1 text-3xl font-bold leading-tight text-white">
-                                        {community.name}
-                                    </h1>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="p-5">
-                                <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
-                                    Support community
-                                </p>
-                                <h1 className="mt-2 text-2xl font-bold text-slate-950">
-                                    {community.name}
-                                </h1>
-                            </div>
-                        )}
-                        <div className="grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_280px]">
-                            <div>
-                                <p className="text-sm leading-relaxed text-slate-600">
-                                    {community.description ||
-                                        "Komunitas ini belum memiliki deskripsi."}
-                                </p>
-                            </div>
-                            <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50/80 text-center">
-                                <div className="px-3 py-3">
-                                    <p className="text-xl font-semibold text-slate-950">
-                                        {formatNumber(community.member_count)}
-                                    </p>
-                                    <p className="text-[11px] text-slate-500">
-                                        Anggota
-                                    </p>
-                                </div>
-                                <div className="border-x border-slate-200/80 px-3 py-3">
-                                    <p className="text-xl font-semibold text-slate-950">
-                                        {formatNumber(community.post_count)}
-                                    </p>
-                                    <p className="text-[11px] text-slate-500">
-                                        Post
-                                    </p>
-                                </div>
-                                <div className="px-3 py-3">
-                                    <p className="text-xl font-semibold text-slate-950">
-                                        {formatNumber(community.event_count)}
-                                    </p>
-                                    <p className="text-[11px] text-slate-500">
-                                        Event
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <h2 className="text-base font-semibold text-slate-950">
-                                    Community posts
-                                </h2>
-                                <p className="mt-1 text-sm text-slate-500">
-                                    Buat, edit, hapus post, dan kelola komentar.
-                                </p>
-                            </div>
-                            <Button
-                                className="h-10 rounded-xl text-sm font-semibold"
-                                onClick={() => {
-                                    setEditingPost(null);
-                                    setDialogOpen(true);
-                                }}
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Buat Post
-                            </Button>
-                        </div>
-                    </section>
-
-                    {sortedPosts.length ? (
-                        <section className="space-y-3">
-                            {sortedPosts.map((post) => (
-                                <article
-                                    key={post.id}
-                                    className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5"
-                                >
-                                    <div className="flex items-start justify-between gap-4">
-                                        <div className="min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <span className="rounded-full border border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary">
-                                                    {post.post_type ===
-                                                    "announcement"
-                                                        ? "Pengumuman"
-                                                        : "Diskusi"}
-                                                </span>
-                                                <span className="text-xs text-slate-500">
-                                                    {formatDate(
-                                                        post.created_at,
-                                                    )}
-                                                </span>
-                                            </div>
-                                            <h3 className="mt-3 text-lg font-semibold text-slate-950">
-                                                {post.title}
-                                            </h3>
-                                            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-600">
-                                                {post.body}
-                                            </p>
-                                        </div>
-                                        <div className="flex shrink-0 gap-1">
-                                            <button
-                                                type="button"
-                                                className="rounded-xl p-2 text-slate-400 hover:bg-primary-light hover:text-primary"
-                                                onClick={() => {
-                                                    setEditingPost(post);
-                                                    setDialogOpen(true);
-                                                }}
-                                                aria-label="Edit post"
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="rounded-xl p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                                                onClick={() =>
-                                                    handleDeletePost(post)
-                                                }
-                                                aria-label="Hapus post"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <Button
-                                        variant="outline"
-                                        className="mt-4 h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
-                                        onClick={() =>
-                                            setExpandedPostId((current) =>
-                                                current === post.id
-                                                    ? null
-                                                    : post.id,
-                                            )
-                                        }
-                                    >
-                                        <MessageCircle className="mr-2 h-4 w-4" />
-                                        {expandedPostId === post.id
-                                            ? "Tutup komentar"
-                                            : "Kelola komentar"}
-                                    </Button>
-                                    {expandedPostId === post.id ? (
-                                        <CommentPanel
-                                            communityId={community.id}
-                                            post={post}
-                                        />
-                                    ) : null}
-                                </article>
-                            ))}
-                        </section>
-                    ) : (
-                        <section className="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-14 text-center shadow-sm shadow-slate-900/5">
-                            <ShieldCheck className="mx-auto h-8 w-8 text-slate-300" />
-                            <h2 className="mt-4 text-lg font-semibold text-slate-950">
-                                Belum ada post
-                            </h2>
-                            <p className="mt-2 text-sm text-slate-500">
-                                Buat post pertama untuk komunitas organizer ini.
-                            </p>
-                        </section>
-                    )}
-
-                    <PostDialog
-                        open={dialogOpen}
-                        post={editingPost}
-                        onOpenChange={setDialogOpen}
-                        onSubmit={handlePostSubmit}
-                    />
-                </>
-            ) : null}
+            ) : (
+                <div className="space-y-8">
+                    {communities.map((community) => (
+                        <SupportCommunityItem
+                            key={community.id}
+                            initialCommunity={community}
+                        />
+                    ))}
+                </div>
+            )}
         </SupportPageSurface>
     );
 }

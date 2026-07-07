@@ -19,6 +19,7 @@ export default function InfiniteEventList({
   provinceFilter,
   priceFilter,
   sortOption,
+  followingFilter,
   limit,
 }: InfiniteEventListProps) {
   const [events, setEvents] = useState<HomeEventCard[]>(initialEvents);
@@ -42,6 +43,7 @@ export default function InfiniteEventList({
         province: provinceFilter,
         price: priceFilter,
         sort: sortOption,
+        following: followingFilter,
       });
 
       setEvents(result.data);
@@ -59,6 +61,7 @@ export default function InfiniteEventList({
     provinceFilter,
     priceFilter,
     sortOption,
+    followingFilter,
   ]);
   const loadMore = useCallback(async () => {
     if (isFetchingRef.current || isLoading || !hasMore || !nextCursor) return;
@@ -77,6 +80,7 @@ export default function InfiniteEventList({
         province: provinceFilter,
         price: priceFilter,
         sort: sortOption,
+        following: followingFilter,
       });
 
       setEvents((prev) => [...prev, ...result.data]);
@@ -95,6 +99,7 @@ export default function InfiniteEventList({
             province: provinceFilter,
             price: priceFilter,
             sort: sortOption,
+            following: followingFilter,
           });
 
           setEvents(result.data);
@@ -125,6 +130,7 @@ export default function InfiniteEventList({
     provinceFilter,
     priceFilter,
     sortOption,
+    followingFilter,
   ]);
 
 
@@ -163,6 +169,7 @@ export default function InfiniteEventList({
     provinceFilter,
     priceFilter,
     sortOption,
+    followingFilter,
     initialEvents,
     initialHasMore,
     initialNextCursor,

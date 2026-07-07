@@ -1,5 +1,5 @@
 import axiosClient from "@/lib/axios-client";
-import type { Community } from "@/types/community";
+import type { Community, PaginatedApiResponse, PaginatedResult } from "@/types/community";
 import type { Event, OrganizerEventCard } from "@/types/event";
 import type {
   OrganizerTeamMember,
@@ -96,6 +96,31 @@ export const SupportService = {
     return {
       community: data as Community,
       posts: [],
+    };
+  },
+
+  async getSupportCommunities({
+    page = 1,
+    limit = 20,
+  }: {
+    page?: number;
+    limit?: number;
+  } = {}): Promise<PaginatedResult<Community>> {
+    const response = await axiosClient.get<PaginatedApiResponse<Community>>(
+      "/organizer/support/communities",
+      { params: { page, limit } }
+    );
+    const payload = response.data;
+    const currentPage = payload.pagination?.page ?? payload.page ?? page;
+    const currentLimit = payload.pagination?.limit ?? payload.limit ?? limit;
+    
+    return {
+      data: payload.data ?? [],
+      page: currentPage,
+      limit: currentLimit,
+      total: payload.pagination?.total ?? payload.total,
+      totalPages: payload.pagination?.total_pages,
+      hasNext: payload.pagination?.has_next ?? payload.pagination?.has_more ?? false,
     };
   },
 

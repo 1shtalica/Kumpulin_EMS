@@ -21,15 +21,15 @@ const getApiBaseUrl = () =>
     process.env.API_URL ||
     process.env.NEXT_PUBLIC_API_URL;
 
-async function getOrganizerCommunity(): Promise<{
-    community: Community | null;
+async function getOrganizerCommunities(): Promise<{
+    communities: Community[];
     errorMessage?: string;
 }> {
     const apiBaseUrl = getApiBaseUrl();
 
     if (!apiBaseUrl) {
         return {
-            community: null,
+            communities: [],
             errorMessage: "Konfigurasi API belum tersedia.",
         };
     }
@@ -43,13 +43,13 @@ async function getOrganizerCommunity(): Promise<{
 
     if (!accessToken) {
         return {
-            community: null,
+            communities: [],
             errorMessage: "Sesi login tidak ditemukan.",
         };
     }
 
     try {
-        const response = await fetch(`${apiBaseUrl}/organizer/community`, {
+        const response = await fetch(`${apiBaseUrl}/organizer/communities`, {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -60,22 +60,22 @@ async function getOrganizerCommunity(): Promise<{
         });
 
         if (response.status === 404) {
-            return { community: null };
+            return { communities: [] };
         }
 
         if (!response.ok) {
             return {
-                community: null,
+                communities: [],
                 errorMessage: "Gagal mengambil data komunitas.",
             };
         }
 
-        const payload = (await response.json()) as CommunityResponse;
+        const payload = (await response.json()) as { data?: Community[] };
 
-        return { community: payload.data ?? null };
+        return { communities: payload.data ?? [] };
     } catch {
         return {
-            community: null,
+            communities: [],
             errorMessage: "Gagal mengambil data komunitas.",
         };
     }
@@ -323,8 +323,7 @@ function CommunityCard({ community }: { community: Community }) {
                                 strokeWidth={2.3}
                             />
                             <p className="text-xs leading-relaxed text-slate-600">
-                                Saat ini satu akun organizer hanya dapat
-                                mengelola satu komunitas.
+                                Kelola komunitas Anda dan pantau interaksi dengan peserta.
                             </p>
                         </div>
                     </div>
@@ -335,9 +334,9 @@ function CommunityCard({ community }: { community: Community }) {
 }
 
 export default async function Communities() {
-    const { community, errorMessage } = await getOrganizerCommunity();
+    const { communities, errorMessage } = await getOrganizerCommunities();
 
-    if (!community) {
+    if (communities.length === 0) {
         return <EmptyCommunityState message={errorMessage} />;
     }
 
@@ -433,17 +432,23 @@ export default async function Communities() {
                     </p>
                     </div>
                     <Button
+                        asChild
                         variant="outline"
-                        disabled
-                        className="h-10 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-400 disabled:opacity-80"
+                        className="h-10 rounded-xl border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition-all hover:border-primary/30 hover:text-primary"
                     >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Buat Komunitas
+                        <Link href="/organizer/communities/create">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Buat Komunitas
+                        </Link>
                     </Button>
                 </div>
             </header>
 
-            <CommunityCard community={community} />
+            <div className="grid gap-6">
+                {communities.map((community) => (
+                    <CommunityCard key={community.id} community={community} />
+                ))}
+            </div>
         </PageSurface>
     );
 }

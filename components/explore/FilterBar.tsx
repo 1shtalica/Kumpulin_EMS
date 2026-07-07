@@ -8,6 +8,7 @@ import CategoryFilter from "./CategoryFilter";
 import LocationFilter from "./LocationFilter";
 import PriceFilter from "./PriceFilter";
 import SortByFilter from "./SortByFilter";
+import OrganizerFilter from "./OrganizerFilter";
 
 export default function FilterBar() {
   const router = useRouter();
@@ -20,8 +21,9 @@ export default function FilterBar() {
   const hasPrice = searchParams.has("price");
   const hasSort = searchParams.has("sort");
   const hasType = searchParams.has("type");
+  const hasFollowing = searchParams.has("following");
   const isFiltering =
-    hasCategory || hasLocation || hasProvince || hasPrice || hasSort || hasType;
+    hasCategory || hasLocation || hasProvince || hasPrice || hasSort || hasType || hasFollowing;
 
   const handleReset = () => {
     const params = new URLSearchParams(searchParams.toString());
@@ -31,6 +33,7 @@ export default function FilterBar() {
     params.delete("price");
     params.delete("sort");
     params.delete("type");
+    params.delete("following");
     params.delete("page");
     params.delete("offset");
     router.push(`?${params.toString()}`, { scroll: false });
@@ -44,6 +47,7 @@ export default function FilterBar() {
 
             {/* Filter Items inside pill */}
             <div className="grid grid-cols-2 lg:flex w-full flex-1 gap-1 lg:gap-0 lg:divide-x divide-slate-100 min-w-0">
+              <div className="flex-1 w-full min-w-0 lg:px-1"><OrganizerFilter /></div>
               <div className="flex-1 w-full min-w-0 lg:px-1"><CategoryFilter /></div>
               <div className="flex-1 w-full min-w-0 lg:px-1"><LocationFilter /></div>
               <div className="flex-1 w-full min-w-0 lg:px-1"><PriceFilter /></div>

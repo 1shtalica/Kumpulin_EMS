@@ -127,6 +127,7 @@ const buildEventListSearchParams = (params: GetEventsParams = {}) => {
     province = "",
     price = "",
     sort = "",
+    following = "",
   } = params;
   const safeLimit = Math.min(Math.max(limit, 1), 100);
   const titleSearch = search ?? q;
@@ -143,6 +144,7 @@ const buildEventListSearchParams = (params: GetEventsParams = {}) => {
   if (province) urlParams.set("province", province);
   if (normalizedPrice) urlParams.set("price", normalizedPrice);
   if (normalizedSort) urlParams.set("sort", normalizedSort);
+  if (following) urlParams.set("following", following);
 
   return urlParams;
 };

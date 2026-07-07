@@ -81,6 +81,7 @@ export interface InfiniteEventListProps {
   provinceFilter: string;
   priceFilter: string;
   sortOption: string;
+  followingFilter: string;
   limit: number;
 }
 
@@ -121,6 +122,7 @@ export interface GetEventsParams {
   province?: string;
   price?: string;
   sort?: string;
+  following?: string;
   // TODO: tunggu api siap
 }
 

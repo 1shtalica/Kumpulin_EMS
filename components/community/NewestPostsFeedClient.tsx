@@ -634,7 +634,7 @@ export default function NewestPostsFeedClient() {
                     <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
                         Ruang komunitas
                     </p>
-                    <h1 className="mt-1 text-2xl font-bold leading-tight text-slate-950">
+                    <h1 className="mt-1 text-2xl font-bold leading-[1.12] text-slate-950">
                         Komunitas
                     </h1>
                 </div>
@@ -1033,6 +1033,14 @@ export default function NewestPostsFeedClient() {
                                                 : "Komunitas aktif akan tampil setelah feed dimuat."}
                                         </p>
                                     )}
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-slate-100">
+                                    <Link
+                                        href="/komunitas/explore"
+                                        className="flex h-10 w-full items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+                                    >
+                                        Jelajahi Semua Komunitas
+                                    </Link>
                                 </div>
                             </div>
                         </section>

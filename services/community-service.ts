@@ -183,7 +183,7 @@ export const CommunityService = {
     ): Promise<Community> {
         if (hasCommunityFiles(payload)) {
             const response = await axiosClient.post<CommunityResponse>(
-                "/organizer/community",
+                "/communities",
                 buildCommunityFormData(payload),
                 { headers: { "Content-Type": "multipart/form-data" } },
             );
@@ -191,7 +191,7 @@ export const CommunityService = {
         }
 
         const response = await axiosClient.post<CommunityResponse>(
-            "/organizer/community",
+            "/communities",
             buildCommunityJson(payload),
         );
         return response.data.data;
@@ -216,6 +216,23 @@ export const CommunityService = {
             "/organizer/community",
         );
         return response.data.data;
+    },
+
+    async getOrganizerCommunities({
+        page = 1,
+        limit = 20,
+    }: {
+        page?: number;
+        limit?: number;
+    } = {}): Promise<PaginatedResult<Community>> {
+        const response = await axiosClient.get<PaginatedApiResponse<Community>>(
+            "/organizer/communities",
+            {
+                params: { page, limit },
+                skipAuthFailureRedirect: true,
+            }
+        );
+        return normalizePagination(response.data, page, limit);
     },
 
     async updateCommunity(
