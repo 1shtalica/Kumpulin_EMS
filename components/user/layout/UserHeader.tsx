@@ -15,7 +15,7 @@ export default function UserHeader({ className }: UserHeaderProps) {
   const pathname = usePathname();
 
   const getPageTitle = () => {
-    if (pathname.startsWith("/my-orders")) return "Riwayat Pesanan";
+    if (pathname.startsWith("/user/my-orders") || pathname.startsWith("/my-orders")) return "Riwayat Pesanan";
     if (pathname.startsWith("/user/my-ticket")) return "Tiket Saya";
     if (pathname.startsWith("/user/following")) return "Mengikuti";
     if (pathname.startsWith("/user/wishlist")) return "Wishlist Saya";

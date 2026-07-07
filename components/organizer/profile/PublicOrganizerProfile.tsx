@@ -12,7 +12,6 @@ import {
     Laptop,
     UserPlus,
     Mail,
-    CheckCircle2,
     Loader2,
     AlertCircle,
     Inbox,
@@ -125,7 +124,7 @@ function OrganizerEventCard({ event }: { event: OrganizerProfileEvent }) {
             <div className="relative aspect-video bg-slate-100 overflow-hidden">
                 {imgError ? (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
-                        <span className="text-4xl font-black text-slate-300 select-none">
+                        <span className="select-none text-3xl font-semibold text-slate-300">
                             {event.title.charAt(0).toUpperCase()}
                         </span>
                     </div>
@@ -158,26 +157,26 @@ function OrganizerEventCard({ event }: { event: OrganizerProfileEvent }) {
             </div>
 
             {/* Body */}
-            <div className="flex gap-3 p-4">
+            <div className="flex gap-3 p-4 sm:p-4">
                 {/* Date box */}
-                <div className="shrink-0 flex flex-col items-center justify-center w-12 h-14 rounded-xl bg-primary/5 border border-primary/10">
+                <div className="shrink-0 flex flex-col items-center justify-center h-[52px] w-11 rounded-xl border border-primary/10 bg-primary/5">
                     <span className="text-[10px] font-bold text-primary/70 uppercase tracking-wider leading-none">
                         {formatDateShort(event.start_time).split(" ")[1]}
                     </span>
-                    <span className="text-xl font-black text-primary leading-tight">
+                    <span className="text-base font-semibold leading-tight text-primary">
                         {formatDateShort(event.start_time).split(" ")[0]}
                     </span>
                 </div>
 
                 <div className="flex flex-col gap-0.5 min-w-0">
-                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                         {formatDayOfWeek(event.start_time)} ·{" "}
                         {formatTime(event.start_time)}
                     </p>
-                    <h3 className="text-sm font-bold text-slate-900 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                    <h3 className="line-clamp-2 text-base font-semibold leading-snug text-slate-900 transition-colors group-hover:text-primary sm:text-lg">
                         {event.title}
                     </h3>
-                    <p className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                    <p className="mt-1 text-xs font-medium text-slate-400">
                         kumpul.in
                     </p>
                 </div>
@@ -337,17 +336,70 @@ export default function PublicOrganizerProfile({
     };
 
     useEffect(() => {
-        const fetch = slug
-            ? OrganizerService.getProfileBySlug(slug)
-            : OrganizerService.getProfile();
+        const fetchProfileData = async () => {
+            try {
+                let data: OrganizerProfileData;
+                if (slug) {
+                    data = await OrganizerService.getProfileBySlug(slug);
+                } else {
+                    data = await OrganizerService.getProfile();
+                    
+                    // Fetch organizer's own events to populate the profile
+                    try {
+                        const { EventService } = await import("@/services/event-service");
+                        const eventsRes = await EventService.getOrganizerEvents({ limit: 100 });
+                        
+                        const upcoming: OrganizerProfileEvent[] = [];
+                        const past: OrganizerProfileEvent[] = [];
+                        const now = new Date();
+                        
+                        eventsRes.data.forEach((ev) => {
+                            const eventTime = new Date(ev.start_date);
+                            
+                            // Determine event mode based on is_online and type
+                            let event_mode: "offline" | "online" | "hybrid" = "offline";
+                            if (ev.is_online && ev.type !== "hybrid") {
+                                event_mode = "online";
+                            } else if (ev.type === "hybrid") {
+                                event_mode = "hybrid";
+                            } else if (ev.is_online) {
+                                event_mode = "online";
+                            }
 
-        fetch
-            .then(setProfile)
-            .catch((err) => {
+                            const mappedEvent: OrganizerProfileEvent = {
+                                id: ev.id || ev.event_id || "",
+                                title: ev.title,
+                                slug: ev.slug,
+                                event_mode: event_mode,
+                                status: ev.status,
+                                start_time: ev.start_date,
+                                end_time: ev.start_date, // fallback
+                                attendee_count: ev.total_sold,
+                                primary_image: ev.image_url,
+                            };
+                            
+                            if (eventTime > now) {
+                                upcoming.push(mappedEvent);
+                            } else {
+                                past.push(mappedEvent);
+                            }
+                        });
+                        
+                        data.events = { upcoming, past };
+                    } catch (eventErr) {
+                        console.error("Failed to fetch organizer events", eventErr);
+                    }
+                }
+                setProfile(data);
+            } catch (err) {
                 console.error(err);
                 setError("Gagal memuat profil organizer.");
-            })
-            .finally(() => setIsLoading(false));
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProfileData();
     }, [slug]);
 
     // ── Loading ──
@@ -372,15 +424,11 @@ export default function PublicOrganizerProfile({
         );
     }
 
-    const {
-        organizer,
-        stats,
-        events = { upcoming: [], past: [] },
-    } = profile;
+    const { organizer, stats, events = { upcoming: [], past: [] } } = profile;
     const isPublicProfile = Boolean(slug);
 
-    const activeEvents = activeTab === "upcoming" ? events.upcoming : events.past;
-    const createdEvents = [...events.upcoming, ...events.past].slice(0, 4);
+    const activeEvents =
+        activeTab === "upcoming" ? events.upcoming : events.past;
 
     return (
         <div
@@ -406,17 +454,17 @@ export default function PublicOrganizerProfile({
             <div
                 className={cn(
                     !isPublicProfile &&
-                        "relative mx-auto flex w-full max-w-6xl flex-col gap-5",
+                        "relative mx-auto flex w-full max-w-full flex-col gap-5",
                 )}
             >
                 {!isPublicProfile && (
                     <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                             <div className="min-w-0">
-                                <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                                <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
                                     Organizer workspace
                                 </p>
-                                <h1 className="mt-1 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
+                                <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
                                     Profil Organizer
                                 </h1>
                                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
@@ -438,477 +486,435 @@ export default function PublicOrganizerProfile({
                         </div>
                     </section>
                 )}
-            {/* ─── Hero Header ───────────────────────────────────────────────────── */}
-            <div
-                className={cn(
-                    "overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
-                    isPublicProfile && "mx-auto max-w-6xl",
-                )}
-            >
-                {/* Cover Banner */}
+                {/* ─── Hero Header ───────────────────────────────────────────────────── */}
                 <div
                     className={cn(
-                        "relative w-full overflow-hidden bg-slate-100",
-                        isPublicProfile ? "h-48 sm:h-64" : "h-32 sm:h-40",
+                        "overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
+                        isPublicProfile && "mx-auto max-w-full",
                     )}
                 >
-                    <Image
-                        src={
-                            organizer.banner_image_url ||
-                            "/organizer-cover-placeholder.png"
-                        }
-                        alt="Organizer cover"
-                        fill
-                        className="object-cover"
-                        priority
-                    />
-                    {!slug && (
-                        <div className="absolute top-4 right-4 z-20">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                ref={bannerInputRef}
-                                className="hidden"
-                                onChange={handleBannerUpload}
+                    {/* Cover Banner */}
+                    <div
+                        className={cn(
+                            "relative w-full overflow-hidden bg-slate-100",
+                            isPublicProfile ? "h-48 sm:h-64" : "h-40 sm:h-48",
+                        )}
+                    >
+                        {organizer.banner_image_url ? (
+                            <Image
+                                src={organizer.banner_image_url}
+                                alt="Organizer cover"
+                                fill
+                                className="object-cover"
+                                priority
                             />
-                            <button
-                                onClick={() => bannerInputRef.current?.click()}
-                                className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/20 bg-black/50 px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-slate-950/20 backdrop-blur-md transition-colors hover:bg-black/70"
-                            >
-                                <ImageIcon className="w-3.5 h-3.5" />
-                                Ubah Banner
-                            </button>
-                        </div>
-                    )}
-                    {/* Subtle bottom fade */}
-                    <div className="absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-white/50 to-transparent" />
-                </div>
-
-                <div className="relative z-10 mx-auto max-w-6xl px-4 pb-6 md:px-8">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-                        {/* Avatar */}
-                        <div
-                            className={cn(
-                                "relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-primary-light shadow-md shadow-slate-900/10",
-                                isPublicProfile
-                                    ? "-mt-12 h-24 w-24 sm:-mt-16 sm:h-32 sm:w-32"
-                                    : "-mt-10 h-20 w-20 sm:-mt-12 sm:h-24 sm:w-24",
-                            )}
-                        >
-                            {organizer.profile_image_url ? (
-                                <Image
-                                    src={organizer.profile_image_url}
-                                    alt={organizer.name}
-                                    fill
-                                    className="object-cover"
+                        ) : (
+                            <div className="relative h-full w-full overflow-hidden bg-slate-100">
+                                <div
+                                    className="pointer-events-none absolute inset-0 opacity-70"
+                                    aria-hidden="true"
+                                    style={{
+                                        backgroundImage:
+                                            "radial-gradient(circle, #94a3b8 1px, transparent 1px)",
+                                        backgroundSize: "24px 24px",
+                                    }}
                                 />
-                            ) : (
-                                <span className="text-4xl sm:text-5xl font-bold text-primary select-none z-10">
-                                    {organizer.name.charAt(0).toUpperCase()}
-                                </span>
-                            )}
-                            {!slug && (
-                                <>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        ref={profileInputRef}
-                                        className="hidden"
-                                        onChange={handleProfileUpload}
-                                    />
-                                    <div
-                                        onClick={() =>
-                                            profileInputRef.current?.click()
-                                        }
-                                        className="absolute inset-0 z-20 flex cursor-pointer items-center justify-center bg-black/0 opacity-0 transition-colors hover:bg-black/40 hover:opacity-100"
-                                    >
-                                        <ImageIcon className="w-6 h-6 text-white" />
-                                    </div>
-                                </>
-                            )}
-                        </div>
-
-                        {/* Name + description */}
-                        <div className="min-w-0 flex-1 pt-2 sm:pt-3">
-                            <div className="mb-0.5 flex flex-wrap items-center gap-2">
-                                <h1
-                                    className={cn(
-                                        "font-bold leading-tight tracking-normal text-slate-950",
-                                        isPublicProfile
-                                            ? "text-3xl sm:text-4xl"
-                                            : "text-2xl sm:text-3xl",
-                                    )}
+                                <svg
+                                    className="pointer-events-none absolute inset-0 h-full w-full text-primary"
+                                    viewBox="0 0 960 240"
+                                    fill="none"
+                                    aria-hidden="true"
                                 >
-                                    {organizer.name}
-                                </h1>
-                                <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary-light px-2.5 py-1 text-[10px] font-semibold text-primary">
-                                    <CheckCircle2 className="w-3 h-3" />
-                                    Terverifikasi
-                                </span>
+                                    <path
+                                        d="M-20 164C122 98 238 94 372 152C506 210 642 210 806 122C872 86 930 72 1000 82"
+                                        stroke="currentColor"
+                                        strokeOpacity="0.12"
+                                        strokeWidth="2"
+                                    />
+                                    <path
+                                        d="M-40 92C118 34 262 48 390 104C546 172 696 160 1000 36"
+                                        stroke="currentColor"
+                                        strokeOpacity="0.08"
+                                        strokeWidth="2"
+                                    />
+                                    <rect
+                                        x="748"
+                                        y="44"
+                                        width="92"
+                                        height="92"
+                                        rx="18"
+                                        stroke="currentColor"
+                                        strokeOpacity="0.1"
+                                        strokeWidth="2"
+                                    />
+                                    <rect
+                                        x="112"
+                                        y="132"
+                                        width="126"
+                                        height="56"
+                                        rx="14"
+                                        stroke="currentColor"
+                                        strokeOpacity="0.08"
+                                        strokeWidth="2"
+                                    />
+                                </svg>
+                                <div className="absolute inset-x-6 bottom-5 flex items-center gap-3 text-slate-500 sm:inset-x-8">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/10 bg-white/80 text-primary shadow-sm shadow-slate-900/5 backdrop-blur">
+                                        <CalendarDays className="h-4 w-4" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                                            Banner organizer
+                                        </p>
+                                        <p className="truncate text-sm font-semibold text-slate-700">
+                                            {organizer.name}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <p className="mb-2 text-xs font-medium text-slate-400">
-                                @{organizer.slug}
-                            </p>
-                            <p
+                        )}
+                        {!slug && (
+                            <div className="absolute top-4 right-4 z-20">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={bannerInputRef}
+                                    className="hidden"
+                                    onChange={handleBannerUpload}
+                                />
+                                <button
+                                    onClick={() =>
+                                        bannerInputRef.current?.click()
+                                    }
+                                    className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/20 bg-black/50 px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-slate-950/20 backdrop-blur-md transition-colors hover:bg-black/70"
+                                >
+                                    <ImageIcon className="w-3.5 h-3.5" />
+                                    Ubah Banner
+                                </button>
+                            </div>
+                        )}
+                        {/* Subtle bottom fade */}
+                        <div className="absolute inset-x-0 bottom-0 h-10 bg-linear-to-t from-white/50 to-transparent" />
+                    </div>
+
+                    <div className="relative z-10 mx-auto max-w-full px-4 pb-6 md:px-8">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+                            {/* Avatar */}
+                            <div
                                 className={cn(
-                                    "max-w-2xl text-sm leading-relaxed text-slate-500",
+                                    "relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-white bg-primary-light shadow-md shadow-slate-900/10",
                                     isPublicProfile
-                                        ? "line-clamp-3"
-                                        : "line-clamp-2",
+                                        ? "-mt-12 h-24 w-24 sm:-mt-14 sm:h-28 sm:w-28"
+                                        : "-mt-10 h-20 w-20 sm:-mt-12 sm:h-24 sm:w-24",
                                 )}
                             >
-                                {organizer.description ||
-                                    "Belum ada deskripsi organizer."}
-                            </p>
-                        </div>
+                                {organizer.profile_image_url ? (
+                                    <Image
+                                        src={organizer.profile_image_url}
+                                        alt={organizer.name}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <span className="z-10 select-none text-3xl font-semibold text-primary sm:text-4xl">
+                                        {organizer.name.charAt(0).toUpperCase()}
+                                    </span>
+                                )}
+                                {!slug && (
+                                    <>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            ref={profileInputRef}
+                                            className="hidden"
+                                            onChange={handleProfileUpload}
+                                        />
+                                        <div
+                                            onClick={() =>
+                                                profileInputRef.current?.click()
+                                            }
+                                            className="absolute inset-0 z-20 flex cursor-pointer items-center justify-center bg-black/0 opacity-0 transition-colors hover:bg-black/40 hover:opacity-100"
+                                        >
+                                            <ImageIcon className="w-6 h-6 text-white" />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
 
-                        {/* CTA Buttons */}
-                        <div className="flex shrink-0 flex-wrap items-center gap-2.5 sm:pt-3">
-                            {slug ? (
-                                <>
-                                    <button
-                                        onClick={handleFollowToggle}
-                                        disabled={isLoadingFollow}
+                            {/* Name */}
+                            <div className="min-w-0 flex-1 pt-2 sm:pt-3">
+                                <div className="mb-0.5 flex flex-wrap items-center gap-2">
+                                    <h1
                                         className={cn(
-                                            "flex h-11 cursor-pointer items-center gap-2 rounded-xl px-5 text-sm font-semibold transition-all duration-300",
-                                            followed
-                                                ? "border border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200"
-                                                : "bg-primary text-white shadow-md shadow-primary/15 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20",
-                                            isLoadingFollow &&
-                                                "opacity-70 cursor-not-allowed",
+                                            "font-semibold leading-tight tracking-normal text-slate-950",
+                                            isPublicProfile
+                                                ? "text-2xl sm:text-3xl"
+                                                : "text-xl sm:text-2xl",
                                         )}
                                     >
-                                        {isLoadingFollow ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        ) : followed ? (
-                                            <Check className="w-4 h-4" />
-                                        ) : (
-                                            <UserPlus className="w-4 h-4" />
-                                        )}
-                                        {isLoadingFollow
-                                            ? "Loading..."
-                                            : followed
-                                              ? "Mengikuti"
-                                              : "Ikuti"}
-                                    </button>
-                                    <button className="flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary">
-                                        <Mail className="w-4 h-4" />
-                                        Hubungi
-                                    </button>
-                                    <button
-                                        className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary"
-                                        onClick={handleShareableLink}
-                                    >
-                                        <Share2 className="w-4 h-4" />
-                                    </button>
-                                </>
-                            ) : null}
+                                        {organizer.name}
+                                    </h1>
+                                </div>
+                                <p className="text-xs font-medium text-slate-400">
+                                    @{organizer.slug}
+                                </p>
+                            </div>
+
+                            {/* CTA Buttons */}
+                            <div className="flex shrink-0 flex-wrap items-center gap-2.5 sm:pt-3">
+                                {slug ? (
+                                    <>
+                                        <button
+                                            onClick={handleFollowToggle}
+                                            disabled={isLoadingFollow}
+                                            className={cn(
+                                                "flex h-10 cursor-pointer items-center gap-2 rounded-xl px-4 text-sm font-semibold transition-all duration-300",
+                                                followed
+                                                    ? "border border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                    : "bg-primary text-white shadow-md shadow-primary/15 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20",
+                                                isLoadingFollow &&
+                                                    "opacity-70 cursor-not-allowed",
+                                            )}
+                                        >
+                                            {isLoadingFollow ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : followed ? (
+                                                <Check className="w-4 h-4" />
+                                            ) : (
+                                                <UserPlus className="w-4 h-4" />
+                                            )}
+                                            {isLoadingFollow
+                                                ? "Loading..."
+                                                : followed
+                                                  ? "Mengikuti"
+                                                  : "Ikuti"}
+                                        </button>
+                                        <button className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary">
+                                            <Mail className="w-4 h-4" />
+                                            Hubungi
+                                        </button>
+                                        <button
+                                            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary"
+                                            onClick={handleShareableLink}
+                                        >
+                                            <Share2 className="w-4 h-4" />
+                                        </button>
+                                    </>
+                                ) : null}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* ─── Stats Row ─────────────────────────────────────────────────────── */}
-            <div
-                className={cn(
-                    "rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
-                    isPublicProfile && "mt-5",
-                    isPublicProfile && "mx-auto max-w-6xl",
-                )}
-            >
+                {/* ─── Stats Row ─────────────────────────────────────────────────────── */}
                 <div
                     className={cn(
-                        "mx-auto max-w-6xl",
-                        isPublicProfile ? "px-4 md:px-8" : "p-4",
+                        "rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
+                        isPublicProfile && "mt-5",
+                        isPublicProfile && "mx-auto max-w-full",
                     )}
                 >
                     <div
                         className={cn(
-                            isPublicProfile
-                                ? "scrollbar-hide flex items-center gap-0 overflow-x-auto py-4"
-                                : "grid grid-cols-2 gap-3 sm:grid-cols-4",
+                            "mx-auto max-w-full",
+                            isPublicProfile ? "px-5 md:px-8" : "p-4",
                         )}
                     >
-                        {/* Followers */}
                         <div
                             className={cn(
-                                "flex min-w-32 flex-col",
                                 isPublicProfile
-                                    ? "items-center border-r border-slate-200 px-6 first:pl-0 last:border-0 sm:items-start"
-                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                                    ? "scrollbar-hide flex items-center gap-0 overflow-x-auto py-3"
+                                    : "grid grid-cols-2 gap-3 sm:grid-cols-4",
                             )}
                         >
-                            <span className="text-lg sm:text-xl font-bold text-slate-900">
-                                {formatStat(stats.followers)}
-                            </span>
-                            <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
-                                Pengikut
-                            </span>
-                        </div>
+                            {/* Followers */}
+                            <div
+                                className={cn(
+                                    "flex min-w-28 flex-col",
+                                    isPublicProfile
+                                        ? "items-start border-r border-slate-200/80 px-5 first:pl-0 last:border-0 sm:px-6"
+                                        : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                                )}
+                            >
+                                <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                                    {formatStat(stats.followers)}
+                                </span>
+                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                    Pengikut
+                                </span>
+                            </div>
 
-                        {/* Hosting duration */}
-                        <div
-                            className={cn(
-                                "flex min-w-36 flex-col",
-                                isPublicProfile
-                                    ? "items-center border-r border-slate-200 px-6 sm:items-start"
-                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
-                            )}
-                        >
-                            <span className="text-lg sm:text-xl font-bold text-slate-900">
-                                {hostingDuration(organizer.joined_at)}
-                            </span>
-                            <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
-                                Bergabung
-                            </span>
-                        </div>
+                            {/* Hosting duration */}
+                            <div
+                                className={cn(
+                                    "flex min-w-[8.5rem] flex-col",
+                                    isPublicProfile
+                                        ? "items-start border-r border-slate-200/80 px-5 sm:px-6"
+                                        : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                                )}
+                            >
+                                <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                                    {hostingDuration(organizer.joined_at)}
+                                </span>
+                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                    Bergabung
+                                </span>
+                            </div>
 
-                        {/* Total events */}
-                        <div
-                            className={cn(
-                                "flex min-w-32 flex-col",
-                                isPublicProfile
-                                    ? "items-center border-r border-slate-200 px-6 sm:items-start"
-                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
-                            )}
-                        >
-                            <span className="text-lg sm:text-xl font-bold text-slate-900">
-                                {stats.total_events}
-                            </span>
-                            <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
-                                Total Event
-                            </span>
-                        </div>
+                            {/* Total events */}
+                            <div
+                                className={cn(
+                                    "flex min-w-28 flex-col",
+                                    isPublicProfile
+                                        ? "items-start border-r border-slate-200/80 px-5 sm:px-6"
+                                        : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                                )}
+                            >
+                                <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                                    {stats.total_events}
+                                </span>
+                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                    Total Event
+                                </span>
+                            </div>
 
-                        {/* Total attendees */}
-                        <div
-                            className={cn(
-                                "flex min-w-36 flex-col",
-                                isPublicProfile
-                                    ? "items-center px-6 sm:items-start"
-                                    : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
-                            )}
-                        >
-                            <span className="text-lg sm:text-xl font-bold text-slate-900">
-                                {formatStat(stats.total_event_attendees)}
-                            </span>
-                            <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">
-                                Total Peserta
-                            </span>
+                            {/* Total attendees */}
+                            <div
+                                className={cn(
+                                    "flex min-w-[8.5rem] flex-col",
+                                    isPublicProfile
+                                        ? "items-start px-5 sm:px-6"
+                                        : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
+                                )}
+                            >
+                                <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                                    {formatStat(stats.total_event_attendees)}
+                                </span>
+                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                    Total Peserta
+                                </span>
+                            </div>
                         </div>
-
                     </div>
                 </div>
-            </div>
 
-            {/* ─── Body ──────────────────────────────────────────────────────────── */}
-            <div
-                className={cn(
-                    "mx-auto max-w-6xl",
-                    isPublicProfile ? "px-0 py-8 md:px-0" : "py-0",
-                )}
-            >
-                <div className="flex flex-col gap-6 lg:flex-row">
-                    {/* ── Left Main ── */}
-                    <div id="events" className="flex-1 min-w-0 scroll-mt-24">
-                        <div className="mb-6 flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-1 shadow-sm shadow-slate-900/5">
-                            {TABS.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={cn(
-                                        "relative flex h-10 cursor-pointer items-center rounded-xl px-4 text-sm font-semibold transition-colors",
-                                        activeTab === tab.id
-                                            ? "bg-primary-light text-primary"
-                                            : "text-slate-400 hover:text-slate-700",
-                                    )}
-                                >
-                                    {tab.label}
-                                    {tab.id === "upcoming" && (
-                                        <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary">
-                                            {stats.upcoming_events_count}
-                                        </span>
-                                    )}
-                                    {tab.id === "past" && (
-                                        <span className="ml-1.5 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-400">
-                                            {stats.past_events_count}
-                                        </span>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-
-                        {activeEvents.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-20 text-slate-400 shadow-sm shadow-slate-900/5">
-                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50">
-                                    <Inbox className="h-7 w-7 text-slate-300" />
-                                </div>
-                                <div className="text-center">
-                                    <p className="mb-1 font-bold text-slate-600">
-                                        {activeTab === "upcoming"
-                                            ? "Belum ada event mendatang"
-                                            : "Belum ada event selesai"}
-                                    </p>
-                                    <p className="text-sm text-slate-400">
-                                        Pantau halaman ini untuk update event berikutnya.
-                                    </p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                                {activeEvents.map((event) => (
-                                    <OrganizerEventCard
-                                        key={event.id}
-                                        event={event}
-                                    />
+                {/* ─── Body ──────────────────────────────────────────────────────────── */}
+                <div
+                    className={cn(
+                        "mx-auto max-w-full",
+                        isPublicProfile ? "px-0 py-8 md:px-0" : "pt-2 pb-8",
+                    )}
+                >
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+                        {/* ── Left Main ── */}
+                        <div
+                            id="events"
+                            className="min-w-0 scroll-mt-24 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-5"
+                        >
+                            <div className="mb-5 flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50/80 p-1">
+                                {TABS.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={cn(
+                                            "relative flex h-9 cursor-pointer items-center rounded-lg px-4 text-sm font-semibold transition-colors",
+                                            activeTab === tab.id
+                                                ? "bg-white text-primary shadow-sm shadow-slate-900/5"
+                                                : "text-slate-400 hover:text-slate-700",
+                                        )}
+                                    >
+                                        {tab.label}
+                                        {tab.id === "upcoming" && (
+                                            <span className="ml-1.5 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary">
+                                                {stats.upcoming_events_count}
+                                            </span>
+                                        )}
+                                        {tab.id === "past" && (
+                                            <span className="ml-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-400">
+                                                {stats.past_events_count}
+                                            </span>
+                                        )}
+                                    </button>
                                 ))}
                             </div>
-                        )}
-                    </div>
-                    {/* ── Right Sidebar ── */}
-                    <aside className="flex w-full shrink-0 flex-col gap-5 lg:w-80">
-                        {/* About */}
-                        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
-                            <div className="mb-3 flex items-center justify-between gap-3">
-                                <h2 className="text-sm font-bold text-slate-900">
-                                    Tentang Organizer
-                                </h2>
-                                {isPublicProfile && (
-                                    <span className="rounded-full bg-primary-light px-2.5 py-1 text-[10px] font-semibold text-primary">
-                                        @{organizer.slug}
-                                    </span>
-                                )}
-                            </div>
-                            <p className="text-sm leading-relaxed text-slate-500">
-                                {organizer.description ||
-                                    "Belum ada deskripsi organizer."}
-                            </p>
-                            <div className="mt-4 space-y-2.5 border-t border-slate-100 pt-4">
-                                <div className="flex items-center gap-2.5 text-sm text-slate-500">
-                                    <CalendarDays className="w-4 h-4 text-slate-400 shrink-0" />
-                                    <span>
-                                        Bergabung{" "}
-                                        {formatDate(organizer.joined_at)}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2.5 text-sm text-slate-500">
-                                    <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
-                                    <span>
-                                        {stats.total_events} event
-                                        diselenggarakan
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2.5 text-sm text-slate-500">
-                                    <Users className="w-4 h-4 text-slate-400 shrink-0" />
-                                    <span>
-                                        {formatStat(
-                                            stats.total_event_attendees,
-                                        )}{" "}
-                                        total peserta
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* Next event spotlight */}
-                        {events.upcoming[0] && (
-                            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
-                                <div className="mb-3 flex items-center justify-between gap-3">
-                                    <h2 className="flex items-center gap-1.5 text-sm font-bold text-slate-900">
-                                        <Clock className="w-4 h-4 text-primary" />
-                                        Event Terdekat
-                                    </h2>
-                                    <Link
-                                        href="#events"
-                                        className="text-xs font-semibold text-primary hover:text-primary/80"
-                                    >
-                                        Lihat semua
-                                    </Link>
-                                </div>
-                                <OrganizerEventCard
-                                    event={events.upcoming[0]}
-                                />
-                            </div>
-                        )}
-
-                        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
-                            <div className="mb-4 flex items-center justify-between gap-3">
-                                <h2 className="flex items-center gap-1.5 text-sm font-bold text-slate-900">
-                                    <Calendar className="h-4 w-4 text-primary" />
-                                    Event Organizer
-                                </h2>
-                                <Link
-                                    href="#events"
-                                    className="text-xs font-semibold text-primary hover:text-primary/80"
-                                >
-                                    Lihat semua
-                                </Link>
-                            </div>
-                            {createdEvents.length === 0 ? (
-                                <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-500">
-                                    Belum ada event yang dibuat organizer ini.
+                            {activeEvents.length === 0 ? (
+                                <div className="flex min-h-[280px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-6 py-12 text-slate-400">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm shadow-slate-900/5">
+                                        <Inbox className="h-6 w-6 text-slate-300" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="mb-1 text-sm font-semibold text-slate-700">
+                                            {activeTab === "upcoming"
+                                                ? "Belum ada event mendatang"
+                                                : "Belum ada event selesai"}
+                                        </p>
+                                        <p className="text-sm text-slate-400">
+                                            Pantau halaman ini untuk update
+                                            event berikutnya.
+                                        </p>
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="space-y-3">
-                                    {createdEvents.map((event) => {
-                                        const mode =
-                                            modeConfig[event.event_mode] ??
-                                            modeConfig.offline;
-                                        const ModeIcon = mode.icon;
-
-                                        return (
-                                            <Link
-                                                key={event.id}
-                                                href={`/events/${event.slug}`}
-                                                className="group flex gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-md hover:shadow-slate-900/10"
-                                            >
-                                                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-100">
-                                                    <Image
-                                                        src={
-                                                            event.primary_image ||
-                                                            `/placeholder-event.jpg`
-                                                        }
-                                                        alt={event.title}
-                                                        fill
-                                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                                    />
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 transition-colors group-hover:text-primary">
-                                                        {event.title}
-                                                    </p>
-                                                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-500">
-                                                        <span>
-                                                            {formatDateShort(
-                                                                event.start_time,
-                                                            )}
-                                                        </span>
-                                                        <span className="h-1 w-1 rounded-full bg-slate-300" />
-                                                        <span className="inline-flex items-center gap-1">
-                                                            <ModeIcon className="h-3 w-3" />
-                                                            {mode.label}
-                                                        </span>
-                                                        <span className="h-1 w-1 rounded-full bg-slate-300" />
-                                                        <span>
-                                                            {formatStat(
-                                                                event.attendee_count,
-                                                            )}{" "}
-                                                            peserta
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        );
-                                    })}
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    {activeEvents.map((event) => (
+                                        <OrganizerEventCard
+                                            key={event.id}
+                                            event={event}
+                                        />
+                                    ))}
                                 </div>
                             )}
                         </div>
-                    </aside>
+                        {/* ── Right Sidebar ── */}
+                        <aside className="flex w-full min-w-0 flex-col gap-5">
+                            {/* About */}
+                            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5">
+                                <div className="mb-3 flex items-center justify-between gap-3">
+                                    <h2 className="text-sm font-semibold text-slate-900">
+                                        Tentang Organizer
+                                    </h2>
+                                    {isPublicProfile && (
+                                        <span className="rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary">
+                                            @{organizer.slug}
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-sm leading-relaxed text-slate-500">
+                                    {organizer.description ||
+                                        "Belum ada deskripsi organizer."}
+                                </p>
+                                <div className="mt-5 space-y-3 border-t border-slate-100 pt-5">
+                                    <div className="flex items-center gap-2.5 text-sm text-slate-500">
+                                        <CalendarDays className="w-4 h-4 text-slate-400 shrink-0" />
+                                        <span>
+                                            Bergabung{" "}
+                                            {formatDate(organizer.joined_at)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2.5 text-sm text-slate-500">
+                                        <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
+                                        <span>
+                                            {stats.total_events} event
+                                            diselenggarakan
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2.5 text-sm text-slate-500">
+                                        <Users className="w-4 h-4 text-slate-400 shrink-0" />
+                                        <span>
+                                            {formatStat(
+                                                stats.total_event_attendees,
+                                            )}{" "}
+                                            total peserta
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
                 </div>
-            </div>
             </div>
         </div>
     );
 }
-
 

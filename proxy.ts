@@ -14,6 +14,7 @@ type SessionClaims = {
 const roleHomePages: Record<string, string> = {
     organizer: "/organizer/dashboard",
     user: "/",
+    support: "/dashboard/support/events",
 };
 
 const shouldLogAuthDecision =

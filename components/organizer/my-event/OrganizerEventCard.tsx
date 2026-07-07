@@ -12,6 +12,7 @@ import {
     MapPin,
     Pencil,
     Power,
+    ScanLine,
     Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,10 @@ interface Props {
     event: OrganizerEventCardType;
     layout?: "list" | "grid";
     onStatusChange?: (eventId: string, status: string) => void;
+    mode?: "owner" | "support" | "check-in";
+    onSupportScan?: (eventId: string) => void;
+    onCheckIn?: (eventId: string) => void;
+    checkedInCount?: number;
 }
 
 const statusTranslation: Record<string, string> = {
@@ -65,6 +70,10 @@ export default function OrganizerEventCard({
     event,
     layout = "list",
     onStatusChange,
+    mode = "owner",
+    onSupportScan,
+    onCheckIn,
+    checkedInCount = 0,
 }: Props) {
     const [currentStatus, setCurrentStatus] = useState(event.status || "draft");
     const [publishDialogOpen, setPublishDialogOpen] = useState(false);
@@ -86,6 +95,9 @@ export default function OrganizerEventCard({
     }
 
     const isGrid = layout === "grid";
+    const isSupportMode = mode === "support";
+    const isCheckInMode = mode === "check-in";
+    const isOperationalMode = isSupportMode || isCheckInMode;
     const normalizedStatus = currentStatus?.toLowerCase() || "draft";
     const statusLabel = statusTranslation[normalizedStatus] || normalizedStatus;
     const isPublished = normalizedStatus === "published";
@@ -96,7 +108,12 @@ export default function OrganizerEventCard({
     const sold = event.total_sold || 0;
     const soldPercent =
         capacity > 0 ? Math.min(100, Math.round((sold / capacity) * 100)) : 0;
+    const checkedInPercent =
+        sold > 0 ? Math.min(100, Math.round((checkedInCount / sold) * 100)) : 0;
     const eventId = event.id || event.event_id || "";
+    const isClosedStatus = ["finished", "archived", "cancelled"].includes(
+        normalizedStatus,
+    );
 
     const handleConfirmStatusChange = async () => {
         if (!eventId) {
@@ -223,6 +240,25 @@ export default function OrganizerEventCard({
                             />
                         </div>
                     </div>
+                    {isCheckInMode && (
+                        <div className="min-w-0 border-t border-slate-200/80 pt-2.5 sm:border-l sm:border-t-0 sm:pl-3 sm:pt-0">
+                            <div className="mb-1.5 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-900">
+                                    <ScanLine className="h-4 w-4 text-primary" />
+                                    {checkedInCount.toLocaleString("id-ID")}/{sold || "-"} hadir
+                                </div>
+                                <span className="text-xs font-medium text-slate-500">
+                                    {checkedInPercent}%
+                                </span>
+                            </div>
+                            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                <div
+                                    className="h-full rounded-full bg-success transition-all duration-500"
+                                    style={{ width: `${checkedInPercent}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div
@@ -239,7 +275,7 @@ export default function OrganizerEventCard({
                                         : "text-[11px] font-semibold uppercase tracking-wider text-slate-400"
                                 }
                             >
-                                Publish
+                                {isOperationalMode ? "Status" : "Publish"}
                             </span>
                             <span
                                 className={`text-xs font-semibold ${isGrid ? "whitespace-nowrap" : "mt-1"} ${isPublished ? "text-success" : "text-slate-600"}`}
@@ -247,84 +283,111 @@ export default function OrganizerEventCard({
                                 {isPublished ? "Aktif" : "Draft"}
                             </span>
                         </div>
-                        <button
-                            type="button"
-                            role="switch"
-                            aria-checked={isPublished}
-                            disabled={!canTogglePublish || isUpdatingStatus}
-                            title={
-                                canTogglePublish
-                                    ? "Ubah status publikasi"
-                                    : "Status ini tidak bisa diubah lewat toggle publish"
-                            }
-                            onClick={() => setPublishDialogOpen(true)}
-                            className={`relative rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${isGrid ? "h-5 w-9" : "h-6 w-11"} ${isPublished ? "bg-success" : "bg-slate-300"}`}
-                        >
-                            <span
-                                className={`absolute left-0.5 top-0.5 rounded-full bg-white shadow-sm transition-transform ${isGrid ? "h-4 w-4" : "h-5 w-5"} ${isPublished ? (isGrid ? "translate-x-4" : "translate-x-5") : "translate-x-0"}`}
-                            />
-                        </button>
+                        {!isOperationalMode && (
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={isPublished}
+                                disabled={!canTogglePublish || isUpdatingStatus}
+                                title={
+                                    canTogglePublish
+                                        ? "Ubah status publikasi"
+                                        : "Status ini tidak bisa diubah lewat toggle publish"
+                                }
+                                onClick={() => setPublishDialogOpen(true)}
+                                className={`relative rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${isGrid ? "h-5 w-9" : "h-6 w-11"} ${isPublished ? "bg-success" : "bg-slate-300"}`}
+                            >
+                                <span
+                                    className={`absolute left-0.5 top-0.5 rounded-full bg-white shadow-sm transition-transform ${isGrid ? "h-4 w-4" : "h-5 w-5"} ${isPublished ? (isGrid ? "translate-x-4" : "translate-x-5") : "translate-x-0"}`}
+                                />
+                            </button>
+                        )}
                     </div>
                     <div
                         className={`flex shrink-0 items-center justify-end ${isGrid ? "gap-1.5" : "flex-wrap gap-2"}`}
                     >
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            asChild
-                            title="Duplikat Event"
-                            className={`${isGrid ? "h-9 w-9" : "h-10 w-10"} shrink-0 rounded-xl border-slate-200 bg-white text-slate-500 shadow-none transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary`}
-                        >
-                            <Link
-                                href={`/organizer/create-event?duplicateId=${event.id}`}
+                        {isOperationalMode ? (
+                            <Button
+                                size="icon"
+                                title="Buka check-in"
+                                disabled={!eventId || (isCheckInMode && isClosedStatus)}
+                                onClick={() => {
+                                    if (!eventId) return;
+                                    if (isSupportMode) onSupportScan?.(eventId);
+                                    else onCheckIn?.(eventId);
+                                }}
+                                className={`${isGrid ? "h-9 w-auto px-3" : "h-10 w-full px-3.5 sm:w-auto"} shrink-0 rounded-xl bg-primary font-semibold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none`}
                             >
-                                <Copy className="h-4 w-4" />
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            asChild
-                            title="Edit Event"
-                            className={`${isGrid ? "h-9 w-9 px-0" : "h-10 w-10 px-0 sm:w-auto sm:px-3.5"} shrink-0 rounded-xl border-primary/25 text-primary shadow-none transition-all hover:bg-primary/5`}
-                        >
-                            <Link
-                                href={`/organizer/my-event/${event.id || event.event_id}`}
-                            >
-                                <Pencil
-                                    className={`h-4 w-4 ${isGrid ? "" : "sm:mr-1.5"}`}
-                                />
-                                <span
-                                    className={
-                                        isGrid ? "sr-only" : "hidden sm:inline"
-                                    }
-                                >
-                                    Edit
-                                </span>
-                            </Link>
-                        </Button>
-                        <Button
-                            size="icon"
-                            asChild
-                            title="Lihat Event"
-                            className={`${isGrid ? "h-9 w-auto px-3" : "h-10 w-10 px-0 sm:w-auto sm:px-3.5"} shrink-0 rounded-xl bg-primary font-semibold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90`}
-                        >
-                            <Link href={`/events/${event.slug}`}>
-                                <Eye
+                                <ScanLine
                                     className={`h-4 w-4 stroke-[1.5] ${isGrid ? "mr-1.5" : "sm:mr-1.5"}`}
                                 />
-                                <span
-                                    className={
-                                        isGrid ? "inline" : "hidden sm:inline"
-                                    }
-                                >
-                                    Lihat
+                                <span>
+                                    {isCheckInMode && isClosedStatus
+                                        ? "Check-in selesai"
+                                        : "Buka check-in"}
                                 </span>
-                            </Link>
-                        </Button>
+                            </Button>
+                        ) : (
+                            <>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    asChild
+                                    title="Duplikat Event"
+                                    className={`${isGrid ? "h-9 w-9" : "h-10 w-10"} shrink-0 rounded-xl border-slate-200 bg-white text-slate-500 shadow-none transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary`}
+                                >
+                                    <Link
+                                        href={`/organizer/create-event?duplicateId=${event.id}`}
+                                    >
+                                        <Copy className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    asChild
+                                    title="Edit Event"
+                                    className={`${isGrid ? "h-9 w-9 px-0" : "h-10 w-10 px-0 sm:w-auto sm:px-3.5"} shrink-0 rounded-xl border-primary/25 text-primary shadow-none transition-all hover:bg-primary/5`}
+                                >
+                                    <Link
+                                        href={`/organizer/my-event/${event.id || event.event_id}`}
+                                    >
+                                        <Pencil
+                                            className={`h-4 w-4 ${isGrid ? "" : "sm:mr-1.5"}`}
+                                        />
+                                        <span
+                                            className={
+                                                isGrid ? "sr-only" : "hidden sm:inline"
+                                            }
+                                        >
+                                            Edit
+                                        </span>
+                                    </Link>
+                                </Button>
+                                <Button
+                                    size="icon"
+                                    asChild
+                                    title="Lihat Event"
+                                    className={`${isGrid ? "h-9 w-auto px-3" : "h-10 w-10 px-0 sm:w-auto sm:px-3.5"} shrink-0 rounded-xl bg-primary font-semibold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90`}
+                                >
+                                    <Link href={`/events/${event.slug}`}>
+                                        <Eye
+                                            className={`h-4 w-4 stroke-[1.5] ${isGrid ? "mr-1.5" : "sm:mr-1.5"}`}
+                                        />
+                                        <span
+                                            className={
+                                                isGrid ? "inline" : "hidden sm:inline"
+                                            }
+                                        >
+                                            Lihat
+                                        </span>
+                                    </Link>
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
-            </div>
+                </div>
 
             <Dialog
                 open={publishDialogOpen}

@@ -377,7 +377,7 @@ function MyOrdersPageContent() {
 
   const applyQuery = (updates: Record<string, string | null>) => {
     const nextQuery = updateQueryString(new URLSearchParams(searchParams.toString()), updates);
-    router.replace(`/my-orders${nextQuery}`);
+    router.replace(`/user/my-orders${nextQuery}`);
   };
 
   const handleTabChange = (tab: StatusTab) => {
@@ -388,7 +388,7 @@ function MyOrdersPageContent() {
   };
 
   return (
-    <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
+    <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] -mx-6 px-4 py-6 md:-mx-8 md:px-8">
       <div
         className="pointer-events-none absolute inset-0"
         aria-hidden="true"
@@ -407,10 +407,10 @@ function MyOrdersPageContent() {
               <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
                 Riwayat transaksi
               </p>
-              <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
+              <h1 className="mt-2 text-2xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
                 Riwayat Pesanan
               </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+              <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 md:text-sm">
                 Pantau pembelian tiket, status pembayaran, dan lanjutkan checkout Xendit yang belum selesai.
               </p>
             </div>
@@ -564,7 +564,7 @@ function MyOrdersPageContent() {
 
 function MyOrdersFallback() {
   return (
-    <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
+    <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] -mx-6 px-4 py-6 md:-mx-8 md:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-5">
         <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
           <Skeleton className="h-4 w-32" />

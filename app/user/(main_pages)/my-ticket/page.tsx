@@ -521,7 +521,7 @@ function TicketSkeletonList() {
 
 function TicketPageFallback() {
     return (
-        <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
+        <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] -mx-6 px-4 py-6 md:-mx-8 md:px-8">
             <div className="mx-auto w-full max-w-6xl space-y-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
                     <div className="h-4 w-32 animate-pulse rounded-full bg-slate-100" />
@@ -674,7 +674,7 @@ function MyTicketPageContent() {
     };
 
     return (
-        <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
+        <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] -mx-6 px-4 py-6 md:-mx-8 md:px-8">
             <div className="mx-auto w-full max-w-6xl space-y-5">
                 <header className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
                     <TicketWalletDoodle />

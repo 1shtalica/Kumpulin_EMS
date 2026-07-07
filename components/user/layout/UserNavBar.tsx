@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -9,10 +10,12 @@ import {
     ChevronsUpDown,
     ClipboardList,
     BookmarkCheck,
+    CalendarCheck2,
     Heart,
     Home,
     LogOut,
     LucideIcon,
+    MessageSquareText,
     Settings,
     Ticket,
     User,
@@ -21,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User as AuthUser } from "@/types/user";
+import { SupportService } from "@/services/support-service";
 import {
     Tooltip,
     TooltipContent,
@@ -44,12 +48,13 @@ interface NavItem {
 interface UserNavBarProps {
     isOpen: boolean;
     toggleSidebar: () => void;
+    workspaceLabel?: string;
 }
 
 export const menuItems: NavItem[] = [
     {
         title: "Riwayat Pesanan",
-        href: "/my-orders",
+        href: "/user/my-orders",
         icon: ClipboardList,
     },
     {
@@ -74,6 +79,56 @@ export const menuItems: NavItem[] = [
     },
 ];
 
+
+export const supportMenuItems: NavItem[] = [
+    {
+        title: "Support Events",
+        href: "/dashboard/support/events",
+        icon: CalendarCheck2,
+    },
+    {
+        title: "Support Community",
+        href: "/dashboard/support/community",
+        icon: MessageSquareText,
+    },
+];
+
+export function useUserNavItems() {
+    const user = useAuthStore((state) => state.user);
+    const [hasSupportAccess, setHasSupportAccess] = useState(false);
+
+    useEffect(() => {
+        let active = true;
+
+        if (!user) {
+            return () => {
+                active = false;
+            };
+        }
+
+        const checkSupportAccess = async () => {
+            try {
+                const access = await SupportService.getSupportAccess();
+                if (active) {
+                    setHasSupportAccess(access.events || access.community);
+                }
+            } catch {
+                if (active) setHasSupportAccess(false);
+            }
+        };
+
+        void checkSupportAccess();
+
+        return () => {
+            active = false;
+        };
+    }, [user]);
+
+    return useMemo(
+        () => (hasSupportAccess ? [...menuItems, ...supportMenuItems] : menuItems),
+        [hasSupportAccess],
+    );
+}
 export const accountItems: NavItem[] = [
     {
         title: "Pengaturan Akun",
@@ -173,9 +228,14 @@ export function NavContent({
     );
 }
 
-export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
+export default function UserNavBar({
+    isOpen,
+    toggleSidebar,
+    workspaceLabel = "User",
+}: UserNavBarProps) {
     const router = useRouter();
     const { logout, user } = useAuthStore();
+    const navItems = useUserNavItems();
     const displayName = getUserDisplayName(user);
     const fallback = getUserInitials(displayName);
 
@@ -183,13 +243,13 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
         <Button
             variant="ghost"
             className={cn(
-                "min-w-0 justify-start overflow-hidden text-left transition-all",
+                "group min-w-0 justify-start overflow-hidden text-left transition-all",
                 isOpen
-                    ? "h-13 w-full rounded-xl border border-transparent p-2 hover:bg-slate-100 hover:text-slate-900"
-                    : "mx-auto h-10 w-10 justify-center p-0 hover:bg-transparent hover:text-current",
+                    ? "h-11 w-full rounded-lg px-2 py-1.5 hover:bg-slate-50 hover:text-slate-900"
+                    : "mx-auto h-10 w-10 justify-center rounded-lg p-0 hover:bg-slate-50",
             )}
         >
-            <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
+            <Avatar className="h-8 w-8 shrink-0 rounded-full">
                 <AvatarImage src={user?.profile_url} alt={displayName} />
                 <AvatarFallback className="rounded-full bg-primary-light text-xs font-semibold text-primary">
                     {fallback}
@@ -206,7 +266,7 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
                 </div>
             )}
             {isOpen && (
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-primary" />
             )}
         </Button>
     );
@@ -283,7 +343,7 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
                                     />
                                 </span>
                                 <span className="whitespace-nowrap text-[13px] font-medium text-slate-500">
-                                    User
+                                    {workspaceLabel}
                                 </span>
                             </span>
                         </button>
@@ -308,17 +368,19 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
 
                 <div className="flex flex-1 flex-col gap-5 overflow-y-auto overflow-x-hidden px-4 py-3">
                     <div className="flex flex-col gap-1 overflow-hidden">
-                        <NavContent showLabel={isOpen} items={menuItems} />
+                        <NavContent showLabel={isOpen} items={navItems} />
                     </div>
 
                     <div className="flex-1" />
 
-                    <div>
+                    <div
+                        className="-mx-4 border-t border-slate-100 px-4 pb-1 pt-3"
+                    >
                         <Button
                             variant="ghost"
                             size={isOpen ? "default" : "icon"}
                             className={cn(
-                                "h-10 w-full justify-start whitespace-nowrap rounded-lg px-4 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-500",
+                                "h-10 w-full justify-start whitespace-nowrap rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900",
                                 !isOpen && "h-10 w-10 justify-center px-0",
                             )}
                             asChild
@@ -334,11 +396,16 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
                             </Link>
                         </Button>
 
-                        <div className="my-2.5 border-t border-slate-100" />
+                        <div
+                            className={cn(
+                                "my-2 border-t border-slate-100",
+                                !isOpen && "hidden",
+                            )}
+                        />
 
                         <div
                             className={cn(
-                                "flex items-center pt-2",
+                                "flex items-center",
                                 isOpen ? "justify-start" : "justify-center",
                             )}
                         >
@@ -350,6 +417,3 @@ export default function UserNavBar({ isOpen, toggleSidebar }: UserNavBarProps) {
         </TooltipProvider>
     );
 }
-
-
-

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -17,11 +18,13 @@ import {
     Home,
     Settings,
     Wallet,
+    ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User as AuthUser } from "@/types/user";
+import { SupportService } from "@/services/support-service";
 import { Separator } from "@/components/ui/separator";
 import {
     Tooltip,
@@ -75,12 +78,67 @@ export const menuItems: NavItem[] = [
         icon: Wallet,
     },
     {
+        title: "Support Staff",
+        href: "/organizer/team",
+        icon: ShieldCheck,
+    },
+    {
         title: "Profil Organizer",
         href: "/organizer/profile",
         icon: User,
     },
 ];
+export const supportMenuItems: NavItem[] = [
+    {
+        title: "Support Events",
+        href: "/dashboard/support/events",
+        icon: ScanQrCode,
+    },
+    {
+        title: "Support Community",
+        href: "/dashboard/support/community",
+        icon: Users,
+    },
+];
 
+export function useOrganizerNavItems() {
+    const user = useAuthStore((state) => state.user);
+    const [hasSupportAccess, setHasSupportAccess] = useState(false);
+    const isOrganizer = user?.role === "organizer";
+
+    useEffect(() => {
+        let active = true;
+
+        if (!user || isOrganizer) {
+            return () => {
+                active = false;
+            };
+        }
+
+        const checkSupportAccess = async () => {
+            try {
+                const access = await SupportService.getSupportAccess();
+                if (active) {
+                    setHasSupportAccess(access.events || access.community);
+                }
+            } catch {
+                if (active) setHasSupportAccess(false);
+            }
+        };
+
+        void checkSupportAccess();
+
+        return () => {
+            active = false;
+        };
+    }, [isOrganizer, user]);
+
+    return useMemo(() => {
+        if (!user) return [];
+        if (isOrganizer) return menuItems;
+        return hasSupportAccess ? supportMenuItems : [];
+    }, [hasSupportAccess, isOrganizer, user]);
+}
 // ─── NavContent (shared) ─────────────────────────────────────────────────────
 
 function getUserDisplayName(user: AuthUser | null) {
@@ -181,6 +239,7 @@ export default function OrganizerNavBar({
     toggleSidebar,
 }: OrganizerNavBarProps) {
     const { logout, user } = useAuthStore();
+    const navItems = useOrganizerNavItems();
     const displayName = getUserDisplayName(user);
     const fallback = getUserInitials(displayName);
 
@@ -188,13 +247,13 @@ export default function OrganizerNavBar({
         <Button
             variant="ghost"
             className={cn(
-                "min-w-0 justify-start text-left transition-all overflow-hidden",
+                "group min-w-0 justify-start overflow-hidden text-left transition-all",
                 isOpen
-                    ? "h-13 w-full rounded-xl border border-transparent p-2 hover:bg-slate-100 hover:text-slate-900"
-                    : "mx-auto h-10 w-10 justify-center p-0 hover:bg-transparent hover:text-current",
+                    ? "h-11 w-full rounded-lg px-2 py-1.5 hover:bg-slate-50 hover:text-slate-900"
+                    : "mx-auto h-10 w-10 justify-center rounded-lg p-0 hover:bg-slate-50",
             )}
         >
-            <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
+            <Avatar className="h-8 w-8 shrink-0 rounded-full">
                 <AvatarImage src={user?.profile_url} alt={displayName} />
                 <AvatarFallback className="rounded-full bg-primary-light text-xs font-semibold text-primary">
                     {fallback}
@@ -202,8 +261,7 @@ export default function OrganizerNavBar({
             </Avatar>
 
             {isOpen && (
-                <div className="ml-2.5 min-w-0 flex-1 flex flex-col justify-center">
-                    {/* Teks nama ikut berubah gelap (inherit) karena ada hover:text-slate-900 di parent */}
+                <div className="ml-2.5 flex min-w-0 flex-1 flex-col justify-center">
                     <p className="truncate text-sm font-semibold leading-tight text-slate-900">
                         {displayName}
                     </p>
@@ -214,7 +272,7 @@ export default function OrganizerNavBar({
             )}
 
             {isOpen && (
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-400" />
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-primary" />
             )}
         </Button>
     );
@@ -304,19 +362,21 @@ export default function OrganizerNavBar({
                 {/* Konten utama */}
                 <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden px-4 py-3 gap-5">
                     <div className="flex flex-col gap-1 overflow-hidden">
-                        <NavContent showLabel={isOpen} items={menuItems} />
+                        <NavContent showLabel={isOpen} items={navItems} />
                     </div>
 
                     <div className="flex-1" />
 
-                    <div>
+                    <div
+                        className="-mx-4 border-t border-slate-100 px-4 pb-1 pt-3"
+                    >
                         {/* Tombol Beranda */}
-                        <div className="pt-2">
+                        <div>
                             <Button
                                 variant="ghost"
                                 className={cn(
-                                    "h-10 w-full justify-start rounded-lg px-4 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-500",
-                                    !isOpen && "justify-center px-0",
+                                    "h-10 w-full justify-start rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                                    !isOpen && "h-10 w-10 justify-center px-0",
                                 )}
                                 asChild
                             >
@@ -334,14 +394,12 @@ export default function OrganizerNavBar({
 
                         <Separator
                             orientation="horizontal"
-                            className="my-2.5"
+                            className={cn("my-2 border-slate-100", !isOpen && "hidden")}
                         />
 
                         {/* Kontainer Account Menu */}
                         <div
                             className={cn(
-                                "border-slate-100 pt-2",
-                                // Selalu gunakan flex row, atur justify-center jika minimize, justify-start jika open
                                 "flex items-center",
                                 isOpen ? "justify-start" : "justify-center",
                             )}

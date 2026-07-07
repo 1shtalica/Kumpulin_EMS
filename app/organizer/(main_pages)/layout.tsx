@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import OrganizerHeader from "@/components/organizer/layout/OrganizerHeader";
 import OrganizerNavBar, {
     NavContent,
-    menuItems,
+    useOrganizerNavItems,
 } from "@/components/organizer/layout/OrganizerNavBar";
 import { useAuthStore } from "@/stores/auth-store";
 import { ChevronsUpDown, LogOut, User, Home } from "lucide-react";
@@ -35,6 +34,7 @@ export default function MainPagesLayout({
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { logout, user } = useAuthStore();
+    const navItems = useOrganizerNavItems();
     const scannerOnly =
         pathname.startsWith("/organizer/check-in/") &&
         searchParams.get("scanner") === "1";
@@ -94,7 +94,7 @@ export default function MainPagesLayout({
                             <NavContent
                                 showLabel={true}
                                 onClose={() => setIsSheetOpen(false)}
-                                items={menuItems}
+                                items={navItems}
                             />
                         </div>
 
@@ -185,15 +185,9 @@ export default function MainPagesLayout({
                         "px-6 md:px-8 pb-8 flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden",
                         "md:ml-18",
                         isOpen ? "md:ml-60" : "md:ml-18",
-                        "pt-26",
+                        "pt-6",
                     )}
                 >
-                    <OrganizerHeader
-                        className={cn(
-                            "transition-all duration-300 ease-in-out",
-                            isOpen ? "md:left-60" : "md:left-18",
-                        )}
-                    />
                     {children}
                 </div>
             </div>

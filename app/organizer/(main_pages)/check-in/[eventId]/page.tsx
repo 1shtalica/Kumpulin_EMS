@@ -38,6 +38,8 @@ import {
     EventService,
     OrganizerApiRequestError,
 } from "@/services/event-service";
+import { SupportService } from "@/services/support-service";
+import { useAuthStore } from "@/stores/auth-store";
 import type { Event } from "@/types/event";
 import type {
     OrganizerCheckInHistoryItem,
@@ -72,6 +74,15 @@ const errMsg = (err: unknown, fb: string) => {
     if (err instanceof OrganizerApiRequestError) return err.message || fb;
     if (err instanceof Error) return err.message;
     return fb;
+};
+
+const errStatus = (err: unknown) => {
+    if (err instanceof OrganizerApiRequestError) return err.status;
+    if (err && typeof err === "object" && "response" in err) {
+        const response = (err as { response?: { status?: number } }).response;
+        return response?.status;
+    }
+    return undefined;
 };
 
 const cameraErrMsg = (err: unknown) => {
@@ -355,7 +366,7 @@ function useQrScanner(active: boolean, onScan: (text: string) => void) {
     return { containerRef, cameraError };
 }
 
-/* ─── Types ───────────────────────────────────────────────────────────────── */
+/* Types */
 
 const CHECK_IN_BROADCAST_CHANNEL = "kumpulin-check-in";
 
@@ -373,18 +384,22 @@ type ScannerFeedback = {
     message: string;
 };
 
-/* ─── Page ────────────────────────────────────────────────────────────────── */
+/* Page */
 
 export default function CheckInDetailPage() {
     const { eventId } = useParams<{ eventId: string }>();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const scannerOnly = searchParams.get("scanner") === "1";
-    const scannerTabHref = `${pathname}?scanner=1`;
+    const supportMode = searchParams.get("support") === "1";
+    const checkpointFromQuery = searchParams.get("checkpoint");
+    const user = useAuthStore((state) => state.user);
+    const deviceLabel = `device ${user?.id ?? "unknown"}`;
 
     // Event
     const [event, setEvent] = useState<Event | null>(null);
     const [loadingEvent, setLoadingEvent] = useState(true);
+    const [eventLoadError, setEventLoadError] = useState<string | null>(null);
 
     // Tabs
     const [tab, setTab] = useState<TabKey>("validate");
@@ -393,6 +408,13 @@ export default function CheckInDetailPage() {
     const [mode, setMode] = useState<ValidationMode>("qr");
     const [cameraEnabled, setCameraEnabled] = useState(true);
     const [manualCode, setManualCode] = useState("");
+    const [checkpointName, setCheckpointName] = useState(
+        checkpointFromQuery ?? "Main Gate",
+    );
+    const scannerCheckpoint = encodeURIComponent(
+        checkpointName.trim() || "Main Gate",
+    );
+    const scannerTabHref = `${pathname}?scanner=1${supportMode ? "&support=1" : ""}&checkpoint=${scannerCheckpoint}`;
     const [validating, setValidating] = useState(false);
     const [lastResult, setLastResult] = useState<{
         ok: boolean;
@@ -409,17 +431,38 @@ export default function CheckInDetailPage() {
     const [history, setHistory] = useState<OrganizerCheckInHistoryItem[]>([]);
     const [totalCheckedIn, setTotalCheckedIn] = useState(0);
 
-    /* ── Fetch event ── */
+    /* Fetch event */
     useEffect(() => {
         if (!eventId) return;
         let active = true;
+
+        const setLoadError = (err: unknown) => {
+            const status = errStatus(err);
+            if (status === 403) {
+                setEventLoadError("You do not have support access for this event.");
+                return;
+            }
+            if (status === 404) {
+                setEventLoadError("Event not found.");
+                return;
+            }
+            setEventLoadError(errMsg(err, "Gagal memuat detail event."));
+        };
+
         (async () => {
+            setLoadingEvent(true);
+            setEventLoadError(null);
+            setEvent(null);
             try {
-                const data =
-                    await EventService.getOrganizerEventDetail(eventId);
+                const access = supportMode
+                    ? { events: true }
+                    : await SupportService.getSupportAccess();
+                const data = access.events
+                    ? await SupportService.getSupportEventDetail(eventId)
+                    : await EventService.getOrganizerEventDetail(eventId);
                 if (active) setEvent(data);
             } catch (err) {
-                toast.error(errMsg(err, "Gagal memuat detail event."));
+                if (active) setLoadError(err);
             } finally {
                 if (active) setLoadingEvent(false);
             }
@@ -427,9 +470,9 @@ export default function CheckInDetailPage() {
         return () => {
             active = false;
         };
-    }, [eventId]);
+    }, [eventId, supportMode]);
 
-    /* ── Fetch history ── */
+    /* Fetch history */
     const refreshHistory = useCallback(async () => {
         if (!eventId) return;
         try {
@@ -565,19 +608,21 @@ export default function CheckInDetailPage() {
                 );
             }
             try {
+                const normalizedCheckpointName =
+                    checkpointName.trim() || "Main Gate";
                 const payload: import("@/types/organizer-ticketing").OrganizerValidateTicketPayload =
                     method === "qr"
                         ? {
                               validation_method: "qr",
                               qr_token: code.trim(),
-                              checkpoint_name: "Gate A",
-                              device_label: "Scanner Device 1",
+                              checkpoint_name: normalizedCheckpointName,
+                              device_label: deviceLabel,
                           }
                         : {
                               validation_method: "manual",
                               manual_code: code.trim(),
-                              checkpoint_name: "Gate A",
-                              device_label: "Scanner Device 1",
+                              checkpoint_name: normalizedCheckpointName,
+                              device_label: deviceLabel,
                           };
 
                 const ticket = await EventService.validateOrganizerTicket(
@@ -618,7 +663,7 @@ export default function CheckInDetailPage() {
                 setValidating(false);
             }
         },
-        [broadcastTicketValidated, eventId, refreshHistory, showScannerFeedback],
+        [broadcastTicketValidated, checkpointName, deviceLabel, eventId, refreshHistory, showScannerFeedback],
     );
 
     /* ── QR scanner ── */
@@ -669,8 +714,7 @@ export default function CheckInDetailPage() {
                         Event tidak ditemukan
                     </h1>
                     <p className="relative mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
-                        Event ini tidak tersedia atau Anda tidak memiliki akses
-                        untuk mengelolanya.
+                        {eventLoadError ?? "Event ini tidak tersedia atau Anda tidak memiliki akses untuk mengelolanya."}
                     </p>
                     <div className="relative mt-6 flex justify-center">
                         <BackButton />
@@ -925,6 +969,20 @@ export default function CheckInDetailPage() {
                             </div>
                         </div>
 
+                        <div className="mb-4 grid gap-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3">
+                            <div className="min-w-0">
+                                <label className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+                                    Checkpoint
+                                </label>
+                                <Input
+                                    value={checkpointName}
+                                    onChange={(event) => setCheckpointName(event.target.value)}
+                                    placeholder="Main Gate"
+                                    className="mt-1 h-10 rounded-xl border-slate-200 bg-white text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
+                                />
+                            </div>
+                        </div>
+
                         {/* Scanner / input card */}
                         <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
                             {mode === "qr" ? (
@@ -1108,9 +1166,13 @@ export default function CheckInDetailPage() {
 
 function BackButton() {
     const router = useRouter();
+    const pathname = usePathname();
+    const backHref = pathname.startsWith("/dashboard/support/check-in")
+        ? "/dashboard/support/events"
+        : "/organizer/check-in";
     return (
         <button
-            onClick={() => router.push("/organizer/check-in")}
+            onClick={() => router.push(backHref)}
             className="flex w-fit items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 shadow-sm shadow-slate-900/5 transition-colors hover:border-primary/30 hover:text-primary"
         >
             <ArrowLeft className="h-4 w-4" /> Kembali

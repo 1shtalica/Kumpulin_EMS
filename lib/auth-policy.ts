@@ -17,13 +17,15 @@ export type RoutePolicyResolution = {
  */
 export const protectedRoutes: ProtectedRoutePolicy[] = [
   { path: "/organizer/dashboard", roles: ["organizer"] },
-  { path: "/organizer/check-in", roles: ["organizer"] },
+  { path: "/organizer/check-in", roles: ["organizer", "user", "support"] },
   { path: "/organizer/communities", roles: ["organizer"] },
   { path: "/organizer/my-event", roles: ["organizer"] },
   { path: "/organizer/profile", roles: ["organizer"] },
   { path: "/organizer/create-event", roles: ["organizer"] },
+  { path: "/dashboard/support", roles: ["user", "support", "organizer"] },
   { path: "/user/following", roles: ["user"] },
   { path: "/user/my-ticket", roles: ["user"] },
+  { path: "/user/my-orders", roles: ["user"] },
   { path: "/my-orders", roles: ["user"] },
   { path: "/orders", roles: ["user"] },
   { path: "/user/profile", roles: ["user"] },
