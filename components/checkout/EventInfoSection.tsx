@@ -27,32 +27,42 @@ export function EventInfoSection({ title, date, time, location }: EventInfoProps
         <rect x="108" y="28" width="24" height="24" rx="7" fill="#10b981" fillOpacity="0.1" />
       </svg>
 
-      <div className="relative flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+      <div className="relative flex flex-col gap-6">
         <div>
-          <div className="mb-3 flex items-center gap-2 text-[11px] font-medium uppercase tracking-wider text-slate-500">
-            <Ticket className="h-4 w-4 text-primary" />
-            Informasi event
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary-light/50 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+            <Ticket className="h-3.5 w-3.5" />
+            Informasi Event
           </div>
-          <h2 className="max-w-2xl text-lg font-semibold leading-snug text-slate-950 md:text-xl">
+          <h2 className="text-xl font-bold leading-tight text-slate-950 md:text-2xl">
             {title}
           </h2>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 md:w-[360px] md:grid-cols-1">
-          <div className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3">
-            <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <div>
-              <p className="text-xs text-slate-500">Tanggal dan waktu</p>
-              <p className="mt-1 text-[13px] font-semibold leading-snug text-slate-900">
-                {date} <span className="font-medium text-slate-500">{time}</span>
-              </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex items-start gap-4 rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 transition-colors hover:border-slate-300/80">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-white shadow-sm shadow-slate-900/5">
+              <CalendarDays className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex flex-col pt-0.5">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500">Jadwal Pelaksanaan</span>
+              <span className="mt-1 text-[13px] font-semibold leading-snug text-slate-900">
+                {date}
+              </span>
+              <span className="mt-0.5 text-xs font-medium text-slate-500">
+                {time}
+              </span>
             </div>
           </div>
-          <div className="flex items-start gap-3 rounded-xl border border-slate-200/80 bg-slate-50/80 p-3">
-            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <div>
-              <p className="text-xs text-slate-500">Lokasi</p>
-              <p className="mt-1 text-[13px] font-semibold leading-snug text-slate-900">{location}</p>
+
+          <div className="flex items-start gap-4 rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 transition-colors hover:border-slate-300/80">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-white shadow-sm shadow-slate-900/5">
+              <MapPin className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex flex-col pt-0.5">
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500">Lokasi Event</span>
+              <span className="mt-1 text-[13px] font-semibold leading-snug text-slate-900">
+                {location}
+              </span>
             </div>
           </div>
         </div>

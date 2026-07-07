@@ -343,21 +343,25 @@ export default function PublicOrganizerProfile({
                     data = await OrganizerService.getProfileBySlug(slug);
                 } else {
                     data = await OrganizerService.getProfile();
-                    
+
                     // Fetch organizer's own events to populate the profile
                     try {
-                        const { EventService } = await import("@/services/event-service");
-                        const eventsRes = await EventService.getOrganizerEvents({ limit: 100 });
-                        
+                        const { EventService } =
+                            await import("@/services/event-service");
+                        const eventsRes = await EventService.getOrganizerEvents(
+                            { limit: 100 },
+                        );
+
                         const upcoming: OrganizerProfileEvent[] = [];
                         const past: OrganizerProfileEvent[] = [];
                         const now = new Date();
-                        
+
                         eventsRes.data.forEach((ev) => {
                             const eventTime = new Date(ev.start_date);
-                            
+
                             // Determine event mode based on is_online and type
-                            let event_mode: "offline" | "online" | "hybrid" = "offline";
+                            let event_mode: "offline" | "online" | "hybrid" =
+                                "offline";
                             if (ev.is_online && ev.type !== "hybrid") {
                                 event_mode = "online";
                             } else if (ev.type === "hybrid") {
@@ -377,17 +381,20 @@ export default function PublicOrganizerProfile({
                                 attendee_count: ev.total_sold,
                                 primary_image: ev.image_url,
                             };
-                            
+
                             if (eventTime > now) {
                                 upcoming.push(mappedEvent);
                             } else {
                                 past.push(mappedEvent);
                             }
                         });
-                        
+
                         data.events = { upcoming, past };
                     } catch (eventErr) {
-                        console.error("Failed to fetch organizer events", eventErr);
+                        console.error(
+                            "Failed to fetch organizer events",
+                            eventErr,
+                        );
                     }
                 }
                 setProfile(data);
@@ -435,8 +442,8 @@ export default function PublicOrganizerProfile({
             className={cn(
                 "min-h-screen bg-[#f9fafb]",
                 isPublicProfile
-                    ? "px-4 py-6 md:px-8"
-                    : "relative min-h-[calc(100vh-136px)] overflow-hidden px-4 py-6 md:-mx-8 md:px-8",
+                    ? "px-4 py-6 md:px-8 lg:px-12"
+                    : "relative min-h-[calc(100vh-136px)] overflow-hidden px-4 py-6 md:-mx-8 md:px-8 flex flex-col",
             )}
         >
             {!isPublicProfile && (
@@ -453,8 +460,8 @@ export default function PublicOrganizerProfile({
             )}
             <div
                 className={cn(
-                    !isPublicProfile &&
-                        "relative mx-auto flex w-full max-w-full flex-col gap-5",
+                    "relative mx-auto flex w-full flex-col gap-5 flex-1",
+                    !isPublicProfile ? "max-w-6xl" : "max-w-7xl"
                 )}
             >
                 {!isPublicProfile && (
@@ -464,10 +471,10 @@ export default function PublicOrganizerProfile({
                                 <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
                                     Organizer workspace
                                 </p>
-                                <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950 md:text-4xl">
+                                <h1 className="mt-2 text-3xl font-bold leading-[1.12] text-slate-950 md:text-3xl">
                                     Profil Organizer
                                 </h1>
-                                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+                                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-md">
                                     Kelola identitas publik organizer, foto
                                     profil, banner, dan deskripsi yang dilihat
                                     peserta.
@@ -489,14 +496,13 @@ export default function PublicOrganizerProfile({
                 {/* ─── Hero Header ───────────────────────────────────────────────────── */}
                 <div
                     className={cn(
-                        "overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
-                        isPublicProfile && "mx-auto max-w-full",
+                        "w-full overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
                     )}
                 >
                     {/* Cover Banner */}
                     <div
                         className={cn(
-                            "relative w-full overflow-hidden bg-slate-100",
+                            "px-8 relative w-full overflow-hidden bg-slate-100",
                             isPublicProfile ? "h-48 sm:h-64" : "h-40 sm:h-48",
                         )}
                     >
@@ -558,7 +564,7 @@ export default function PublicOrganizerProfile({
                                         strokeWidth="2"
                                     />
                                 </svg>
-                                <div className="absolute inset-x-6 bottom-5 flex items-center gap-3 text-slate-500 sm:inset-x-8">
+                                <div className="absolute top-5 flex items-center gap-3 text-slate-500 ">
                                     <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/10 bg-white/80 text-primary shadow-sm shadow-slate-900/5 backdrop-blur">
                                         <CalendarDays className="h-4 w-4" />
                                     </div>
@@ -707,109 +713,122 @@ export default function PublicOrganizerProfile({
                 </div>
 
                 {/* ─── Stats Row ─────────────────────────────────────────────────────── */}
-                <div
-                    className={cn(
-                        "rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5",
-                        isPublicProfile && "mt-5",
-                        isPublicProfile && "mx-auto max-w-full",
-                    )}
-                >
-                    <div
-                        className={cn(
-                            "mx-auto max-w-full",
-                            isPublicProfile ? "px-5 md:px-8" : "p-4",
-                        )}
-                    >
-                        <div
-                            className={cn(
-                                isPublicProfile
-                                    ? "scrollbar-hide flex items-center gap-0 overflow-x-auto py-3"
-                                    : "grid grid-cols-2 gap-3 sm:grid-cols-4",
-                            )}
-                        >
-                            {/* Followers */}
-                            <div
-                                className={cn(
-                                    "flex min-w-28 flex-col",
-                                    isPublicProfile
-                                        ? "items-start border-r border-slate-200/80 px-5 first:pl-0 last:border-0 sm:px-6"
-                                        : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
-                                )}
-                            >
-                                <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                {isPublicProfile ? (
+                    <div className="w-full mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+                        {/* Followers */}
+                        <div className="flex items-center gap-3.5 rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 transition-all hover:border-primary/20 hover:shadow-md hover:shadow-slate-900/10">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <Users className="h-5 w-5" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="truncate text-lg font-bold leading-none text-slate-950 tabular-nums">
                                     {formatStat(stats.followers)}
                                 </span>
-                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                <span className="mt-1 truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                     Pengikut
                                 </span>
                             </div>
-
-                            {/* Hosting duration */}
-                            <div
-                                className={cn(
-                                    "flex min-w-[8.5rem] flex-col",
-                                    isPublicProfile
-                                        ? "items-start border-r border-slate-200/80 px-5 sm:px-6"
-                                        : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
-                                )}
-                            >
-                                <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                        </div>
+                        {/* Hosting duration */}
+                        <div className="flex items-center gap-3.5 rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 transition-all hover:border-primary/20 hover:shadow-md hover:shadow-slate-900/10">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <Clock className="h-5 w-5" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="truncate text-base font-bold leading-none text-slate-950 tabular-nums">
                                     {hostingDuration(organizer.joined_at)}
                                 </span>
-                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                <span className="mt-1 truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                     Bergabung
                                 </span>
                             </div>
-
-                            {/* Total events */}
-                            <div
-                                className={cn(
-                                    "flex min-w-28 flex-col",
-                                    isPublicProfile
-                                        ? "items-start border-r border-slate-200/80 px-5 sm:px-6"
-                                        : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
-                                )}
-                            >
-                                <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                        </div>
+                        {/* Total events */}
+                        <div className="flex items-center gap-3.5 rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 transition-all hover:border-primary/20 hover:shadow-md hover:shadow-slate-900/10">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <CalendarDays className="h-5 w-5" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="truncate text-lg font-bold leading-none text-slate-950 tabular-nums">
                                     {stats.total_events}
                                 </span>
-                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                <span className="mt-1 truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                     Total Event
                                 </span>
                             </div>
-
-                            {/* Total attendees */}
-                            <div
-                                className={cn(
-                                    "flex min-w-[8.5rem] flex-col",
-                                    isPublicProfile
-                                        ? "items-start px-5 sm:px-6"
-                                        : "rounded-xl border border-slate-200/80 bg-slate-50/80 p-3",
-                                )}
-                            >
-                                <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                        </div>
+                        {/* Total attendees */}
+                        <div className="flex items-center gap-3.5 rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm shadow-slate-900/5 transition-all hover:border-primary/20 hover:shadow-md hover:shadow-slate-900/10">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                <UserPlus className="h-5 w-5" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="truncate text-lg font-bold leading-none text-slate-950 tabular-nums">
                                     {formatStat(stats.total_event_attendees)}
                                 </span>
-                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                <span className="mt-1 truncate text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                                     Total Peserta
                                 </span>
                             </div>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="w-full rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5">
+                        <div className="mx-auto max-w-full p-4">
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                {/* Followers */}
+                                <div className="flex min-w-28 flex-col rounded-xl border border-slate-200/80 bg-slate-50/80 p-3">
+                                    <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                                        {formatStat(stats.followers)}
+                                    </span>
+                                    <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                        Pengikut
+                                    </span>
+                                </div>
+                                {/* Hosting duration */}
+                                <div className="flex min-w-[8.5rem] flex-col rounded-xl border border-slate-200/80 bg-slate-50/80 p-3">
+                                    <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                                        {hostingDuration(organizer.joined_at)}
+                                    </span>
+                                    <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                        Bergabung
+                                    </span>
+                                </div>
+                                {/* Total events */}
+                                <div className="flex min-w-28 flex-col rounded-xl border border-slate-200/80 bg-slate-50/80 p-3">
+                                    <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                                        {stats.total_events}
+                                    </span>
+                                    <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                        Total Event
+                                    </span>
+                                </div>
+                                {/* Total attendees */}
+                                <div className="flex min-w-[8.5rem] flex-col rounded-xl border border-slate-200/80 bg-slate-50/80 p-3">
+                                    <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
+                                        {formatStat(stats.total_event_attendees)}
+                                    </span>
+                                    <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                                        Total Peserta
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* ─── Body ──────────────────────────────────────────────────────────── */}
                 <div
                     className={cn(
-                        "mx-auto max-w-full",
+                        "w-full flex-1 flex flex-col",
                         isPublicProfile ? "px-0 py-8 md:px-0" : "pt-2 pb-8",
                     )}
                 >
-                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+                    <div className="w-full grid gap-6 md:grid-cols-[1fr_280px] lg:grid-cols-[1fr_320px] md:items-stretch flex-1">
                         {/* ── Left Main ── */}
                         <div
                             id="events"
-                            className="min-w-0 scroll-mt-24 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-5"
+                            className="min-w-0 scroll-mt-24 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-900/5 sm:p-5 flex flex-col"
                         >
                             <div className="mb-5 flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50/80 p-1">
                                 {TABS.map((tab) => (
@@ -839,7 +858,7 @@ export default function PublicOrganizerProfile({
                             </div>
 
                             {activeEvents.length === 0 ? (
-                                <div className="flex min-h-[280px] flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-6 py-12 text-slate-400">
+                                <div className="flex min-h-70 flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-6 py-12 text-slate-400">
                                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm shadow-slate-900/5">
                                         <Inbox className="h-6 w-6 text-slate-300" />
                                     </div>
@@ -856,7 +875,14 @@ export default function PublicOrganizerProfile({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div
+                                    className={cn(
+                                        "grid gap-4",
+                                        isPublicProfile
+                                            ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                                            : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3",
+                                    )}
+                                >
                                     {activeEvents.map((event) => (
                                         <OrganizerEventCard
                                             key={event.id}
@@ -874,11 +900,6 @@ export default function PublicOrganizerProfile({
                                     <h2 className="text-sm font-semibold text-slate-900">
                                         Tentang Organizer
                                     </h2>
-                                    {isPublicProfile && (
-                                        <span className="rounded-full bg-primary-light px-2.5 py-1 text-xs font-semibold text-primary">
-                                            @{organizer.slug}
-                                        </span>
-                                    )}
                                 </div>
                                 <p className="text-sm leading-relaxed text-slate-500">
                                     {organizer.description ||
@@ -917,4 +938,3 @@ export default function PublicOrganizerProfile({
         </div>
     );
 }
-

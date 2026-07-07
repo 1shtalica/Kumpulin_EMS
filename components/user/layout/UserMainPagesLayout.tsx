@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Home, LogOut } from "lucide-react";
-import UserHeader from "@/components/user/layout/UserHeader";
 import UserNavBar, {
     NavContent,
     accountItems,
@@ -174,7 +173,7 @@ export default function UserMainPagesLayout({
                         "px-6 md:px-8 pb-8 flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden",
                         "md:ml-18",
                         isOpen ? "md:ml-60" : "md:ml-18",
-                        isWorkspaceVariant ? "pt-6" : "pt-6",
+                        isWorkspaceVariant ? "pt-0" : "pt-0",
                     )}
                 >
                     {children}

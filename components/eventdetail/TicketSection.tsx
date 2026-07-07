@@ -436,7 +436,6 @@ export default function TicketSection({ event }: { event: Event }) {
 
     return (
         <section className="w-full flex flex-col relative z-20">
-           
             <div
                 className="w-full bg-white shadow-md shadow-slate-900/5 border border-slate-200/80 rounded-2xl sticky top-24 flex flex-col overflow-hidden"
                 style={{ maxHeight: "calc(100vh - 7rem)" }}
@@ -674,13 +673,13 @@ export default function TicketSection({ event }: { event: Event }) {
                             )}
                         </>
                     )}
-                    
+
                     {/* Total harga */}
                     <div className="flex justify-between items-end">
                         <span className="text-slate-500 text-sm font-semibold">
                             Total
                         </span>
-                        <span className="font-bold text-xl md:text-2xl text-primary leading-none">
+                        <span className="font-semibold text-xl text-primary leading-none">
                             {selectedTicket ? formatRupiah(totalPrice) : "Rp 0"}
                         </span>
                     </div>

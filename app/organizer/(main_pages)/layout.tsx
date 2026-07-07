@@ -185,7 +185,7 @@ export default function MainPagesLayout({
                         "px-6 md:px-8 pb-8 flex-1 flex flex-col transition-all duration-300 ease-in-out overflow-x-hidden",
                         "md:ml-18",
                         isOpen ? "md:ml-60" : "md:ml-18",
-                        "pt-6",
+                        "pt-0",
                     )}
                 >
                     {children}

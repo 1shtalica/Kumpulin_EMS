@@ -1,13 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-    type FormEvent,
-    Suspense,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+import { type FormEvent, Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     AlertCircle,
@@ -22,6 +16,7 @@ import {
     RefreshCw,
     Search,
     Trash2,
+    Funnel,
     X,
 } from "lucide-react";
 
@@ -109,8 +104,12 @@ const formatDateShort = (value?: string | null) => {
 
     return {
         day: new Intl.DateTimeFormat("id-ID", { day: "2-digit" }).format(date),
-        month: new Intl.DateTimeFormat("id-ID", { month: "short" }).format(date),
-        year: new Intl.DateTimeFormat("id-ID", { year: "numeric" }).format(date),
+        month: new Intl.DateTimeFormat("id-ID", { month: "short" }).format(
+            date,
+        ),
+        year: new Intl.DateTimeFormat("id-ID", { year: "numeric" }).format(
+            date,
+        ),
     };
 };
 
@@ -266,7 +265,9 @@ function WishlistEventRow({
                                         : "bg-slate-100 text-slate-500",
                                 )}
                             >
-                                {isOpen ? "Registrasi buka" : "Registrasi tutup"}
+                                {isOpen
+                                    ? "Registrasi buka"
+                                    : "Registrasi tutup"}
                             </span>
                         </div>
 
@@ -325,7 +326,10 @@ function WishlistEventRow({
                             Harga mulai
                         </p>
                         <p className="truncate font-semibold text-slate-950">
-                            {formatPrice(event.price_from ?? 0, event.currency || "IDR")}
+                            {formatPrice(
+                                event.price_from ?? 0,
+                                event.currency || "IDR",
+                            )}
                         </p>
                     </div>
                 </div>
@@ -402,7 +406,9 @@ function WishlistPageContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const page = parsePositiveInt(searchParams.get("page"), 1);
-    const limit = normalizeLimit(parsePositiveInt(searchParams.get("limit"), 20));
+    const limit = normalizeLimit(
+        parsePositiveInt(searchParams.get("limit"), 20),
+    );
     const q = searchParams.get("q")?.trim() ?? "";
     const category = searchParams.get("category")?.trim() ?? "";
     const type = searchParams.get("type")?.trim() ?? "";
@@ -500,7 +506,10 @@ function WishlistPageContent() {
                 total: Math.max((current.total ?? 0) - 1, 0),
             }));
         } catch (error) {
-            console.error(`Failed to remove event ${eventId} from wishlist`, error);
+            console.error(
+                `Failed to remove event ${eventId} from wishlist`,
+                error,
+            );
             setErrorMessage("Gagal menghapus event dari wishlist.");
         } finally {
             setRemovingIds((current) => current.filter((id) => id !== eventId));
@@ -531,8 +540,8 @@ function WishlistPageContent() {
                                 Wishlist Saya
                             </h1>
                             <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-600 md:text-sm">
-                                Kumpulkan event incaran, cek jadwal, lalu lanjutkan
-                                pembelian saat registrasi dibuka.
+                                Kumpulkan event incaran, cek jadwal, lalu
+                                lanjutkan pembelian saat registrasi dibuka.
                             </p>
                         </div>
                         <div className="grid min-w-44 grid-cols-2 gap-2 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-2">
@@ -546,7 +555,11 @@ function WishlistPageContent() {
                             </div>
                             <div className="rounded-xl bg-white px-3 py-2 text-center shadow-sm shadow-slate-900/5">
                                 <p className="text-lg font-semibold leading-none text-primary">
-                                    {events.filter((item) => item.is_registration_open).length}
+                                    {
+                                        events.filter(
+                                            (item) => item.is_registration_open,
+                                        ).length
+                                    }
                                 </p>
                                 <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-slate-400">
                                     Buka
@@ -559,7 +572,7 @@ function WishlistPageContent() {
                 <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5">
                     <form
                         onSubmit={handleFilterSubmit}
-                        className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_160px_160px_auto]"
+                        className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_160px_auto]"
                     >
                         <div className="relative">
                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -569,7 +582,7 @@ function WishlistPageContent() {
                                     setQueryInput(event.target.value)
                                 }
                                 placeholder="Cari event wishlist"
-                                className="h-10 rounded-xl border-slate-200 bg-slate-50 pl-10 pr-9"
+                                className="h-10 rounded-xl border-slate-200 bg-slate-50 pl-9 pr-9 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
                             />
                             {queryInput ? (
                                 <button
@@ -612,24 +625,10 @@ function WishlistPageContent() {
                             className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
                         >
                             {TYPE_OPTIONS.map((item) => (
-                                <option key={item.value || "all"} value={item.value}>
-                                    {item.label}
-                                </option>
-                            ))}
-                        </select>
-
-                        <select
-                            value={status}
-                            onChange={(event) =>
-                                applyQuery({
-                                    status: event.target.value || null,
-                                    page: "1",
-                                })
-                            }
-                            className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
-                        >
-                            {STATUS_OPTIONS.map((item) => (
-                                <option key={item.value || "all"} value={item.value}>
+                                <option
+                                    key={item.value || "all"}
+                                    value={item.value}
+                                >
                                     {item.label}
                                 </option>
                             ))}
@@ -638,8 +637,9 @@ function WishlistPageContent() {
                         <Button
                             type="submit"
                             variant="outline"
-                            className="h-10 rounded-xl border-slate-200 bg-white"
+                            className="h-10 rounded-xl border-slate-200 bg-white text-slate-600 hover:border-primary/30 hover:text-primary"
                         >
+                            <Funnel />
                             Filter
                         </Button>
                     </form>
@@ -745,8 +745,12 @@ function WishlistPageContent() {
                                 <WishlistEventRow
                                     key={event.event_id}
                                     event={event}
-                                    isRemoving={removingIds.includes(event.event_id)}
-                                    onRemove={() => void handleRemove(event.event_id)}
+                                    isRemoving={removingIds.includes(
+                                        event.event_id,
+                                    )}
+                                    onRemove={() =>
+                                        void handleRemove(event.event_id)
+                                    }
                                 />
                             ))}
 
@@ -758,7 +762,9 @@ function WishlistPageContent() {
                                     disabled={safePage <= 1}
                                     onClick={() =>
                                         applyQuery({
-                                            page: String(Math.max(safePage - 1, 1)),
+                                            page: String(
+                                                Math.max(safePage - 1, 1),
+                                            ),
                                         })
                                     }
                                 >
@@ -776,7 +782,10 @@ function WishlistPageContent() {
                                     onClick={() =>
                                         applyQuery({
                                             page: String(
-                                                Math.min(safePage + 1, totalPages),
+                                                Math.min(
+                                                    safePage + 1,
+                                                    totalPages,
+                                                ),
                                             ),
                                         })
                                     }
