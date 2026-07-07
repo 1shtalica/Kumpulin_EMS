@@ -27,7 +27,6 @@ const statusFilter: filterItems[] = [
     { title: "Pendaftaran Selesai", value: "registration closed" },
     { title: "Berlangsung", value: "ongoing" },
     { title: "Selesai", value: "finished" },
-    { title: "Diarsipkan", value: "archived" },
     { title: "Dibatalkan", value: "cancelled" },
 ];
 

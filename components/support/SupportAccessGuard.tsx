@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { SupportService } from "@/services/support-service";
+import { useAuthStore } from "@/stores/auth-store";
 
 export default function SupportAccessGuard({
   children,
@@ -12,10 +13,12 @@ export default function SupportAccessGuard({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
     let active = true;
+    const fallbackPath = user?.role === "organizer" ? "/organizer/dashboard" : "/";
 
     (async () => {
       try {
@@ -27,16 +30,16 @@ export default function SupportAccessGuard({
           return;
         }
 
-        router.replace("/");
+        router.replace(fallbackPath);
       } catch {
-        if (active) router.replace("/");
+        if (active) router.replace(fallbackPath);
       }
     })();
 
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, user?.role]);
 
   if (!allowed) {
     return (

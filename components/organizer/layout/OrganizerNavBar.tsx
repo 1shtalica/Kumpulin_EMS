@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -24,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/stores/auth-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { User as AuthUser } from "@/types/user";
-import { SupportService } from "@/services/support-service";
 import { Separator } from "@/components/ui/separator";
 import {
     Tooltip,
@@ -88,56 +86,8 @@ export const menuItems: NavItem[] = [
         icon: User,
     },
 ];
-export const supportMenuItems: NavItem[] = [
-    {
-        title: "Support Events",
-        href: "/dashboard/support/events",
-        icon: ScanQrCode,
-    },
-    {
-        title: "Support Community",
-        href: "/dashboard/support/community",
-        icon: Users,
-    },
-];
-
 export function useOrganizerNavItems() {
-    const user = useAuthStore((state) => state.user);
-    const [hasSupportAccess, setHasSupportAccess] = useState(false);
-    const isOrganizer = user?.role === "organizer";
-
-    useEffect(() => {
-        let active = true;
-
-        if (!user || isOrganizer) {
-            return () => {
-                active = false;
-            };
-        }
-
-        const checkSupportAccess = async () => {
-            try {
-                const access = await SupportService.getSupportAccess();
-                if (active) {
-                    setHasSupportAccess(access.events || access.community);
-                }
-            } catch {
-                if (active) setHasSupportAccess(false);
-            }
-        };
-
-        void checkSupportAccess();
-
-        return () => {
-            active = false;
-        };
-    }, [isOrganizer, user]);
-
-    return useMemo(() => {
-        if (!user) return [];
-        if (isOrganizer) return menuItems;
-        return hasSupportAccess ? supportMenuItems : [];
-    }, [hasSupportAccess, isOrganizer, user]);
+    return menuItems;
 }
 // ─── NavContent (shared) ─────────────────────────────────────────────────────
 
