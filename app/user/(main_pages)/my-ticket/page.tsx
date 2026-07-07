@@ -11,6 +11,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Clock3,
+    Download,
     Hash,
     Sparkles,
     QrCode,
@@ -163,6 +164,383 @@ const groupTicketsByEvent = (tickets: MyTicketListItem[]) => {
     });
 
     return Array.from(groups.values());
+};
+
+const formatDateTimeShort = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(date);
+};
+
+const downloadTicketsForEvent = (group: TicketEventGroup) => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const ticketCards = group.tickets
+        .map((ticket) => {
+            const qrUrl = ticket.qr_code
+                ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(ticket.qr_code)}`
+                : "";
+            const statusLabel =
+                ticket.status === "issued"
+                    ? "Aktif"
+                    : ticket.status === "checked_in"
+                      ? "Sudah Check-in"
+                      : ticket.status;
+            const statusColor =
+                ticket.status === "issued"
+                    ? "#10b981"
+                    : ticket.status === "checked_in"
+                      ? "#3b82f6"
+                      : "#94a3b8";
+
+            return `
+            <div class="ticket-card">
+                <div class="ticket-left">
+                    <div class="ticket-accent" style="background: ${statusColor};"></div>
+                    <div class="ticket-body">
+                        <div class="ticket-label">E-TICKET · KUMPULIN EMS</div>
+                        <div class="ticket-event">${group.eventTitle}</div>
+                        <div class="ticket-category">${ticket.ticket_category_name || "Kategori tiket"}</div>
+
+                        <div class="ticket-meta-grid">
+                            <div class="ticket-meta-item">
+                                <div class="ticket-meta-label">PESERTA</div>
+                                <div class="ticket-meta-value">${ticket.participant_name || "-"}</div>
+                            </div>
+                            <div class="ticket-meta-item">
+                                <div class="ticket-meta-label">DITERBITKAN</div>
+                                <div class="ticket-meta-value">${formatDateTimeShort(ticket.issued_at)}</div>
+                            </div>
+                            <div class="ticket-meta-item">
+                                <div class="ticket-meta-label">STATUS</div>
+                                <div class="ticket-meta-value status-badge" style="color: ${statusColor}; border-color: ${statusColor}20; background: ${statusColor}10;">${statusLabel}</div>
+                            </div>
+                            <div class="ticket-meta-item">
+                                <div class="ticket-meta-label">NOMOR TIKET</div>
+                                <div class="ticket-meta-value ticket-code">${ticket.ticket_number || "-"}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ticket-divider">
+                    <div class="notch notch-top"></div>
+                    <div class="notch notch-bottom"></div>
+                    <div class="dashed-line"></div>
+                </div>
+                <div class="ticket-right">
+                    <div class="ticket-qr-label">Scan untuk check-in</div>
+                    ${
+                        qrUrl
+                            ? `<img class="ticket-qr" src="${qrUrl}" alt="QR Code" />`
+                            : `<div class="ticket-qr-placeholder">QR belum tersedia</div>`
+                    }
+                    <div class="ticket-qr-code">${ticket.ticket_number || "-"}</div>
+                </div>
+            </div>
+        `;
+        })
+        .join("");
+
+    const html = `
+        <!DOCTYPE html>
+        <html lang="id">
+        <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>E-Ticket — ${group.eventTitle}</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+            <style>
+                @page {
+                    size: 210mm 110mm;
+                    margin: 8mm 10mm;
+                }
+
+                *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+                body {
+                    font-family: 'Poppins', sans-serif;
+                    background: #f8fafc;
+                    color: #0f172a;
+                    padding: 24px 20px;
+                    min-height: 100vh;
+                }
+
+                .page-header {
+                    text-align: center;
+                    margin-bottom: 36px;
+                }
+
+                .page-header .brand {
+                    font-size: 11px;
+                    font-weight: 600;
+                    letter-spacing: 0.14em;
+                    text-transform: uppercase;
+                    color: #7c3aed;
+                    margin-bottom: 6px;
+                }
+
+                .page-header h1 {
+                    font-size: 22px;
+                    font-weight: 700;
+                    color: #0f172a;
+                    line-height: 1.2;
+                    margin-bottom: 4px;
+                }
+
+                .page-header .subtitle {
+                    font-size: 13px;
+                    color: #64748b;
+                }
+
+                .tickets-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 24px;
+                    max-width: 720px;
+                    margin: 0 auto;
+                }
+
+                .ticket-card {
+                    display: flex;
+                    background: #ffffff;
+                    border-radius: 12px;
+                    border: 1px solid #e2e8f0;
+                    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+                    overflow: hidden;
+                    height: 100%;
+                    page-break-inside: avoid;
+                    page-break-after: always;
+                    break-after: page;
+                }
+
+                .ticket-accent {
+                    width: 5px;
+                    flex-shrink: 0;
+                    border-radius: 0;
+                }
+
+                .ticket-left {
+                    display: flex;
+                    flex: 1;
+                    min-width: 0;
+                }
+
+                .ticket-body {
+                    flex: 1;
+                    min-width: 0;
+                    padding: 20px 20px 20px 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+
+                .ticket-label {
+                    font-size: 9px;
+                    font-weight: 600;
+                    letter-spacing: 0.14em;
+                    text-transform: uppercase;
+                    color: #94a3b8;
+                }
+
+                .ticket-event {
+                    font-size: 17px;
+                    font-weight: 700;
+                    color: #0f172a;
+                    line-height: 1.25;
+                    overflow: hidden;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                }
+
+                .ticket-category {
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: #7c3aed;
+                    background: #f5f3ff;
+                    border: 1px solid #ede9fe;
+                    border-radius: 6px;
+                    padding: 2px 8px;
+                    display: inline-block;
+                    width: fit-content;
+                }
+
+                .ticket-meta-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                    margin-top: auto;
+                    padding-top: 4px;
+                }
+
+                .ticket-meta-item {
+                    min-width: 0;
+                }
+
+                .ticket-meta-label {
+                    font-size: 8.5px;
+                    font-weight: 600;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    color: #94a3b8;
+                    margin-bottom: 2px;
+                }
+
+                .ticket-meta-value {
+                    font-size: 11.5px;
+                    font-weight: 500;
+                    color: #1e293b;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+                .ticket-code {
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 10px;
+                    color: #475569;
+                }
+
+                .status-badge {
+                    display: inline-block;
+                    border: 1px solid;
+                    border-radius: 999px;
+                    padding: 1px 7px;
+                    font-size: 10px;
+                    font-weight: 600;
+                }
+
+                .ticket-divider {
+                    position: relative;
+                    width: 24px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: stretch;
+                    justify-content: center;
+                }
+
+                .dashed-line {
+                    width: 1px;
+                    border-left: 2px dashed #e2e8f0;
+                    height: 100%;
+                    margin: 0 auto;
+                }
+
+                .notch {
+                    position: absolute;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 20px;
+                    height: 20px;
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 50%;
+                    z-index: 1;
+                }
+
+                .notch-top { top: -10px; }
+                .notch-bottom { bottom: -10px; }
+
+                .ticket-right {
+                    width: 220px;
+                    flex-shrink: 0;
+                    background: #fafafa;
+                    padding: 18px 16px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                }
+
+                .ticket-qr-label {
+                    font-size: 9px;
+                    font-weight: 600;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    color: #94a3b8;
+                    text-align: center;
+                }
+
+                .ticket-qr {
+                    width: 170px;
+                    height: 170px;
+                    border-radius: 10px;
+                    border: 1px solid #e2e8f0;
+                    padding: 4px;
+                    background: #ffffff;
+                }
+
+                .ticket-qr-placeholder {
+                    width: 170px;
+                    height: 170px;
+                    border-radius: 10px;
+                    border: 2px dashed #e2e8f0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 10px;
+                    color: #94a3b8;
+                    text-align: center;
+                    padding: 8px;
+                }
+
+                .ticket-qr-code {
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 8.5px;
+                    color: #64748b;
+                    text-align: center;
+                    word-break: break-all;
+                    max-width: 128px;
+                }
+
+                .page-footer {
+                    text-align: center;
+                    margin-top: 36px;
+                    font-size: 11px;
+                    color: #94a3b8;
+                }
+
+                @media print {
+                    body { background: #ffffff; padding: 0; }
+                    .page-header { display: none; }
+                    .page-footer { display: none; }
+                    .tickets-container { gap: 0; max-width: 100%; }
+                    .ticket-card { box-shadow: none; border-color: #e2e8f0; border-radius: 0; height: 100vh; }
+                    .notch { background: #ffffff; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="page-header">
+                <div class="brand">Kumpulin EMS · E-Ticket</div>
+                <h1>${group.eventTitle}</h1>
+                <div class="subtitle">${group.tickets.length} tiket · Dicetak ${new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })}</div>
+            </div>
+            <div class="tickets-container">
+                ${ticketCards}
+            </div>
+            <div class="page-footer">Dokumen ini diterbitkan oleh Kumpulin EMS. Tunjukkan QR code saat check-in di lokasi event.</div>
+            <script>
+                window.addEventListener('load', function() {
+                    setTimeout(function() { window.print(); }, 800);
+                });
+            <\/script>
+        </body>
+        </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
 };
 
 function TicketWalletDoodle() {
@@ -422,65 +800,84 @@ function TicketEventAccordion({
 
     return (
         <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-900/5 transition-all duration-200 hover:border-primary/30">
-            <button
-                type="button"
-                onClick={onToggle}
-                className="group flex w-full flex-col gap-4 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:p-5 lg:flex-row lg:items-center lg:justify-between"
-                aria-expanded={isOpen}
-            >
-                <div className="flex min-w-0 gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                        <TicketIcon className="h-6 w-6" />
-                    </div>
-                    <div className="min-w-0">
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
-                            <Badge
-                                variant="outline"
-                                className="rounded-full border-primary/15 bg-primary/5 text-primary"
-                            >
-                                {group.tickets.length} tiket
-                            </Badge>
-                            {activeTickets > 0 ? (
-                                <Badge
-                                    variant="outline"
-                                    className="rounded-full border-emerald-100 bg-emerald-50 text-emerald-700"
-                                >
-                                    {activeTickets} aktif
-                                </Badge>
-                            ) : null}
-                            {checkedInTickets > 0 ? (
-                                <Badge
-                                    variant="outline"
-                                    className="rounded-full border-blue-100 bg-blue-50 text-blue-700"
-                                >
-                                    {checkedInTickets} hadir
-                                </Badge>
-                            ) : null}
+            <div className="flex w-full flex-col gap-0">
+                <button
+                    type="button"
+                    onClick={onToggle}
+                    className="group flex w-full flex-col gap-4 p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:p-5 lg:flex-row lg:items-center lg:justify-between"
+                    aria-expanded={isOpen}
+                >
+                    <div className="flex min-w-0 gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                            <TicketIcon className="h-6 w-6" />
                         </div>
-                        <h2 className="line-clamp-2 text-lg font-semibold tracking-tight text-slate-950 transition-colors group-hover:text-primary sm:text-xl">
-                            {group.eventTitle}
-                        </h2>
-                        <p className="mt-1 line-clamp-1 text-sm text-slate-500">
-                            {categoryNames.length > 0
-                                ? categoryNames.join(", ")
-                                : "Kategori tiket"}
-                        </p>
+                        <div className="min-w-0">
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                                <Badge
+                                    variant="outline"
+                                    className="rounded-full border-primary/15 bg-primary/5 text-primary"
+                                >
+                                    {group.tickets.length} tiket
+                                </Badge>
+                                {activeTickets > 0 ? (
+                                    <Badge
+                                        variant="outline"
+                                        className="rounded-full border-emerald-100 bg-emerald-50 text-emerald-700"
+                                    >
+                                        {activeTickets} aktif
+                                    </Badge>
+                                ) : null}
+                                {checkedInTickets > 0 ? (
+                                    <Badge
+                                        variant="outline"
+                                        className="rounded-full border-blue-100 bg-blue-50 text-blue-700"
+                                    >
+                                        {checkedInTickets} hadir
+                                    </Badge>
+                                ) : null}
+                            </div>
+                            <h2 className="line-clamp-2 text-lg font-semibold tracking-tight text-slate-950 transition-colors group-hover:text-primary sm:text-xl">
+                                {group.eventTitle}
+                            </h2>
+                            <p className="mt-1 line-clamp-1 text-sm text-slate-500">
+                                {categoryNames.length > 0
+                                    ? categoryNames.join(", ")
+                                    : "Kategori tiket"}
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 lg:border-t-0 lg:pt-0">
-                    <span className="text-sm font-semibold text-slate-500">
-                        {isOpen ? "Tutup tiket" : "Lihat tiket"}
-                    </span>
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-colors group-hover:border-primary/20 group-hover:text-primary">
-                        <ChevronDown
-                            className={`h-4 w-4 transition-transform duration-200 ${
-                                isOpen ? "rotate-180" : ""
-                            }`}
-                        />
-                    </span>
+                    <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 lg:border-t-0 lg:pt-0">
+                        <span className="text-sm font-semibold text-slate-500">
+                            {isOpen ? "Tutup tiket" : "Lihat tiket"}
+                        </span>
+                        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-500 transition-colors group-hover:border-primary/20 group-hover:text-primary">
+                            <ChevronDown
+                                className={`h-4 w-4 transition-transform duration-200 ${
+                                    isOpen ? "rotate-180" : ""
+                                }`}
+                            />
+                        </span>
+                    </div>
+                </button>
+
+                <div className="flex items-center gap-2 border-t border-slate-100 bg-slate-50/60 px-4 py-2.5 sm:px-5">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 rounded-lg border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            downloadTicketsForEvent(group);
+                        }}
+                    >
+                        <Download className="h-3.5 w-3.5" />
+                        Unduh {group.tickets.length > 1 ? `${group.tickets.length} tiket` : "tiket"}
+                    </Button>
+                    <span className="text-xs text-slate-400">· PDF / cetak</span>
                 </div>
-            </button>
+            </div>
 
             {isOpen ? (
                 <div className="space-y-3 border-t border-slate-100 bg-slate-50/60 p-3 sm:p-4">
