@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Home, LogOut } from "lucide-react";
 import UserNavBar, {
     NavContent,
-    accountItems,
     useUserNavItems,
 } from "@/components/user/layout/UserNavBar";
 import { useAuthStore } from "@/stores/auth-store";
@@ -105,12 +104,6 @@ export default function UserMainPagesLayout({
                         <div className="flex-1" />
 
                         <div className="space-y-2 border-t border-slate-100 pt-3">
-                            <NavContent
-                                showLabel={true}
-                                onClose={() => setIsSheetOpen(false)}
-                                items={accountItems}
-                            />
-
                             <div className="mb-2 flex min-w-0 items-center gap-2.5 rounded-xl px-2 py-2">
                                 <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
                                     <AvatarImage

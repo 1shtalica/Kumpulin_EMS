@@ -11,6 +11,7 @@ export interface Community {
   member_count: number;
   event_count?: number;
   post_count: number;
+  is_member?: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -236,15 +236,6 @@ export default function OrganizerNavBar({
                 className="w-56 rounded-xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10"
             >
                 <DropdownMenuItem
-                    className="cursor-pointer rounded-lg p-3 text-sm font-medium text-slate-500"
-                    asChild
-                >
-                    <Link href="/organizer/account">
-                        <Settings className="mr-2 h-4 w-4" />
-                        Pengaturan Akun
-                    </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem
                     className="cursor-pointer rounded-lg p-3 text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700"
                     onClick={logout}
                 >
@@ -317,9 +308,7 @@ export default function OrganizerNavBar({
 
                     <div className="flex-1" />
 
-                    <div
-                        className="-mx-4 border-t border-slate-100 px-4 pb-1 pt-3"
-                    >
+                    <div className="-mx-4 border-t border-slate-100 px-4 pb-1 pt-3">
                         {/* Tombol Beranda */}
                         <div>
                             <Button
@@ -344,7 +333,10 @@ export default function OrganizerNavBar({
 
                         <Separator
                             orientation="horizontal"
-                            className={cn("my-2 border-slate-100", !isOpen && "hidden")}
+                            className={cn(
+                                "my-2 border-slate-100",
+                                !isOpen && "hidden",
+                            )}
                         />
 
                         {/* Kontainer Account Menu */}

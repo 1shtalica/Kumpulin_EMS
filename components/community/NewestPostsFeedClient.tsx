@@ -1035,12 +1035,15 @@ export default function NewestPostsFeedClient() {
                                     )}
                                 </div>
                                 <div className="mt-4 pt-4 border-t border-slate-100">
-                                    <Link
-                                        href="/komunitas/explore"
-                                        className="flex h-10 w-full items-center justify-center rounded-xl bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800"
+                                    <Button
+                                        asChild
+                                        className="h-10 w-full rounded-xl text-sm font-semibold"
                                     >
-                                        Jelajahi Semua Komunitas
-                                    </Link>
+                                        <Link href="/komunitas/explore">
+                                            <Search className="h-4 w-4" />
+                                            Jelajahi Semua Komunitas
+                                        </Link>
+                                    </Button>
                                 </div>
                             </div>
                         </section>

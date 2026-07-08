@@ -18,7 +18,6 @@ import {
     RefreshCw,
     Ticket as TicketIcon,
     UserRound,
-    X,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,16 +65,7 @@ const getStatusPresentation = (status: TicketStatus) => {
                 badgeClassName:
                     "border-blue-100 bg-blue-50 text-blue-700 hover:bg-blue-50",
             };
-        case "cancelled":
-            return {
-                label: "Dibatalkan",
-                Icon: X,
-                tone: "text-red-700",
-                dotClassName: "bg-red-500",
-                stripClassName: "bg-red-500",
-                badgeClassName:
-                    "border-red-100 bg-red-50 text-red-700 hover:bg-red-50",
-            };
+
         case "refunded":
             return {
                 label: "Direfund",
@@ -141,11 +131,9 @@ const downloadSingleTicket = (ticket: MyTicketDetail) => {
             ? "#10b981"
             : ticket.status === "checked_in"
               ? "#3b82f6"
-              : ticket.status === "cancelled"
-                ? "#ef4444"
-                : ticket.status === "refunded"
-                  ? "#f59e0b"
-                  : "#94a3b8";
+              : ticket.status === "refunded"
+                ? "#f59e0b"
+                : "#94a3b8";
     const qrUrl = ticket.qr_code
         ? `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(ticket.qr_code)}`
         : "";
@@ -876,9 +864,7 @@ export default function MyTicketDetailPage({
                         <SectionBlock title="Jadwal Event">
                             <div className="grid gap-3 sm:grid-cols-2">
                                 <DetailItem
-                                    icon={
-                                        <CalendarDays className="h-4 w-4" />
-                                    }
+                                    icon={<CalendarDays className="h-4 w-4" />}
                                     label="Mulai"
                                     value={formatDateTime(
                                         ticket.event.start_time,

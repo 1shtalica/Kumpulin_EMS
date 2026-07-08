@@ -16,7 +16,6 @@ import {
     LogOut,
     LucideIcon,
     MessageSquareText,
-    Settings,
     Ticket,
     User,
 } from "lucide-react";
@@ -79,7 +78,6 @@ export const menuItems: NavItem[] = [
     },
 ];
 
-
 export const supportMenuItems: NavItem[] = [
     {
         title: "Support Events",
@@ -125,17 +123,11 @@ export function useUserNavItems() {
     }, [user]);
 
     return useMemo(
-        () => (hasSupportAccess ? [...menuItems, ...supportMenuItems] : menuItems),
+        () =>
+            hasSupportAccess ? [...menuItems, ...supportMenuItems] : menuItems,
         [hasSupportAccess],
     );
 }
-export const accountItems: NavItem[] = [
-    {
-        title: "Pengaturan Akun",
-        href: "/user/account",
-        icon: Settings,
-    },
-];
 
 function getUserDisplayName(user: AuthUser | null) {
     if (!user) return "Pengguna";
@@ -279,22 +271,6 @@ export default function UserNavBar({
                 side={isOpen ? "top" : "right"}
                 className="w-56 rounded-2xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10"
             >
-                {accountItems.map((item) => {
-                    const Icon = item.icon;
-
-                    return (
-                        <DropdownMenuItem
-                            key={item.href}
-                            className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 focus:bg-slate-50 focus:text-slate-900"
-                            asChild
-                        >
-                            <Link href={item.href}>
-                                <Icon className="mr-2 h-4 w-4 text-slate-400" />
-                                {item.title}
-                            </Link>
-                        </DropdownMenuItem>
-                    );
-                })}
                 <DropdownMenuItem
                     className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700"
                     onClick={logout}
@@ -373,9 +349,7 @@ export default function UserNavBar({
 
                     <div className="flex-1" />
 
-                    <div
-                        className="-mx-4 border-t border-slate-100 px-4 pb-1 pt-3"
-                    >
+                    <div className="-mx-4 border-t border-slate-100 px-4 pb-1 pt-3">
                         <Button
                             variant="ghost"
                             size={isOpen ? "default" : "icon"}

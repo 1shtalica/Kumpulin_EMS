@@ -465,6 +465,7 @@ export default function CommunityDetailClient({
                 if (!mounted) return;
                 setCommunity(data);
                 setResolvedCommunityId(data.id);
+                setJoined(data.is_member ?? false);
                 await loadPosts(data.id, 1);
             } catch (error) {
                 if (!mounted) return;
@@ -706,8 +707,12 @@ export default function CommunityDetailClient({
                             <Button
                                 onClick={handleJoinToggle}
                                 disabled={isMutatingMembership}
-                                className="h-10 rounded-xl text-[13px] font-semibold sm:text-sm"
-                                variant={joined ? "secondary" : "default"}
+                                className={`h-10 rounded-xl text-[13px] font-semibold sm:text-sm ${
+                                    joined
+                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+                                        : ""
+                                }`}
+                                variant={joined ? "outline" : "default"}
                             >
                                 {isMutatingMembership ? (
                                     <Loader2 className="h-4 w-4 animate-spin" />
