@@ -174,16 +174,74 @@ function HeaderDecoration() {
                 fill="none"
             />
             {/* Small QR-like blocks */}
-            <rect x="150" y="30" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.07" />
-            <rect x="165" y="30" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.05" />
-            <rect x="150" y="45" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.05" />
-            <rect x="165" y="45" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.07" />
-            <rect x="150" y="60" width="8" height="8" rx="2" fill="currentColor" fillOpacity="0.04" />
+            <rect
+                x="150"
+                y="30"
+                width="8"
+                height="8"
+                rx="2"
+                fill="currentColor"
+                fillOpacity="0.07"
+            />
+            <rect
+                x="165"
+                y="30"
+                width="8"
+                height="8"
+                rx="2"
+                fill="currentColor"
+                fillOpacity="0.05"
+            />
+            <rect
+                x="150"
+                y="45"
+                width="8"
+                height="8"
+                rx="2"
+                fill="currentColor"
+                fillOpacity="0.05"
+            />
+            <rect
+                x="165"
+                y="45"
+                width="8"
+                height="8"
+                rx="2"
+                fill="currentColor"
+                fillOpacity="0.07"
+            />
+            <rect
+                x="150"
+                y="60"
+                width="8"
+                height="8"
+                rx="2"
+                fill="currentColor"
+                fillOpacity="0.04"
+            />
             {/* Circle accent */}
-            <circle cx="130" cy="160" r="16" stroke="currentColor" strokeWidth="1" strokeOpacity="0.06" fill="none" />
+            <circle
+                cx="130"
+                cy="160"
+                r="16"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeOpacity="0.06"
+                fill="none"
+            />
             <circle cx="130" cy="160" r="6" fill="#10b981" fillOpacity="0.08" />
             {/* Rounded rect */}
-            <rect x="30" y="140" width="40" height="24" rx="8" stroke="currentColor" strokeWidth="1" strokeOpacity="0.06" fill="none" />
+            <rect
+                x="30"
+                y="140"
+                width="40"
+                height="24"
+                rx="8"
+                stroke="currentColor"
+                strokeWidth="1"
+                strokeOpacity="0.06"
+                fill="none"
+            />
         </svg>
     );
 }
@@ -192,11 +250,33 @@ function HeaderDecoration() {
 /*  Reusable UI pieces                                                 */
 /* ------------------------------------------------------------------ */
 
-function MetricCell({ label, value }: { label: string; value: string }) {
+function MetricCell({
+    label,
+    value,
+    compact = false,
+}: {
+    label: string;
+    value: string;
+    compact?: boolean;
+}) {
     return (
         <div>
-            <p className="text-xs font-medium text-slate-500">{label}</p>
-            <p className="mt-1 truncate font-semibold text-slate-950">{value}</p>
+            <p
+                className={cn(
+                    "font-medium text-slate-500",
+                    compact ? "text-[11px]" : "text-xs",
+                )}
+            >
+                {label}
+            </p>
+            <p
+                className={cn(
+                    "truncate font-semibold text-slate-950",
+                    compact ? "mt-0.5 text-xs" : "mt-1",
+                )}
+            >
+                {value}
+            </p>
         </div>
     );
 }
@@ -251,7 +331,11 @@ function ProgressLine({
                 <span className="text-slate-500">{label}</span>
                 <span className="text-slate-900">{valueLabel}</span>
             </div>
-            <AnimatedProgressBar value={value} className={className} delay={delay} />
+            <AnimatedProgressBar
+                value={value}
+                className={className}
+                delay={delay}
+            />
         </div>
     );
 }
@@ -333,7 +417,8 @@ function RingProgress({
                         strokeDasharray={circumference}
                         strokeDashoffset={mounted ? offset : circumference}
                         style={{
-                            transition: "stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                            transition:
+                                "stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         }}
                     />
                 </svg>
@@ -366,9 +451,12 @@ function statusLabel(status: string) {
 }
 
 function statusClassName(status: string) {
-    if (status === "published") return "border-primary/15 bg-primary-light text-primary";
-    if (status === "draft") return "border-slate-200 bg-slate-100 text-slate-500";
-    if (status === "cancelled") return "border-danger/15 bg-danger-light text-danger";
+    if (status === "published")
+        return "border-primary/15 bg-primary-light text-primary";
+    if (status === "draft")
+        return "border-slate-200 bg-slate-100 text-slate-500";
+    if (status === "cancelled")
+        return "border-danger/15 bg-danger-light text-danger";
     return "border-success/15 bg-success-light text-success-hover";
 }
 
@@ -425,49 +513,70 @@ function EventPerformanceRow({
                     </div>
                     <p className="mt-2 flex items-center gap-1.5 text-xs font-medium text-slate-500">
                         <Clock3 className="h-3.5 w-3.5" />
-                        {formatEventDate(event.event_start_date, event.event_end_date)}
+                        {formatEventDate(
+                            event.event_start_date,
+                            event.event_end_date,
+                        )}
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-[13px] sm:grid-cols-4 lg:min-w-[480px]">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs sm:grid-cols-4 lg:min-w-[420px]">
                     <MetricCell
                         label="Tiket"
                         value={`${formatNumber(event.tickets_sold)}/${formatNumber(event.capacity)}`}
+                        compact
                     />
-                    <MetricCell label="Pendapatan" value={formatFinanceCurrency(event.revenue)} />
-                    <MetricCell label="Diterbitkan" value={formatNumber(event.issued_tickets)} />
+                    <MetricCell
+                        label="Pendapatan"
+                        value={formatFinanceCurrency(event.revenue)}
+                        compact
+                    />
+                    <MetricCell
+                        label="Diterbitkan"
+                        value={formatNumber(event.issued_tickets)}
+                        compact
+                    />
                     <MetricCell
                         label="Presensi"
                         value={`${formatNumber(event.checked_in_tickets)} (${formatRate(event.checkin_rate)})`}
+                        compact
                     />
                 </div>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <div>
-                    <div className="mb-2 flex items-center justify-between gap-3 text-xs font-medium">
+                    <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium">
                         <span className="text-slate-500">Okupansi</span>
-                        <span className="text-slate-900">{formatRate(event.occupancy_rate)}</span>
+                        <span className="text-slate-900">
+                            {formatRate(event.occupancy_rate)}
+                        </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                         <div
                             className="h-full rounded-full bg-primary transition-all duration-1000 ease-out"
                             style={{
-                                width: barMounted ? `${clampRate(event.occupancy_rate)}%` : "0%",
+                                width: barMounted
+                                    ? `${clampRate(event.occupancy_rate)}%`
+                                    : "0%",
                             }}
                         />
                     </div>
                 </div>
                 <div>
-                    <div className="mb-2 flex items-center justify-between gap-3 text-xs font-medium">
+                    <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-medium">
                         <span className="text-slate-500">Presensi</span>
-                        <span className="text-slate-900">{formatRate(event.checkin_rate)}</span>
+                        <span className="text-slate-900">
+                            {formatRate(event.checkin_rate)}
+                        </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                         <div
                             className="h-full rounded-full bg-success transition-all duration-1000 ease-out"
                             style={{
-                                width: barMounted ? `${clampRate(event.checkin_rate)}%` : "0%",
+                                width: barMounted
+                                    ? `${clampRate(event.checkin_rate)}%`
+                                    : "0%",
                             }}
                         />
                     </div>
@@ -594,7 +703,7 @@ function StatCard({
                 <TrendingUp className="h-4 w-4 text-slate-300" />
             </div>
             <p className="text-xs font-medium text-slate-500">{label}</p>
-            <p className="mt-2 text-xl font-semibold leading-none tabular-nums text-slate-950">
+            <p className="mt-2 text-lg font-semibold leading-none tabular-nums text-slate-950">
                 {isCurrency ? formattedValue : formatNumber(animatedVal)}
             </p>
             <p className="mt-2 text-xs font-medium leading-relaxed text-slate-500">
@@ -656,7 +765,9 @@ function QuickStatCard({
 /* ------------------------------------------------------------------ */
 
 export default function DashboardStatisticRow() {
-    const [dashboard, setDashboard] = useState<OrganizerDashboardData | null>(null);
+    const [dashboard, setDashboard] = useState<OrganizerDashboardData | null>(
+        null,
+    );
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { user } = useAuthStore();
@@ -703,12 +814,14 @@ export default function DashboardStatisticRow() {
                                 <h2 className="text-sm font-semibold text-slate-950">
                                     Gagal memuat dasbor
                                 </h2>
-                                <p className="mt-1 text-xs leading-relaxed text-slate-500">{error}</p>
+                                <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                    {error}
+                                </p>
                             </div>
                         </div>
                         <Button
                             type="button"
-                            className="h-10 rounded-xl text-sm font-semibold"
+                            className="h-10 rounded-xl text-xs font-semibold"
                             onClick={loadDashboard}
                         >
                             <RefreshCw className="mr-2 h-4 w-4" />
@@ -720,7 +833,8 @@ export default function DashboardStatisticRow() {
         );
     }
 
-    const { overview, event_performance, sales, finance, community } = dashboard;
+    const { overview, event_performance, sales, finance, community } =
+        dashboard;
     const totalBalance =
         finance.available_amount +
         finance.pending_amount +
@@ -735,7 +849,10 @@ export default function DashboardStatisticRow() {
         {
             label: "Total pendapatan",
             rawValue: overview.total_revenue,
-            value: formatFinanceCurrency(overview.total_revenue, overview.currency),
+            value: formatFinanceCurrency(
+                overview.total_revenue,
+                overview.currency,
+            ),
             helper: `${formatNumber(sales.paid_orders)} pesanan lunas dari ${formatNumber(sales.total_orders)} pesanan`,
             icon: Banknote,
             tone: "bg-primary-light text-primary",
@@ -762,7 +879,10 @@ export default function DashboardStatisticRow() {
         {
             label: "Saldo tersedia",
             rawValue: finance.available_amount,
-            value: formatFinanceCurrency(finance.available_amount, finance.currency),
+            value: formatFinanceCurrency(
+                finance.available_amount,
+                finance.currency,
+            ),
             helper: `${formatFinanceCurrency(finance.pending_amount, finance.currency)} tertahan`,
             icon: WalletCards,
             tone: "bg-warning-light text-warning-hover",
@@ -774,42 +894,44 @@ export default function DashboardStatisticRow() {
         <DashboardShell>
             {/* ── Hero Header ── */}
             <section className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-md shadow-slate-900/5">
-                {/* Left accent bar */}
-                <div className="absolute inset-y-0 left-0 w-1 rounded-l-2xl bg-primary" />
-
                 <HeaderDecoration />
 
                 <div className="relative grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
                     <div className="flex flex-col justify-between gap-6">
                         <div>
-                            <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
-                                Ruang kerja organizer
+                            <p className="text-[11px] font-medium uppercase tracking-wider text-primary">
+                                Organizer workspace
                             </p>
-                            <h2 className="mt-2 text-xl font-semibold leading-tight text-slate-950 md:text-2xl">
+                            <h2 className="mt-2 text-xl font-bold leading-[1.12] text-slate-950 md:text-2xl">
                                 {getGreeting()},{" "}
-                                <span className="text-primary">{displayName}</span>
+                                <span className="text-primary">
+                                    {displayName}
+                                </span>
                             </h2>
-                            <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600">
-                                Pantau performa event, penjualan tiket, komunitas,
-                                dan saldo organizer dari satu tempat.
+                            <p className="mt-2 max-w-xl text-xs leading-relaxed text-slate-600 md:text-sm">
+                                Pantau performa event, penjualan tiket,
+                                komunitas, dan saldo organizer dari satu tempat.
                             </p>
                         </div>
 
                         <div className="flex flex-wrap gap-3">
-                            <Button asChild className="h-10 rounded-xl text-sm font-semibold">
+                            <Button
+                                asChild
+                                className="h-10 rounded-xl text-xs font-semibold"
+                            >
                                 <Link href="/organizer/create-event">
-                                    <Plus className="mr-2 h-4 w-4" />
+                                    <Plus className="h-4 w-4" />
                                     Buat Event
                                 </Link>
                             </Button>
                             <Button
                                 asChild
                                 variant="outline"
-                                className="h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+                                className="h-10 rounded-xl border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
                             >
                                 <Link href="/organizer/finance">
                                     Keuangan
-                                    <ArrowUpRight className="ml-2 h-4 w-4" />
+                                    <ArrowUpRight className=" h-4 w-4" />
                                 </Link>
                             </Button>
                         </div>
@@ -822,8 +944,10 @@ export default function DashboardStatisticRow() {
                                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
                                     Okupansi keseluruhan
                                 </p>
-                                <p className="mt-2 text-lg font-semibold leading-none tabular-nums text-slate-950">
-                                    {formatRate(overview.overall_occupancy_rate)}
+                                <p className="mt-2 text-base font-semibold leading-none tabular-nums text-slate-950">
+                                    {formatRate(
+                                        overview.overall_occupancy_rate,
+                                    )}
                                 </p>
                             </div>
                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary">
@@ -836,9 +960,20 @@ export default function DashboardStatisticRow() {
                             delay={200}
                         />
                         <div className="mt-5 grid grid-cols-3 gap-3 text-sm">
-                            <MetricCell label="Event" value={formatNumber(overview.total_events)} />
-                            <MetricCell label="Terjual" value={formatNumber(overview.total_tickets_sold)} />
-                            <MetricCell label="Draf" value={formatNumber(overview.draft_events)} />
+                            <MetricCell
+                                label="Event"
+                                value={formatNumber(overview.total_events)}
+                            />
+                            <MetricCell
+                                label="Terjual"
+                                value={formatNumber(
+                                    overview.total_tickets_sold,
+                                )}
+                            />
+                            <MetricCell
+                                label="Draf"
+                                value={formatNumber(overview.draft_events)}
+                            />
                         </div>
                     </div>
                 </div>
@@ -871,13 +1006,14 @@ export default function DashboardStatisticRow() {
                                 Performa event
                             </h2>
                             <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                                Tiket, pendapatan, okupansi, dan presensi per event.
+                                Tiket, pendapatan, okupansi, dan presensi per
+                                event.
                             </p>
                         </div>
                         <Button
                             asChild
                             variant="outline"
-                            className="h-10 w-fit rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+                            className="h-10 w-fit rounded-xl border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
                         >
                             <Link href="/organizer/my-event">
                                 Kelola Event
@@ -889,7 +1025,11 @@ export default function DashboardStatisticRow() {
                     {event_performance.length > 0 ? (
                         <div className="divide-y divide-slate-100">
                             {event_performance.map((event, i) => (
-                                <EventPerformanceRow key={event.event_id} event={event} index={i} />
+                                <EventPerformanceRow
+                                    key={event.event_id}
+                                    event={event}
+                                    index={i}
+                                />
                             ))}
                         </div>
                     ) : (
@@ -927,25 +1067,33 @@ export default function DashboardStatisticRow() {
                             />
                             <div className="grid flex-1 grid-cols-2 gap-3">
                                 <div className="rounded-lg bg-success-light/60 px-2.5 py-2">
-                                    <p className="text-[11px] font-medium text-success-hover">Lunas</p>
+                                    <p className="text-[11px] font-medium text-success-hover">
+                                        Lunas
+                                    </p>
                                     <p className="mt-0.5 text-sm font-semibold tabular-nums text-slate-950">
                                         {formatNumber(sales.paid_orders)}
                                     </p>
                                 </div>
                                 <div className="rounded-lg bg-warning-light/60 px-2.5 py-2">
-                                    <p className="text-[11px] font-medium text-warning-hover">Kedaluwarsa</p>
+                                    <p className="text-[11px] font-medium text-warning-hover">
+                                        Kedaluwarsa
+                                    </p>
                                     <p className="mt-0.5 text-sm font-semibold tabular-nums text-slate-950">
                                         {formatNumber(sales.expired_orders)}
                                     </p>
                                 </div>
                                 <div className="rounded-lg bg-info-light/60 px-2.5 py-2">
-                                    <p className="text-[11px] font-medium text-info">Menunggu</p>
+                                    <p className="text-[11px] font-medium text-info">
+                                        Menunggu
+                                    </p>
                                     <p className="mt-0.5 text-sm font-semibold tabular-nums text-slate-950">
                                         {formatNumber(sales.pending_orders)}
                                     </p>
                                 </div>
                                 <div className="rounded-lg bg-slate-100 px-2.5 py-2">
-                                    <p className="text-[11px] font-medium text-slate-500">Dibatalkan</p>
+                                    <p className="text-[11px] font-medium text-slate-500">
+                                        Dibatalkan
+                                    </p>
                                     <p className="mt-0.5 text-sm font-semibold tabular-nums text-slate-950">
                                         {formatNumber(sales.cancelled_orders)}
                                     </p>
@@ -971,16 +1119,34 @@ export default function DashboardStatisticRow() {
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             {[
-                                { label: "Pengikut", value: community.followers, color: "bg-primary-light/60 text-primary" },
-                                { label: "Anggota", value: community.members, color: "bg-success-light/60 text-success-hover" },
-                                { label: "Postingan", value: community.posts, color: "bg-info-light/60 text-info" },
-                                { label: "Komentar", value: community.comments, color: "bg-warning-light/60 text-warning-hover" },
+                                {
+                                    label: "Pengikut",
+                                    value: community.followers,
+                                    color: "bg-primary-light/60 text-primary",
+                                },
+                                {
+                                    label: "Anggota",
+                                    value: community.members,
+                                    color: "bg-success-light/60 text-success-hover",
+                                },
+                                {
+                                    label: "Postingan",
+                                    value: community.posts,
+                                    color: "bg-info-light/60 text-info",
+                                },
+                                {
+                                    label: "Komentar",
+                                    value: community.comments,
+                                    color: "bg-warning-light/60 text-warning-hover",
+                                },
                             ].map((item) => (
                                 <div
                                     key={item.label}
                                     className="rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 transition-colors duration-200 hover:border-primary/20"
                                 >
-                                    <p className="text-xs font-medium text-slate-500">{item.label}</p>
+                                    <p className="text-xs font-medium text-slate-500">
+                                        {item.label}
+                                    </p>
                                     <p className="mt-1 text-sm font-semibold leading-none tabular-nums text-slate-950">
                                         {formatNumber(item.value)}
                                     </p>
@@ -1007,7 +1173,7 @@ export default function DashboardStatisticRow() {
                         <Button
                             asChild
                             variant="outline"
-                            className="h-10 rounded-xl border-slate-200 bg-white text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
+                            className="h-10 rounded-xl border-slate-200 bg-white text-xs font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
                         >
                             <Link href="/organizer/finance/withdrawals">
                                 Tarik saldo
@@ -1024,8 +1190,11 @@ export default function DashboardStatisticRow() {
                             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
                                 Total saldo tercatat
                             </p>
-                            <p className="mt-2 text-xl font-semibold leading-none tabular-nums text-slate-950">
-                                {formatFinanceCurrency(totalBalance, finance.currency)}
+                            <p className="mt-2 text-lg font-semibold leading-none tabular-nums text-slate-950">
+                                {formatFinanceCurrency(
+                                    totalBalance,
+                                    finance.currency,
+                                )}
                             </p>
                         </div>
                     </div>
@@ -1057,15 +1226,32 @@ export default function DashboardStatisticRow() {
                     <div className="mt-4 space-y-4">
                         <ProgressLine
                             label="Tersedia"
-                            valueLabel={formatFinanceCurrency(finance.available_amount, finance.currency)}
-                            value={totalBalance > 0 ? (finance.available_amount / totalBalance) * 100 : 0}
+                            valueLabel={formatFinanceCurrency(
+                                finance.available_amount,
+                                finance.currency,
+                            )}
+                            value={
+                                totalBalance > 0
+                                    ? (finance.available_amount /
+                                          totalBalance) *
+                                      100
+                                    : 0
+                            }
                             className="bg-success"
                             delay={200}
                         />
                         <ProgressLine
                             label="Tertahan"
-                            valueLabel={formatFinanceCurrency(finance.pending_amount, finance.currency)}
-                            value={totalBalance > 0 ? (finance.pending_amount / totalBalance) * 100 : 0}
+                            valueLabel={formatFinanceCurrency(
+                                finance.pending_amount,
+                                finance.currency,
+                            )}
+                            value={
+                                totalBalance > 0
+                                    ? (finance.pending_amount / totalBalance) *
+                                      100
+                                    : 0
+                            }
                             className="bg-warning-hover"
                             delay={350}
                         />
@@ -1077,7 +1263,9 @@ export default function DashboardStatisticRow() {
                             )}
                             value={
                                 totalBalance > 0
-                                    ? (finance.requested_withdrawal_amount / totalBalance) * 100
+                                    ? (finance.requested_withdrawal_amount /
+                                          totalBalance) *
+                                      100
                                     : 0
                             }
                             className="bg-primary"
@@ -1094,7 +1282,8 @@ export default function DashboardStatisticRow() {
                                 Penjualan kategori tiket
                             </h2>
                             <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                                Kategori tiket dengan penjualan dari pesanan lunas.
+                                Kategori tiket dengan penjualan dari pesanan
+                                lunas.
                             </p>
                         </div>
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-light text-primary">
@@ -1104,14 +1293,16 @@ export default function DashboardStatisticRow() {
 
                     {sales.sales_by_ticket_category.length > 0 ? (
                         <div className="grid gap-3 md:grid-cols-2">
-                            {sales.sales_by_ticket_category.map((category, i) => (
-                                <TicketCategoryRow
-                                    key={category.ticket_category_id}
-                                    category={category}
-                                    maxSold={maxCategorySold}
-                                    rank={i + 1}
-                                />
-                            ))}
+                            {sales.sales_by_ticket_category.map(
+                                (category, i) => (
+                                    <TicketCategoryRow
+                                        key={category.ticket_category_id}
+                                        category={category}
+                                        maxSold={maxCategorySold}
+                                        rank={i + 1}
+                                    />
+                                ),
+                            )}
                         </div>
                     ) : (
                         <EmptyPanel

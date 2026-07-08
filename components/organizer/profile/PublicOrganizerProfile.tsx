@@ -461,7 +461,7 @@ export default function PublicOrganizerProfile({
             <div
                 className={cn(
                     "relative mx-auto flex w-full flex-col gap-5 flex-1",
-                    !isPublicProfile ? "max-w-6xl" : "max-w-7xl"
+                    !isPublicProfile ? "max-w-6xl" : "max-w-7xl",
                 )}
             >
                 {!isPublicProfile && (
@@ -693,12 +693,9 @@ export default function PublicOrganizerProfile({
                                                 ? "Loading..."
                                                 : followed
                                                   ? "Mengikuti"
-                                                  : "Ikuti"}
+                                                  : "Diikuti"}
                                         </button>
-                                        <button className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary">
-                                            <Mail className="w-4 h-4" />
-                                            Hubungi
-                                        </button>
+
                                         <button
                                             className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary"
                                             onClick={handleShareableLink}
@@ -806,7 +803,9 @@ export default function PublicOrganizerProfile({
                                 {/* Total attendees */}
                                 <div className="flex min-w-[8.5rem] flex-col rounded-xl border border-slate-200/80 bg-slate-50/80 p-3">
                                     <span className="text-base font-semibold leading-none text-slate-950 sm:text-lg">
-                                        {formatStat(stats.total_event_attendees)}
+                                        {formatStat(
+                                            stats.total_event_attendees,
+                                        )}
                                     </span>
                                     <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                                         Total Peserta

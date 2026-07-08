@@ -43,6 +43,9 @@ const filterOptions: Array<{ value: PostFilter; label: string }> = [
     { value: "text", label: "Diskusi" },
 ];
 
+const numberFormatter = new Intl.NumberFormat("id-ID");
+const formatNumber = (value: number) => numberFormatter.format(value || 0);
+
 const getApiErrorMessage = (error: unknown, fallback: string) => {
     const axiosError = error as AxiosError<ApiErrorBody>;
     return (
