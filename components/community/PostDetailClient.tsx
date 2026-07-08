@@ -353,7 +353,7 @@ function ThreadCommentRow({
     isReply?: boolean;
     onReply: () => void;
     onUpdate: (commentId: string, body: string) => Promise<void>;
-    onDelete: (comment: Comment) => Promise<void>;
+    onDelete: (comment: Comment) => void;
 }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editBody, setEditBody] = useState(comment.body);

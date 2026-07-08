@@ -42,13 +42,7 @@ const TYPE_OPTIONS = [
     { label: "Internal", value: "internal" },
 ];
 
-const STATUS_OPTIONS = [
-    { label: "Semua status", value: "" },
-    { label: "Published", value: "published" },
-    { label: "Draft", value: "draft" },
-    { label: "Archived", value: "archived" },
-    { label: "Cancelled", value: "cancelled" },
-];
+
 
 const LIMIT_OPTIONS = [10, 20, 50, 100];
 

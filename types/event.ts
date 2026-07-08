@@ -77,6 +77,7 @@ export interface InfiniteEventListProps {
   typeFilter: string;
   categoryFilter: string;
   provinceFilter: string;
+  locationFilter: string;
   priceFilter: string;
   sortOption: string;
   followingFilter: string;
@@ -118,6 +119,7 @@ export interface GetEventsParams {
   search?: string;
   category?: string;
   province?: string;
+  location?: string;
   price?: string;
   sort?: string;
   following?: string;

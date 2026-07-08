@@ -13,7 +13,6 @@ import {
     Loader2,
     Mail,
     ShieldCheck,
-    Ticket,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";

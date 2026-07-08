@@ -125,6 +125,7 @@ const buildEventListSearchParams = (params: GetEventsParams = {}) => {
     search,
     category = "",
     province = "",
+    location = "",
     price = "",
     sort = "",
     following = "",
@@ -142,6 +143,7 @@ const buildEventListSearchParams = (params: GetEventsParams = {}) => {
   if (titleSearch) urlParams.set("search", titleSearch);
   if (category) urlParams.set("category", category);
   if (province) urlParams.set("province", province);
+  if (location) urlParams.set("location", location);
   if (normalizedPrice) urlParams.set("price", normalizedPrice);
   if (normalizedSort) urlParams.set("sort", normalizedSort);
   if (following) urlParams.set("following", following);

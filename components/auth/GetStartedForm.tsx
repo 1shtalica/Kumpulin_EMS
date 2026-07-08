@@ -14,7 +14,6 @@ import {
     Mail,
     Loader2,
     Phone,
-    Ticket,
     Users,
 } from "lucide-react";
 import { toast } from "sonner";

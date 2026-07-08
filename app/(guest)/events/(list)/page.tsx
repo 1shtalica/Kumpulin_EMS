@@ -41,6 +41,7 @@ export default async function ExplorePage(props: {
         ? searchParams.location
         : "";
   const provinceFilter = getProvinceFilter(rawProvinceFilter);
+  const locationFilter = typeof searchParams.location === "string" && searchParams.location === "online" ? "online" : "";
   const priceFilter =
     typeof searchParams.price === "string" ? searchParams.price : "";
   const sortOption =
@@ -63,6 +64,7 @@ export default async function ExplorePage(props: {
       q: query,
       category: categoryFilter,
       province: provinceFilter,
+      location: locationFilter,
       price: priceFilter,
       sort: sortOption,
       following: followingFilter,
@@ -125,6 +127,7 @@ export default async function ExplorePage(props: {
           typeFilter={typeFilter}
           categoryFilter={categoryFilter}
           provinceFilter={provinceFilter}
+          locationFilter={locationFilter}
           priceFilter={priceFilter}
           sortOption={sortOption}
           followingFilter={followingFilter}
