@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
+import Image from "next/image";
 import {
     ArrowLeft,
     ArrowRight,
@@ -121,10 +122,13 @@ export default function ForgotPasswordForm() {
                         href="/"
                         className="inline-flex items-center gap-2 text-xl font-bold"
                     >
-                        <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-white shadow-glow">
-                            <Ticket className="size-4" />
-                        </span>
-                        <span className="text-primary">kumpul.in</span>
+                        <Image
+                            src="/kumpulin_wordmark.svg"
+                            alt="Kumpulin Logo"
+                            height={40}
+                            width={120}
+                            priority
+                        />
                     </Link>
                     <span className="rounded-full border border-primary/20 bg-primary-light px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
                         Recovery

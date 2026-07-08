@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowRight,
   Eye,
@@ -137,7 +138,7 @@ export default function LoginForm() {
     <section className="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/95 p-5 shadow-xl shadow-slate-900/[0.07] backdrop-blur sm:p-6">
       <span className="absolute -left-3 top-28 size-6 rounded-full bg-[#f7f8fb]" />
       <span className="absolute -right-3 top-28 size-6 rounded-full bg-[#f7f8fb]" />
-      <div className="absolute inset-x-0 top-0 h-1.5 bg-linear-to-r from-primary via-[#10b981] to-primary" />
+      <div className="absolute inset-x-0 top-0 h-1.5 bg-primary" />
 
       <div className="mb-5 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3.5">
         <div className="flex items-center justify-between gap-3">
@@ -145,12 +146,13 @@ export default function LoginForm() {
             href="/"
             className="inline-flex items-center gap-2 text-xl font-bold"
           >
-            <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-white shadow-glow">
-              <Ticket className="size-4" />
-            </span>
-            <span className="bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
-              kumpul.in
-            </span>
+            <Image
+              src="/kumpulin_wordmark.svg"
+              alt="Kumpulin Logo"
+              height={40}
+              width={120}
+              priority
+            />
           </Link>
           <span className="rounded-full border border-primary/15 bg-primary-light px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
             Member pass

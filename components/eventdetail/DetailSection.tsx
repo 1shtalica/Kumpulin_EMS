@@ -400,25 +400,25 @@ export default function DetailSection({
                                             hasFollowed ? "outline" : "default"
                                         }
                                         size="sm"
-                                        className="h-9 shrink-0 rounded-lg px-4 text-xs font-semibold shadow-sm shadow-primary/15"
+                                        className="h-9 shrink-0 rounded-xl px-4 text-xs font-semibold shadow-sm shadow-primary/15"
                                         onClick={handleFollowToggle}
                                         disabled={isLoadingFollow}
                                     >
                                         {isLoadingFollow ? (
                                             <Loader2
-                                                size={14}
+                                                size={12}
                                                 className="animate-spin"
                                             />
                                         ) : hasFollowed ? (
-                                            <Check size={14} />
+                                            <Check size={12} />
                                         ) : (
-                                            <Plus size={14} />
+                                            <Plus size={12} />
                                         )}
                                         {isLoadingFollow
                                             ? "Loading..."
                                             : hasFollowed
-                                              ? "Unfollow"
-                                              : "Follow"}
+                                              ? "Diikuti"
+                                              : "Mengikuti"}
                                     </Button>
                                 )}
                             </div>
@@ -445,7 +445,8 @@ export default function DetailSection({
                         </div>
                         <div className="border-l-2 border-primary/70 pl-4 sm:pl-5">
                             <TipTapViewer
-                                content={event.description?.content || ""}
+                                content={event.description}
+                                className="text-sm md:text-[15px] [&_p]:text-sm [&_p]:md:text-[15px] [&_li]:text-sm [&_li]:md:text-[15px]"
                             />
                         </div>
                     </div>

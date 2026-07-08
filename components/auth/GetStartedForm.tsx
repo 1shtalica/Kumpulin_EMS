@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -264,12 +265,13 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
             <div className="mb-4 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3.5">
                 <div className="flex items-center justify-between gap-3">
                     <div className="inline-flex items-center gap-2 text-xl font-bold">
-                        <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-white shadow-glow">
-                            <Ticket className="size-4" />
-                        </span>
-                        <span className="bg-linear-to-r from-primary to-secondary bg-clip-text text-transparent">
-                            kumpul.in
-                        </span>
+                        <Image
+                            src="/kumpulin_wordmark.svg"
+                            alt="Kumpulin Logo"
+                            height={40}
+                            width={120}
+                            priority
+                        />
                     </div>
                     <span className="rounded-full border border-[#10b981]/20 bg-[#10b981]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#047857]">
                         Setup

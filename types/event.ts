@@ -6,9 +6,7 @@ export interface Event {
   event_id: string;
   title: string;
   slug: string;
-  description: {
-    content: string
-  };
+  description?: unknown;
   category: string;
   type: string;
   status: string;

@@ -71,15 +71,53 @@ const sectionMeta: Record<EditModalProps["section"], {
     },
 };
 
-function toLocalOffsetISOString(date: Date): string {
-    const pad = (value: number) => String(value).padStart(2, "0");
-    const timezoneOffset = -date.getTimezoneOffset();
-    const sign = timezoneOffset >= 0 ? "+" : "-";
-    const absoluteOffset = Math.abs(timezoneOffset);
-    const offsetHours = pad(Math.floor(absoluteOffset / 60));
-    const offsetMinutes = pad(absoluteOffset % 60);
+const API_TIMEZONE_OFFSET = "+07:00";
 
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${sign}${offsetHours}:${offsetMinutes}`;
+function parseApiDateTime(value?: Date | string | null): Date | undefined {
+    if (!value) return undefined;
+
+    if (value instanceof Date) {
+        return Number.isNaN(value.getTime()) ? undefined : value;
+    }
+
+    const match = value.match(
+        /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
+    );
+
+    if (match) {
+        const [, year, month, day, hour, minute, second = "0"] = match;
+        return new Date(
+            Number(year),
+            Number(month) - 1,
+            Number(day),
+            Number(hour),
+            Number(minute),
+            Number(second),
+            0
+        );
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
+function toApiOffsetISOString(date: Date): string {
+    const pad = (value: number) => String(value).padStart(2, "0");
+
+    if (Number.isNaN(date.getTime())) {
+        throw new Error("Tanggal tidak valid.");
+    }
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${API_TIMEZONE_OFFSET}`;
+}
+
+function normalizeApiOffsetISOString(value?: Date | string | null): string | null {
+    const date = parseApiDateTime(value);
+    return date ? toApiOffsetISOString(date) : null;
+}
+
+function hasDateChanged(original?: string | null, next?: Date): boolean {
+    return normalizeApiOffsetISOString(original) !== normalizeApiOffsetISOString(next);
 }
 export function EditSectionModal({ event, section, onUpdated }: EditModalProps): ReactNode {
     const [open, setOpen] = useState(false);
@@ -126,10 +164,10 @@ export function EditSectionModal({ event, section, onUpdated }: EditModalProps):
             images: event.images?.slice(1)?.map((img) => new File([""], `existing-gallery-${img.id || "unknown"}.jpg`, { type: "image/jpeg" })) || [],
 
             // Schedule & Location
-            event_start_date: event.event_start_date ? new Date(event.event_start_date) : (undefined as any),
-            event_end_date: event.event_end_date ? new Date(event.event_end_date) : (undefined as any),
-            start_registration_date: event.start_registration_date ? new Date(event.start_registration_date) : (undefined as any),
-            end_registration_date: event.end_registration_date ? new Date(event.end_registration_date) : (undefined as any),
+            event_start_date: parseApiDateTime(event.event_start_date) || (undefined as any),
+            event_end_date: parseApiDateTime(event.event_end_date) || (undefined as any),
+            start_registration_date: parseApiDateTime(event.start_registration_date) || (undefined as any),
+            end_registration_date: parseApiDateTime(event.end_registration_date) || (undefined as any),
             rundowns: event.rundowns?.map(r => ({
                 _dbId: r.id,
                 title: r.title || "",
@@ -162,8 +200,8 @@ export function EditSectionModal({ event, section, onUpdated }: EditModalProps):
                 quota: t.quota,
                 description: t.description || "",
                 type: (t.price > 0 ? "paid" : "free") as "paid" | "free",
-                start_date_time: t.start_date_time ? new Date(t.start_date_time) : (event.start_registration_date ? new Date(event.start_registration_date) : new Date()),
-                end_date_time: t.end_date_time ? new Date(t.end_date_time) : (event.end_registration_date ? new Date(event.end_registration_date) : new Date()),
+                start_date_time: parseApiDateTime(t.start_date_time) || parseApiDateTime(event.start_registration_date) || new Date(),
+                end_date_time: parseApiDateTime(t.end_date_time) || parseApiDateTime(event.end_registration_date) || new Date(),
             })) || []
         }
     });
@@ -278,10 +316,10 @@ export function EditSectionModal({ event, section, onUpdated }: EditModalProps):
 
                 case 'datetime':
                     payloadToSubmit = {
-                        event_start_date: toLocalOffsetISOString(data.event_start_date),
-                        event_end_date: toLocalOffsetISOString(data.event_end_date),
-                        start_registration_date: toLocalOffsetISOString(data.start_registration_date),
-                        end_registration_date: toLocalOffsetISOString(data.end_registration_date)
+                        event_start_date: toApiOffsetISOString(data.event_start_date),
+                        event_end_date: toApiOffsetISOString(data.event_end_date),
+                        start_registration_date: toApiOffsetISOString(data.start_registration_date),
+                        end_registration_date: toApiOffsetISOString(data.end_registration_date)
                     };
 
                     try {
@@ -392,8 +430,8 @@ export function EditSectionModal({ event, section, onUpdated }: EditModalProps):
                             price: Number(t.price),
                             quota: Number(t.quota),
                             description: t.description || "",
-                            start_date_time: toLocalOffsetISOString(t.start_date_time),
-                            end_date_time: toLocalOffsetISOString(t.end_date_time),
+                            start_date_time: toApiOffsetISOString(t.start_date_time),
+                            end_date_time: toApiOffsetISOString(t.end_date_time),
                         }));
 
                     // Only include tickets that were actually modified
@@ -408,8 +446,8 @@ export function EditSectionModal({ event, section, onUpdated }: EditModalProps):
                                 orig.price !== Number(t.price) ||
                                 orig.quota !== Number(t.quota) ||
                                 (orig.description || "") !== (t.description || "") ||
-                                toLocalOffsetISOString(new Date(orig.start_date_time || "")) !== toLocalOffsetISOString(t.start_date_time) ||
-                                toLocalOffsetISOString(new Date(orig.end_date_time || "")) !== toLocalOffsetISOString(t.end_date_time)
+                                hasDateChanged(orig.start_date_time, t.start_date_time) ||
+                                hasDateChanged(orig.end_date_time, t.end_date_time)
                             );
                         })
                         .map(t => ({
@@ -418,8 +456,8 @@ export function EditSectionModal({ event, section, onUpdated }: EditModalProps):
                             price: Number(t.price),
                             quota: Number(t.quota),
                             description: t.description || "",
-                            start_date_time: toLocalOffsetISOString(t.start_date_time),
-                            end_date_time: toLocalOffsetISOString(t.end_date_time),
+                            start_date_time: toApiOffsetISOString(t.start_date_time),
+                            end_date_time: toApiOffsetISOString(t.end_date_time),
                         }));
 
                     const formTicketIds = formTickets.map(t => t._dbId).filter(Boolean);
