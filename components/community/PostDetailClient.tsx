@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { CommunityService } from "@/services/community-service";
 import { useAuthStore } from "@/stores/auth-store";
@@ -515,6 +516,8 @@ export default function PostDetailClient({
     const [post, setPost] = useState<Post | null>(null);
     const [commentsState, setCommentsState] =
         useState<CommentsState>(EMPTY_COMMENTS_STATE);
+    const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
+    const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [hasNext, setHasNext] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -970,9 +973,6 @@ export default function PostDetailClient({
 
     const handleDeleteComment = useCallback(
         async (comment: Comment) => {
-            const confirmed = window.confirm("Hapus komentar ini?");
-            if (!confirmed) return;
-
             const snapshotState = commentsState;
             const snapshotCount = post?.comment_count ?? 0;
             const { next, removedCount } = removeCommentTree(
@@ -998,6 +998,7 @@ export default function PostDetailClient({
                 setReplyTarget(null);
             }
 
+            setDeletingCommentId(comment.id);
             const toastId = toast.loading("Menghapus komentar...");
             try {
                 await CommunityService.deleteComment(
@@ -1005,6 +1006,7 @@ export default function PostDetailClient({
                     postId,
                     comment.id,
                 );
+                setCommentToDelete(null);
                 toast.success("Komentar dihapus.", { id: toastId });
             } catch (error) {
                 setCommentsState(snapshotState);
@@ -1019,6 +1021,8 @@ export default function PostDetailClient({
                         id: toastId,
                     },
                 );
+            } finally {
+                setDeletingCommentId(null);
             }
         },
         [commentsState, communityId, post, postId, replyTarget?.rootId],
@@ -1304,7 +1308,7 @@ export default function PostDetailClient({
                                                 activateReplyTarget(thread.root)
                                             }
                                             onUpdate={handleUpdateComment}
-                                            onDelete={handleDeleteComment}
+                                            onDelete={setCommentToDelete}
                                         />
 
                                         {thread.replies.length ? (
@@ -1364,7 +1368,7 @@ export default function PostDetailClient({
                                                                         handleUpdateComment
                                                                     }
                                                                     onDelete={
-                                                                        handleDeleteComment
+                                                                        setCommentToDelete
                                                                     }
                                                                 />
                                                             ),
@@ -1406,6 +1410,19 @@ export default function PostDetailClient({
                     ) : null}
                 </section>
             </div>
+            <DeleteConfirmDialog
+                open={Boolean(commentToDelete)}
+                title="Hapus komentar?"
+                description="Komentar ini akan dihapus dari diskusi. Jika komentar memiliki balasan, balasan di bawahnya juga ikut terhapus."
+                details={commentToDelete?.body}
+                isLoading={Boolean(deletingCommentId)}
+                onOpenChange={(open) => {
+                    if (!open && !deletingCommentId) setCommentToDelete(null);
+                }}
+                onConfirm={() => {
+                    if (commentToDelete) void handleDeleteComment(commentToDelete);
+                }}
+            />
         </main>
     );
 }

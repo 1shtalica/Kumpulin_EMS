@@ -29,6 +29,7 @@ import { CommunityService } from "@/services/community-service";
 import { SupportService } from "@/services/support-service";
 import type { Comment, Community, Post } from "@/types/community";
 import SupportPageSurface from "./SupportPageSurface";
+import DeleteConfirmDialog from "@/components/community/DeleteConfirmDialog";
 
 type ApiErrorBody = {
     message?: string;
@@ -391,6 +392,8 @@ function SupportCommunityItem({ initialCommunity }: { initialCommunity: Communit
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingPost, setEditingPost] = useState<Post | null>(null);
+    const [postToDelete, setPostToDelete] = useState<Post | null>(null);
+    const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
     const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
 
     const sortedPosts = useMemo(
@@ -467,20 +470,25 @@ function SupportCommunityItem({ initialCommunity }: { initialCommunity: Communit
         }
     };
 
-    const handleDeletePost = async (post: Post) => {
-        if (!window.confirm(`Hapus post "${post.title}"?`)) return;
+    const handleDeletePost = async () => {
+        if (!postToDelete) return;
+
+        setDeletingPostId(postToDelete.id);
         try {
-            await CommunityService.deletePost(community.id, post.id);
+            await CommunityService.deletePost(community.id, postToDelete.id);
             setPosts((current) =>
-                current.filter((item) => item.id !== post.id),
+                current.filter((item) => item.id !== postToDelete.id),
             );
             setCommunity((current) => ({
                 ...current,
                 post_count: Math.max(current.post_count - 1, 0),
             }));
+            setPostToDelete(null);
             toast.success("Post dihapus.");
         } catch (error) {
             toast.error(getApiErrorMessage(error, "Gagal menghapus post."));
+        } finally {
+            setDeletingPostId(null);
         }
     };
 
@@ -620,7 +628,7 @@ function SupportCommunityItem({ initialCommunity }: { initialCommunity: Communit
                                     <button
                                         type="button"
                                         className="rounded-xl p-2 text-slate-400 hover:bg-red-50 hover:text-red-600"
-                                        onClick={() => handleDeletePost(post)}
+                                        onClick={() => setPostToDelete(post)}
                                         aria-label="Hapus post"
                                     >
                                         <Trash2 className="h-4 w-4" />
@@ -667,6 +675,17 @@ function SupportCommunityItem({ initialCommunity }: { initialCommunity: Communit
                 post={editingPost}
                 onOpenChange={setDialogOpen}
                 onSubmit={handlePostSubmit}
+            />
+            <DeleteConfirmDialog
+                open={Boolean(postToDelete)}
+                title="Hapus post?"
+                description="Post ini akan dihapus dari komunitas organizer yang sedang Anda dukung."
+                details={postToDelete?.title}
+                isLoading={Boolean(deletingPostId)}
+                onOpenChange={(open) => {
+                    if (!open && !deletingPostId) setPostToDelete(null);
+                }}
+                onConfirm={handleDeletePost}
             />
         </div>
     );

@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { AxiosError } from "axios";
 import {
     ImagePlus,
     Loader2,
-    MessageCircle,
-    MoreHorizontal,
     Plus,
     Pencil,
     Share,
@@ -20,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -30,7 +29,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { CommunityService } from "@/services/community-service";
 import { useAuthStore } from "@/stores/auth-store";
 import type { Community, Post } from "@/types/community";
-import PostImageCarousel from "./PostImageCarousel";
+import PublicPostCard from "./PublicPostCard";
+import DeleteConfirmDialog from "./DeleteConfirmDialog";
 
 type ApiErrorBody = {
     message?: string;
@@ -101,7 +101,6 @@ function PostFormDialog({
         body: string;
         post_type: "text" | "announcement";
         images: File[];
-        replaceImages: boolean;
     }) => Promise<void>;
 }) {
     const [title, setTitle] = useState("");
@@ -109,7 +108,6 @@ function PostFormDialog({
     const [postType, setPostType] = useState<"text" | "announcement">("text");
     const [images, setImages] = useState<File[]>([]);
     const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-    const [replaceImages, setReplaceImages] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -120,7 +118,6 @@ function PostFormDialog({
             post?.post_type === "announcement" ? "announcement" : "text",
         );
         setImages([]);
-        setReplaceImages(false);
     }, [open, post]);
 
     useEffect(() => {
@@ -145,7 +142,6 @@ function PostFormDialog({
                 body: body.trim(),
                 post_type: postType,
                 images,
-                replaceImages,
             });
             onOpenChange(false);
         } finally {
@@ -154,45 +150,54 @@ function PostFormDialog({
     };
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedImages = Array.from(event.target.files ?? []);
+        const selectedImages = Array.from(event.target.files ?? []).slice(0, 5);
         setImages(selectedImages);
+        event.target.value = "";
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[92vh] overflow-y-auto rounded-2xl sm:max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle className="text-lg">
+            <DialogContent className="flex max-h-[92vh] flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-0 shadow-md shadow-slate-900/5 sm:max-w-2xl">
+                <DialogHeader className="shrink-0 border-b border-slate-200/80 bg-slate-50/80 px-5 py-5 pr-14 text-left sm:px-6">
+                    <span className="inline-flex w-fit rounded-full border border-primary/10 bg-primary-light px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                        {post ? "Edit post" : "Post baru"}
+                    </span>
+                    <DialogTitle className="mt-2 text-xl font-semibold tracking-normal text-slate-950">
                         {post ? "Edit Post" : "Buat Post"}
                     </DialogTitle>
+                    <DialogDescription className="mt-1 text-sm leading-relaxed text-slate-600">
+                        {post
+                            ? "Perbarui isi post dan pilih gambar baru bila ingin mengganti gambar lama."
+                            : "Tulis diskusi atau pengumuman untuk komunitas ini."}
+                    </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-5">
+                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
                     <div className="space-y-2">
-                        <Label htmlFor="post-title">Judul</Label>
+                        <Label htmlFor="post-title" className="text-xs font-medium text-slate-500">Judul</Label>
                         <Input
                             id="post-title"
                             value={title}
                             onChange={(event) => setTitle(event.target.value)}
                             placeholder="Tulis judul diskusi"
-                            className="rounded-xl bg-slate-50"
+                            className="h-10 rounded-xl border-slate-200 bg-slate-50 text-sm shadow-none focus-visible:border-primary/40 focus-visible:ring-primary/20"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="post-body">Isi</Label>
+                        <Label htmlFor="post-body" className="text-xs font-medium text-slate-500">Isi</Label>
                         <Textarea
                             id="post-body"
                             value={body}
                             onChange={(event) => setBody(event.target.value)}
                             placeholder="Bagikan update, pertanyaan, atau pengumuman..."
-                            className="min-h-40 rounded-xl bg-slate-50 leading-6"
+                            className="min-h-40 rounded-xl border-slate-200 bg-slate-50 text-sm leading-6 shadow-none focus-visible:border-primary/40 focus-visible:ring-primary/20"
                         />
                     </div>
 
                     {!post ? (
                         <div className="space-y-2">
-                            <Label htmlFor="post-type">Tipe Post</Label>
+                            <Label htmlFor="post-type" className="text-xs font-medium text-slate-500">Tipe Post</Label>
                             <select
                                 id="post-type"
                                 value={postType}
@@ -203,7 +208,7 @@ function PostFormDialog({
                                             | "announcement",
                                     )
                                 }
-                                className="h-10 w-full rounded-xl border border-input bg-slate-50 px-3 text-sm outline-none focus:border-ring focus:ring-[3px] focus:ring-ring/50"
+                                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-primary/40 focus:ring-3 focus:ring-primary/20"
                             >
                                 <option value="text">Diskusi</option>
                                 <option value="announcement">Pengumuman</option>
@@ -212,19 +217,21 @@ function PostFormDialog({
                     ) : null}
 
                     <div className="space-y-2">
-                        <Label htmlFor="post-images">
-                            {post ? "Ganti Gambar" : "Gambar"}
+                        <Label htmlFor="post-images" className="text-xs font-medium text-slate-500">
+                            {post ? "Gambar Post" : "Gambar"}
                         </Label>
                         <label
                             htmlFor="post-images"
-                            className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-dashed border-indigo-200 bg-indigo-50/60 px-4 py-4 text-sm text-slate-600 transition hover:border-primary/40"
+                            className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-dashed border-primary/20 bg-primary-light/40 px-4 py-4 text-sm text-slate-600 transition hover:border-primary/40 hover:bg-primary-light/60"
                         >
                             <span className="flex min-w-0 items-center gap-3">
                                 <ImagePlus className="h-5 w-5 shrink-0 text-primary" />
                                 <span className="truncate">
                                     {images.length
-                                        ? `${images.length} gambar dipilih`
-                                        : "Pilih maksimal 5 gambar, 5 MB per gambar"}
+                                        ? `${images.length} gambar baru dipilih`
+                                        : post
+                                          ? "Pilih gambar baru untuk mengganti gambar post"
+                                          : "Pilih maksimal 5 gambar, 5 MB per gambar"}
                                 </span>
                             </span>
                             <span className="shrink-0 font-semibold text-primary">
@@ -239,12 +246,31 @@ function PostFormDialog({
                             className="sr-only"
                             onChange={handleImageChange}
                         />
+                        {post?.image_urls?.length && !imagePreviewUrls.length ? (
+                            <div className="space-y-2 pt-1">
+                                <p className="text-xs font-medium text-slate-500">Gambar saat ini</p>
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                    {post.image_urls.map((url, index) => (
+                                        <div
+                                            key={`${url}-${index}`}
+                                            className="overflow-hidden rounded-xl border border-slate-200/80 bg-slate-100"
+                                        >
+                                            <img
+                                                src={url}
+                                                alt={`Gambar post ${index + 1}`}
+                                                className="aspect-square h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : null}
                         {imagePreviewUrls.length ? (
                             <div className="grid grid-cols-2 gap-3 pt-1 sm:grid-cols-3">
                                 {imagePreviewUrls.map((url, index) => (
                                     <div
                                         key={`${images[index]?.name ?? "preview"}-${index}`}
-                                        className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100"
+                                        className="relative overflow-hidden rounded-xl border border-slate-200/80 bg-slate-100"
                                     >
                                         <img
                                             src={url}
@@ -261,7 +287,7 @@ function PostFormDialog({
                                                     ),
                                                 )
                                             }
-                                            className="absolute right-2 top-2 rounded-full bg-black/60 p-1.5 text-white transition hover:bg-black/80"
+                                            className="absolute right-2 top-2 rounded-xl bg-slate-950/70 p-1.5 text-white transition hover:bg-slate-950"
                                             aria-label="Hapus gambar"
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
@@ -271,30 +297,23 @@ function PostFormDialog({
                             </div>
                         ) : null}
                         {post && images.length > 0 ? (
-                            <label className="flex items-center gap-2 text-sm text-slate-600">
-                                <input
-                                    type="checkbox"
-                                    checked={replaceImages}
-                                    onChange={(event) =>
-                                        setReplaceImages(event.target.checked)
-                                    }
-                                />
-                                Ganti semua gambar post dengan pilihan ini
-                            </label>
+                            <p className="rounded-xl border border-primary/10 bg-primary-light/40 px-3 py-2 text-xs leading-relaxed text-slate-600">
+                                Gambar baru akan mengganti semua gambar post saat disimpan.
+                            </p>
                         ) : null}
                     </div>
                 </div>
 
-                <DialogFooter>
+                <DialogFooter className="shrink-0 border-t border-slate-200/80 bg-white px-5 py-4 sm:px-6">
                     <Button
                         variant="outline"
-                        className="rounded-full"
+                        className="m-0 h-10 rounded-xl border-slate-200 bg-white px-5 text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"
                         onClick={() => onOpenChange(false)}
                     >
                         Batal
                     </Button>
                     <Button
-                        className="rounded-full"
+                        className="m-0 h-10 rounded-xl px-5 text-sm font-semibold"
                         disabled={isSubmitting}
                         onClick={handleSubmit}
                     >
@@ -306,93 +325,6 @@ function PostFormDialog({
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-    );
-}
-
-function PostCard({
-    post,
-    postHref,
-    canManage,
-    onEdit,
-    onDelete,
-}: {
-    post: Post;
-    postHref: string;
-    canManage: boolean;
-    onEdit: (post: Post) => void;
-    onDelete: (post: Post) => void;
-}) {
-    return (
-        <article className="group overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5 transition-colors hover:border-primary/25">
-            <div className="flex flex-col gap-5 p-5 sm:p-6">
-                <div className="flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full border border-primary/15 bg-primary-light px-2.5 py-1 text-[11px] font-semibold text-primary">
-                                {post.post_type === "announcement"
-                                    ? "Pengumuman"
-                                    : "Diskusi"}
-                            </span>
-                            <span className="text-xs font-medium text-slate-500">
-                                {formatDate(post.created_at)}
-                            </span>
-                        </div>
-                    </div>
-                    {canManage ? (
-                        <div className="flex shrink-0 items-center gap-1">
-                            <button
-                                type="button"
-                                onClick={() => onEdit(post)}
-                                className="rounded-xl p-2 text-slate-400 transition hover:bg-primary-light hover:text-primary"
-                                aria-label="Edit post"
-                            >
-                                <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => onDelete(post)}
-                                className="rounded-xl p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                                aria-label="Hapus post"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </button>
-                        </div>
-                    ) : (
-                        <MoreHorizontal className="h-5 w-5 text-slate-300" />
-                    )}
-                </div>
-
-                <Link href={postHref} className="group block">
-                    <h2 className="mb-2.5 line-clamp-2 text-base font-semibold leading-snug text-slate-950 sm:text-lg transition-colors group-hover:text-primary">
-                        {post.title}
-                    </h2>
-                    <p className="line-clamp-3 whitespace-pre-line text-[13px] leading-5 text-slate-600">
-                        {post.body}
-                    </p>
-                </Link>
-
-                <PostImageCarousel
-                    imageUrls={post.image_urls}
-                    href={postHref}
-                    className="mt-0"
-                    imageClassName="max-h-[360px] sm:max-h-[420px]"
-                />
-
-                <div className="mt-1 flex items-center gap-2 border-t border-slate-200/80 pt-5">
-                    <Link
-                        href={postHref}
-                        className="group flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 sm:text-sm transition-all hover:bg-primary-light hover:text-primary"
-                    >
-                        <MessageCircle className="h-4 w-4" />
-                        <span>{formatNumber(post.comment_count)} Komentar</span>
-                    </Link>
-                    <button className="group ml-auto flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-slate-500 sm:text-sm transition-all hover:bg-primary-light hover:text-primary">
-                        <Share className="h-4 w-4" />
-                        <span>Bagikan</span>
-                    </button>
-                </div>
-            </div>
-        </article>
     );
 }
 
@@ -427,8 +359,18 @@ export default function CommunityDetailClient({
     const [joined, setJoined] = useState(false);
     const [formOpen, setFormOpen] = useState(false);
     const [editingPost, setEditingPost] = useState<Post | null>(null);
+    const [postToDelete, setPostToDelete] = useState<Post | null>(null);
+    const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+    const [ownedCommunity, setOwnedCommunity] = useState<Community | null>(null);
 
-    const canManage = user?.role === "organizer";
+    const userIdText = user?.id == null ? null : String(user.id);
+    const isCommunityOwner = Boolean(
+        community &&
+            ownedCommunity &&
+            (ownedCommunity.id === community.id ||
+                ownedCommunity.slug === community.slug),
+    );
+    const canManage = user?.role === "organizer" && isCommunityOwner;
 
     const loadPosts = useCallback(
         async (targetCommunityId: string, targetPage = 1, append = false) => {
@@ -488,10 +430,30 @@ export default function CommunityDetailClient({
         };
     }, [communityId, communitySlug, loadPosts]);
 
-    const memberCount = useMemo(() => {
-        if (!community) return 0;
-        return community.member_count + (joined ? 1 : 0);
-    }, [community, joined]);
+    useEffect(() => {
+        let mounted = true;
+
+        if (user?.role !== "organizer") {
+            setOwnedCommunity(null);
+            return;
+        }
+
+        const loadOwnedCommunity = async () => {
+            try {
+                const data = await CommunityService.getCommunityByOrganizer();
+                if (mounted) setOwnedCommunity(data);
+            } catch {
+                if (mounted) setOwnedCommunity(null);
+            }
+        };
+
+        void loadOwnedCommunity();
+
+        return () => {
+            mounted = false;
+        };
+    }, [user?.id, user?.role]);
+    const memberCount = community?.member_count ?? 0;
 
     const handleJoinToggle = async () => {
         if (!user) {
@@ -506,10 +468,26 @@ export default function CommunityDetailClient({
             if (joined) {
                 await CommunityService.leaveCommunity(resolvedCommunityId);
                 setJoined(false);
+                setCommunity((current) =>
+                    current
+                        ? {
+                              ...current,
+                              member_count: Math.max(current.member_count - 1, 0),
+                          }
+                        : current,
+                );
                 toast.success("Anda keluar dari komunitas.");
             } else {
                 await CommunityService.joinCommunity(resolvedCommunityId);
                 setJoined(true);
+                setCommunity((current) =>
+                    current
+                        ? {
+                              ...current,
+                              member_count: current.member_count + 1,
+                          }
+                        : current,
+                );
                 toast.success("Berhasil bergabung dengan komunitas.");
             }
         } catch (error) {
@@ -531,7 +509,6 @@ export default function CommunityDetailClient({
         body: string;
         post_type: "text" | "announcement";
         images: File[];
-        replaceImages: boolean;
     }) => {
         if (!resolvedCommunityId) return;
 
@@ -547,7 +524,7 @@ export default function CommunityDetailClient({
                     { title: payload.title, body: payload.body },
                 );
                 let finalPost = updatedPost;
-                if (payload.replaceImages && payload.images.length) {
+                if (payload.images.length) {
                     finalPost = await CommunityService.replacePostImages(
                         resolvedCommunityId,
                         editingPost.id,
@@ -587,17 +564,15 @@ export default function CommunityDetailClient({
         }
     };
 
-    const handleDeletePost = async (post: Post) => {
-        if (!resolvedCommunityId) return;
+    const handleDeletePost = async () => {
+        if (!resolvedCommunityId || !postToDelete) return;
 
-        const confirmed = window.confirm(`Hapus post "${post.title}"?`);
-        if (!confirmed) return;
-
+        setDeletingPostId(postToDelete.id);
         const toastId = toast.loading("Menghapus post...");
         try {
-            await CommunityService.deletePost(resolvedCommunityId, post.id);
+            await CommunityService.deletePost(resolvedCommunityId, postToDelete.id);
             setPosts((current) =>
-                current.filter((item) => item.id !== post.id),
+                current.filter((item) => item.id !== postToDelete.id),
             );
             setCommunity((current) =>
                 current
@@ -607,11 +582,14 @@ export default function CommunityDetailClient({
                       }
                     : current,
             );
+            setPostToDelete(null);
             toast.success("Post berhasil dihapus.", { id: toastId });
         } catch (error) {
             toast.error(getApiErrorMessage(error, "Gagal menghapus post."), {
                 id: toastId,
             });
+        } finally {
+            setDeletingPostId(null);
         }
     };
 
@@ -783,16 +761,40 @@ export default function CommunityDetailClient({
                     {posts.length ? (
                         <div className="flex flex-col gap-3">
                             {posts.map((post) => (
-                                <PostCard
+                                <PublicPostCard
                                     key={post.id}
                                     post={post}
                                     postHref={communityHref + "/post/" + post.id}
-                                    canManage={canManage}
-                                    onEdit={(targetPost) => {
-                                        setEditingPost(targetPost);
-                                        setFormOpen(true);
-                                    }}
-                                    onDelete={handleDeletePost}
+                                    communityHref={communityHref}
+                                    communityLabel={community.name}
+                                    actions={
+                                        canManage ||
+                                        (!!userIdText &&
+                                            String(post.author_user_id) ===
+                                                userIdText) ? (
+                                            <div className="flex shrink-0 items-center gap-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setEditingPost(post);
+                                                        setFormOpen(true);
+                                                    }}
+                                                    className="rounded-xl p-2 text-slate-400 transition hover:bg-primary-light hover:text-primary"
+                                                    aria-label="Edit post"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPostToDelete(post)}
+                                                    className="rounded-xl p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                                                    aria-label="Hapus post"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        ) : undefined
+                                    }
                                 />
                             ))}
                         </div>
@@ -835,6 +837,17 @@ export default function CommunityDetailClient({
                 onOpenChange={setFormOpen}
                 post={editingPost}
                 onSubmit={handlePostSubmit}
+            />
+            <DeleteConfirmDialog
+                open={Boolean(postToDelete)}
+                title="Hapus post?"
+                description="Post ini akan dihapus dari komunitas beserta akses diskusinya."
+                details={postToDelete?.title}
+                isLoading={Boolean(deletingPostId)}
+                onOpenChange={(open) => {
+                    if (!open && !deletingPostId) setPostToDelete(null);
+                }}
+                onConfirm={handleDeletePost}
             />
         </PublicCommunitySurface>
     );
