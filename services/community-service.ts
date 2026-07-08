@@ -111,6 +111,28 @@ const buildPostFormData = (payload: CreatePostPayload) => {
 };
 
 export const CommunityService = {
+    async getAllCommunities({
+        page = 1,
+        limit = 20,
+        search,
+    }: {
+        page?: number;
+        limit?: number;
+        search?: string;
+    } = {}): Promise<PaginatedResult<Community>> {
+        const response = await axiosClient.get<PaginatedApiResponse<Community>>(
+            "/communities",
+            {
+                params: {
+                    page,
+                    limit,
+                    ...(search ? { search } : {}),
+                },
+                skipAuthFailureRedirect: true,
+            },
+        );
+        return normalizePagination(response.data, page, limit);
+    },
     async getNewestPosts({
         limit = 20,
         cursor,
