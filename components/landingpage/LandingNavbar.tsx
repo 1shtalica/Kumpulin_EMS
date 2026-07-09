@@ -95,14 +95,14 @@ export default function LandingNavbar() {
             ? [
                   {
                       href: "/organizer/profile",
-                      label: "Pengaturan Akun",
+                      label: "Pengaturan",
                       icon: Settings,
                   },
               ]
             : [
                   {
                       href: "/user/profile",
-                      label: "Pengaturan Akun",
+                      label: "Pengaturan",
                       icon: Settings,
                   },
               ];

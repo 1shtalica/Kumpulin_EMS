@@ -536,9 +536,8 @@ export default function HeroSection() {
 
                         {/* Subtitle */}
                         <p className="text-sm sm:text-base lg:text-lg text-slate-500 leading-relaxed max-w-lg font-medium">
-                            Dari konser jazz malam hari hingga hackathon
-                            teknologi — temukan, ikuti, dan beli tiket dalam
-                            satu klik.
+                            Dari acara konser hingga lomba, temukan, ikuti, dan
+                            beli tiket dalam satu klik.
                         </p>
 
                         {/* Search bar */}

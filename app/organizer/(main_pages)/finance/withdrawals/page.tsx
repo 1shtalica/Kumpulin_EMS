@@ -7,8 +7,10 @@ import { toast } from "sonner";
 
 import { FinanceNavigation } from "@/components/organizer/finance/FinanceNavigation";
 import {
+  ORGANIZER_PAYOUT_FEE_LABEL,
   formatFinanceCurrency,
   formatFinanceDate,
+  getWithdrawalFeeBreakdown,
   payoutChannelLabel,
   withdrawalStatusLabel,
 } from "@/components/organizer/finance/finance-format";
@@ -207,7 +209,10 @@ export default function OrganizerWithdrawalsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {items.map((item) => (
+                  {items.map((item) => {
+                    const breakdown = getWithdrawalFeeBreakdown(item);
+
+                    return (
                     <tr key={item.id} className="bg-white transition-colors hover:bg-slate-50/70">
                       <td className="px-5 py-4 text-slate-600">
                         <p>{formatFinanceDate(item.requested_at || item.created_at)}</p>
@@ -242,8 +247,13 @@ export default function OrganizerWithdrawalsPage() {
                           </p>
                         )}
                       </td>
-                      <td className="px-5 py-4 text-right font-semibold text-slate-950 tabular-nums">
-                        {formatFinanceCurrency(item.amount, item.currency)}
+                      <td className="px-5 py-4 text-right">
+                        <p className="font-semibold text-success-hover tabular-nums">
+                          {formatFinanceCurrency(breakdown.netAmount, item.currency)}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Dari {formatFinanceCurrency(breakdown.grossAmount, item.currency)} setelah biaya {ORGANIZER_PAYOUT_FEE_LABEL}
+                        </p>
                       </td>
                       <td className="px-5 py-4 text-right">
                         <Button
@@ -259,7 +269,8 @@ export default function OrganizerWithdrawalsPage() {
                         </Button>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

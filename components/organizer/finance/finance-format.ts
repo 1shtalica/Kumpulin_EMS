@@ -1,8 +1,38 @@
 import type {
   OrganizerLedgerType,
+  OrganizerWithdrawal,
   OrganizerWithdrawalStatus,
 } from "@/types/organizer-finance";
 import { PAYOUT_CHANNELS } from "@/types/organizer-finance";
+
+export const ORGANIZER_PAYOUT_FEE_BASIS_POINTS = 250;
+export const ORGANIZER_PAYOUT_FEE_LABEL = "2.5%";
+
+export function calculateOrganizerPayoutFee(amount: number) {
+  const grossAmount = Math.max(0, Math.floor(Number.isFinite(amount) ? amount : 0));
+  const feeAmount = Math.ceil(
+    (grossAmount * ORGANIZER_PAYOUT_FEE_BASIS_POINTS) / 10_000,
+  );
+
+  return {
+    grossAmount,
+    feeAmount,
+    netAmount: Math.max(0, grossAmount - feeAmount),
+  };
+}
+
+export function getWithdrawalFeeBreakdown(withdrawal: OrganizerWithdrawal) {
+  const grossAmount = withdrawal.requested_amount ?? withdrawal.amount;
+  const fallback = calculateOrganizerPayoutFee(grossAmount);
+  const feeAmount = withdrawal.fee_amount ?? fallback.feeAmount;
+  const netAmount = withdrawal.net_amount ?? Math.max(0, grossAmount - feeAmount);
+
+  return {
+    grossAmount,
+    feeAmount,
+    netAmount,
+  };
+}
 
 export function formatFinanceCurrency(value: number, currency = "IDR") {
   return new Intl.NumberFormat("id-ID", {

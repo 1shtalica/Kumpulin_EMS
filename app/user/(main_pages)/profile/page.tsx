@@ -782,7 +782,7 @@ export default function UserProfilePage() {
                     <div className="border-b border-slate-200/80 bg-slate-50/70 p-3">
                         <div
                             role="tablist"
-                            aria-label="Pengaturan akun"
+                            aria-label="Profile Saya"
                             className="grid grid-cols-2 rounded-xl border border-slate-200 bg-white p-1 sm:inline-grid "
                         >
                             <ProfileTabButton

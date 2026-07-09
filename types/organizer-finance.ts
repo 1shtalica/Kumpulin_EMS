@@ -73,6 +73,10 @@ export interface OrganizerWithdrawal {
   organizer_id: string;
   requested_by_user_id: number;
   amount: number;
+  requested_amount?: number;
+  fee_amount?: number;
+  net_amount?: number;
+  fee_rate?: number;
   currency: string;
   channel_code: string;
   bank_account_number: string;

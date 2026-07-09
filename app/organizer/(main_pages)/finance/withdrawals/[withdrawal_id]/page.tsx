@@ -12,8 +12,10 @@ import { toast } from "sonner";
 
 import { FinanceNavigation } from "@/components/organizer/finance/FinanceNavigation";
 import {
+  ORGANIZER_PAYOUT_FEE_LABEL,
   formatFinanceCurrency,
   formatFinanceDate,
+  getWithdrawalFeeBreakdown,
   payoutChannelLabel,
   withdrawalStatusDescription,
   withdrawalStatusLabel,
@@ -105,6 +107,10 @@ export default function WithdrawalDetailPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [withdrawal_id]);
 
+  const withdrawalBreakdown = withdrawal
+    ? getWithdrawalFeeBreakdown(withdrawal)
+    : null;
+
   return (
     <main className="relative min-h-[calc(100vh-136px)] overflow-hidden bg-[#f9fafb] px-4 py-6 md:-mx-8 md:px-8">
       <div
@@ -172,7 +178,7 @@ export default function WithdrawalDetailPage({
                 <div>
                   <p className="font-mono text-xs text-slate-400">{withdrawal.id}</p>
                   <h2 className="mt-2 text-xl font-semibold leading-none text-slate-950 tabular-nums md:text-2xl">
-                    {formatFinanceCurrency(withdrawal.amount, withdrawal.currency)}
+                    {formatFinanceCurrency(withdrawalBreakdown?.netAmount ?? withdrawal.amount, withdrawal.currency)}
                   </h2>
                 </div>
                 <StatusPill status={withdrawal.status} />
@@ -182,6 +188,32 @@ export default function WithdrawalDetailPage({
                 <div className="mt-5 rounded-lg border border-red-100 bg-red-50 p-3 text-sm leading-6 text-red-600">
                   {withdrawal.failure_message}
                 </div>
+              )}
+
+              {withdrawalBreakdown && (
+                <section className="mt-5 rounded-lg border border-slate-200/80 bg-slate-50/80 p-4">
+                  <h3 className="text-sm font-semibold text-slate-950">Ringkasan Payout</h3>
+                  <dl className="mt-3 grid gap-2 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <dt className="text-slate-500">Nominal diajukan</dt>
+                      <dd className="font-semibold text-slate-950 tabular-nums">
+                        {formatFinanceCurrency(withdrawalBreakdown.grossAmount, withdrawal.currency)}
+                      </dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <dt className="text-slate-500">Biaya layanan ({ORGANIZER_PAYOUT_FEE_LABEL})</dt>
+                      <dd className="font-semibold text-danger tabular-nums">
+                        - {formatFinanceCurrency(withdrawalBreakdown.feeAmount, withdrawal.currency)}
+                      </dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-2">
+                      <dt className="font-medium text-slate-700">Diterima organizer</dt>
+                      <dd className="font-semibold text-success-hover tabular-nums">
+                        {formatFinanceCurrency(withdrawalBreakdown.netAmount, withdrawal.currency)}
+                      </dd>
+                    </div>
+                  </dl>
+                </section>
               )}
 
               <dl className="mt-5 grid gap-3 sm:grid-cols-2">
