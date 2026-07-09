@@ -42,7 +42,8 @@ export const getCommunityHref = (post: Post) =>
         ? `/k/${post.community_slug}`
         : `/komunitas/${post.community_id}`;
 
-export const getPostHref = (post: Post) => `${getCommunityHref(post)}/post/${post.id}`;
+export const getPostHref = (post: Post) =>
+    `${getCommunityHref(post)}/post/${post.id}`;
 
 export const getAuthorLabel = (post: Post) => {
     const username = post.author_name?.trim() || post.username?.trim();
@@ -146,7 +147,8 @@ export default function PublicPostCard({
                         </div>
                     )}
                     <p className="mt-1 truncate text-xs font-medium text-slate-500">
-                        oleh <span className="text-slate-700">{authorLabel}</span>
+                        oleh{" "}
+                        <span className="text-slate-700">{authorLabel}</span>
                     </p>
                 </div>
 
@@ -174,16 +176,6 @@ export default function PublicPostCard({
                                         <ArrowUpRight className="h-4 w-4" />
                                         Buka post
                                     </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onSelect={(event) => {
-                                        event.preventDefault();
-                                        void handleShare();
-                                    }}
-                                    className="flex items-center gap-2"
-                                >
-                                    <Share className="h-4 w-4" />
-                                    Bagikan
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>

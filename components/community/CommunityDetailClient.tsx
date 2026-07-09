@@ -31,6 +31,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import type { Community, Post } from "@/types/community";
 import PublicPostCard from "./PublicPostCard";
 import DeleteConfirmDialog from "./DeleteConfirmDialog";
+import Image from "next/image";
 
 type ApiErrorBody = {
     message?: string;
@@ -174,7 +175,12 @@ function PostFormDialog({
 
                 <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
                     <div className="space-y-2">
-                        <Label htmlFor="post-title" className="text-xs font-medium text-slate-500">Judul</Label>
+                        <Label
+                            htmlFor="post-title"
+                            className="text-xs font-medium text-slate-500"
+                        >
+                            Judul
+                        </Label>
                         <Input
                             id="post-title"
                             value={title}
@@ -185,7 +191,12 @@ function PostFormDialog({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="post-body" className="text-xs font-medium text-slate-500">Isi</Label>
+                        <Label
+                            htmlFor="post-body"
+                            className="text-xs font-medium text-slate-500"
+                        >
+                            Isi
+                        </Label>
                         <Textarea
                             id="post-body"
                             value={body}
@@ -197,15 +208,19 @@ function PostFormDialog({
 
                     {!post ? (
                         <div className="space-y-2">
-                            <Label htmlFor="post-type" className="text-xs font-medium text-slate-500">Tipe Post</Label>
+                            <Label
+                                htmlFor="post-type"
+                                className="text-xs font-medium text-slate-500"
+                            >
+                                Tipe Post
+                            </Label>
                             <select
                                 id="post-type"
                                 value={postType}
                                 onChange={(event) =>
                                     setPostType(
                                         event.target.value as
-                                            | "text"
-                                            | "announcement",
+                                            "text" | "announcement",
                                     )
                                 }
                                 className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-700 outline-none transition focus:border-primary/40 focus:ring-3 focus:ring-primary/20"
@@ -217,7 +232,10 @@ function PostFormDialog({
                     ) : null}
 
                     <div className="space-y-2">
-                        <Label htmlFor="post-images" className="text-xs font-medium text-slate-500">
+                        <Label
+                            htmlFor="post-images"
+                            className="text-xs font-medium text-slate-500"
+                        >
                             {post ? "Gambar Post" : "Gambar"}
                         </Label>
                         <label
@@ -246,9 +264,12 @@ function PostFormDialog({
                             className="sr-only"
                             onChange={handleImageChange}
                         />
-                        {post?.image_urls?.length && !imagePreviewUrls.length ? (
+                        {post?.image_urls?.length &&
+                        !imagePreviewUrls.length ? (
                             <div className="space-y-2 pt-1">
-                                <p className="text-xs font-medium text-slate-500">Gambar saat ini</p>
+                                <p className="text-xs font-medium text-slate-500">
+                                    Gambar saat ini
+                                </p>
                                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                     {post.image_urls.map((url, index) => (
                                         <div
@@ -274,7 +295,10 @@ function PostFormDialog({
                                     >
                                         <img
                                             src={url}
-                                            alt={images[index]?.name ?? `Preview ${index + 1}`}
+                                            alt={
+                                                images[index]?.name ??
+                                                `Preview ${index + 1}`
+                                            }
                                             className="aspect-square h-full w-full object-cover"
                                         />
                                         <button
@@ -283,7 +307,8 @@ function PostFormDialog({
                                                 setImages((current) =>
                                                     current.filter(
                                                         (_, imageIndex) =>
-                                                            imageIndex !== index,
+                                                            imageIndex !==
+                                                            index,
                                                     ),
                                                 )
                                             }
@@ -298,7 +323,8 @@ function PostFormDialog({
                         ) : null}
                         {post && images.length > 0 ? (
                             <p className="rounded-xl border border-primary/10 bg-primary-light/40 px-3 py-2 text-xs leading-relaxed text-slate-600">
-                                Gambar baru akan mengganti semua gambar post saat disimpan.
+                                Gambar baru akan mengganti semua gambar post
+                                saat disimpan.
                             </p>
                         ) : null}
                     </div>
@@ -347,9 +373,9 @@ export default function CommunityDetailClient({
 }) {
     const user = useAuthStore((state) => state.user);
     const [community, setCommunity] = useState<Community | null>(null);
-    const [resolvedCommunityId, setResolvedCommunityId] = useState<string | null>(
-        communityId ?? null,
-    );
+    const [resolvedCommunityId, setResolvedCommunityId] = useState<
+        string | null
+    >(communityId ?? null);
     const [posts, setPosts] = useState<Post[]>([]);
     const [page, setPage] = useState(1);
     const [hasNext, setHasNext] = useState(false);
@@ -361,14 +387,16 @@ export default function CommunityDetailClient({
     const [editingPost, setEditingPost] = useState<Post | null>(null);
     const [postToDelete, setPostToDelete] = useState<Post | null>(null);
     const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
-    const [ownedCommunity, setOwnedCommunity] = useState<Community | null>(null);
+    const [ownedCommunity, setOwnedCommunity] = useState<Community | null>(
+        null,
+    );
 
     const userIdText = user?.id == null ? null : String(user.id);
     const isCommunityOwner = Boolean(
         community &&
-            ownedCommunity &&
-            (ownedCommunity.id === community.id ||
-                ownedCommunity.slug === community.slug),
+        ownedCommunity &&
+        (ownedCommunity.id === community.id ||
+            ownedCommunity.slug === community.slug),
     );
     const canManage = user?.role === "organizer" && isCommunityOwner;
 
@@ -403,7 +431,9 @@ export default function CommunityDetailClient({
             try {
                 const data = communitySlug
                     ? await CommunityService.getCommunityBySlug(communitySlug)
-                    : await CommunityService.getCommunityById(communityId ?? "");
+                    : await CommunityService.getCommunityById(
+                          communityId ?? "",
+                      );
                 if (!mounted) return;
                 setCommunity(data);
                 setResolvedCommunityId(data.id);
@@ -472,7 +502,10 @@ export default function CommunityDetailClient({
                     current
                         ? {
                               ...current,
-                              member_count: Math.max(current.member_count - 1, 0),
+                              member_count: Math.max(
+                                  current.member_count - 1,
+                                  0,
+                              ),
                           }
                         : current,
                 );
@@ -570,7 +603,10 @@ export default function CommunityDetailClient({
         setDeletingPostId(postToDelete.id);
         const toastId = toast.loading("Menghapus post...");
         try {
-            await CommunityService.deletePost(resolvedCommunityId, postToDelete.id);
+            await CommunityService.deletePost(
+                resolvedCommunityId,
+                postToDelete.id,
+            );
             setPosts((current) =>
                 current.filter((item) => item.id !== postToDelete.id),
             );
@@ -609,7 +645,10 @@ export default function CommunityDetailClient({
                     <h1 className="text-lg font-semibold text-slate-950">
                         Komunitas tidak ditemukan
                     </h1>
-                    <Button asChild className="mt-5 h-10 rounded-xl text-[13px] font-semibold sm:text-sm">
+                    <Button
+                        asChild
+                        className="mt-5 h-10 rounded-xl text-[13px] font-semibold sm:text-sm"
+                    >
                         <Link href="/komunitas">Kembali ke komunitas</Link>
                     </Button>
                 </div>
@@ -626,10 +665,12 @@ export default function CommunityDetailClient({
                     className="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-sm shadow-slate-900/5"
                     aria-label={`${community.name} banner`}
                 >
-                    <img
+                    <Image
                         alt=""
                         className="h-28 w-full object-cover sm:h-32 lg:h-36"
                         src={community.banner_url}
+                        width={1600}
+                        height={900}
                     />
                 </section>
             ) : null}
@@ -665,19 +706,29 @@ export default function CommunityDetailClient({
                                 <p className="text-base font-semibold leading-none tabular-nums text-slate-950">
                                     {formatNumber(memberCount)}
                                 </p>
-                                <p className="mt-1 text-[11px] text-slate-500">Anggota</p>
+                                <p className="mt-1 text-[11px] text-slate-500">
+                                    Anggota
+                                </p>
                             </div>
                             <div className="border-x border-slate-200/80 px-3 py-3">
                                 <p className="text-base font-semibold leading-none tabular-nums text-slate-950">
                                     {formatNumber(community.post_count)}
                                 </p>
-                                <p className="mt-1 text-[11px] text-slate-500">Post</p>
+                                <p className="mt-1 text-[11px] text-slate-500">
+                                    Post
+                                </p>
                             </div>
                             <div className="px-3 py-3">
                                 <p className="text-base font-semibold leading-none tabular-nums text-slate-950">
-                                    {formatDate(community.created_at).split(" ")[2]}
+                                    {
+                                        formatDate(community.created_at).split(
+                                            " ",
+                                        )[2]
+                                    }
                                 </p>
-                                <p className="mt-1 text-[11px] text-slate-500">Dibuat</p>
+                                <p className="mt-1 text-[11px] text-slate-500">
+                                    Dibuat
+                                </p>
                             </div>
                         </div>
 
@@ -718,18 +769,12 @@ export default function CommunityDetailClient({
                                 </span>
                             </summary>
                             <div className="mt-4 max-h-64 overflow-y-auto pr-1 text-[13px] leading-5 text-slate-600">
-                                <p className="whitespace-pre-line">{community.rules}</p>
+                                <p className="whitespace-pre-line">
+                                    {community.rules}
+                                </p>
                             </div>
                         </details>
                     ) : null}
-
-                    <Link
-                        href={communityHref}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-[13px] font-medium text-slate-600 shadow-sm shadow-slate-900/5 transition hover:border-primary/30 hover:text-primary"
-                    >
-                        <span className="min-w-0 truncate">k/{community.slug}</span>
-                        <Share className="h-4 w-4 shrink-0" />
-                    </Link>
                 </aside>
 
                 <div className="flex min-w-0 flex-col gap-4">
@@ -764,7 +809,9 @@ export default function CommunityDetailClient({
                                 <PublicPostCard
                                     key={post.id}
                                     post={post}
-                                    postHref={communityHref + "/post/" + post.id}
+                                    postHref={
+                                        communityHref + "/post/" + post.id
+                                    }
                                     communityHref={communityHref}
                                     communityLabel={community.name}
                                     actions={
@@ -786,7 +833,9 @@ export default function CommunityDetailClient({
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setPostToDelete(post)}
+                                                    onClick={() =>
+                                                        setPostToDelete(post)
+                                                    }
                                                     className="rounded-xl p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
                                                     aria-label="Hapus post"
                                                 >
@@ -805,7 +854,8 @@ export default function CommunityDetailClient({
                                 Belum ada post
                             </h3>
                             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-                                Post yang dibuat pengelola komunitas akan tampil di sini.
+                                Post yang dibuat pengelola komunitas akan tampil
+                                di sini.
                             </p>
                         </div>
                     )}
@@ -814,10 +864,16 @@ export default function CommunityDetailClient({
                         <div className="flex justify-center pt-2">
                             <Button
                                 variant="outline"
-                                disabled={isLoadingPosts || !resolvedCommunityId}
+                                disabled={
+                                    isLoadingPosts || !resolvedCommunityId
+                                }
                                 onClick={() =>
                                     resolvedCommunityId
-                                        ? loadPosts(resolvedCommunityId, page + 1, true)
+                                        ? loadPosts(
+                                              resolvedCommunityId,
+                                              page + 1,
+                                              true,
+                                          )
                                         : undefined
                                 }
                                 className="h-10 rounded-xl border-slate-200 bg-white px-7 text-sm font-semibold text-slate-600 hover:border-primary/30 hover:text-primary"

@@ -269,7 +269,7 @@ export default function OrganizerNavBar({
                             !isOpen && "w-0 opacity-0",
                         )}
                     >
-                        <div className="flex flex-col ps-4">
+                        <Link href="/" className="flex flex-col ps-4">
                             <Image
                                 src="/kumpulin_wordmark.svg"
                                 alt="Kumpulin Logo"
@@ -280,7 +280,7 @@ export default function OrganizerNavBar({
                             <span className="text-[13px] text-slate-500 font-medium whitespace-nowrap">
                                 Organizer
                             </span>
-                        </div>
+                        </Link>
                     </div>
 
                     <Button

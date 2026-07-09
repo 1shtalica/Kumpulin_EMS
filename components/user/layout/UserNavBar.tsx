@@ -303,9 +303,8 @@ export default function UserNavBar({
                             !isOpen && "w-0 opacity-0",
                         )}
                     >
-                        <button
-                            type="button"
-                            onClick={() => router.refresh()}
+                        <Link
+                            href="/"
                             className="group flex items-center gap-3 text-left focus-visible:outline-none ps-4"
                         >
                             <span className="flex min-w-0 flex-col">
@@ -322,7 +321,7 @@ export default function UserNavBar({
                                     {workspaceLabel}
                                 </span>
                             </span>
-                        </button>
+                        </Link>
                     </div>
 
                     <Button

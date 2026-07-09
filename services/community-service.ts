@@ -222,6 +222,7 @@ export const CommunityService = {
     async getCommunityById(communityId: string): Promise<Community> {
         const response = await axiosClient.get<CommunityResponse>(
             `/communities/${communityId}`,
+            { skipAuthFailureRedirect: true },
         );
         return response.data.data;
     },
@@ -229,6 +230,7 @@ export const CommunityService = {
     async getCommunityBySlug(slug: string): Promise<Community> {
         const response = await axiosClient.get<CommunityResponse>(
             `/communities/slug/${slug}`,
+            { skipAuthFailureRedirect: true },
         );
         return response.data.data;
     },
@@ -334,7 +336,10 @@ export const CommunityService = {
     ): Promise<PaginatedResult<Post>> {
         const response = await axiosClient.get<PaginatedApiResponse<Post>>(
             `/communities/${communityId}/posts`,
-            { params: { page, limit } },
+            {
+                params: { page, limit },
+                skipAuthFailureRedirect: true,
+            },
         );
         return normalizePagination(response.data, page, limit);
     },
