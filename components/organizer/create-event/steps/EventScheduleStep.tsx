@@ -35,9 +35,11 @@ import { useEffect, useState } from "react";
 export default function EventScheduleStep({
     hideHeader,
     sectionOnly,
+    disableOnlineOption,
 }: {
     hideHeader?: boolean;
     sectionOnly?: "datetime" | "location" | "rundown";
+    disableOnlineOption?: boolean;
 }) {
     const {
         control,
@@ -431,32 +433,27 @@ export default function EventScheduleStep({
                                     ? errors.rundowns.message
                                     : "Belum ada sesi rundown"}
                             </p>
-                            {!errors.rundowns && (
-                                <>
-                                    <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-slate-500">
-                                        Tambah sesi pertama untuk mulai menyusun
-                                        alur acara.
-                                    </p>
-                                    <Button
-                                        type="button"
-                                        size="sm"
-                                        variant="outline"
-                                        className="mt-4 h-9 rounded-xl border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm shadow-slate-900/5 hover:border-primary/30 hover:text-primary"
-                                        onClick={() =>
-                                            append({
-                                                title: "",
-                                                start_time: "",
-                                                end_time: "",
-                                                description: "",
-                                                location: "",
-                                            })
-                                        }
-                                    >
-                                        <Plus className="mr-1.5 h-4 w-4" />
-                                        Tambah Sesi
-                                    </Button>
-                                </>
-                            )}
+                            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-slate-500">
+                                Tambah sesi pertama untuk mulai menyusun alur acara.
+                            </p>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="mt-4 h-9 rounded-xl border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 shadow-sm shadow-slate-900/5 hover:border-primary/30 hover:text-primary"
+                                onClick={() =>
+                                    append({
+                                        title: "",
+                                        start_time: "",
+                                        end_time: "",
+                                        description: "",
+                                        location: "",
+                                    })
+                                }
+                            >
+                                <Plus className="mr-1.5 h-4 w-4" />
+                                Tambah Sesi
+                            </Button>
                         </div>
                     )}
 
@@ -737,12 +734,24 @@ export default function EventScheduleStep({
                     <div className="grid gap-3 sm:grid-cols-2">
                         <button
                             type="button"
-                            onClick={() => setValue("is_online", true)}
+                            disabled={disableOnlineOption}
+                            aria-disabled={disableOnlineOption}
+                            title={
+                                disableOnlineOption
+                                    ? "Event offline tidak bisa diubah menjadi online."
+                                    : "Pilih event online"
+                            }
+                            onClick={() => {
+                                if (disableOnlineOption) return;
+                                setValue("is_online", true);
+                            }}
                             className={cn(
                                 "group rounded-2xl border p-4 text-left shadow-sm shadow-slate-900/5 transition-colors",
                                 is_online
                                     ? "border-primary/20 bg-primary/5 text-primary"
                                     : "border-slate-200/80 bg-white text-slate-500 hover:border-primary/30 hover:bg-primary-light/30",
+                                disableOnlineOption &&
+                                    "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 opacity-60 hover:border-slate-200 hover:bg-slate-50",
                             )}
                         >
                             <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-primary shadow-sm shadow-slate-900/5 ring-1 ring-primary/10">
@@ -752,8 +761,9 @@ export default function EventScheduleStep({
                                 Online
                             </span>
                             <span className="mt-1 block text-xs leading-relaxed text-slate-500">
-                                Gunakan link meeting seperti Zoom atau Google
-                                Meet.
+                                {disableOnlineOption
+                                    ? "Event offline tetap memakai detail venue dan alamat."
+                                    : "Gunakan link meeting seperti Zoom atau Google Meet."}
                             </span>
                         </button>
 

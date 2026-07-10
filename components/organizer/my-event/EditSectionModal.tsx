@@ -331,12 +331,13 @@ export function EditSectionModal({ event, section, onUpdated }: EditModalProps):
                     }
                     break;
 
-                case 'location':
-                    // PATCH /api/v1/events/:id/location
+                case 'location': {
+                    // Offline organizer events keep their location type; only address fields are editable here.
+                    const isLocationOnline = event.is_online ? data.is_online : false;
                     payloadToSubmit = {
-                        is_online: data.is_online,
+                        is_online: isLocationOnline,
                         meeting_url: data.meeting_url,
-                        address: data.is_online ? null : {
+                        address: isLocationOnline ? null : {
                             address_id: data.address.address_id,
                             title: data.address.title,
                             raw_address: data.address.raw_address,
@@ -358,7 +359,7 @@ export function EditSectionModal({ event, section, onUpdated }: EditModalProps):
                         location_url: payloadToSubmit.address?.location_url!
                     });
                     break;
-
+                }
 
                 case 'rundown': {
                     // Diff against original event.rundowns by index position:
@@ -512,7 +513,7 @@ export function EditSectionModal({ event, section, onUpdated }: EditModalProps):
             case 'location':
             case 'datetime':
             case 'rundown':
-                return <EventScheduleStep hideHeader={true} sectionOnly={section} />;
+                return <EventScheduleStep hideHeader={true} sectionOnly={section} disableOnlineOption={section === "location" && !event.is_online} />;
             case 'tickets':
                 return <EventTicketStep hideHeader={true} sectionOnly={section} />;
             default:
