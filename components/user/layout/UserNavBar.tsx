@@ -237,11 +237,11 @@ export default function UserNavBar({
             className={cn(
                 "group min-w-0 justify-start overflow-hidden text-left transition-all",
                 isOpen
-                    ? "h-11 w-full rounded-lg px-2 py-1.5 hover:bg-slate-50 hover:text-slate-900"
+                    ? "h-13 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-2 py-2 shadow-sm shadow-slate-900/5 hover:border-primary/20 hover:bg-primary-light/60 hover:text-slate-900"
                     : "mx-auto h-10 w-10 justify-center rounded-lg p-0 hover:bg-slate-50",
             )}
         >
-            <Avatar className="h-8 w-8 shrink-0 rounded-full">
+            <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
                 <AvatarImage src={user?.profile_url} alt={displayName} />
                 <AvatarFallback className="rounded-full bg-primary-light text-xs font-semibold text-primary">
                     {fallback}
@@ -251,9 +251,6 @@ export default function UserNavBar({
                 <div className="ml-2.5 min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold leading-tight text-slate-950">
                         {displayName}
-                    </p>
-                    <p className="mt-1 truncate text-xs font-medium text-slate-500">
-                        {user?.email || "User"}
                     </p>
                 </div>
             )}
@@ -317,7 +314,7 @@ export default function UserNavBar({
                                         priority
                                     />
                                 </span>
-                                <span className="whitespace-nowrap text-[13px] font-medium text-slate-500">
+                                <span className="whitespace-nowrap text-xs font-medium text-slate-500">
                                     {workspaceLabel}
                                 </span>
                             </span>
@@ -348,12 +345,12 @@ export default function UserNavBar({
 
                     <div className="flex-1" />
 
-                    <div className="-mx-4 border-t border-slate-100 px-4 pb-1 pt-3">
+                    <div className="-mx-4 border-t border-slate-100 px-4 pb-3 pt-3">
                         <Button
                             variant="ghost"
                             size={isOpen ? "default" : "icon"}
                             className={cn(
-                                "h-10 w-full justify-start whitespace-nowrap rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                                "h-10 w-full justify-start whitespace-nowrap rounded-xl px-3 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900",
                                 !isOpen && "h-10 w-10 justify-center px-0",
                             )}
                             asChild

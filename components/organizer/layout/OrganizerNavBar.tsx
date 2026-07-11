@@ -199,11 +199,11 @@ export default function OrganizerNavBar({
             className={cn(
                 "group min-w-0 justify-start overflow-hidden text-left transition-all",
                 isOpen
-                    ? "h-11 w-full rounded-lg px-2 py-1.5 hover:bg-slate-50 hover:text-slate-900"
+                    ? "h-13 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-2 py-2 shadow-sm shadow-slate-900/5 hover:border-primary/20 hover:bg-primary-light/60 hover:text-slate-900"
                     : "mx-auto h-10 w-10 justify-center rounded-lg p-0 hover:bg-slate-50",
             )}
         >
-            <Avatar className="h-8 w-8 shrink-0 rounded-full">
+            <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
                 <AvatarImage src={user?.profile_url} alt={displayName} />
                 <AvatarFallback className="rounded-full bg-primary-light text-xs font-semibold text-primary">
                     {fallback}
@@ -214,9 +214,6 @@ export default function OrganizerNavBar({
                 <div className="ml-2.5 flex min-w-0 flex-1 flex-col justify-center">
                     <p className="truncate text-sm font-semibold leading-tight text-slate-900">
                         {displayName}
-                    </p>
-                    <p className="mt-1 truncate text-xs font-medium text-slate-500">
-                        {user?.email || "Organizer"}
                     </p>
                 </div>
             )}
@@ -233,10 +230,10 @@ export default function OrganizerNavBar({
             <DropdownMenuContent
                 align={isOpen ? "end" : "start"}
                 side={isOpen ? "top" : "right"}
-                className="w-56 rounded-xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10"
+                className="w-56 rounded-2xl border-slate-200 p-1.5 shadow-lg shadow-slate-900/10"
             >
                 <DropdownMenuItem
-                    className="cursor-pointer rounded-lg p-3 text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700"
+                    className="cursor-pointer rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 focus:bg-red-50 focus:text-red-700"
                     onClick={logout}
                 >
                     <LogOut className="mr-2 h-4 w-4 text-danger" />
@@ -308,13 +305,13 @@ export default function OrganizerNavBar({
 
                     <div className="flex-1" />
 
-                    <div className="-mx-4 border-t border-slate-100 px-4 pb-1 pt-3">
+                    <div className="-mx-4 border-t border-slate-100 px-4 pb-3 pt-3">
                         {/* Tombol Beranda */}
                         <div>
                             <Button
                                 variant="ghost"
                                 className={cn(
-                                    "h-10 w-full justify-start rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                                    "h-10 w-full justify-start rounded-xl px-3 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900",
                                     !isOpen && "h-10 w-10 justify-center px-0",
                                 )}
                                 asChild

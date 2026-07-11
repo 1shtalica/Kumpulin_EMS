@@ -135,9 +135,6 @@ export default function MainPagesLayout({
                                             <p className="truncate text-sm font-semibold leading-tight text-slate-950">
                                                 {displayName}
                                             </p>
-                                            <p className="mt-1 truncate text-xs font-medium text-slate-500">
-                                                {user?.email || "Organizer"}
-                                            </p>
                                         </div>
                                         <ChevronsUpDown className="h-4 w-4 shrink-0 text-slate-400" />
                                     </button>

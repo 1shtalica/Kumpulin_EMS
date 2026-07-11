@@ -84,7 +84,7 @@ export default function UserMainPagesLayout({
                                     <span className="whitespace-nowrap font-bold leading-tight text-slate-900">
                                         kumpul.in
                                     </span>
-                                    <span className="whitespace-nowrap text-[13px] font-medium text-slate-500">
+                                    <span className="whitespace-nowrap text-xs font-medium text-slate-500">
                                         {workspaceLabel}
                                     </span>
                                 </span>
@@ -104,7 +104,7 @@ export default function UserMainPagesLayout({
                         <div className="flex-1" />
 
                         <div className="space-y-2 border-t border-slate-100 pt-3">
-                            <div className="mb-2 flex min-w-0 items-center gap-2.5 rounded-xl px-2 py-2">
+                            <div className="mb-2 flex min-w-0 items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-2 shadow-sm shadow-slate-900/5">
                                 <Avatar className="h-9 w-9 shrink-0 rounded-full ring-2 ring-white">
                                     <AvatarImage
                                         src={user?.profile_url}
@@ -117,9 +117,6 @@ export default function UserMainPagesLayout({
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-sm font-semibold leading-tight text-slate-950">
                                         {displayName}
-                                    </p>
-                                    <p className="mt-1 truncate text-xs font-medium text-slate-500">
-                                        {user?.email || "User"}
                                     </p>
                                 </div>
                             </div>
@@ -138,10 +135,10 @@ export default function UserMainPagesLayout({
                         </div>
                     </div>
 
-                    <div className="shrink-0 border-t border-slate-100 p-4">
+                    <div className="shrink-0 border-t border-slate-100 p-3">
                         <Button
                             variant="ghost"
-                            className="h-10 w-full justify-start rounded-lg px-3 text-sm whitespace-nowrap text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                            className="h-10 w-full justify-start rounded-xl px-3 text-sm whitespace-nowrap text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
                             asChild
                         >
                             <Link
