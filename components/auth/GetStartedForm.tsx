@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -27,6 +27,7 @@ import { organizerSchema, phoneSchema } from "@/lib/validator/auth";
 import { AuthService } from "@/services/auth-service";
 import { useAuthStore } from "@/stores/auth-store";
 import { User } from "@/types/user";
+import { normalizePhoneNumber } from "@/lib/phone";
 
 type PhoneFormValues = z.infer<typeof phoneSchema>;
 type OrganizerFormValues = z.infer<typeof organizerSchema>;
@@ -37,11 +38,13 @@ interface GetStartedFormProps {
 
 export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
     const router = useRouter();
+    const initialPhoneNumber = normalizePhoneNumber(initialUser?.phone_number);
     const [step, setStep] = useState<1 | 2 | 3>(1);
     const [phoneNumber, setPhoneNumber] = useState(
-        initialUser?.phone_number ?? "",
+        initialPhoneNumber ?? "",
     );
     const [otpCode, setOtpCode] = useState("");
+    const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
     const [isEmailVerified, setIsEmailVerified] = useState(
         initialUser?.email_verified ?? false,
     );
@@ -58,7 +61,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         resolver: zodResolver(phoneSchema),
         defaultValues: {
             phone_number:
-                initialUser?.phone_number?.replace(/^\+?62/, "") ?? "",
+                initialPhoneNumber?.replace(/^\+?62/, "") ?? "",
         },
     });
 
@@ -120,6 +123,55 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
         if (!isValid) return null;
 
         return organizerForm.getValues();
+    };
+
+    const focusOtpInput = (index: number) => {
+        otpInputRefs.current[index]?.focus();
+    };
+
+    const updateOtpCode = (index: number, rawValue: string) => {
+        const value = rawValue.replace(/[^0-9A-Za-z]/g, "");
+        if (!value) {
+            setOtpCode((current) => {
+                const next = current.split("");
+                next[index] = "";
+                return next.join("");
+            });
+            return;
+        }
+
+        setOtpCode((current) => {
+            const next = current.split("");
+            value.slice(0, 6 - index).split("").forEach((character, offset) => {
+                next[index + offset] = character;
+            });
+            return next.join("").slice(0, 6);
+        });
+
+        window.setTimeout(() => {
+            focusOtpInput(Math.min(index + value.length, 5));
+        }, 0);
+    };
+
+    const handleOtpKeyDown = (
+        index: number,
+        event: React.KeyboardEvent<HTMLInputElement>,
+    ) => {
+        if (event.key === "Backspace" && !otpCode[index] && index > 0) {
+            event.preventDefault();
+            setOtpCode((current) => {
+                const next = current.split("");
+                next[index - 1] = "";
+                return next.join("");
+            });
+            focusOtpInput(index - 1);
+        } else if (event.key === "ArrowLeft" && index > 0) {
+            event.preventDefault();
+            focusOtpInput(index - 1);
+        } else if (event.key === "ArrowRight" && index < 5) {
+            event.preventDefault();
+            focusOtpInput(index + 1);
+        }
     };
 
     const handleVerifyEmailCode = async () => {
@@ -500,6 +552,7 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                                                 "border-danger",
                                         )}
                                     />
+
                                     {organizerForm.formState.errors
                                         .organizer_name && (
                                         <p className="text-xs font-medium text-danger">
@@ -630,31 +683,44 @@ export default function GetStartedForm({ initialUser }: GetStartedFormProps) {
                             >
                                 Kode OTP
                             </Label>
-                            <Input
-                                id="otp_code"
-                                inputMode="text"
-                                autoComplete="one-time-code"
-                                placeholder={
-                                    isEmailVerified
-                                        ? "Email sudah terverifikasi"
-                                        : hasSentCode
-                                          ? "Masukkan kode dari email"
-                                          : "Kirim kode dulu"
-                                }
-                                value={otpCode}
-                                disabled={
-                                    !hasSentCode ||
-                                    isEmailVerified ||
-                                    isVerifyingCode ||
-                                    isLoading
-                                }
-                                onChange={(event) =>
-                                    setOtpCode(
-                                        event.target.value.trim().slice(0, 8),
-                                    )
-                                }
-                                className="h-11 rounded-xl border-slate-200 bg-slate-50 text-center text-base font-semibold tracking-[0.35em] focus-visible:border-primary/40 focus-visible:ring-primary/20 disabled:opacity-70"
-                            />
+                            <div
+                                className="flex gap-2.5"
+                                role="group"
+                                aria-label="Kode OTP"
+                            >
+                                {Array.from({ length: 6 }, (_, index) => (
+                                    <Input
+                                        key={index}
+                                        ref={(element) => {
+                                            otpInputRefs.current[index] = element;
+                                        }}
+                                        id={`otp_code_${index + 1}`}
+                                        type="text"
+                                        inputMode="text"
+                                        autoComplete={index === 0 ? "one-time-code" : "off"}
+                                        maxLength={1}
+                                        value={otpCode[index] ?? ""}
+                                        disabled={
+                                            !hasSentCode ||
+                                            isEmailVerified ||
+                                            isVerifyingCode ||
+                                            isLoading
+                                        }
+                                        onChange={(event) =>
+                                            updateOtpCode(index, event.target.value)
+                                        }
+                                        onKeyDown={(event) =>
+                                            handleOtpKeyDown(index, event)
+                                        }
+                                        onPaste={(event) => {
+                                            event.preventDefault();
+                                            updateOtpCode(index, event.clipboardData.getData("text"));
+                                        }}
+                                        aria-label={`Digit ${index + 1} of 6`}
+                                        className="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-0 text-center text-lg font-bold tracking-normal focus-visible:border-primary/40 focus-visible:ring-primary/20 disabled:opacity-70"
+                                    />
+                                ))}
+                            </div>
                             {!isEmailVerified && (
                                 <p className="text-xs text-slate-400">
                                     Masukkan 6 karakter kode verifikasi dari

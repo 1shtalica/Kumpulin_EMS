@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { resolveRoutePolicy } from "@/lib/auth-policy";
+import { normalizePhoneNumber } from "@/lib/phone";
 
 type SessionClaims = {
     exp?: number;
@@ -72,6 +73,17 @@ const extractSessionClaims = (value: unknown): SessionClaims | null => {
     return root as SessionClaims;
 };
 
+const readSetCookieHeaders = (headers: Headers): string[] => {
+    const headersWithSetCookie = headers as Headers & {
+        getSetCookie?: () => string[];
+    };
+
+    return (
+        headersWithSetCookie.getSetCookie?.() ??
+        (headers.get("set-cookie") ? [headers.get("set-cookie") as string] : [])
+    );
+};
+
 const readBooleanClaim = (
     user: SessionClaims,
     keys: Array<keyof SessionClaims>,
@@ -98,9 +110,7 @@ const isEmailVerified = (user: SessionClaims): boolean => {
 
 const isProfileIncomplete = (user: SessionClaims | null): boolean => {
     if (!user) return false;
-    const phoneNumber =
-        typeof user.phone_number === "string" ? user.phone_number.trim() : "";
-    return phoneNumber.length === 0 || !isEmailVerified(user);
+    return !normalizePhoneNumber(user.phone_number) || !isEmailVerified(user);
 };
 
 export async function proxy(req: NextRequest) {
@@ -195,7 +205,7 @@ export async function proxy(req: NextRequest) {
             cookieParts.push(`refresh_token=${refreshToken.value}`);
         const cookieHeader = cookieParts.join("; ");
 
-        const res = await fetch(`${apiUrl}/auth/me`, {
+        let res = await fetch(`${apiUrl}/auth/me`, {
             headers: {
                 Cookie: cookieHeader,
                 "Content-Type": "application/json",
@@ -203,23 +213,66 @@ export async function proxy(req: NextRequest) {
             cache: "no-store",
         });
 
+        let refreshedSetCookies: string[] = [];
+        if (res.status === 401) {
+            const refreshResponse = await fetch(`${apiUrl}/auth/refresh`, {
+                method: "POST",
+                headers: {
+                    Cookie: cookieHeader,
+                    "Content-Type": "application/json",
+                },
+                cache: "no-store",
+            });
+
+            if (refreshResponse.ok) {
+                refreshedSetCookies = readSetCookieHeaders(
+                    refreshResponse.headers,
+                );
+                const refreshedCookieParts = refreshedSetCookies
+                    .map((cookie) => cookie.split(";", 1)[0])
+                    .filter(Boolean);
+                const refreshedCookieHeader = [
+                    ...refreshedCookieParts,
+                    ...(refreshedCookieParts.some((cookie) =>
+                        cookie.startsWith("refresh_token="),
+                    )
+                        ? []
+                        : [`refresh_token=${refreshToken.value}`]),
+                ].join("; ");
+
+                res = await fetch(`${apiUrl}/auth/me`, {
+                    headers: {
+                        Cookie: refreshedCookieHeader,
+                        "Content-Type": "application/json",
+                    },
+                    cache: "no-store",
+                });
+            }
+        }
+
+        const finish = (response: NextResponse) => {
+            for (const cookie of refreshedSetCookies) {
+                response.headers.append("set-cookie", cookie);
+            }
+            return response;
+        };
+
         if (res.status === 401) {
             if (isProtectedRoute || isOnboardingRoute) {
                 logAuthDecision(
                     pathname,
                     "redirect:/login",
-                    "backend /auth/me returned 401",
+                    "backend /auth/me and refresh returned 401",
                 );
-                return NextResponse.redirect(new URL("/login", req.nextUrl));
+                return finish(NextResponse.redirect(new URL("/login", req.nextUrl)));
             }
             logAuthDecision(
                 pathname,
                 "allow",
-                "backend /auth/me returned 401 on public/auth",
+                "backend /auth/me and refresh returned 401 on public/auth",
             );
-            return NextResponse.next();
+            return finish(NextResponse.next());
         }
-
         if (!res.ok) {
             if (isProtectedRoute || isOnboardingRoute) {
                 logAuthDecision(
@@ -246,14 +299,14 @@ export async function proxy(req: NextRequest) {
                     "redirect:/login",
                     "invalid /auth/me payload",
                 );
-                return NextResponse.redirect(new URL("/login", req.nextUrl));
+                return finish(NextResponse.redirect(new URL("/login", req.nextUrl)));
             }
             logAuthDecision(
                 pathname,
                 "allow",
                 "invalid /auth/me payload on public/auth",
             );
-            return NextResponse.next();
+            return finish(NextResponse.next());
         }
 
         const homePage = roleHomePages[freshUser.role ?? ""] || "/";
@@ -265,7 +318,7 @@ export async function proxy(req: NextRequest) {
                 "redirect:/get-started",
                 "incomplete profile",
             );
-            return NextResponse.redirect(new URL("/get-started", req.nextUrl));
+            return finish(NextResponse.redirect(new URL("/get-started", req.nextUrl)));
         }
 
         if (!profileIncomplete && isOnboardingRoute) {
@@ -274,7 +327,7 @@ export async function proxy(req: NextRequest) {
                 `redirect:${homePage}`,
                 "profile completed on onboarding route",
             );
-            return NextResponse.redirect(new URL(homePage, req.nextUrl));
+            return finish(NextResponse.redirect(new URL(homePage, req.nextUrl)));
         }
 
         if (isGuestOnlyAuthRoute) {
@@ -283,7 +336,7 @@ export async function proxy(req: NextRequest) {
                 `redirect:${homePage}`,
                 "already authenticated user on auth route",
             );
-            return NextResponse.redirect(new URL(homePage, req.nextUrl));
+            return finish(NextResponse.redirect(new URL(homePage, req.nextUrl)));
         }
 
         if (
@@ -295,11 +348,11 @@ export async function proxy(req: NextRequest) {
                 `redirect:${homePage}`,
                 "role mismatch for protected route",
             );
-            return NextResponse.redirect(new URL(homePage, req.nextUrl));
+            return finish(NextResponse.redirect(new URL(homePage, req.nextUrl)));
         }
 
         logAuthDecision(pathname, "allow", "authorized");
-        return NextResponse.next();
+        return finish(NextResponse.next());
     } catch (error) {
         console.error("Middleware Auth Verification Failed:", error);
         if (isProtectedRoute || isOnboardingRoute) {

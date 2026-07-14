@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { AuthService, LoginPayload } from "@/services/auth-service";
 import { User } from "@/types/user";
+import { normalizePhoneNumber } from "@/lib/phone";
 
 type AuthPayloadRecord = Record<string, unknown>;
 

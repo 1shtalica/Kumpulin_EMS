@@ -17,7 +17,7 @@ import {
     QrCode,
     RefreshCw,
     Search,
-    SlidersHorizontal,
+    Funnel,
     Ticket as TicketIcon,
     UserRound,
     WalletCards,
@@ -1108,39 +1108,10 @@ function MyTicketPageContent() {
                 </header>
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-900/5 sm:p-5">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                        <div className="flex gap-2 overflow-x-auto pb-1">
-                            {STATUS_OPTIONS.map((option) => {
-                                const isActive =
-                                    option.value === selectedStatus;
-                                return (
-                                    <Button
-                                        key={option.value}
-                                        type="button"
-                                        variant={isActive ? "brand" : "ghost"}
-                                        className={`h-9 shrink-0 rounded-lg px-4 ${
-                                            isActive
-                                                ? ""
-                                                : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                                        }`}
-                                        onClick={() =>
-                                            handleStatusChange(option.value)
-                                        }
-                                    >
-                                        <span className="hidden sm:inline">
-                                            {option.label}
-                                        </span>
-                                        <span className="sm:hidden">
-                                            {option.shortLabel}
-                                        </span>
-                                    </Button>
-                                );
-                            })}
-                        </div>
-
+                    <div>
                         <form
                             onSubmit={handleFilterSubmit}
-                            className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:w-[420px]"
+                            className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_auto]"
                         >
                             <div className="relative">
                                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -1150,15 +1121,33 @@ function MyTicketPageContent() {
                                         setEventTitleInput(event.target.value)
                                     }
                                     placeholder="Cari dengan nama event"
-                                    className="h-10 rounded-full border-slate-200 bg-slate-50 pl-10"
+                                    className="h-10 rounded-xl border-slate-200 bg-slate-50 pl-9 pr-9 text-sm focus-visible:border-primary/40 focus-visible:ring-primary/20"
                                 />
                             </div>
+
+                            <select
+                                value={selectedStatus}
+                                onChange={(event) =>
+                                    handleStatusChange(
+                                        event.target.value as StatusOption["value"],
+                                    )
+                                }
+                                aria-label="Status tiket"
+                                className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
+                            >
+                                {STATUS_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+
                             <Button
                                 type="submit"
                                 variant="outline"
-                                className="h-10 rounded-lg border-slate-200 bg-white"
+                                className="h-10 rounded-xl border-slate-200 bg-white text-slate-600 hover:border-primary/30 hover:text-primary"
                             >
-                                <SlidersHorizontal className="h-4 w-4" />
+                                <Funnel className="h-4 w-4" />
                                 Filter
                             </Button>
                         </form>
@@ -1214,7 +1203,7 @@ function MyTicketPageContent() {
                                 onChange={(event) =>
                                     handleLimitChange(event.target.value)
                                 }
-                                className="h-9 rounded-full border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
+                                className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/20"
                             >
                                 <option value="10">10</option>
                                 <option value="20">20</option>

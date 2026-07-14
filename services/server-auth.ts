@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { User } from "@/types/user";
+import { normalizePhoneNumber } from "@/lib/phone";
 
 const getApiBaseUrl = () =>
     process.env.INTERNAL_API_URL ||
@@ -64,7 +65,7 @@ export async function getServerUser(): Promise<User | null> {
                 username: data.username ?? "",
                 role: data.role ?? "",
                 profile_url: data.profile_url ?? undefined,
-                phone_number: data.phone_number ?? undefined,
+                phone_number: normalizePhoneNumber(data.phone_number),
                 email_verified: emailVerified ?? false,
                 first_name: data.first_name ?? undefined,
                 last_name: data.last_name ?? undefined,

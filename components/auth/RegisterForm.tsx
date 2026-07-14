@@ -18,7 +18,6 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { splitFullName } from "@/lib/utils";
 import { registerSchema } from "@/lib/validator/auth";
 import { AuthService } from "@/services/auth-service";
+import { useAuthStore } from "@/stores/auth-store";
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -56,7 +56,6 @@ function GoogleIcon() {
 }
 
 export default function RegisterForm() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -94,8 +93,12 @@ export default function RegisterForm() {
         first_name: firstName,
         last_name: lastName,
       });
+      await useAuthStore.getState().loginWithEmail({
+        email: data.email,
+        password: data.password,
+      });
       toast.success("Akun berhasil dibuat!", { id: toastId });
-      router.push("/login");
+      window.location.href = "/get-started";
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ message: string }>;
       const errorMessage =
