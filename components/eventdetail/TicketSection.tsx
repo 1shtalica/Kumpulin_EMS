@@ -9,20 +9,18 @@ import { Button } from "@/components/ui/button";
 import {
     Minus,
     Plus,
-    Facebook,
-    Link as LinkIcon,
     Loader2,
-    X,
-    Phone,
     Heart,
     Clock,
     Flame,
+    Share2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Event } from "@/types/event";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth-store";
 import { UserService } from "@/services/user-service";
+import ShareDialog from "@/components/reusable/ShareDialog";
 
 const TICKET_COLORS = [
     {
@@ -361,47 +359,6 @@ export default function TicketSection({ event }: { event: Event }) {
         router.push(
             `/checkout/${event.event_id}?ticket_id=${selectedTicket.id}&qty=${qty}`,
         );
-    };
-
-    const handleShare = (platform: string) => {
-        const url = window.location.href;
-        const text = `Yuk ikut event seru ini: ${event.title} - ${url}`;
-        switch (platform) {
-            case "facebook":
-                window.open(
-                    `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
-                    "_blank",
-                );
-                break;
-            case "x":
-                window.open(
-                    `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
-                    "_blank",
-                );
-                break;
-            case "instagram":
-                window.open(
-                    `https://www.instagram.com/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
-                    "_blank",
-                );
-                break;
-            case "whatsapp":
-                window.open(
-                    `https://wa.me/?text=${encodeURIComponent(text)}`,
-                    "_blank",
-                );
-                break;
-            case "telegram":
-                window.open(
-                    `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
-                    "_blank",
-                );
-                break;
-            case "link":
-                navigator.clipboard.writeText(url);
-                toast.success("Link berhasil disalin!");
-                break;
-        }
     };
 
     const handleToggleWishlist = async () => {
@@ -790,40 +747,23 @@ export default function TicketSection({ event }: { event: Event }) {
                         <span className="text-sm font-medium">
                             Bagikan event ini
                         </span>
-                        <div className="flex gap-2">
+                        <ShareDialog
+                            title={event.title}
+                            description={`Yuk ikut event seru ini di Kumpul.in.`}
+                            imageUrl={
+                                event.images?.find((image) => image.is_primary)
+                                    ?.image_url || event.images?.[0]?.image_url
+                            }
+                            contentType="event"
+                        >
                             <Button
-                                onClick={() => handleShare("facebook")}
                                 variant="outline"
-                                size="icon"
-                                className="w-8 h-8 rounded-full bg-muted/10 shadow-xs border-0 hover:bg-slate-200"
+                                className="h-9 rounded-xl border-0 bg-muted/10 px-3 text-slate-600 shadow-xs hover:bg-slate-200"
                             >
-                                <Facebook size={16} />
+                                <Share2 className="h-4 w-4" />
+                                Bagikan
                             </Button>
-                            <Button
-                                onClick={() => handleShare("x")}
-                                variant="outline"
-                                size="icon"
-                                className="w-8 h-8 rounded-full bg-muted/10 shadow-xs border-0 hover:bg-slate-200"
-                            >
-                                <X size={16} />
-                            </Button>
-                            <Button
-                                onClick={() => handleShare("instagram")}
-                                variant="outline"
-                                size="icon"
-                                className="w-8 h-8 rounded-full bg-muted/10 shadow-xs border-0 hover:bg-slate-200"
-                            >
-                                <Phone size={16} />
-                            </Button>
-                            <Button
-                                onClick={() => handleShare("link")}
-                                variant="outline"
-                                size="icon"
-                                className="w-8 h-8 rounded-full bg-muted/10 shadow-xs border-0 hover:bg-muted/20"
-                            >
-                                <LinkIcon size={16} />
-                            </Button>
-                        </div>
+                        </ShareDialog>
                     </div>
                 </div>
             </div>

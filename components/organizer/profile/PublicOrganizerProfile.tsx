@@ -11,7 +11,6 @@ import {
     MapPin,
     Laptop,
     UserPlus,
-    Mail,
     Loader2,
     AlertCircle,
     Inbox,
@@ -30,6 +29,7 @@ import { id as idLocale } from "date-fns/locale";
 import Image from "next/image";
 import Link from "next/link";
 import { OrganizerService } from "@/services/organizer-service";
+import ShareDialog from "@/components/reusable/ShareDialog";
 import type {
     OrganizerProfileData,
     OrganizerProfileEvent,
@@ -260,12 +260,6 @@ export default function PublicOrganizerProfile({
             });
         }
     };
-
-    function handleShareableLink() {
-        const PROFILE_LINK = window.location.href;
-        navigator.clipboard.writeText(PROFILE_LINK);
-        toast.info("Link berhasil disalin!");
-    }
 
     useEffect(() => {
         if (user && profile?.organizer?.id) {
@@ -696,12 +690,20 @@ export default function PublicOrganizerProfile({
                                                   : "Diikuti"}
                                         </button>
 
-                                        <button
-                                            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary"
-                                            onClick={handleShareableLink}
+                                        <ShareDialog
+                                            title={organizer.name}
+                                            description={organizer.description}
+                                            imageUrl={
+                                                organizer.banner_image_url ||
+                                                organizer.profile_image_url
+                                            }
+                                            url={`/organizer/${organizer.slug}`}
+                                            contentType="profil organizer"
                                         >
-                                            <Share2 className="w-4 h-4" />
-                                        </button>
+                                            <button className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm shadow-slate-900/5 transition-all duration-300 hover:border-primary/20 hover:bg-primary-light/40 hover:text-primary">
+                                                <Share2 className="w-4 h-4" />
+                                            </button>
+                                        </ShareDialog>
                                     </>
                                 ) : null}
                             </div>
