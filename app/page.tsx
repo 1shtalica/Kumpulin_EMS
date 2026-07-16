@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import LandingNavbar from "@/components/landingpage/LandingNavbar";
 import Hero from "@/components/landingpage/Hero";
 import EventsSuggestion from "@/components/landingpage/EventsSuggestion";
@@ -6,6 +7,11 @@ import UpcomingEvents from "@/components/landingpage/UpcomingEvents";
 import CallToAction from "@/components/landingpage/CallToAction";
 import LandingFooter from "@/components/landingpage/LandingFooter";
 import GoToTopButton from "@/components/reusable/GoToTopButton";
+
+export const metadata: Metadata = {
+  title: "Temukan Event Seru di Indonesia",
+  description: "Jelajahi event, komunitas, dan pengalaman baru yang sesuai dengan minatmu bersama Kumpul.in.",
+};
 
 export default function LandingPage() {
   return (

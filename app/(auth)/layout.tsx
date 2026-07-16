@@ -1,5 +1,10 @@
 import { CalendarDays, CheckCircle2, QrCode, Ticket } from "lucide-react";
 import React from "react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    robots: { index: false, follow: false },
+};
 
 const eventRows = [
     { title: "Music showcase", meta: "19.30 WIB", tone: "bg-primary/12" },
