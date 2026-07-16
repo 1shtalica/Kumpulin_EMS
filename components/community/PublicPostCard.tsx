@@ -1,16 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { ReactNode, SyntheticEvent } from "react";
 import {
     ArrowUpRight,
     Bell,
     MessageCircle,
     MoreHorizontal,
     Share,
-    UsersRound,
 } from "lucide-react";
-import { toast } from "sonner";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -19,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { Post } from "@/types/community";
 import PostImageCarousel from "./PostImageCarousel";
+import RelatedEventCard from "./RelatedEventCard";
+import ShareDialog from "@/components/reusable/ShareDialog";
 
 const formatDate = (value: string) =>
     new Intl.DateTimeFormat("id-ID", {
@@ -31,6 +31,16 @@ const formatDate = (value: string) =>
 
 const formatNumber = (value: number) =>
     new Intl.NumberFormat("id-ID").format(value);
+
+const COMMUNITY_LOGO_FALLBACK = "/kumpulin_k_logo.svg";
+
+const handleCommunityLogoError = (
+    event: SyntheticEvent<HTMLImageElement>,
+) => {
+    const image = event.currentTarget;
+    image.onerror = null;
+    image.src = COMMUNITY_LOGO_FALLBACK;
+};
 
 export const getCommunityLabel = (post: Post) =>
     post.community_name?.trim() ||
@@ -95,29 +105,21 @@ export default function PublicPostCard({
 }: PublicPostCardProps) {
     const authorLabel = getAuthorLabel(post);
 
-    const handleShare = async () => {
-        const url = `${window.location.origin}${postHref}`;
-
-        try {
-            await navigator.clipboard.writeText(url);
-            toast.success("Link post disalin.");
-        } catch {
-            toast.error("Gagal menyalin link post.");
-        }
-    };
-
     return (
         <article className="group overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5 transition-all duration-200 hover:border-primary/30 hover:shadow-md hover:shadow-slate-900/10">
             <header className="flex items-center gap-3 px-4 pb-3 pt-4 sm:px-5 sm:pt-5">
-                {showCommunityMeta ? (
-                    <Link
-                        href={communityHref}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-light text-primary ring-1 ring-primary/10 transition group-hover:ring-primary/20"
-                        aria-label={`Buka komunitas ${communityLabel}`}
-                    >
-                        <UsersRound className="h-5 w-5" />
-                    </Link>
-                ) : null}
+                <Link
+                    href={communityHref}
+                    className="h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-primary-light ring-1 ring-primary/10 transition group-hover:ring-primary/20 hover:cursor-pointer"
+                    aria-label={`Buka komunitas ${communityLabel}`}
+                >
+                    <img
+                        src={post.community_logo_url ?? COMMUNITY_LOGO_FALLBACK}
+                        alt={`${communityLabel} logo`}
+                        className="h-full w-full object-cover"
+                        onError={handleCommunityLogoError}
+                    />
+                </Link>
 
                 <div className="min-w-0 flex-1 self-center">
                     {showCommunityMeta ? (
@@ -199,6 +201,11 @@ export default function PublicPostCard({
                 imageClassName="max-h-[420px]"
             />
 
+            <RelatedEventCard
+                relatedEvent={post.related_event}
+                className="mx-4 mb-4 sm:mx-5"
+            />
+
             <div className="flex items-center justify-end gap-1 border-t border-slate-200/80 px-3 py-2 sm:px-4">
                 <Link
                     href={postHref}
@@ -208,14 +215,21 @@ export default function PublicPostCard({
                     <span>{formatNumber(post.comment_count)}</span>
                     <span className="hidden sm:inline">Komentar</span>
                 </Link>
-                <button
-                    type="button"
-                    className="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-slate-500 transition-all hover:bg-primary-light hover:text-primary"
-                    onClick={() => void handleShare()}
+                <ShareDialog
+                    title={post.title}
+                    description={post.body}
+                    imageUrl={post.image_urls?.[0]}
+                    url={postHref}
+                    contentType="post"
                 >
-                    <Share className="h-4 w-4" />
-                    <span className="hidden sm:inline">Bagikan</span>
-                </button>
+                    <button
+                        type="button"
+                        className="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-medium text-slate-500 transition-all hover:bg-primary-light hover:text-primary"
+                    >
+                        <Share className="h-4 w-4" />
+                        <span className="hidden sm:inline">Bagikan</span>
+                    </button>
+                </ShareDialog>
             </div>
         </article>
     );

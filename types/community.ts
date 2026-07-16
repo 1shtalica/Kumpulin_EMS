@@ -43,11 +43,21 @@ export interface PaginatedApiResponse<T> {
 
 export type CommunityResponse = ApiResponse<Community>;
 
+export interface RelatedEvent {
+  id: string;
+  slug: string;
+  title: string;
+  image_url: string;
+  event_start_date: string;
+  starting_price: number;
+}
+
 export interface Post {
   id: string;
   community_id: string;
   community_slug?: string | null;
   community_name?: string | null;
+  community_logo_url?: string | null;
   author_user_id: number;
   author_name?: string | null;
   author_username?: string | null;
@@ -57,10 +67,14 @@ export interface Post {
   body: string;
   image_urls: string[];
   post_type: "text" | "announcement" | string;
+  related_event_id: string | null;
+  related_event: RelatedEvent | null;
   comment_count: number;
   created_at: string;
   updated_at: string;
 }
+
+export type CommunityPost = Post;
 
 export interface Comment {
   id: string;
@@ -129,11 +143,13 @@ export interface CreatePostPayload {
   body: string;
   post_type?: "text" | "announcement";
   images?: File[];
+  related_event_id?: string | null;
 }
 
 export interface UpdatePostPayload {
   title?: string;
   body?: string;
+  related_event_id?: string | null;
 }
 
 export interface CreateCommentPayload {

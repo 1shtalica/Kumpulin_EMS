@@ -106,6 +106,9 @@ const buildPostFormData = (payload: CreatePostPayload) => {
     formData.append("title", payload.title);
     formData.append("body", payload.body);
     formData.append("post_type", normalizePostType(payload.post_type));
+    if (payload.related_event_id) {
+        formData.append("related_event_id", payload.related_event_id);
+    }
     payload.images?.forEach((image) => formData.append("images", image));
     return formData;
 };
@@ -376,6 +379,9 @@ export const CommunityService = {
                 title: payload.title,
                 body: payload.body,
                 post_type: normalizePostType(payload.post_type),
+                ...(payload.related_event_id !== undefined
+                    ? { related_event_id: payload.related_event_id }
+                    : {}),
             },
         );
         return response.data.data;

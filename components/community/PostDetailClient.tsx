@@ -22,7 +22,9 @@ import { CommunityService } from "@/services/community-service";
 import { useAuthStore } from "@/stores/auth-store";
 import type { Comment, Community, Post } from "@/types/community";
 import PostImageCarousel from "./PostImageCarousel";
+import RelatedEventCard from "./RelatedEventCard";
 import Image from "next/image";
+import ShareDialog from "@/components/reusable/ShareDialog";
 
 type ApiErrorBody = {
     message?: string;
@@ -1226,6 +1228,10 @@ export default function PostDetailClient({
                                 className="mt-5"
                                 imageClassName="max-h-[620px]"
                             />
+                            <RelatedEventCard
+                                relatedEvent={post.related_event}
+                                className="mt-5"
+                            />
                         </div>
 
                         {/* Footer Actions */}
@@ -1234,21 +1240,22 @@ export default function PostDetailClient({
                                 <MessageCircle className="h-4.5 w-4.5" />
                                 {formatNumber(post.comment_count)} Komentar
                             </span>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    void navigator.clipboard.writeText(
-                                        window.location.href,
-                                    );
-                                    toast.success("Link berhasil disalin!");
-                                }}
-                                className="ml-auto flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white hover:text-primary hover:shadow-sm"
+                            <ShareDialog
+                                title={post.title}
+                                description={post.body}
+                                imageUrl={post.image_urls?.[0]}
+                                contentType="post"
                             >
-                                <Share2 className="h-4 w-4" />
-                                <span className="hidden sm:inline">
-                                    Bagikan
-                                </span>
-                            </button>
+                                <button
+                                    type="button"
+                                    className="ml-auto flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-white hover:text-primary hover:shadow-sm"
+                                >
+                                    <Share2 className="h-4 w-4" />
+                                    <span className="hidden sm:inline">
+                                        Bagikan
+                                    </span>
+                                </button>
+                            </ShareDialog>
                         </div>
                     </div>
                 </article>

@@ -166,6 +166,8 @@ export interface OrganizerEventCard {
   address_title: string;
   image_url: string;
   start_date: string;
+  event_start_date?: string;
+  starting_price?: number;
   status: string;
 }
 
