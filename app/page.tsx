@@ -17,7 +17,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <LandingNavbar />
-      <main>
+      <main className="pt-14 md:pt-16">
         <Hero />
         <EventsSuggestion />
         <PopularCategory />
