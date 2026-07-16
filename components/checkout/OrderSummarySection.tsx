@@ -8,6 +8,9 @@ interface OrderSummaryProps {
   subtotal: number;
   total: number;
   isLoading: boolean;
+  isRateLimited: boolean;
+  retryCooldown: number;
+  onRetry: () => void;
 }
 
 export function OrderSummarySection({
@@ -15,6 +18,9 @@ export function OrderSummarySection({
   subtotal,
   total,
   isLoading,
+  isRateLimited,
+  retryCooldown,
+  onRetry,
 }: OrderSummaryProps) {
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -84,13 +90,13 @@ export function OrderSummarySection({
 
       <Button
         type="submit"
-        disabled={isLoading}
+        disabled={isLoading || isRateLimited}
         className="h-11 w-full rounded-xl bg-primary text-[13px] font-semibold text-white shadow-sm shadow-slate-900/5 hover:bg-primary-hover"
       >
         {isLoading ? (
           <span className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Memproses...
+            Creating order…
           </span>
         ) : (
           <span className="flex items-center gap-2">
@@ -99,6 +105,27 @@ export function OrderSummarySection({
           </span>
         )}
       </Button>
+
+      {isRateLimited && (
+        <div
+          className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"
+          role="alert"
+        >
+          <p className="font-medium">
+            Checkout is temporarily busy because many orders are being processed.
+          </p>
+          <p className="mt-1 text-amber-900">Please try again shortly.</p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onRetry}
+            disabled={retryCooldown > 0}
+            className="mt-3 h-9 w-full rounded-lg border-amber-300 bg-amber-50 text-xs font-semibold text-amber-950 hover:bg-amber-100"
+          >
+            {retryCooldown > 0 ? `Try again in ${retryCooldown}s` : "Try again"}
+          </Button>
+        </div>
+      )}
 
       <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-xs text-slate-500">
         <ShieldCheck size={14} className="text-success" />

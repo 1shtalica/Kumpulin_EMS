@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -25,6 +25,7 @@ import { EventService } from "@/services/event-service";
 import { OrderService } from "@/services/order-service";
 import { saveLastOrderId } from "@/lib/order-session";
 import type { Event } from "@/types/event";
+import type { CreateOrderRequest } from "@/types/order";
 
 function formatEventDate(isoString: string): { date: string; time: string } {
   const d = new Date(isoString);
@@ -94,7 +95,14 @@ export default function CheckoutPage({
   const [isFetchingEvent, setIsFetchingEvent] = useState(true);
   const [isFetchingUser, setIsFetchingUser] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [retryCooldown, setRetryCooldown] = useState(0);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const pendingOrderRef = useRef<{
+    payload: CreateOrderRequest;
+    idempotencyKey: string;
+  } | null>(null);
+  const isSubmittingRef = useRef(false);
 
   const methods = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
@@ -155,8 +163,65 @@ export default function CheckoutPage({
     fetchUser();
   }, [reset]);
 
+  useEffect(() => {
+    if (retryCooldown <= 0) return;
+
+    const interval = window.setInterval(() => {
+      setRetryCooldown((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [retryCooldown]);
+
+  const createOrder = async (
+    payload: CreateOrderRequest,
+    idempotencyKey: string,
+  ) => {
+    if (!event || isSubmittingRef.current || retryCooldown > 0) return;
+
+    isSubmittingRef.current = true;
+    setIsLoading(true);
+
+    try {
+      const orderData = await OrderService.createOrder(
+        event.event_id,
+        payload,
+        idempotencyKey,
+      );
+
+      pendingOrderRef.current = null;
+      const orderId = orderData.order.id;
+      saveLastOrderId(orderId);
+
+      if (orderData.payment?.payment_url) {
+        window.location.href = orderData.payment.payment_url;
+        return;
+      }
+
+      router.push(`/orders/${orderId}`);
+    } catch (err: unknown) {
+      const error = err as {
+        response?: { status?: number; data?: { message?: string } };
+      };
+
+      if (error.response?.status === 429) {
+        setIsRateLimited(true);
+        setRetryCooldown(30);
+        return;
+      }
+
+      const msg = error.response?.data?.message ?? "Gagal membuat pesanan, coba lagi.";
+      toast.error(msg);
+      pendingOrderRef.current = null;
+      setIsRateLimited(false);
+    } finally {
+      isSubmittingRef.current = false;
+      setIsLoading(false);
+    }
+  };
+
   const onSubmit = async (data: CheckoutFormValues) => {
-    if (!event || !ticket_id) return;
+    if (!event || !ticket_id || isSubmittingRef.current || isRateLimited) return;
     const selectedTicket = event.ticket_categories?.find((t) => t.id === ticket_id);
     if (selectedTicket) {
       const remaining = getTicketRemaining(selectedTicket);
@@ -169,48 +234,35 @@ export default function CheckoutPage({
         return;
       }
     }
-    setIsLoading(true);
+    const attempt = {
+      payload: {
+        items: [
+          {
+            ticket_category_id: ticket_id,
+            quantity: qty,
+          },
+        ],
+        participants: [
+          {
+            ticket_category_id: ticket_id,
+            full_name: data.buyer_name.trim(),
+            email: data.buyer_email.trim(),
+            phone: normalizePhone(data.buyer_phone),
+          },
+        ],
+      },
+      idempotencyKey: `${event.event_id}-${ticket_id}-${qty}-${Date.now()}`,
+    };
+    pendingOrderRef.current = attempt;
+    await createOrder(attempt.payload, attempt.idempotencyKey);
+  };
 
-    try {
-      const idempotencyKey = `${event.event_id}-${ticket_id}-${qty}-${Date.now()}`;
-      const orderData = await OrderService.createOrder(
-        event.event_id,
-        {
-          items: [
-            {
-              ticket_category_id: ticket_id,
-              quantity: qty,
-            },
-          ],
-          participants: [
-            {
-              ticket_category_id: ticket_id,
-              full_name: data.buyer_name.trim(),
-              email: data.buyer_email.trim(),
-              phone: normalizePhone(data.buyer_phone),
-            },
-          ],
-        },
-        idempotencyKey,
-      );
+  const retryOrder = () => {
+    const pendingOrder = pendingOrderRef.current;
+    if (!pendingOrder || retryCooldown > 0) return;
 
-      const orderId = orderData.order.id;
-      saveLastOrderId(orderId);
-
-      if (orderData.payment?.payment_url) {
-        window.location.href = orderData.payment.payment_url;
-        return;
-      }
-
-      router.push(`/orders/${orderId}`);
-    } catch (err: unknown) {
-      const error = err as {
-        response?: { data?: { message?: string } };
-      };
-      const msg = error?.response?.data?.message ?? "Gagal membuat pesanan, coba lagi.";
-      toast.error(msg);
-      setIsLoading(false);
-    }
+    setIsRateLimited(false);
+    void createOrder(pendingOrder.payload, pendingOrder.idempotencyKey);
   };
 
   if (isFetchingEvent) {
@@ -382,6 +434,9 @@ export default function CheckoutPage({
                 subtotal={subtotal}
                 total={total}
                 isLoading={isLoading}
+                isRateLimited={isRateLimited}
+                retryCooldown={retryCooldown}
+                onRetry={retryOrder}
               />
             </aside>
           </div>
