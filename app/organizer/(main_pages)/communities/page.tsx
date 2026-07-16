@@ -21,6 +21,24 @@ const getApiBaseUrl = () =>
     process.env.API_URL ||
     process.env.NEXT_PUBLIC_API_URL;
 
+const readSetCookieHeaders = (headers: Headers): string[] => {
+    const headersWithSetCookie = headers as Headers & {
+        getSetCookie?: () => string[];
+    };
+
+    return (
+        headersWithSetCookie.getSetCookie?.() ??
+        (headers.get("set-cookie") ? [headers.get("set-cookie") as string] : [])
+    );
+};
+
+const getCookieValue = (cookieHeader: string, name: string) =>
+    cookieHeader
+        .split(";")
+        .map((cookie) => cookie.trim())
+        .find((cookie) => cookie.startsWith(`${name}=`))
+        ?.slice(name.length + 1);
+
 async function getOrganizerCommunities(): Promise<{
     communities: Community[];
     errorMessage?: string;
@@ -35,29 +53,53 @@ async function getOrganizerCommunities(): Promise<{
     }
 
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token")?.value;
-    const cookieHeader = cookieStore
+    let accessToken = cookieStore.get("access_token")?.value;
+    let cookieHeader = cookieStore
         .getAll()
         .map((cookie) => `${cookie.name}=${cookie.value}`)
         .join("; ");
 
-    if (!accessToken) {
-        return {
-            communities: [],
-            errorMessage: "Sesi login tidak ditemukan.",
-        };
-    }
-
     try {
-        const response = await fetch(`${apiBaseUrl}/organizer/communities`, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                Cookie: cookieHeader,
-                "Content-Type": "application/json",
-            },
-            cache: "no-store",
-        });
+        const fetchCommunities = () =>
+            fetch(`${apiBaseUrl}/organizer/communities`, {
+                method: "GET",
+                headers: {
+                    ...(accessToken
+                        ? { Authorization: `Bearer ${accessToken}` }
+                        : {}),
+                    Cookie: cookieHeader,
+                    "Content-Type": "application/json",
+                },
+                cache: "no-store",
+            });
+
+        let response = await fetchCommunities();
+
+        // Server components do not use the browser Axios refresh interceptor.
+        // Refresh here so a recently rotated or expired access token does not
+        // make an authenticated organizer appear to have no communities.
+        if (response.status === 401) {
+            const refreshResponse = await fetch(`${apiBaseUrl}/auth/refresh`, {
+                method: "POST",
+                headers: {
+                    Cookie: cookieHeader,
+                    "Content-Type": "application/json",
+                },
+                cache: "no-store",
+            });
+
+            if (refreshResponse.ok) {
+                const refreshedCookies = readSetCookieHeaders(refreshResponse.headers)
+                    .map((cookie) => cookie.split(";", 1)[0])
+                    .filter(Boolean);
+
+                cookieHeader = [...refreshedCookies, cookieHeader]
+                    .filter(Boolean)
+                    .join("; ");
+                accessToken = getCookieValue(cookieHeader, "access_token");
+                response = await fetchCommunities();
+            }
+        }
 
         if (response.status === 404) {
             return { communities: [] };
